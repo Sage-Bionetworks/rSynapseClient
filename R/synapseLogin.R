@@ -235,6 +235,7 @@ userName <-
 	if(missing(name))
 		return(.getCache("username"))
 	.setCache("username", name)
+	.jenv[["syn"]]$setUserName(name)
 }
 
 authMode <- 

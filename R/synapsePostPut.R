@@ -28,7 +28,15 @@
 	indx <- indx[names(entity)[indx] != "dateAnnotations"]
 	for(ii in indx)
 		entity[ii] <- as.character(entity[ii])
-	
+
+
+	## convert integers to characters
+	for(ii in 1:length(entity)){
+		if(all(checkInteger(entity[[ii]])))
+			entity[[ii]] <- as.character(as.integer(entity[[ii]]))
+	}
+
+
 	httpBody <- toJSON(entity)
 	
 	## uris formed by the service already have their servlet prefix

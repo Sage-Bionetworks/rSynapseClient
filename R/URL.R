@@ -21,6 +21,8 @@ setClass(
 )
 
 .ParsedUrl <- function(url){
+
+	if(is.null(url)) stop("url cannot be null")
 	## swap backslashes for forward slashes
 	url <- gsub("[\\]", "/", url)
 	
