@@ -71,7 +71,7 @@ setMethod(
 			} else {
 				## Update the layer in Synapse just in case any other fields were changed
 				## TODO is this needed?
-				entity <- updateEntity(entity)
+				## entity <- updateEntity(entity)
 			} 
 			
 			tryCatch(

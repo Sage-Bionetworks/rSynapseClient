@@ -61,10 +61,6 @@
 				.opts=opts
 		)
 	}else{
-		## convert entity elements to strings
-		for(ii in 1:length(entity))
-			entity[[ii]] <- as.character(entity[[ii]])
-
 	        ## convert integers to characters
         	for(ii in 1:length(entity)){
                 	if(all(checkInteger(entity[[ii]])))

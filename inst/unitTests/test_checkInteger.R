@@ -72,4 +72,15 @@ unitTestMultipleValuesMixedTypes <-
 	checkTrue(all(synapseClient:::checkInteger(val) == res))
 }
 
+unitTestNamedList <-
+	function()
+{
+	checkTrue(!synapseClient:::checkInteger(RJSONIO:::emptyNamedList))
 
+	val <- list()
+	val[[2]] <- RJSONIO::emptyNamedList
+	res <- c(FALSE, FALSE)
+	checkTrue(all(res == synapseClient:::checkInteger(val)))
+
+
+}
