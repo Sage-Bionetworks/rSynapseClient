@@ -108,7 +108,7 @@ setMethod(
                                 class(entity) <- "Layer"
                                 entity <- loadEntity(entity)
                                 class(entity) <- oldClass
-			} else if(annotValue(entity,"format") == "GEO"){
+			} else if(tolower(annotValue(entity,"format")) %in% c("cel", "geo")){
 				cel.files <- list.celfiles(entity$cacheDir, full.names=TRUE)
 				cdfs <- sapply(cel.files, whatcdf) 
 				expression <- lapply(unique(cdfs), function(cdf){

@@ -75,7 +75,11 @@ setMethod(
 			} 
 			
 			tryCatch(
-					.performMultipartUpload(entity, filePath),
+					if(.getCache('useJavaClient')){
+						.performMultipartUpload(entity, filePath)
+					}else{
+						.performRUpload(entity, filePath)
+					},
 					error = function(e){
 						warning(sprintf("failed to upload data file, please try again: %s", e))
 						return(entity)

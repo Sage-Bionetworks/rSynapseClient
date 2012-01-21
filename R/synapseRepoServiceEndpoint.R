@@ -6,7 +6,9 @@ synapseRepoServiceEndpoint <-
 		url <- .ParsedUrl(url=endpoint)
 		.setCache("reposerviceEndpointLocation", paste(url@protocol, '://', url@authority, sep=''))
 		.setCache("reposerviceEndpointPrefix", url@path)
-		.jenv[["syn"]]$setRepositoryEndpoint(endpoint)
+		if(.getCache('useJavaClient')){
+			.jenv[["syn"]]$setRepositoryEndpoint(endpoint)
+		}
 	}
 	else {
 		return(.getCache("reposerviceEndpoint"))

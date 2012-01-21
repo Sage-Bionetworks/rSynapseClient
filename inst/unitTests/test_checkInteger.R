@@ -84,3 +84,18 @@ unitTestNamedList <-
 
 
 }
+
+unitTestListContainingLists <-
+	function()
+{
+	val <- list()
+	val[[1]] <- 1L
+	val[[2]] <- list(a=1,b=2)
+
+	res <- c(TRUE, FALSE)
+
+	checkTrue(all(res == synapseClient:::checkInteger(val)))
+}
+
+
+

@@ -8,7 +8,7 @@ checkInteger <- function(x){
                 }else{
                         xx <- x
                 }
-                if(any(isS4(xx)) | length(xx) == 0L){
+                if(any(isS4(xx)) | length(xx) == 0L | is.list(xx)){
                         result <- c(result, FALSE)
                 }else{
                         suppressWarnings(thisVal <- tryCatch({
