@@ -41,7 +41,7 @@
 		header <- switch(authMode(),
 						auth = .stuffHeaderAuth(header),
 						hmac = .stuffHeaderHmac(header, uri),
-						stop("Unknown auth mode: %s. Could not build header", authMod())
+						stop("Unknown auth mode: %s. Could not build header", authMode())
 		)		
 	}
 	
