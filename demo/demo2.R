@@ -14,7 +14,7 @@ library(affy)
 synapseLogin()
 
 ## set up a project
-myName <- "<your name>"
+myName <- <your name>
 projName <- sprintf("%ss Curation Project %s", myName, as.character(gsub("-",".",Sys.Date())))
 
 ## create a project object using it's constructor. The
@@ -85,13 +85,13 @@ onWeb(plot)
 ##############
 
 ## create a code entity
-plotCode <- Code(list(name="ggheat", parentId=propertyValue(myDataset,"id")))
+plotCode <- Code(list(name="ggheat", parentId=propertyValue(myProj,"id")))
 
-## add code file to the entity
-plotCode <- addFile(plotCode)
-
-## edit the source file
-edit(plotCode)
+## add code to the entity:
+## myHeatMap <- function(x){
+##	heatmap(x, main="This is my heatmap")
+##}
+plotCode <- edit(plotCode)
 
 ## source the code file
 plotCode <- loadEntity(plotCode)
@@ -103,7 +103,7 @@ plotCode
 attach(plotCode)
 
 ## make a plot
-myHeatmap(pm(expr$objects$expression[[1]])[101:200,])
+myHeatMap(pm(expr$objects$expression[[1]])[101:200,])
 
 ## detach the code entity
 detach(plotCode)
