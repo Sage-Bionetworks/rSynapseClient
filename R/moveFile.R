@@ -5,7 +5,7 @@
 
 setMethod(
 		f = "moveFile",
-		signature = "Layer",
+		signature = "LocationOwner",
 		definition = function(entity, src, dest){
 			entity@location <- moveFile(entity@location, src, dest)
 			entity

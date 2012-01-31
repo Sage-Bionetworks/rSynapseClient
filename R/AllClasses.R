@@ -52,7 +52,6 @@ setClass(
 		)
 )
 
-
 setClass(
 		Class = "Dataset",
 		contains = "SynapseEntity",
@@ -82,22 +81,31 @@ setClass(
 ### Layer Class definitions
 #####
 setClass(
-		Class = "Layer",
+		Class = "LocationOwner",
 		contains = "SynapseEntity",
 		representation = representation(
 				location = "CachedLocation",
-				objects = "environment"
+				objects = "environment",
+				"VIRTUAL"
 		),
+)
+
+setClass(
+		Class = "Layer",
+		contains = "LocationOwner",
 		prototype = prototype(
-				synapseEntityKind = "layer"
+				synapseEntityKind = "layer",
+				location = new("CachedLocation")
 		)
+
 )
 
 setClass(
 		Class = "ExpressionLayer",
 		contains = "Layer",
 		prototype = prototype(
-				properties = list(type="E")
+				properties = list(type="E"),
+				location = new("CachedLocation")
 		)
 )
 
@@ -150,11 +158,7 @@ setClass(
 
 setClass(
 		Class = "Code",
-		contains = "Layer",
-		representation = representation(
-				location = "CachedLocation",
-				objects = "environment"
-		),
+		contains = "LocationOwner",
 		prototype = prototype(
 				synapseEntityKind = "code"
 		)

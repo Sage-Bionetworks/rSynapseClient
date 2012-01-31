@@ -5,7 +5,7 @@
 
 setMethod(
 		f = "addFile",
-		signature = signature("Layer", "character", "character"),
+		signature = signature("LocationOwner", "character", "character"),
 		definition = function(entity, file, path){
 			entity@location <- addFile(entity@location, file, path)
 			entity
@@ -14,7 +14,7 @@ setMethod(
 
 setMethod(
 		f = "addFile",
-		signature = signature("Layer", "character", "missing"),
+		signature = signature("LocationOwner", "character", "missing"),
 		definition = function(entity, file){
 			entity@location <- addFile(entity@location, file, path="/")
 			entity
@@ -23,7 +23,7 @@ setMethod(
 
 setMethod(
 		f = "addFile",
-		signature = signature("Layer", "missing", "character"),
+		signature = signature("LocationOwner", "missing", "character"),
 		definition = function(entity, path){
 			if(length(path) > 1)
 				stop("When selecting files in browse mode, provide only a single path")
@@ -47,7 +47,7 @@ setMethod(
 
 setMethod(
 		f = "addFile",
-		signature = signature("Layer", "missing", "missing"),
+		signature = signature("LocationOwner", "missing", "missing"),
 		definition = function(entity){
 			addFile(entity, path="")	
 		}

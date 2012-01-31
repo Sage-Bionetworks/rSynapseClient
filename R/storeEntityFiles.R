@@ -8,13 +8,13 @@ setMethod(
 		f = "storeEntityFiles",
 		signature = "SynapseEntity",
 		definition = function(entity){
-			stop("Only Layer entities can contain stored files")
+			stop("Only Layer and Code entities can contain stored files")
 		}
 )
 
 setMethod(
 		f = "storeEntityFiles",
-		signature = "Layer",
+		signature = "LocationOwner",
 		definition = function(entity){
 			if(length(entity$files) == 0)
 				stop("Entity has no files to store")
@@ -41,7 +41,7 @@ setMethod(
 			
 			## if zip failes, load uncompressed
 			if(zipRetVal != 0L){
-				msg <- sprintf("Unable to zip layerData Files. Error code: %i.",zipRetVal)
+				msg <- sprintf("Unable to zip Entity Files. Error code: %i.",zipRetVal)
 				if(length(entity@location@files) > 1)
 					stop(msg, " Make sure that zip is installed on your computer. Without zip, only one file can be uploaded at a time")
 				warning("Zip was not installed on your computer. Uploading layer data uncompressed. Directory structure will not be preserved.")
@@ -54,7 +54,7 @@ setMethod(
 
 setMethod(
 		f = "storeFile",
-		signature = signature("Layer", "character"),
+		signature = signature("LocationOwner", "character"),
 		definition = function(entity, filePath) {
 			
 			if(!all(file.exists(filePath))) {
@@ -66,10 +66,10 @@ setMethod(
 			}
 			
 			if(is.null(propertyValue(entity, "id"))){
-				## Create the layer in Synapse
+				## Create the LocationOwner in Synapse
 				entity <- createEntity(entity)
 			} else {
-				## Update the layer in Synapse just in case any other fields were changed
+				## Update the LocationOwner in Synapse just in case any other fields were changed
 				## TODO is this needed?
 				entity <- updateEntity(entity)
 			} 

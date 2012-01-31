@@ -53,14 +53,6 @@ setMethod(
 
 setMethod(
 		f = ".loadSageBioPacket",
-		signature = "Layer",
-		definition = function(entity){
-			
-		}
-)
-
-setMethod(
-		f = ".loadSageBioPacket",
 		signature = "PhenotypeLayer",
 		definition = function(entity){
 			if(is.null(annotValue(entity, "format")) || annotValue(entity, "format") != "sageBioCurated")
@@ -152,3 +144,12 @@ setMethod(
 			entity
 		}
 )
+
+setMethod(
+		f = "loadEntity",
+		signature = "SynapseEntity",
+		definition = function(entity){
+			getEntity(entity)
+		}
+)
+

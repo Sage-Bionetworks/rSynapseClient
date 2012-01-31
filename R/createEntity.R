@@ -120,7 +120,7 @@ setMethod(
 
 setMethod(
 		f = "createEntity",
-		signature = "Layer",
+		signature = "LocationOwner",
 		definition = function(entity){
 			oldClass <- class(entity)
 			class(entity) <- "SynapseEntity"

@@ -12,7 +12,7 @@ setGeneric(
 )
 setMethod(
 		f = "addDir",
-		signature = signature("Layer", "character"),
+		signature = signature("LocationOwner", "character"),
 		definition = function(entity, path){
 			if(length(path) > 1)
 				stop("When selecting files in browse mode, provide only a single path")
@@ -36,7 +36,7 @@ setMethod(
 
 setMethod(
 		f = "addDir",
-		signature = signature("Layer", "missing"),
+		signature = signature("LocationOwner", "missing"),
 		definition = function(entity){
 			addDir(entity, "")
 		}

@@ -6,7 +6,7 @@
 
 setMethod(
 		f = "copyEntity",
-		signature = "Layer",
+		signature = "LocationOwner",
 		definition = function(entity){
 			copy <- entity
 			copy@objects <- new.env()

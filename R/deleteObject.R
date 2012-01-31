@@ -1,4 +1,4 @@
-# delete object from Layer entity
+# delete object from LocationOwner entity
 # 
 # Author: Matt Furia
 ###############################################################################
@@ -12,7 +12,7 @@ setGeneric(
 
 setMethod(
 		f = "deleteObject",
-		signature = signature("Layer", "character"),
+		signature = signature("LocationOwner", "character"),
 		definition = function(entity, which){
 			rm(list=which, envir=entity@objects)
 			tryCatch(

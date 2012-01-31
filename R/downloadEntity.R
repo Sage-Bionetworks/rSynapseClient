@@ -6,7 +6,7 @@
 
 setMethod(
 		f = "downloadEntity",
-		signature = "Layer",
+		signature = "LocationOwner",
 		definition = function(entity){
 			## check whether user has signed agreement
 			if(!hasSignedEula(entity)){
@@ -34,7 +34,7 @@ setMethod(
 		f = "downloadEntity",
 		signature = "SynapseEntity",
 		definition = function(entity){
-			stop("Currently only Layer entities can contain data.")
+			getEntity(entity)
 		}
 )
 setMethod(
@@ -61,7 +61,7 @@ setMethod(
 
 setMethod(
 		f = ".cacheEntity",
-		signature = "Layer",
+		signature = "LocationOwner",
 		definition = function(entity) {
 			
 			## Get the download locations for this entity

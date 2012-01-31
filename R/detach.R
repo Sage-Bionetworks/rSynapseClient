@@ -6,7 +6,7 @@
 
 setMethod(
 		f = "detach",
-		signature = "Layer",
+		signature = "LocationOwner",
 		definition = function (name, pos = 2, unload = FALSE, character.only = FALSE, 
 				force = FALSE) {
 			pkgName <- getPackageName(name@objects)

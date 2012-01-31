@@ -5,7 +5,7 @@
 
 setMethod(
 		f = "attach",
-		signature = "Layer",
+		signature = "LocationOwner",
 		definition = function (what, pos = 2, name, warn.conflicts = TRUE) {
 			if(missing(name))
 				name = getPackageName(what@objects)

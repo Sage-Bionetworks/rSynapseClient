@@ -3,15 +3,14 @@
 {
 	filename <- path.expand(filename)
 	splits <- strsplit(filename, "\\.")
-	extension <- tolower(splits[[1]][length(splits[[1]])])
+	extension <- splits[[1]][length(splits[[1]])]
 	destdir <- gsub(paste("[\\.]", extension, sep=""), paste("_", .getCache("downloadSuffix"), sep=""), filename)
-	if(file.exists(destdir))
-		unlink(destdir)
+	extension <- tolower(extension)
 	
 	switch(extension,
-		zip = unzip(filename, exdir = destdir),
-		gz = untar(filename, exdir = destdir),
-		tar = untar(filename, exdir = destdir),
+		zip = {unlink(destdir); unzip(filename, exdir = destdir)},
+		gz = {unlink(destdir); untar(filename, exdir = destdir)},
+		tar = {unlink(destdir); untar(filename, exdir = destdir)},
 		{ ## default
 			splits <- strsplit(filename, .Platform$file.sep)
 			destdir <- paste(splits[[1]][-length(splits[[1]])], collapse=.Platform$file.sep)

@@ -6,7 +6,7 @@
 
 setMethod(
 		f = "deleteFile",
-		signature = signature("Layer", "character"),
+		signature = signature("LocationOwner", "character"),
 		definition = function(entity, file){
 			entity@location <- deleteFile(entity@location, file)
 			entity
@@ -42,7 +42,7 @@ setMethod(
 
 setMethod(
 		f = "deleteFile",
-		signature = signature("Layer", "missing"),
+		signature = signature("LocationOwner", "missing"),
 		definition = function(entity){
 			if(!file.exists(entity$cacheDir))
 				stop("entity has no files to delete")

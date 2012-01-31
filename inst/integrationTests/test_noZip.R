@@ -11,10 +11,14 @@
 	}
 	attr(myZip, "origFcn") <- utils:::zip
 	## detach packages so their functions can be overridden
+	oldCache <- synapseClient:::.cache
+	unloadNamespace('synapseClient')
 	suppressWarnings(detach('package:utils', force=TRUE))
 	utils:::assignInNamespace("zip", myZip, "utils")
 	#reload detached packages
 	library(utils, quietly=TRUE)
+	assignInNamespace(".cache", oldCache, "synapseClient")
+	attachNamespace("synapseClient")
 	
 	## create project and add to cache
 	project <- list()
@@ -25,9 +29,13 @@
 
 .tearDown <- function(){
 	## put back method
+	oldCache <- synapseClient:::.cache
+	unloadNamespace('synapseClient')
 	suppressWarnings(detach('package:utils', force = TRUE))
 	utils:::assignInNamespace("zip", attr(utils:::zip, "origFcn"), "utils")
 	library(utils, quietly = TRUE)
+	assignInNamespace(".cache", oldCache, "synapseClient")
+	attachNamespace("synapseClient")
 	
 	## delete project 
 	synapseClient:::deleteProject(entity=synapseClient:::.getCache("rIntegrationTestProject"))

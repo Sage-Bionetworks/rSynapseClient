@@ -96,9 +96,10 @@ integrationTestStoreLayerCode <-
 	#dataset <- synapseClient:::.getCache("testDataset")
 	project<- synapseClient:::.getCache("testProject") # check set up method
 	code <- Code(list(name="a code layer", parentId=propertyValue(project, "id")))
-	codeFile <- tempfile(fileext=".R")
+	codeFile <- file.path(tempdir(), "someCode.R")
 	cat('run <- function(){return("executing test function")}',file=codeFile)
 	code <- addFile(code, codeFile)
+	checkTrue(file.exists(file.path(code$cacheDir, code$files)))
 	code <- storeEntity(code)
 	code <- loadEntity(propertyValue(code, "id"))
 	checkEquals(code$objects$run(), "executing test function")

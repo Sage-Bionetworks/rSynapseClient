@@ -12,7 +12,7 @@ setGeneric(
 
 setMethod(
 		f = "renameObject",
-		signature = signature("Layer", "character", "character"),
+		signature = signature("LocationOwner", "character", "character"),
 		definition = function(entity, which, name){
 			if(length(which) != length(name))
 				stop("Must supply the same number of names as objects")
