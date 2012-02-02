@@ -23,7 +23,8 @@
 	## create project and add to cache
 	project <- list()
 	project$name <- paste('R noZip Integration Test Project', gsub(':', '_', date()))
-	createdProject <- synapseClient:::createProject(entity=project)
+	project <- Project(project)
+	createdProject <- createEntity(entity=project)
 	synapseClient:::.setCache("rIntegrationTestProject", createdProject)
 }
 
@@ -38,7 +39,7 @@
 	attachNamespace("synapseClient")
 	
 	## delete project 
-	synapseClient:::deleteProject(entity=synapseClient:::.getCache("rIntegrationTestProject"))
+	deleteEntity(entity=synapseClient:::.getCache("rIntegrationTestProject"))
 	synapseClient:::.deleteCache("rIntegrationTestProject")
 }
 
@@ -47,7 +48,7 @@ integrationTestNoZipFile <-
 {
 	dataset <- Dataset(entity = list(
 					name = 'R Integration Test Dataset',
-					parentId = synapseClient:::.getCache("rIntegrationTestProject")$id
+					parentId = propertyValue(synapseClient:::.getCache("rIntegrationTestProject"),"id")
 			)
 	)
 	
@@ -81,7 +82,7 @@ integrationTestNoZipMultipleFiles <-
 {
 	dataset <- Dataset(entity = list(
 					name = 'R Integration Test Dataset',
-					parentId = synapseClient:::.getCache("rIntegrationTestProject")$id
+					parentId = propertyValue(synapseClient:::.getCache("rIntegrationTestProject"), "id")
 			)
 	)
 	
@@ -115,7 +116,7 @@ integrationTestNoZipBinary <-
 {
 	dataset <- Dataset(entity = list(
 					name = 'R Integration Test Dataset',
-					parentId = synapseClient:::.getCache("rIntegrationTestProject")$id
+					parentId = propertyValue(synapseClient:::.getCache("rIntegrationTestProject"),"id")
 			)
 	)
 	
@@ -148,7 +149,7 @@ integrationTestNoZipMultipleBinary <-
 {
 	dataset <- Dataset(entity = list(
 					name = 'R Integration Test Dataset',
-					parentId = synapseClient:::.getCache("rIntegrationTestProject")$id
+					parentId = propertyValue(synapseClient:::.getCache("rIntegrationTestProject"),"id")
 			)
 	)
 	

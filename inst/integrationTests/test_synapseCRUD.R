@@ -10,14 +10,15 @@ integrationTestCRUD <- function() {
 	# Create a project
 	project <- RJSONIO::emptyNamedList
 	project$name = paste('R Synapse CRUD Integration Test Project', gsub(':', '_', date()))
-	createdProject <- synapseClient:::createProject(entity=project)
-	checkEquals(project$name, createdProject$name)
+	project <- Project(project)
+	createdProject <- createEntity(entity=project)
+	checkEquals(propertyValue(project, "name"), propertyValue(createdProject, "name"))
 	
 	# Create a dataset
 	dataset <- RJSONIO::emptyNamedList
 	dataset$name = 'R Integration Test Dataset'
 	dataset$status = 'test create'
-	dataset$parentId <- createdProject$id
+	dataset$parentId <- propertyValue(createdProject, "id")
 	createdDataset <- synapseClient:::synapsePost(uri='/dataset', entity=dataset)
 	checkEquals(dataset$name, createdDataset$name)
 	checkEquals(dataset$status, createdDataset$status)
@@ -47,6 +48,5 @@ integrationTestCRUD <- function() {
 	checkException(synapseClient:::synapseGet(uri=createdDataset$uri))
 	
  	# Delete a Project
-	synapseClient:::deleteProject(entity=createdProject)
+	deleteEntity(entity=createdProject)
 }
-

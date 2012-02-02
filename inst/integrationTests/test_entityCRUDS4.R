@@ -57,16 +57,6 @@ integrationTestCreateS4Entities <- function(){
 	checkEquals(propertyValue(createdLayer,"name"), propertyValue(layer, "name"))
 	checkEquals(propertyValue(createdLayer,"parentId"), propertyValue(dataset, "id"))
 	
-	## Create Location
-	location <- new(Class = "Location")
-	propertyValue(location, "parentId") <- propertyValue(createdLayer,"id")
-	propertyValue(location, "type") <- "awss3"
-	propertyValue(location, "path") <- "fakeFile.txt"
-	propertyValue(location, "md5sum") <- "80ca8c7c1c83310e471b8c4b19a86cc9"
-	createdLocation <- createEntity(location)
-	checkEquals(propertyValue(createdLocation,"md5sum"), propertyValue(location, "md5sum"))
-	checkEquals(propertyValue(createdLocation,"parentId"), propertyValue(createdLayer, "id"))
-	checkEquals(propertyValue(createdLocation,"type"), propertyValue(location, "type"))
 	
 }
 
@@ -177,24 +167,6 @@ integrationTestUpdateS4Entity <-
 	updatedProject <- updateEntity(createdProject)
 	checkEquals(propertyValue(createdProject, "description"), propertyValue(updatedProject, "description"))
 	
-	## Create Location
-	location <- new(Class = "Location")
-	propertyValue(location, "parentId") <- propertyValue(createdLayer,"id")
-	propertyValue(location, "type") <- "awss3"
-	propertyValue(location, "path") <- "fakeFile.txt"
-	propertyValue(location, "md5sum") <- "80ca8c7c1c83310e471b8c4b19a86cc9"
-	createdLocation <- createEntity(location)
-	checkEquals(propertyValue(createdLocation,"md5sum"), propertyValue(location, "md5sum"))
-	checkEquals(propertyValue(createdLocation,"parentId"), propertyValue(createdLayer, "id"))
-	checkEquals(propertyValue(createdLocation,"type"), propertyValue(location, "type"))
-	
-	## update the location
-	propertyValue(createdLocation, "md5sum") <- "f0d66fb8fd48901050b32d060c4de3c9"
-	annotValue(createdLocation, "anAnnotation") <- "anAnnotationValue"
-	updatedLocation <- updateEntity(createdLocation)
-	checkEquals(propertyValue(createdLocation, "md5sum"), propertyValue(updatedLocation, "md5sum"))
-	checkTrue(is.null(annotValue(updatedLocation, "anAnnotation")))
-	checkEquals(propertyValue(createdLocation, "id"), propertyValue(updatedLocation, "id"))
 }
 
 integrationTestDeleteEntity <- 

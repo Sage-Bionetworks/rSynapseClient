@@ -62,9 +62,8 @@ setClass(
 
 setClass(
 		Class = "Location",
-		contains = "SynapseEntity",
-		prototype = prototype(
-				synapseEntityKind = "location"
+		representation = representation(
+			properties = "list"
 		)
 )
 

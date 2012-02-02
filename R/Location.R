@@ -1,30 +1,10 @@
-
-setMethod(
-		f = "Location",
-		signature = "character",
-		definition = function(entity){
-			Location(.getEntity(entity = entity))
-		}
-)
+kPropertiesSlotName = "properties"
 
 setMethod(
 		f = "Location",
 		signature = "list",
 		definition = function(entity){
-			## superclass constructor
-			s4Entity <- SynapseEntity(entity=entity)
-			## coerce the type to Location
-			class(s4Entity) <- "Location"
-			synapseEntityKind(s4Entity) <- synapseEntityKind(new(Class="Location"))
-			return(s4Entity)
-		}
-)
-
-setMethod(
-		f = "Location",
-		signature = "numeric",
-		definition = function(entity){
-			Location(as.character(entity))
+			location <- new("Location", properties = entity)		
 		}
 )
 
@@ -53,22 +33,11 @@ setMethod(
 		definition = function(object){
 			cat('An object of class "', class(object), '"\n', sep="")
 			
-			cat("Synapse Entity Name : ", properties(object)$name, "\n", sep="")
-			cat("Synapse Entity Id   : ", properties(object)$id, "\n", sep="")
-			
-			if (!is.null(properties(object)$parentId))
-				cat("Parent Id           : ", properties(object)$parentId, "\n", sep="")
-			if (!is.null(properties(object)$type))
-				cat("Type                : ", properties(object)$type, "\n", sep="")
-			if (!is.null(properties(object)$version))
-				cat("Version             : ", properties(object)$version, "\n", sep="")
-			
 			msg <- summarizeCacheFiles(object)
 			if(!is.null(msg)){
 				cat("\n", msg$count, " :\n", sep="")
 				cat(msg$files, sep="\n")
 			}
-			cat("\nFor complete list of properties, please use the properties() function.\n")
 		}
 )
 
@@ -98,3 +67,106 @@ setMethod(
 			.Object
 		}
 )
+
+
+#####
+## get the list of properties for the object
+#####
+setMethod(
+                f = "properties",
+                signature = signature("Location"),
+                definition = function(object){
+                        slot(object, kPropertiesSlotName)
+                }
+)
+
+#####
+## set the properties list for the object
+#####
+setMethod(
+                f = "properties<-",
+                signature = signature("Location", "list"),
+                definition = function(object, value){
+                        object@properties <- value
+                        return(object)
+                }
+)
+
+#####
+## Get the property names
+#####
+setMethod(
+                f = "propertyNames",
+                signature = signature("Location"),
+                definition = function(object){
+                        return(names(slot(object, kPropertyFieldName)))
+                }
+)
+
+#####
+## Get a property value by name
+#####
+setMethod(
+                f = "propertyValue",
+                signature = signature("Location", "character"),
+                definition = function(object, which){
+                        properties(object)[[which]]
+                }
+)
+
+
+#####
+## set a property value
+#####
+setMethod(
+                f = "propertyValue<-",
+                signature = signature("Location", "character"),
+                definition = function(object, which, value){
+                        properties(object)[[which]] <- value
+                        object
+                }
+)
+
+#####
+## Get the property values
+#####
+setMethod(
+                f = "propertyValues",
+                signature = signature("Location"),
+                definition = function(object){
+                        lapply(propertyNames(object),FUN=propertyValue, object=object)
+                }
+)
+
+#####
+## Set multiple property values
+#####
+setMethod(
+                f = "propertyValues<-",
+                signature = signature("Location", "list"),
+                definition = function(object, value){
+                        if(any(names(value) == ""))
+                                stop("All entity members must be named")
+                        for(name in names(value))
+                                propertyValue(object, name) <- value[[name]]
+                        return(object)
+                }
+)
+
+#####
+## Delete a property
+#####
+setMethod(
+                f = "deleteProperty",
+                signature = signature("Location", "character"),
+                definition = function(object, which){
+                        if(!all(which %in% propertyNames(object))){
+                                indx <- which(!(which %in% propertyNames(object)))
+                                warning(paste(propertyNames(object)[indx], sep="", collapse=","), "were not found in the object, so were not deleted.")
+                        }
+			object@properties <- object@properties[setdiff(propertyNames(object), which)]
+                        return(object)
+                }
+)
+
+

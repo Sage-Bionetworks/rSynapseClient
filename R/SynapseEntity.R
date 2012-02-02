@@ -245,7 +245,7 @@ setMethod(
 		}
 )
 
-#####annotValue(entity, "dateKey")
+#####
 ## Delete a property
 #####
 setMethod(
