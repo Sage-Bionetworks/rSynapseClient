@@ -21,7 +21,7 @@ setMethod(
 	f = "deleteEntity",
 	signature = "LocationOwner",
 	definition = function(entity){
-		unlink(entity$cacheDir, recursive = TRUE, force = TRUE)
+		unlink(entity$cacheDir, recursive = TRUE)##, force = TRUE)
 		oldClass <- class(entity)
 		class(entity) <- "SynapseEntity"
 		entity <- deleteEntity(entity)
