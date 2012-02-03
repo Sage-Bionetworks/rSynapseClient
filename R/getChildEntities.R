@@ -43,8 +43,11 @@
 
 	return(children)
 }
-
-# TODO can we dynamically generate these functions?
+getLayerPreviews <- 
+		function(entity, offset=1, limit=100)
+{
+	.getChildEntities(entity=entity, offset=offset, limit=limit, kind="layer", childKind="preview", includeParentAnnot = FALSE)
+}
 
 getProjectDatasets <- 
 		function(entity, includeParentAnnot=TRUE, offset=1, limit=100)
@@ -62,18 +65,6 @@ getDatasetLayers <-
 	.getChildEntities(entity=entity, offset=offset, limit=limit, kind="dataset", childKind="layer", includeParentAnnot = includeParentAnnot)
 }
 
-getLayerLocations <- 
-		function(entity, offset=1, limit=100)
-{
-	propertyValue(entity, "locations")
-}
-
-getLayerPreviews <- 
-		function(entity, offset=1, limit=100)
-{
-	.getChildEntities(entity=entity, offset=offset, limit=limit, kind="layer", childKind="preview", includeParentAnnot = FALSE)
-}
-
 getAnalysisSteps <- 
 	function(entity, includeParentAnnot=TRUE, offset=1, limit=100)
 	{
@@ -88,16 +79,4 @@ setMethod(
 			getDatasetLayers(propertyValue(entity, "id"), includeParentAnnot, offset, limit)
 		}
 )
-
-setGeneric(
-		name = "getDatasetLayers"
-)
-#setMethod(
-#		f = "getChildEntity",
-#		signature = "synapseEntity",
-#		definition = function(entity){
-#			stop("method not yet implemented")
-#		}
-#)
-
 

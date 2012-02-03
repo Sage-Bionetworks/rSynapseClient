@@ -181,8 +181,24 @@ integrationTestDeleteEntity <-
 	propertyValue(dataset, "name") <- "testDatasetName"
 	propertyValue(dataset,"parentId") <- propertyValue(createdProject, "id")
 	createdDataset <- createEntity(dataset)
+	createdLayer <- Layer(list(name="aLayer", type="C", parentId=propertyValue(createdDataset, "id")))
+	layer <- addObject(createdLayer, "foo", "bar")
+	createdLayer <- storeEntity(createdLayer)
+
+	cacheDir <- createdLayer$cacheDir
+	checkTrue(file.exists(cacheDir))
+	deleteEntity(createdLayer)
+	checkTrue(!file.exists(cacheDir))
+
+
+	deletedProject <- deleteEntity(createdProject)
+	checkEquals(propertyValue(deletedProject, "id"), NULL)
 	
-	deleteEntity(createdProject)
+	checkTrue(!any(grepl('createdProject', ls())))
+	createdProject <- synapseClient:::.getCache("testProject")
+	checkEquals(propertyValue(createdProject, "name"), propertyValue(deletedProject, "name"))
+	checkEquals(propertyValue(deletedProject,"id"), NULL)
+
 	checkException(refreshEntity(createdDataset))
 	checkException(refreshEntity(createdProject))
 	synapseClient:::.deleteCache("testProject")

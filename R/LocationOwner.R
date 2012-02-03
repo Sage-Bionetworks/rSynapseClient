@@ -56,7 +56,7 @@ setMethod(
 			if(length(objects(entity@objects)) > 0){
 				msg$count <- sprintf("loaded object(s)")
 				objects <- objects(entity@objects)
-				classes <- unlist(lapply(objects, function(object){class(entity@objects[[object]])}))
+				classes <- unlist(lapply(objects, function(object){paste(class(entity@objects[[object]]), collapse=":")}))
 				
 				msg$objects <- sprintf('[%d] "%s" (%s)', 1:length(objects), objects, classes)
 			}

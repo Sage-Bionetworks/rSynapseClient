@@ -9,17 +9,16 @@ integrationTestSawyersDatasetChildEntityGet <- function() {
 	datasets <- synapseQuery(query='select * from dataset where dataset.name == "MSKCC Prostate Cancer"')
 	layers <- getDatasetLayers(entity=datasets$dataset.id[1], includeParentAnnot = FALSE)
 	checkTrue(5 <= nrow(layers))
-	layer <- synapseClient:::getLayer(entity=layers$id[1])
+	layer <-getEntity(entity=layers$id[1])
+	layer <- synapseClient:::.extractEntityFromSlots(layer)
 	previews <- synapseClient:::getLayerPreviews(entity=layer)
 	checkTrue(1 <= nrow(previews))
-	# TODO this user needs to agree to the use agreement before he/she can view the locations
-	# locations <- synapseClient:::getLayerLocations(entity=layer)
-	# checkTrue(1 <= nrow(locations))
 }
 
 integrationTestSageBioCurationProjectChildEntityGet <- function() {
 	projects <- synapseQuery(query='select * from project where project.name == "SageBioCuration"')
-	project <- synapseClient:::getProject(entity=projects$project.id[1])
+	project <- getEntity(entity=projects$project.id[1])
+	project <- synapseClient:::.extractEntityFromSlots(project)
 
 	datasets <- synapseClient:::getProjectDatasets(entity=project)
 	checkEquals(100, nrow(datasets))

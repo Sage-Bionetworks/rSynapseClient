@@ -16,9 +16,15 @@ setMethod(
 		f = "storeEntityFiles",
 		signature = "LocationOwner",
 		definition = function(entity){
-			if(length(entity$files) == 0)
-				stop("Entity has no files to store")
-			
+			if(length(entity$files) == 0){
+				if(is.null(propertyValue(entity, "id"))){
+					entity <- createEntity(entity)
+				}else{
+					entity <- updateEntity(entity)
+				}
+				return(entity)
+			}
+	
 			if(!all(mk <- file.exists(file.path(entity@location@cacheDir, entity@location@files))))
 				stop("Not all files listed by the entity exist.")
 				

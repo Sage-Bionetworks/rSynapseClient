@@ -4,23 +4,6 @@
 ###############################################################################
 setMethod(
 		f = "Project",
-		signature = "numeric",
-		definition = function(entity){
-			Project(as.character(entity))
-		}
-)
-
-setMethod(
-		f = "Project",
-		signature = "character",
-		definition = function(entity){
-			entity <- getProject(entity = entity)
-			Project(entity)
-		}
-)
-
-setMethod(
-		f = "Project",
 		signature = "list",
 		definition = function(entity){
 			## call the superClass constructor

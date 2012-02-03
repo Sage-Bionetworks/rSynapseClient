@@ -128,34 +128,3 @@ setMethod(
 			refreshAnnotations(entity)
 		}
 )
-
-
-getDataset <- 
-		function(entity)
-{
-	.getEntity(entity=entity)
-}
-
-getLayer <- 
-		function(entity)
-{
-	.getEntity(entity=entity)
-}
-
-getLocation <- 
-		function(entity)
-{
-	.getEntity(entity=entity)
-}
-
-getPreview <- 
-		function(entity)
-{
-	.getEntity(entity=entity)
-}
-
-getProject <- 
-		function(entity)
-{
-	.getEntity(entity=entity)
-}

@@ -60,23 +60,6 @@ setMethod(
 
 setMethod(
 		f = "Layer",
-		signature = "character",
-		definition = function(entity){
-			entity <- getLayer(entity = entity)
-			Layer(entity)
-		}
-)
-
-setMethod(
-		f = "Layer",
-		signature = "numeric",
-		definition = function(entity){
-			as.character(entity)
-		}
-)
-
-setMethod(
-		f = "Layer",
 		signature = "missing",
 		definition = function(entity){
 			Layer(list())

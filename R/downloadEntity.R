@@ -67,13 +67,11 @@ setMethod(
 			## Get the download locations for this entity
 			locations <- propertyValue(entity, "locations")
 			if (is.null(locations)) {
-				if(is.null(propertyValue(entity, "id")))
-					stop("The entity does not have a 'locations' property or an 'id' property so could not be cached")
 				entity <- getEntity(propertyValue(entity, "id"))
 				locations <- propertyValue(entity, "locations")
-				if (is.null(locations)) {
-					stop("The entity does not have any locations so could not be downloaded")
-				}
+				if (is.null(locations)) 
+					return(new("CachedLocation"))
+				
 			}
 
 			## Note that we just use the first location, to future-proof this we would use the location preferred
