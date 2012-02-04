@@ -103,3 +103,11 @@ setMethod(
 			entity
 		}
 )
+
+setMethod(
+  f = "addFile",
+  signature = signature("GithubCode", "ANY", "ANY"),
+  definition = function(entity, file, path){
+    stop("Cannot add a file for class GithubCode - already synced with a github tag.")
+  }
+)

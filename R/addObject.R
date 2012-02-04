@@ -122,6 +122,13 @@ setMethod(
 		}
 )
 
+setMethod(
+  f = "addObject",
+  signature = signature("GithubCode", "ANY", "ANY", "ANY"),
+  definition = function(entity, object, name, unlist){
+    stop("Cannot add an object for class GithubCode - already synced with a github tag.")
+  }
+)
 
 
 

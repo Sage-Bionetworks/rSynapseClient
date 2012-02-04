@@ -164,6 +164,14 @@ setClass(
 )
 
 setClass(
+  Class = "GithubCode",
+  contains = "Code",
+  prototype = prototype(
+    synapseEntityKind = "code"
+  )
+)
+
+setClass(
 	Class = "Analysis",
 	contains = "SynapseEntity",
 	prototype = prototype(

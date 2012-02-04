@@ -27,3 +27,11 @@ setMethod(
 			invisible(entity)
 		}
 )
+
+setMethod(
+  f = "deleteObject",
+  signature = signature("GithubCode", "ANY"),
+  definition = function(entity, which){
+    stop("Cannot delete an object for class GithubCode - already synced with a github tag.")
+  }
+)

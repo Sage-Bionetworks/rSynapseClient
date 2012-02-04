@@ -68,3 +68,11 @@ setMethod(
 			deleteFile(entity, files)
 		}
 )
+
+setMethod(
+  f = "deleteFile",
+  signature = signature("GithubCode", "ANY"),
+  definition = function(entity, file){
+    stop("Cannot delete a file for class GithubCode - already synced with a github tag.")
+  }
+)

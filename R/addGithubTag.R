@@ -9,6 +9,7 @@ setMethod(
       stop("This Code Entity already has a location.")
     }
     
+    class(entity) <- "GithubCode"
     
     destfile <- .curlWriterDownload(url=url)
     

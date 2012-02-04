@@ -18,3 +18,11 @@ setMethod(
 			get(which, envir = entity@objects)
 		}
 )
+
+setMethod(
+  f = "getObject",
+  signature = signature("GithubCode", "ANY"),
+  definition = function(entity, which){
+    stop("Cannot get an object for class GithubCode - synced with a github tag.")
+  }
+)

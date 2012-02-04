@@ -41,3 +41,11 @@ setMethod(
 			addDir(entity, "")
 		}
 )
+
+setMethod(
+  f = "addDir",
+  signature = signature("GithubCode", "ANY"),
+  definition = function(entity, path){
+    stop("Cannot add a directory for class GithubCode - already synced with a github tag.")
+  }
+)

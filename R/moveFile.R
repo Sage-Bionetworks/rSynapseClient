@@ -46,4 +46,11 @@ setMethod(
 		}			
 )
 
+setMethod(
+  f = "moveFile",
+  signature = c("GithubCode", "ANY", "ANY"),
+  definition = function(entity, src, dest){
+    stop("Cannot move files for class GithubCode - synced with a github tag.")
+  }
+)
 
