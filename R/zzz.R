@@ -94,7 +94,7 @@ kLayerSubtypeMap <- list(
 	.setCache("supportedLayerStatus", kSupportedLayerStatus)
 	.setCache("supportedPlatforms", kSupportedPlatforms)
 	.setCache("sessionRefreshDurationMin", 60)
-	.setCache("curlOpts", list(ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))
+	.setCache("curlOpts", list(followlocation=TRUE, ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))
 	.setCache("curlHeader", c('Content-Type'="application/json", Accept = "application/json", "Accept-Charset"="utf-8"))
 	.setCache("anonymous", FALSE)
 	.setCache("downloadSuffix", "unpacked")

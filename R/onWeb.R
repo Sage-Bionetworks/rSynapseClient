@@ -60,6 +60,14 @@ setMethod(
 )
 
 setMethod(
+  f = "onWeb",
+  signature = signature("Code"),
+  definition = function(entity){
+    .doOnWeb(entity)
+  }
+)
+
+setMethod(
 	f = "onWeb",
 	signature = signature("Analysis"),
 	definition = function(entity){
