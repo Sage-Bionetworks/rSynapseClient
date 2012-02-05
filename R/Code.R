@@ -47,7 +47,7 @@ setMethod(
 		signature = "Code",
 		definition = function(.Object, ...){
 			annotValue(.Object, "format") <- "code"
-			#propertyValue(.Object, "type") <- "M"
+			.Object@location <- new("CachedLocation")
 			.Object
 		}
 )

@@ -11,8 +11,17 @@ setGeneric(
 )
 
 setMethod(
+                f = "deleteObject",
+                signature = signature("LocationOwner", "character"),
+                definition = function(entity, which){
+                        entity@location <- deleteObject(entity@location, which)
+			invisible(entity)
+                }
+)
+
+setMethod(
 		f = "deleteObject",
-		signature = signature("LocationOwner", "character"),
+		signature = signature("CachedLocation", "character"),
 		definition = function(entity, which){
 			rm(list=which, envir=entity@objects)
 			tryCatch(
@@ -26,12 +35,4 @@ setMethod(
 			)
 			invisible(entity)
 		}
-)
-
-setMethod(
-  f = "deleteObject",
-  signature = signature("GithubCode", "ANY"),
-  definition = function(entity, which){
-    stop("Cannot delete an object for class GithubCode - already synced with a github tag.")
-  }
 )

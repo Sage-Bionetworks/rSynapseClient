@@ -32,6 +32,17 @@ setMethod(
 
 setMethod(
 		f = "downloadEntity",
+		signature = "GithubCode",
+		definition = function(entity){
+			loc <- .cacheEntity(entity)
+			class(loc) <- "ReadOnlyCachedLocation"
+			entity@location <- loc
+			entity
+		}
+)
+
+setMethod(
+		f = "downloadEntity",
 		signature = "SynapseEntity",
 		definition = function(entity){
 			getEntity(entity)

@@ -72,7 +72,6 @@ setMethod(
 			class(createdEntity) <- oldClass
 			class(entity) <- oldClass
 			createdEntity@location <- entity@location
-			createdEntity@objects <- entity@objects
 			createdEntity@synapseWebUrl <- .buildSynapseUrl(propertyValue(createdEntity, "id"))
 			createdEntity
 		}
