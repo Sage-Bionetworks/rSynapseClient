@@ -61,7 +61,6 @@ exportMethods(
 ## methods for managing layer files
 exportMethods(
 	addFile,
-	addDir,
 	deleteFile,
 	moveFile,
 	edit
