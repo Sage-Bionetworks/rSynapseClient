@@ -59,10 +59,3 @@ setMethod(
 )
 
 
-setMethod(
-  f = "storeEntity",
-  signature = "GithubCode",
-  definition = function(entity){
-    stop("Cannot store an entity of class GithubCode - synced with a github tag as a snapshot in time.")
-  }
-)

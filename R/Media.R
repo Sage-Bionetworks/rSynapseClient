@@ -47,6 +47,7 @@ setMethod(
 		signature = "Media",
 		definition = function(.Object, ...){
 			propertyValue(.Object, "type") <- "M"
+			.Object@location <- new("CachedLocation")
 			.Object
 		}
 )

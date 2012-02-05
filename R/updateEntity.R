@@ -121,7 +121,6 @@ setMethod(
 			class(updatedEntity) <- oldClass
 			class(entity) <- oldClass
 			updatedEntity@location <- entity@location
-			updatedEntity@objects <- entity@objects
 			updatedEntity
 		}
 )

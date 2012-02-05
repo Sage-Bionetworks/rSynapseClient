@@ -23,10 +23,10 @@ unitTestDelete <-
 	layer <- new("Layer")
 	addObject(layer,"foo", "bar")
 	
-	checkEquals(length(objects(layer@objects)), 1L)
+	checkEquals(length(objects(layer@location@objects)), 1L)
 	
 	deleteObject(layer, "bar")
-	checkEquals(length(objects(layer@objects)), 0L)
+	checkEquals(length(objects(layer@location@objects)), 0L)
 }
 
 unitTestDeleteOneOfTwo <-
@@ -34,13 +34,13 @@ unitTestDeleteOneOfTwo <-
 {
 	layer <- new("Layer")
 	addObject(layer,"foo")
-	checkEquals(length(objects(layer@objects)), 1L)
+	checkEquals(length(objects(layer@location@objects)), 1L)
 	
 	addObject(layer,"goo")
-	checkEquals(length(objects(layer@objects)), 2L)
+	checkEquals(length(objects(layer@location@objects)), 2L)
 	
 	deleteObject(layer, "goo")
-	checkEquals(length(objects(layer@objects)), 1L)
+	checkEquals(length(objects(layer@location@objects)), 1L)
 	checkEquals(names(layer$objects), "foo")
 }
 
@@ -50,10 +50,10 @@ unitTestDeleteAll <-
 	layer <- new("Layer")
 	addObject(layer,"foo")
 	addObject(layer,"goo")
-	checkEquals(length(objects(layer@objects)), 2L)
+	checkEquals(length(objects(layer@location@objects)), 2L)
 	
 	deleteObject(layer, c("goo", "foo"))
-	checkEquals(length(objects(layer@objects)), 0L)
+	checkEquals(length(objects(layer@location@objects)), 0L)
 }
 
 unitTestDeleteNonExisting <-

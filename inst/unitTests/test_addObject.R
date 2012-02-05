@@ -21,13 +21,13 @@ unitTestDefaultName <-
 		function()
 {
 	layer <- new(Class="Layer")
-	checkEquals(length(layer@objects), 0L)
+	checkEquals(length(layer@location@objects), 0L)
 	
 	id <- 1234
 	addObject(layer, id)
 	
-	checkEquals(length(layer@objects), 1L)
-	checkEquals(objects(layer@objects), "id")
+	checkEquals(length(layer@location@objects), 1L)
+	checkEquals(objects(layer@location@objects), "id")
 	checkEquals(layer$objects$id, id)
 }
 
@@ -35,12 +35,12 @@ unitTestDefaultNameStringConstant <-
 		function()
 {
 	layer <- new(Class="Layer")
-	checkEquals(length(layer@objects), 0L)
+	checkEquals(length(layer@location@objects), 0L)
 	
 	addObject(layer, "foo")
 	
-	checkEquals(length(layer@objects), 1L)
-	checkEquals(objects(layer@objects), "foo")
+	checkEquals(length(layer@location@objects), 1L)
+	checkEquals(objects(layer@location@objects), "foo")
 	checkEquals(layer$objects$foo, "foo")
 }
 
@@ -48,13 +48,13 @@ unitTestDefaultNameNumericExpression <-
 		function()
 {
 	layer <- new(Class="Layer")
-	checkEquals(length(layer@objects), 0L)
+	checkEquals(length(layer@location@objects), 0L)
 	
 	addObject(layer, 1:5)
 	
-	checkEquals(length(layer@objects), 1L)
+	checkEquals(length(layer@location@objects), 1L)
 	
-	checkEquals(objects(layer@objects), "1:5")
+	checkEquals(objects(layer@location@objects), "1:5")
 	checkTrue(all(layer$objects[["1:5"]] == 1:5))
 }
 
@@ -62,15 +62,15 @@ unitTestSpecifyName <-
 		function()
 {
 	layer <- new(Class="Layer")
-	checkEquals(length(layer@objects), 0L)
+	checkEquals(length(layer@location@objects), 0L)
 	
 	name <- "aName"
 	
 	id <- 1234
 	addObject(layer, id, name)
 	
-	checkEquals(length(layer@objects), 1L)
-	checkEquals(objects(layer@objects), name)
+	checkEquals(length(layer@location@objects), 1L)
+	checkEquals(objects(layer@location@objects), name)
 	checkEquals(layer$objects[[name]], id)
 }
 
@@ -78,13 +78,13 @@ unitTestSpecifyNameStringConstant <-
 		function()
 {
 	layer <- new(Class="Layer")
-	checkEquals(length(layer@objects), 0L)
+	checkEquals(length(layer@location@objects), 0L)
 	
 	name <- "aName"
 	addObject(layer, "foo", name)
 	
-	checkEquals(length(layer@objects), 1L)
-	checkEquals(objects(layer@objects), name)
+	checkEquals(length(layer@location@objects), 1L)
+	checkEquals(objects(layer@location@objects), name)
 	checkEquals(layer$objects[[name]], "foo")
 	
 }
@@ -138,7 +138,7 @@ unitTestAddMatrixSpecifyName <-
 {
 	layer <- new("Layer")
 	addObject(layer, diag(nrow=10, ncol=10), "diag")
-	checkTrue(all(layer@objects$diag == diag(nrow=10, ncol=10)))
+	checkTrue(all(layer@location@objects$diag == diag(nrow=10, ncol=10)))
 }
 
 unitTestAddMatrixNoName <-
@@ -156,7 +156,7 @@ unitTestAddDataFrameNoName <-
 	layer <- new(Class="Layer")
 	data <- data.frame(x=1:4, y=c("a", "b", "c", "d"))
 	addObject(layer, data)
-	checkEquals(length(objects(layer@objects)), 1L)
+	checkEquals(length(objects(layer@location@objects)), 1L)
 	checkTrue(all(layer$objects$data == data))
 }
 
@@ -166,8 +166,8 @@ unitTestAddDataFrameWithName <-
 	layer <- new(Class="Layer")
 	data <- data.frame(x=1:4, y=c("a", "b", "c", "d"))
 	addObject(layer, data, "newName")
-	checkEquals(length(objects(layer@objects)), 1L)
-	checkTrue(all(get("newName", envir=layer@objects)== data))
+	checkEquals(length(objects(layer@location@objects)), 1L)
+	checkTrue(all(get("newName", envir=layer@location@objects)== data))
 }
 
 unitTestAddListOfDataFramesNoName <-
