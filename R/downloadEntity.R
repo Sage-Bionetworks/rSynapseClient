@@ -91,6 +91,11 @@ setMethod(
 			
 			## Locations are no longer entities in synapse, but they still exist here in the R client
 			location <- Location(list(path=locations[[1]]['path'], type=locations[[1]]['type']))
-			return(CachedLocation(location, .unpack(filename = destfile)))
+			
+			location <- CachedLocation(location, .unpack(filename = destfile))
+		
+			## preserved the objects environment of the original
+                        location@objects <- entity@location@objects
+			location
 		}
 )

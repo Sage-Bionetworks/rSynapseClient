@@ -140,7 +140,7 @@ integrationTestNoZipBinary <-
 	layer <- storeEntity(layer)
 	
 	loadedLayer <- loadEntity(layer)
-	checkEquals(data, loadedLayer$objects$data)
+	checkEquals(loadedLayer$files, "data.rbin")
 }
 
 
