@@ -33,8 +33,8 @@
 			else {
 				stop(paste(message, response, sep = '\n'), call.=call.)
 			}
-			}
 		} else{
 			stop(message, call.=call.)
 		}
+	}
 }
