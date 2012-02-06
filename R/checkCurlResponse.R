@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #setGeneric(
 #		name=".checkCurlResponse",
 #		def=function(object, response){
@@ -38,5 +37,4 @@
 		} else{
 			stop(message, call.=call.)
 		}
-	}
 }
