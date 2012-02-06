@@ -62,6 +62,7 @@ exportMethods(
 exportMethods(
 	addFile,
 	deleteFile,
+	addGithubTag,
 	moveFile,
 	edit
 ) 

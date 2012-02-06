@@ -17,7 +17,7 @@ setMethod(
 			
 			## get the entity files
 			files <- list.files(file.path(entity$cacheDir, .getCache("rObjCacheDir")), all.files = TRUE, full.names=TRUE)
-			files <- intersect(files, .generateCacheFileName(entity, names(entity$objects)))
+			files <- intersect(files, .generateCacheFileName(entity@location, names(entity$objects)))
 			if(length(files) == 0)
 				stop("Entity contains no objects that can be stored")
 			files <- c(entity@location@files,files)

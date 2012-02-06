@@ -10,18 +10,18 @@ setMethod(
 			if(length(entity@location@files) == 0)
 				entity <- downloadEntity(entity)
 			
-			.loadCachedObjects(entity)
+			.loadCachedObjects(entity@location)
 			
 			if(is.null(annotValue(entity, "format"))){
-				setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@objects)
+				setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
 				return(entity)
 			}
-			entity@objects <- switch(annotValue(entity, "format"),
+			entity@location@objects <- switch(annotValue(entity, "format"),
 					rbin = .loadRbinaryFiles(file.path(entity@location@cacheDir,entity@location@files)),
 					sageBioCurated = .loadSageBioPacket(entity),
-					new.env()
+					entity@location@objects
 			)
-			setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@objects)
+			setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
 			entity
 		}
 )
@@ -122,19 +122,19 @@ setMethod(
 		definition = function(entity){
 			if(length(entity@location@files) == 0)
 				entity <- downloadEntity(entity)
-			entity@objects <- new.env()
+			entity@location@objects <- new.env()
 			
 			indx <- grep("\\.r$", tolower(entity$files))
 			if(!is.null(propertyValue(entity, "id"))){
-				setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@objects)
+				setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
 			}else{
-				setPackageName(sprintf("code%s", propertyValue(entity, "name")), env = entity@objects)
+				setPackageName(sprintf("code%s", propertyValue(entity, "name")), env = entity@location@objects)
 			}
 			tryCatch(
 					lapply(entity$files[indx],
 							function(f){
 								f <- file.path(entity$cacheDir, f)
-								sys.source(f, env = entity@objects)
+								sys.source(f, env = entity@location@objects)
 							}
 					),
 					error = function(e){
@@ -144,6 +144,38 @@ setMethod(
 			entity
 		}
 )
+
+setMethod(
+                f = "loadEntity",
+                signature = "GithubCode",
+                definition = function(entity){
+                        if(length(entity@location@files) == 0)
+                                entity <- downloadEntity(entity)
+                        entity@location@objects <- new.env()
+
+                        indx <- grep("\\.r$", tolower(entity$files))
+                        if(!is.null(propertyValue(entity, "id"))){
+                                setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
+                        }else{
+                                setPackageName(sprintf("code%s", propertyValue(entity, "name")), env = entity@location@objects)
+                        }
+                        tryCatch(
+                                        lapply(entity$files[indx],
+                                                        function(f){
+                                                                f <- file.path(entity$cacheDir, f)
+                                                                sys.source(f, env = entity@location@objects)
+                                                        }
+                                        ),
+                                        error = function(e){
+                                                warning(e)
+                                        }
+                        )
+                        entity
+                }
+)
+
+
+
 
 setMethod(
 		f = "loadEntity",

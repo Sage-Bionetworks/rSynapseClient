@@ -85,7 +85,7 @@ integrationTestDownloadFilesAndObjects <-
 	addObject(layer, list(foo="bar"))
 	checkEquals(length(layer$files), 0L)
 	
-	assign("diag", diag(nrow=10, ncol=10), envir = layer@objects)
+	assign("diag", diag(nrow=10, ncol=10), envir = layer@location@objects)
 	checkEquals(length(layer$objects), 2L)
 	storedLayer <- storeEntityObjects(layer)
 	checkEquals(length(layer$files), 0L)
@@ -98,6 +98,9 @@ integrationTestDownloadFilesAndObjects <-
 	loadedLayer <- loadEntity(downloadedLayer)
 	checkEquals(length(downloadedLayer$files), 0L)
 	checkEquals(length(downloadedLayer$objects), 1L)
+
+	checkEquals(length(loadedLayer$files), 0L)
+        checkEquals(length(loadedLayer$objects), 1L)
 	
 	loadedLayer <- loadEntity(propertyValue(storedLayer,"id"))
 	checkEquals(length(downloadedLayer$files), 0L)

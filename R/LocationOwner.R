@@ -9,7 +9,6 @@ setMethod(
 		definition = function(entity){
 			refreshedEntity <- getEntity(entity)
 			refreshedEntity@location <- entity@location
-			refreshedEntity@objects <- entity@objects
 			refreshedEntity
 		}
 )
@@ -53,11 +52,10 @@ setMethod(
 		signature = "LocationOwner",
 		definition = function(entity){
 			msg <- NULL
-			if(length(objects(entity@objects)) > 0){
+			if(length(objects(entity@location@objects)) > 0){
 				msg$count <- sprintf("loaded object(s)")
-				objects <- objects(entity@objects)
-				classes <- unlist(lapply(objects, function(object){paste(class(entity@objects[[object]]), collapse=":")}))
-				
+				objects <- objects(entity$objects)
+				classes <- unlist(lapply(objects, function(object){paste(class(entity$objects[[object]]), collapse=":")}))
 				msg$objects <- sprintf('[%d] "%s" (%s)', 1:length(objects), objects, classes)
 			}
 			msg
@@ -83,7 +81,7 @@ setMethod(
 			}
 			retVal <- lapply(i, function(i){
 						if(i=="objects"){
-							envir <- slot(x,i)
+							envir <- slot(x@location,i)
 							objects <- lapply(objects(envir), function(key) get(key,envir=envir))
 							names(objects) <- objects(envir)
 							return(objects)
@@ -107,6 +105,7 @@ setMethod(
 			x[i][[1]]
 		}
 )
+
 setMethod(
 		f = "$",
 		signature = "LocationOwner",
@@ -114,15 +113,6 @@ setMethod(
 			x[[name]]
 		}
 )
-
-#setMethod(
-#		f = "$<-",
-#		signature = "LocationOwner",
-#		definition = function(x, name, value){
-#			cat(name,"\n")
-#		}
-#)
-
 
 setMethod(
 		f = "names",
@@ -136,7 +126,6 @@ setMethod(
 		f = "initialize",
 		signature = "LocationOwner",
 		definition = function(.Object, properties=NULL){
-			.Object@objects <- new.env(parent=emptyenv())
 			if(!is.null(properties))
 				.Object@properties <- properties
 			.Object@location = new(Class="CachedLocation")

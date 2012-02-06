@@ -3,10 +3,19 @@
 # Author: Matt Furia
 ###############################################################################
 
+setMethod(
+                f = "copyEntity",
+                signature = "LocationOwner",
+                definition = function(entity){
+                        copy <- entity
+                        copy@location <- copyEntity(entity@location)
+                        copy
+                }
+)
 
 setMethod(
 		f = "copyEntity",
-		signature = "LocationOwner",
+		signature = "Location",
 		definition = function(entity){
 			copy <- entity
 			copy@objects <- new.env()

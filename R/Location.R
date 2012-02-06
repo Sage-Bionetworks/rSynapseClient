@@ -13,6 +13,7 @@ setMethod(
 		signature = signature("Location", "character"),
 		definition = function(location, files){
 			class(location) <- "CachedLocation"
+			location@objects <- new.env()
 			location@cacheDir <- attr(files, "rootDir")
 			files <- gsub(attr(files,"rootDir"), "", as.character(files), fixed=TRUE)
 			## Don't populate files from the .R_OBJECTS dir
@@ -62,12 +63,25 @@ setMethod(
 		definition = function(.Object, ...){
 			.Object@cacheDir <- tempfile(pattern="cacheDir")
 			.Object@cacheDir <- gsub("[\\]+", "/", .Object@cacheDir)
+			.Object@objects <- new.env()
 			if(!file.exists(.Object@cacheDir))
 				dir.create(.Object@cacheDir, recursive=TRUE)
 			.Object
 		}
 )
 
+setMethod(
+                f = "initialize",
+                signature = "ReadOnlyCachedLocation",
+                definition = function(.Object, ...){
+                        .Object@cacheDir <- tempfile(pattern="cacheDir")
+                        .Object@cacheDir <- gsub("[\\]+", "/", .Object@cacheDir)
+                        .Object@objects <- new.env()
+                        if(!file.exists(.Object@cacheDir))
+                                dir.create(.Object@cacheDir, recursive=TRUE)
+                        .Object
+                }
+)
 
 #####
 ## get the list of properties for the object

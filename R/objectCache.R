@@ -32,8 +32,8 @@
 		function(entity, objectName, cacheSubDir = .getCache("rObjCacheDir"))
 {
 	kSuffix <- "rbin"
-	filePath <- file.path(entity$cacheDir, cacheSubDir, sprintf("%s.%s", objectName, kSuffix))
-	attr(filePath, "cacheDir") <- file.path(entity$cacheDir, cacheSubDir)
+	filePath <- file.path(entity@cacheDir, cacheSubDir, sprintf("%s.%s", objectName, kSuffix))
+	attr(filePath, "cacheDir") <- file.path(entity@cacheDir, cacheSubDir)
 	filePath
 }
 
@@ -41,8 +41,8 @@
 		function(entity, objectName, cacheSubDir = .getCache("rObjCacheDir"))
 {
 	kSuffix <- "rbin.tmp"
-	filePath <- file.path(entity$cacheDir, cacheSubDir, sprintf("%s.%s", objectName, kSuffix))
-	attr(filePath, "cacheDir") <- file.path(entity$cacheDir, cacheSubDir)
+	filePath <- file.path(entity@cacheDir, cacheSubDir, sprintf("%s.%s", objectName, kSuffix))
+	attr(filePath, "cacheDir") <- file.path(entity@cacheDir, cacheSubDir)
 	filePath
 }
 
@@ -62,7 +62,7 @@
 		function(entity, cacheSubDir = .getCache("rObjCacheDir"))
 {
 	lapply(
-			list.files(file.path(entity$cacheDir, cacheSubDir), full.names=T, pattern = "rbin$"),
+			list.files(file.path(entity@cacheDir, cacheSubDir), full.names=T, pattern = "rbin$"),
 			FUN = function(filepath){
 				load(filepath, envir = entity@objects)
 			}

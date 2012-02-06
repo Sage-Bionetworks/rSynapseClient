@@ -106,7 +106,7 @@ setMethod(
 			if(!file.copy(filePath, destdir, overwrite = TRUE)){
 				warning("Failed to copy file to local cache")
 				## unpack into the local cache and update the location entity
-				entity@location <- CachedLocation(entity@location, .unpack(filepath))
+				location <- CachedLocation(entity@location, .unpack(filepath))
 				
 			} else {
 				## parse out the filename
@@ -114,8 +114,12 @@ setMethod(
 				
 				entity@location@cacheDir <- destdir
 				## unpack into the local cache and update the location entity
-				entity@location <- CachedLocation(entity@location, .unpack(file.path(destdir, filename)))
+				location <- CachedLocation(entity@location, .unpack(file.path(destdir, filename)))
 			}
+
+			## copy the original environment to make entity pass by reference
+			location@objects <- entity@location@objects
+			entity@location <- location
 			entity
 		}
 )

@@ -23,8 +23,8 @@ unitTestCacheObject <-
 {
 	layer <- new("Layer")
 	cacheDir <- file.path(layer$cacheDir, synapseClient:::.getCache("rObjCacheDir"))
-	layer@objects$object1 <- "foo"
-	synapseClient:::.cacheObject(layer, "object1")
+	layer@location@objects$object1 <- "foo"
+	synapseClient:::.cacheObject(layer@location, "object1")
 	checkTrue(file.exists(file.path(cacheDir, "object1.rbin")))
 	
 	env <- new.env()
@@ -37,11 +37,11 @@ unitTestTmpCacheObject <-
 {
 	layer <- new("Layer")
 	cacheDir <- file.path(layer$cacheDir, synapseClient:::.getCache("rObjCacheDir"))
-	assign("object1", "foo", envir = layer@objects)
+	assign("object1", "foo", envir = layer@location@objects)
 	
 	checkException(synapseClient:::.tmpCacheObject("object1"))
-	synapseClient:::.cacheObject(layer, "object1")
-	synapseClient:::.tmpCacheObject(layer, "object1")
+	synapseClient:::.cacheObject(layer@location, "object1")
+	synapseClient:::.tmpCacheObject(layer@location, "object1")
 	checkTrue(file.exists(file.path(cacheDir, "object1.rbin.tmp")))
 	checkTrue(!file.exists(file.path(cacheDir, "object1.rbin")))
 }
@@ -53,13 +53,13 @@ unitTestRenameFromTmp <-
 	cacheDir <- file.path(layer$cacheDir, synapseClient:::.getCache("rObjCacheDir"))
 	
 	object1 <- "foo"
-	assign("object1", object1, envir = layer@objects)
+	assign("object1", object1, envir = layer@location@objects)
 	
-	synapseClient:::.cacheObject(layer, "object1")
-	synapseClient:::.tmpCacheObject(layer, "object1")
+	synapseClient:::.cacheObject(layer@location, "object1")
+	synapseClient:::.tmpCacheObject(layer@location, "object1")
 	
-	assign("object2", object1, envir = layer@objects)
-	synapseClient:::.renameCacheObjectFromTmp(layer, "object1", "object2")
+	assign("object2", object1, envir = layer@location@objects)
+	synapseClient:::.renameCacheObjectFromTmp(layer@location, "object1", "object2")
 	checkTrue(!file.exists(file.path(cacheDir, "object1.rbin.tmp")))
 	checkTrue(file.exists(file.path(cacheDir, "object2.rbin")))
 	
@@ -74,12 +74,12 @@ unitTestDeleteTmpFile <-
 {
 	layer <- new("Layer")
 	cacheDir <- file.path(layer$cacheDir, synapseClient:::.getCache("rObjCacheDir"))
-	assign("object1", "foo", envir = layer@objects)
+	assign("object1", "foo", envir = layer@location@objects)
 	
-	synapseClient:::.cacheObject(layer, "object1")
-	synapseClient:::.tmpCacheObject(layer, "object1")
+	synapseClient:::.cacheObject(layer@location, "object1")
+	synapseClient:::.tmpCacheObject(layer@location, "object1")
 	
-	synapseClient:::.deleteTmpCacheFile(layer, "object1")
+	synapseClient:::.deleteTmpCacheFile(layer@location, "object1")
 	checkTrue(!(file.exists(file.path(cacheDir, "object1.rbin.tmp"))))
 }
 
@@ -88,10 +88,10 @@ unitTestDeleteCacheFile <-
 {
 	layer <- new("Layer")
 	cacheDir <- file.path(layer$cacheDir, synapseClient:::.getCache("rObjCacheDir"))
-	assign("object1", "foo", envir = layer@objects)
+	assign("object1", "foo", envir = layer@location@objects)
 	
-	synapseClient:::.cacheObject(layer, "object1")
-	synapseClient:::.deleteCacheFile(layer, "object1")
+	synapseClient:::.cacheObject(layer@location, "object1")
+	synapseClient:::.deleteCacheFile(layer@location, "object1")
 	checkTrue(!(file.exists(file.path(cacheDir, "object1.rbin"))))
 }
 
@@ -103,15 +103,15 @@ unitTestLoadCachedObjects <-
 	object1 <- "foo"
 	object2 <- diag(nrow=10,ncol=10)
 
-	assign("object1", object1, envir = layer@objects)
-	assign("object2", object2, envir = layer@objects)
+	assign("object1", object1, envir = layer@location@objects)
+	assign("object2", object2, envir = layer@location@objects)
 	
-	synapseClient:::.cacheObject(layer, "object1")
-	synapseClient:::.cacheObject(layer, "object2")
+	synapseClient:::.cacheObject(layer@location, "object1")
+	synapseClient:::.cacheObject(layer@location, "object2")
 	
-	layer@objects <- new.env()
+	layer@location@objects <- new.env()
 	checkEquals(length(layer$objects), 0L)
-	synapseClient:::.loadCachedObjects(layer)
+	synapseClient:::.loadCachedObjects(layer@location)
 	checkEquals(length(layer$objects), 2L)
 	
 	checkTrue(all(object2 == layer$objects$object2))

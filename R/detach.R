@@ -9,8 +9,7 @@ setMethod(
 		signature = "LocationOwner",
 		definition = function (name, pos = 2, unload = FALSE, character.only = FALSE, 
 				force = FALSE) {
-			pkgName <- getPackageName(name@objects)
-			
+			pkgName <- getPackageName(name@location@objects)
 			detach(name=pkgName, pos = pos, unload = unload, character.only = TRUE) 
 		}
 )

@@ -34,6 +34,13 @@ setGeneric(
 )
 
 setGeneric(
+  name = "addGithubTag",
+  def = function(entity, url){
+    standardGeneric("addGithubTag")
+  }
+)
+
+setGeneric(
 		name = "summarizeObjects",
 		def = function(entity){
 			standardGeneric("summarizeObjects")

@@ -5,7 +5,17 @@ synapseDownloadFile  <-
 	parsedUrl <- .ParsedUrl(url)
 	destfile <- file.path(cacheDir, gsub("^/", "", parsedUrl@path))
 	destfile <- path.expand(destfile)
-	synapseDownloadFileToDestination(url=url, checksum=checksum, destfile=destfile, opts=opts)
+  
+  ## temporary hack for github url that does not contain file extension
+  if( parsedUrl@host=="github.com" ){
+    splits <- strsplit(parsedUrl@pathPrefix, "/")
+    if( splits[[1]][length(splits[[1]])] == "zipball" )
+      destfile <- paste(destfile, ".zip", sep="")
+    if( splits[[1]][length(splits[[1]])] == "tarball" )
+      destfile <- paste(destfile, ".tar", sep="")
+  }
+
+  synapseDownloadFileToDestination(url=url, checksum=checksum, destfile=destfile, opts=opts)
 }
 
 synapseDownloadFileToDestination  <- 
@@ -43,7 +53,7 @@ synapseDownloadFileToDestination  <-
 	## check the md5sum of the tmpFile to see if it matches the one passed to the function
 	if (file.exists(tmpFile) & !missing(checksum)){
 		if (as.character(tools::md5sum(tmpFile)) != as.character(checksum)){
-			stop(paste("The md5 of ", downloadFileName, " does not match the md5 recorded in Synapse", sep=""))
+			stop(paste("The md5 ", as.character(tools::md5sum(tmpFile)), " of ", downloadFileName, " does not match the md5 ", as.character(checksum), " recorded in Synapse", sep=""))
 		}
 	}
 

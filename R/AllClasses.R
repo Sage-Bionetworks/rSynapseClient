@@ -71,6 +71,17 @@ setClass(
 		Class = "CachedLocation",
 		contains = "Location",
 		representation = representation(
+				objects = "environment",
+				cacheDir = "character",
+				files = "character"
+		)
+)
+
+setClass(
+        	Class = "ReadOnlyCachedLocation",
+        	contains = "Location",
+		representation = representation(
+				objects = "environment",
 				cacheDir = "character",
 				files = "character"
 		)
@@ -83,28 +94,27 @@ setClass(
 		Class = "LocationOwner",
 		contains = "SynapseEntity",
 		representation = representation(
-				location = "CachedLocation",
-				objects = "environment",
-				"VIRTUAL"
+			location = "Location",	
+			"VIRTUAL"
 		),
 )
 
 setClass(
 		Class = "Layer",
 		contains = "LocationOwner",
+		representation = representation(
+			location = "CachedLocation"
+		),
 		prototype = prototype(
-				synapseEntityKind = "layer",
-				location = new("CachedLocation")
+				synapseEntityKind = "layer"
 		)
-
 )
 
 setClass(
 		Class = "ExpressionLayer",
 		contains = "Layer",
 		prototype = prototype(
-				properties = list(type="E"),
-				location = new("CachedLocation")
+				properties = list(type="E")
 		)
 )
 
@@ -158,9 +168,23 @@ setClass(
 setClass(
 		Class = "Code",
 		contains = "LocationOwner",
+		representation = representation(
+			location = "CachedLocation"
+		),
 		prototype = prototype(
 				synapseEntityKind = "code"
 		)
+)
+
+setClass(
+	Class = "GithubCode",
+	contains = "LocationOwner",
+	representation = representation(
+		location = "ReadOnlyCachedLocation"
+	),
+	prototype = prototype(
+		synapseEntityKind = "code"
+	)
 )
 
 setClass(
