@@ -19,7 +19,7 @@ setMethod(
 			entity@location@objects <- switch(annotValue(entity, "format"),
 					rbin = .loadRbinaryFiles(file.path(entity@location@cacheDir,entity@location@files)),
 					sageBioCurated = .loadSageBioPacket(entity),
-					new.env()
+					entity@location@objects
 			)
 			setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
 			entity

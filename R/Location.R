@@ -13,6 +13,7 @@ setMethod(
 		signature = signature("Location", "character"),
 		definition = function(location, files){
 			class(location) <- "CachedLocation"
+			location@objects <- new.env()
 			location@cacheDir <- attr(files, "rootDir")
 			files <- gsub(attr(files,"rootDir"), "", as.character(files), fixed=TRUE)
 			## Don't populate files from the .R_OBJECTS dir
