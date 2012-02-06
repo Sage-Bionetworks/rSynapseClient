@@ -33,6 +33,7 @@ setMethod(
 	f = "stopStep",
 	signature = "character",
 	definition = function(step) {
+
 		# If we were not passed a step, stop the current step
 		if(missing(step) || is.na(step)) {
 			step <-	.getCache("currentStep")
@@ -41,13 +42,13 @@ setMethod(
 			}
 		}
 		
+		.deleteCache("currentStep")
 		step <- getEntity(step)
 		propertyValue(step, "endDate") <- .nowAsString()
 		propertyValue(step, "environmentDescriptors")	<- .appendSessionInfoToDescriptors(propertyValue(step, "environmentDescriptors"))
 		annotValue(step, "rHistory") <- .getRHistory()
 		step <- updateEntity(step)
 		.setCache("previousStep", step)
-		.deleteCache("currentStep")
 		step
 	}
 	)
