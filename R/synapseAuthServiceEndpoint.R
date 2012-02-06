@@ -9,6 +9,8 @@ synapseAuthServiceEndpoint <-
 		if(.getCache('useJavaClient')){
 			.jenv[["syn"]]$setAuthEndpoint(endpoint)
 		}
+		synapseClient:::.setCache("sessionToken", NULL)
+		synapseClient:::.setCache("hmacSecretKey", NULL)
 	}
 	else {
 		return(.getCache("authserviceEndpoint"))

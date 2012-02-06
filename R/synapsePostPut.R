@@ -80,8 +80,9 @@
 	##curlSetOpt(opts,curl=curlHandle)
 	
 	if(.getCache("debug")) {
-		message("request: ", requestMethod, " ", uri)
-		message("requestBody: ", httpBody)
+		message("----------------------------------")
+		message("REQUEST: ", requestMethod, " ", uri)
+		message("REQUEST_BODY: ", httpBody)
 	}
 	response <- getURL(uri, 
 			postfields = httpBody, 
@@ -92,8 +93,7 @@
 			.opts=opts
 	)
 	if(.getCache("debug")) {
-		message(d$value())
-		message("responseBody: ", response)
+		message("RESPONSE_BODY:: ", response)
 	}
 	
 	.checkCurlResponse(curlHandle, response)

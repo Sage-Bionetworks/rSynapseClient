@@ -9,6 +9,8 @@ synapseRepoServiceEndpoint <-
 		if(.getCache('useJavaClient')){
 			.jenv[["syn"]]$setRepositoryEndpoint(endpoint)
 		}
+		synapseClient:::.setCache("sessionToken", NULL)
+                synapseClient:::.setCache("hmacSecretKey", NULL) 
 	}
 	else {
 		return(.getCache("reposerviceEndpoint"))
