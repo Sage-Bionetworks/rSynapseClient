@@ -11,10 +11,11 @@
 .tearDown <- 
 		function()
 {
-	unlink(synapseClient:::.getCache("localJpegFile"), recursive=T)
-	unlink(synapseClient:::.getCache("localZipFile"), recursive=T)
-	unlink(synapseClient:::.getCache("localTxtFile"), recursive=T)
+	suppressWarnings(file.remove(synapseClient:::.getCache("localJpegFile"), force=T))
+	suppressWarnings(file.remove(synapseClient:::.getCache("localZipFile"), force=T))
+	suppressWarnings(file.remove(synapseClient:::.getCache("localTxtFile"), force=T))
 	unlink(synapseClient:::.getCache("localCacheDir"), recursive=T)
+	unlink(synapseClient:::.getCache("localUnpackDir"))
 	synapseClient:::.deleteCache("localZipFile")	
 	synapseClient:::.deleteCache("localTxtFile")
 	synapseClient:::.deleteCache("localJpegFile")
@@ -69,13 +70,8 @@ unitTestDirectoriesStartingWithDot <-
 unitTestZipFile <-
 		function()
 {
-	## create local jpeg file
-	## TODO create an acutal jpeg file once X11 is installed on the bamboo AMI
 	d <- data.frame(diag(2,20,20))
 	write.table(d,file=synapseClient:::.getCache("localJpegFile"), sep="\t", quote=F, row.names=F, col.names=F)
-#	jpeg(synapseClient:::.getCache("localJpegFile"))
-#	plot(1:10, 1:10)
-#	dev.off()
 	
 	## create local text file
 	d <- data.frame(diag(1,10,10))
