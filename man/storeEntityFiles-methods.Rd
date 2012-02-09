@@ -11,10 +11,7 @@
 \describe{
 
 \item{\code{signature(entity = "Layer")}}{
-%%  ~~describe this method here~~
+	Store the files associated with the Layer
 }
 
-\item{\code{signature(entity = "SynapseEntity")}}{
-%%  ~~describe this method here~~
-}
 }}

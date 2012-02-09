@@ -12,15 +12,15 @@
 \describe{
 
 \item{\code{signature(entity = "character")}}{
-%%  ~~describe this method here~~
+	Load the entity with the specified ID
 }
 
 \item{\code{signature(entity = "Layer")}}{
-%%  ~~describe this method here~~
+	Load the specified entity
 }
 
 \item{\code{signature(entity = "numeric")}}{
-%%  ~~describe this method here~~
+		Load the entity with the specified ID
 }
 }}
 \keyword{methods}

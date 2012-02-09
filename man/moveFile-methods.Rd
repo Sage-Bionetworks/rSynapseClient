@@ -11,11 +11,11 @@
 \describe{
 
 \item{\code{signature(entity = "CachedLocation")}}{
-%%  ~~describe this method here~~
+	Move the file
 }
 
 \item{\code{signature(entity = "Layer")}}{
-%%  ~~describe this method here~~
+	Move the file
 }
 }}
 \keyword{methods}

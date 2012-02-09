@@ -15,19 +15,31 @@
 	addFile(entity, file, path)
 	deleteFile(entity, file)
 	moveFile(entity, src, dest)
-	addDir(entity, src)
-	edit(entity)
+	addDir(entity, path)
+	edit(name, ...)
 }
 \arguments{
   \item{entity}{
 		The entity whose files will be modified
-}
+	}
   \item{file}{
   		A path to the file on the local file system, when adding, or the relative path to the file when deleting (see Details)
-}
+	}
   \item{path}{
 		The relative path where the file should be placed.
-}
+	}
+   \item{name}{
+		The entity whose files will be modified. "name" is used for compatibility with generic method
+	}
+	\item{src}{
+   		source file
+	}
+	\item{dest}{
+	   dest file
+	}
+ 	\item{\dots}{
+	   additional args to be passed to edit function
+	}
 }
 \details{
 	The file paths give by entity$files are relative to the root directory of zip file that will store the entity files.

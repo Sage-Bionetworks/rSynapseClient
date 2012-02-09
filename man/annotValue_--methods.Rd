@@ -11,41 +11,41 @@
 \alias{annotValue<-,SynapseEntity,character,numeric-method}
 \title{Methods for Function \code{annotValue<-}}
 \description{
- ~~ Methods for function \code{annotValue<-}  ~~
+ 	Methods for function \code{annotValue<-}
 }
 \section{Methods}{
 \describe{
 
 \item{\code{signature(object = "SynapseAnnotation", which = "character", value = "character")}}{
-%%  ~~describe this method here~~
+	set a character annotation
 }
 
 \item{\code{signature(object = "SynapseAnnotation", which = "character", value = "integer")}}{
-%%  ~~describe this method here~~
+	set an integer annotation
 }
 
 \item{\code{signature(object = "SynapseAnnotation", which = "character", value = "logical")}}{
-%%  ~~describe this method here~~
+	set a logical annotation
 }
 
 \item{\code{signature(object = "SynapseAnnotation", which = "character", value = "numeric")}}{
-%%  ~~describe this method here~~
+	set a numeric annotation
 }
 
 \item{\code{signature(object = "SynapseEntity", which = "character", value = "character")}}{
-%%  ~~describe this method here~~
+	set a character annotation
 }
 
 \item{\code{signature(object = "SynapseEntity", which = "character", value = "integer")}}{
-%%  ~~describe this method here~~
+	set an integer annotation
 }
 
 \item{\code{signature(object = "SynapseEntity", which = "character", value = "logical")}}{
-%%  ~~describe this method here~~
+	set a logical annotation
 }
 
 \item{\code{signature(object = "SynapseEntity", which = "character", value = "numeric")}}{
-%%  ~~describe this method here~~
+	set a numeric annotation
 }
 }}
 \keyword{methods}

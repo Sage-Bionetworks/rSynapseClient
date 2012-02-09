@@ -11,10 +11,10 @@
 \describe{
 
 \item{\code{signature(entity = "Layer")}}{
-%%  ~~describe this method here~~
+	Refresh the entities annotations and properties
 }
 
 \item{\code{signature(entity = "SynapseEntity")}}{
-%%  ~~describe this method here~~
+	Refresh the entities annotations and properties
 }
 }}

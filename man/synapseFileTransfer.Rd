@@ -66,6 +66,9 @@
 \author{
 	Matt Furia
 }
+\note{
+	This is an internal method and should not be called by the user
+}
 
 \seealso{
 	\code{\link{curlPerform}}

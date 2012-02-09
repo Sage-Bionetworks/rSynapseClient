@@ -4,7 +4,7 @@
 	View an Entity's Synapse Web Page 
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+	Show an Entity on The Synapse Website
 }
 \usage{
 onWeb(entity)

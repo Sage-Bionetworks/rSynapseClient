@@ -36,7 +36,8 @@
 	Matt Furia
 }
 \note{
-	This function will throw an exception if the session token is invalid or is already expired.
+	This function will throw an exception if the session token is invalid or is already expired. Also, this method is for internal
+	use only.
 }
 
 

@@ -14,41 +14,47 @@
 	Entity CRUD Operations
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+	Functions for creating, retrieving, updating and deleting entities in Synapse.
 }
 \usage{
-createEntity(entity, ...)
+	createEntity(entity, ...)
+	getEntity(entity)
+	deleteEntity(entity)
+	updateEntity(entity)
+	refreshEntity(entity)
+	storeEntity(entity)
+	downloadEntity(entity)
+	loadEntity(entity)
+	storeEntityFiles(entity)
+	storeEntityObjects(entity)
+	getParentEntity(entity)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{entity}{
-%%     ~~Describe \code{entity} here~~
-}
+		The entity being operated on. Depending on the function can be either an id (represented as a character or number) or
+		a object whose class inherits from SynapseEntity. (see Details)
+	}
   \item{\dots}{
-%%     ~~Describe \code{\dots} here~~
-}
+		additional args passed to S3 method
+	}
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+	
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
+	for getParentEntity returns the parent of the entity provided.
+	
+	for deleteEntity, NULL.
+	
+	All other methods return a copy of the entity after performing the desired action.
 }
 \author{
-%%  ~~who you are~~
+	Matt Furia
 }
 \note{
 %%  ~~further notes~~
 }
 
-
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+	\code{\link{SynapseEntity}}
 }

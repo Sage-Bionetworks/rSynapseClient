@@ -6,41 +6,53 @@
 \alias{annotValue<-}
 \alias{deleteAnnotation}
 \title{
-	Functions for Manipulating Entity Annotations
+	Entity Annotations
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+	Functions for manipulating entity annotations
 }
 \usage{
-annotations(object)
+	annotations(entity)
+	annotationValues(entity)
+	annotValue(entity, which)
+	deleteAnnotation(entity, which)
 }
 \arguments{
-  \item{object}{
-%%     ~~Describe \code{object} here~~
-}
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
+  \item{entity}{
+		The entity whose annotations are being modified.
+	}
+	\item{which}{
+		An annotation name
+	}
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+	for deleteAnnotation and annotValue:
+	The modified entity.
+	
+	for annotations:
+	an object of class SynapseAnnotations.
+	
+	for annotValue:
+	the value stored for the annotation specified by "which"
+	
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
+
+\details{
+	annotValue is used to get or set a single annotation value. annotationValues is used to get all
+	annotations as a list or to assign the elements of the list as annotations.
+	
+	the annotations() functinon should generally not be called but the end-user and may be deprecated
+	in the future.
 }
 \note{
-%%  ~~further notes~~
+	when using \code{annotationValues<-}, if the entity already has an annotation with the same name
+	as an element in the list, it's value wilt be overwritten.
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
+\author{
+	Matt Furia
+}
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+	\code{\link{properties}}
 }

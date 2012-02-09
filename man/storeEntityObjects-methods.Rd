@@ -10,6 +10,6 @@
 \describe{
 
 \item{\code{signature(entity = "Layer")}}{
-%%  ~~describe this method here~~
+	Store the objects held in the entity's environment that were added using the object manipulation API.
 }
 }}

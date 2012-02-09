@@ -13,19 +13,16 @@
 \describe{
 
 \item{\code{signature(entity = "Dataset")}}{
-%%  ~~describe this method here~~
+	open a web browser and navigate to the web page for the Dataset
 }
 
 \item{\code{signature(entity = "Layer")}}{
-%%  ~~describe this method here~~
+	open a web browser and navigate to the web page for the Layer
 }
 
 \item{\code{signature(entity = "Project")}}{
-%%  ~~describe this method here~~
+	open a web browser and navigate to the web page for the Project
 }
 
-\item{\code{signature(entity = "SynapseEntity")}}{
-%%  ~~describe this method here~~
-}
 }}
 \keyword{methods}

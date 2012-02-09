@@ -10,7 +10,7 @@
 \describe{
 
 \item{\code{signature(entity = "Layer", which = "character")}}{
-%%  ~~describe this method here~~
+	Delete the specified object from the entity's environment.
 }
 }}
 \keyword{methods}

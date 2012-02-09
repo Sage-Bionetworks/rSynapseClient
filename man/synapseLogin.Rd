@@ -10,7 +10,7 @@
 	Functions for handling Synapse authentication.
 }
 \usage{
-	synapseLogin(username, password)
+	synapseLogin(username, password, mode = "auth")
 	synapseLogout(localOnly=FALSE)
 	.getUsername
 	.getPassword()
@@ -26,6 +26,9 @@
   \item{localOnly}{
   		boolean controlling whether logout is done locally only, or propagated to Synapse
 	}
+  \item{mode}{
+  		The authentication mode. either "auth" or "hmac"
+  }
 }
 \details{
 	If username and/or password arguments are not provided, the user will be prompted for input. If logout is propagated to

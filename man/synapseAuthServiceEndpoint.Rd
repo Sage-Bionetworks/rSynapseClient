@@ -1,64 +1,37 @@
 \name{synapseAuthServiceEndpoint}
 \alias{synapseAuthServiceEndpoint}
 \alias{synapseRepoServiceEndpoint}
+\alias{synapsePortalEndpoint}
 \alias{synapseResetEndpoints}
 \title{
-	Synapse REST Endpoints
+	Synapse Endpoints
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+	Manage the Synapse endpoints
 }
 \usage{
-synapseAuthServiceEndpoint(endpoint)
+	synapseAuthServiceEndpoint(endpoint)
+	synapseRepoServiceEndpoint(endpoint)
+	synapsePortalEndpoint(endpoint)
+	synapseResetEndpoints()
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{endpoint}{
-%%     ~~Describe \code{endpoint} here~~
-}
+		The desired service endpoint
+	}
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+	If called with no arguments, get the desired endpoint. Otherwise, set the endpoint to the value provided.
+	
+	SynapseResetEndpoints sets the three endpoints to their default values.
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
+	If called with no arguments, all but synapseResetEndpoints return the value of the endpoint.
 }
 \author{
-%%  ~~who you are~~
+	Matt Furia
 }
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
-\examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function (endpoint) 
-{
-    if (!missing(endpoint)) {
-        .setCache("authserviceEndpoint", endpoint)
-        url <- .ParsedUrl(url = endpoint)
-        .setCache("authserviceEndpointLocation", paste(url@protocol, 
-            "://", url@authority, sep = ""))
-        .setCache("authserviceEndpointPrefix", url@path)
-    }
-    else {
-        return(.getCache("authserviceEndpoint"))
-    }
-  }
+	\code{\link{synapseLogin}}
 }

@@ -23,9 +23,6 @@
 	Matt Furia
 }
 
-\seealso{
-	\code{\link{getDataset}}
-}
 \examples{
 	## Not Run
 	\dontrun{

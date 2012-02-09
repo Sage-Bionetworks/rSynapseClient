@@ -7,33 +7,22 @@
 	Copies environment Objects.
 }
 \usage{
-copyEntity(entity)
+	copyEntity(entity)
 }
 \arguments{
   \item{entity}{
-%%     ~~Describe \code{entity} here~~
-}
+		The entity to copy
+	}
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+	Entities that hold objects do so in an R environment. In R, environments are passed by reference,
+	so modifying the environment of an entity will also modify the contents of all copies made using
+	the assignment operator. This function returns a copy of the passed entity that holds copies of all
+	the objects held by that entity in a new environment, separate from the original.
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
+	A copy of the entity detached from the original
 }
 \author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+	Matt Furia
 }

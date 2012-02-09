@@ -10,7 +10,7 @@
 \describe{
 
 \item{\code{signature(entity = "Layer", which = "character")}}{
-%%  ~~describe this method here~~
+	Get the specified object from the Layer's environment.
 }
 }}
 \keyword{methods}

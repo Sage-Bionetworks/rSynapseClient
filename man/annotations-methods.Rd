@@ -4,13 +4,13 @@
 \alias{annotations,SynapseEntity-method}
 \title{ Methods for Function \code{annotations}  }
 \description{
- ~~ Methods for function \code{annotations}  ~~
+	Methods for function \code{annotations}
 }
 \section{Methods}{
 \describe{
 
 \item{\code{signature(object = "SynapseEntity")}}{
-%%  ~~describe this method here~~
+	Set the annotations for a SynapseEntity
 }
 }}
 \keyword{methods}

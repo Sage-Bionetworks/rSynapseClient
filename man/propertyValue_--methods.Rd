@@ -14,22 +14,22 @@
 \describe{
 
 \item{\code{signature(object = "SynapseAnnotation", which = "character")}}{
-%%  ~~describe this method here~~
+	set a character property
 }
 
 \item{\code{signature(object = "SynapseAnnotation", which = "integer")}}{
-%%  ~~describe this method here~~
+	set an integer property
 }
 
 \item{\code{signature(object = "SynapseAnnotation", which = "logical")}}{
-%%  ~~describe this method here~~
+	set a logical property
 }
 
 \item{\code{signature(object = "SynapseAnnotation", which = "numeric")}}{
-%%  ~~describe this method here~~
+	set a numeric property
 }
 
 \item{\code{signature(object = "SynapseEntity", which = "character")}}{
-%%  ~~describe this method here~~
+	set a character property
 }
 }}

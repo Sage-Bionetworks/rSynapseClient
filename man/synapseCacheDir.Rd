@@ -22,23 +22,5 @@
 	Matt Furia
 }
 \seealso{
-	\code{\link{synapseDownloadFile}}
+	\code{\link{downloadEntity}}
 }
-\examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function (cacheDir) 
-{
-    if (missing(cacheDir)) {
-        return(.getCache("synapseCacheDir"))
-    }
-    .setCache("synapseCacheDir", cacheDir)
-  }
-}
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

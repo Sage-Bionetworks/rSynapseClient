@@ -12,15 +12,15 @@
 \describe{
 
 \item{\code{signature(entity = "CachedLocation", file = "character")}}{
-%%  ~~describe this method here~~
+	Delete the specified file from the location
 }
 
 \item{\code{signature(entity = "Layer", file = "character")}}{
-%%  ~~describe this method here~~
+	Delete the specified file from the layer
 }
 
 \item{\code{signature(entity = "Layer", file = "missing")}}{
-%%  ~~describe this method here~~
+	Open a file select dialog box and delete the selected file from the layer.
 }
 }}
 \keyword{methods}

@@ -11,16 +11,9 @@
 \section{Methods}{
 \describe{
 
-\item{\code{signature(entity = "character")}}{
-%%  ~~describe this method here~~
-}
-
 \item{\code{signature(entity = "list")}}{
-%%  ~~describe this method here~~
+	Construct a Dataset entity from a list of properties
 }
 
-\item{\code{signature(entity = "numeric")}}{
-%%  ~~describe this method here~~
-}
 }}
 \keyword{methods}

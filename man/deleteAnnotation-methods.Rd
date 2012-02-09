@@ -11,10 +11,10 @@
 \describe{
 
 \item{\code{signature(object = "SynapseAnnotation", which = "character")}}{
-%%  ~~describe this method here~~
+	Delete the annotations specified by "which"
 }
 
 \item{\code{signature(object = "SynapseEntity", which = "character")}}{
-%%  ~~describe this method here~~
+	Delete the annotations specified by "which"
 }
 }}
