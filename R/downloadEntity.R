@@ -13,7 +13,7 @@ setMethod(
 				if(!.promptSignEula())
 					stop(sprintf("Visit https://synapse.sagebase.org to sign the EULA for entity %s", propertyValue(entity, "id")))
 				if(!.promptEulaAgreement(entity))
-					stop("You must sign the EULA to download this dataset. Visit http://synapse.sagebase.org form more information.")
+					stop("You must sign the EULA to download this dataset. Visit http://synapse.sagebase.org for more information.")
 				.signEula(entity)
 			}
 			entity@location <- .cacheEntity(entity)
