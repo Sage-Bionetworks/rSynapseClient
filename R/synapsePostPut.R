@@ -18,9 +18,12 @@
 		stop("an entity must be supplied of R type list")
 	}
 	
-	if(any(names(entity) == "") || is.null(names(entity))){
+	if((any(names(entity) == "") || is.null(names(entity))) && length(entity) > 0){
 		stop("all entity elements must be named")
 	}
+
+	if(length(entity) == 0)
+		entity <- emptyNamedList
 	
 	## change dates to characters
 	indx <- grep("date", tolower(names(entity)))
@@ -31,11 +34,12 @@
 
 
 	## convert integers to characters
-	for(ii in 1:length(entity)){
-		if(all(checkInteger(entity[[ii]])))
-			entity[[ii]] <- as.character(as.integer(entity[[ii]]))
+	if(length(entity) > 0){
+		for(ii in 1:length(entity)){
+			if(all(checkInteger(entity[[ii]])))
+				entity[[ii]] <- as.character(as.integer(entity[[ii]]))
+		}
 	}
-
 
 	httpBody <- toJSON(entity)
 	

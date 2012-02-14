@@ -18,7 +18,7 @@ setMethod(
 		f = createEntity,
 		signature = signature("list"),
 		definition = function(entity, className){
-			if(any(names(entity) == ""))
+			if(any(names(entity) == "") && length(entity) > 0)
 				stop("all entity elements must be named")
 			kind <- synapseEntityKind(new(Class=className))
 			entity <- .createEntity(kind=kind, entity)

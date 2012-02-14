@@ -11,7 +11,7 @@ SynapseAnnotation <-
 		stop("entity must be a list.")
 	
 	annotations <- new(Class = "SynapseAnnotation")
-	if(any(names(entity) == ""))
+	if(any(names(entity) == "") && length(entity) > 0)
 		stop("all elements of the entity must be named")
 	.populateSlotsFromEntity(annotations, entity)
 }
@@ -53,7 +53,7 @@ setMethod(
 		f = "annotationValues<-",
 		signature = signature("SynapseAnnotation", "list"),
 		def = function(object, value){
-			if(any(names(value) == ""))
+			if(any(names(value) == "") && length(value) > 0)
 				stop("All entity elements must be named")
 			for(name in names(value))
 				annotValue(object, name) <- value[[name]]
@@ -329,7 +329,7 @@ setMethod(
 		f = "propertyValues<-",
 		signature = signature("SynapseAnnotation", "list"),
 		definition = function(object, value){
-			if(any(names(value) == ""))
+			if(any(names(value) == "") && length(value) > 0)
 				stop("all list elements must be named")
 			for(key in propertyNames(object)){
 				propertyValue(object, key) <- value[key]

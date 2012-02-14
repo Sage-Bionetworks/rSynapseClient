@@ -237,7 +237,7 @@ setMethod(
 		f = "propertyValues<-",
 		signature = signature("SynapseEntity", "list"),
 		definition = function(object, value){
-			if(any(names(value) == ""))
+			if(any(names(value) == "") && length(value) > 0)
 				stop("All entity members must be named")
 			for(name in names(value))
 				propertyValue(object, name) <- value[[name]]
@@ -349,7 +349,7 @@ setMethod(
 		f = ".populateSlotsFromEntity",
 		signature = signature("SynapseEntity", "list"),
 		definition = function(object, entity){
-			if(any(names(entity) == ""))
+			if(any(names(entity) == "") && length(entity) > 0)
 				stop("All elements of the entity must be named")
 			
 			## all entity fields should be stored as properties
