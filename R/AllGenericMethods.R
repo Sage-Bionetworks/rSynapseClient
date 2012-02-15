@@ -211,7 +211,7 @@ setGeneric(
 
 setGeneric(
 		name = "createEntity",
-		def = function(entity, ...){
+		def = function(entity, className){
 			standardGeneric("createEntity")
 		}
 )

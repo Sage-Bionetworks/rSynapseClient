@@ -91,8 +91,8 @@ setMethod(
 						return(entity)
 					}
 			)
-			
-			entity <- refreshEntity(entity)
+			origEntity <- entity	
+			entity <- getEntity(entity)
 						
 			## move the data file from where it is to the local cache directory
 			parsedUrl <- .ParsedUrl(propertyValue(entity, 'locations')[[1]]['path'])
@@ -118,7 +118,7 @@ setMethod(
 			}
 
 			## copy the original environment to make entity pass by reference
-			location@objects <- entity@location@objects
+			location@objects <- origEntity@location@objects
 			entity@location <- location
 			entity
 		}

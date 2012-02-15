@@ -162,7 +162,7 @@ integrationTestUpdateS4Entity <-
 	checkEquals(propertyValue(createdLayer, "description"), propertyValue(updatedLayer, "description"))
 	
 	## update the description property on a project
-	createdProject <- refreshEntity(createdProject)
+	createdProject <- getEntity(createdProject)
 	propertyValue(createdProject, "description") <- "This is a new description"
 	updatedProject <- updateEntity(createdProject)
 	checkEquals(propertyValue(createdProject, "description"), propertyValue(updatedProject, "description"))
@@ -199,8 +199,8 @@ integrationTestDeleteEntity <-
 	checkEquals(propertyValue(createdProject, "name"), propertyValue(deletedProject, "name"))
 	checkEquals(propertyValue(deletedProject,"id"), NULL)
 
-	checkException(refreshEntity(createdDataset))
-	checkException(refreshEntity(createdProject))
+	checkException(getEntity(createdDataset))
+	checkException(getEntity(createdProject))
 	synapseClient:::.deleteCache("testProject")
 }
 

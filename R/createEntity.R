@@ -16,7 +16,7 @@
 
 setMethod(
 		f = createEntity,
-		signature = signature("list"),
+		signature = signature("list", "character"),
 		definition = function(entity, className){
 			if(any(names(entity) == "") && length(entity) > 0)
 				stop("all entity elements must be named")
@@ -28,7 +28,7 @@ setMethod(
 
 setMethod(
 		f = "createEntity",
-		signature = signature("SynapseEntity"),
+		signature = signature("SynapseEntity", "missing"),
 		definition = function(entity){
 			## create the entity
 			oldAnnotations <- annotations(entity)
@@ -49,7 +49,7 @@ setMethod(
 							stop("Could not set annotations: ", e)
 						}
 				)
-				entity <- refreshEntity(entity)
+				entity <- getEntity(entity)
 			}	
 			entity
 		}
@@ -64,7 +64,7 @@ setMethod(
 
 setMethod(
 		f = "createEntity",
-		signature = "LocationOwner",
+		signature = signature("LocationOwner", "missing"),
 		definition = function(entity){
 			oldClass <- class(entity)
 			class(entity) <- "SynapseEntity"

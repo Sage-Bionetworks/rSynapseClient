@@ -214,7 +214,7 @@ TODO screen shot here?
 
 Refresh the local copy of myDataset
 <<refreshDataset>>=
-myDataset <- refreshEntity(myDataset)
+myDataset <- getEntity(myDataset)
 @ 
 
 Write the pm values to a text file.

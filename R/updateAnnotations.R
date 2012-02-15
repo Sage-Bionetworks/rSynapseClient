@@ -46,6 +46,6 @@ setMethod(
 		definition = function(annotations){
 			entity <- annotations
 			updateAnnotations(annotations(entity))
-			refreshEntity(entity)
+			getEntity(entity)
 		}
 )

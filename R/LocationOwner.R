@@ -4,16 +4,6 @@
 ###############################################################################
 
 setMethod(
-		f = "refreshEntity",
-		signature = "LocationOwner",
-		definition = function(entity){
-			refreshedEntity <- getEntity(entity)
-			refreshedEntity@location <- entity@location
-			refreshedEntity
-		}
-)
-
-setMethod(
 		f = "show",
 		signature = "LocationOwner",
 		definition = function(object){

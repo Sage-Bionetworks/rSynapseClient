@@ -52,7 +52,6 @@ exportMethods(
 	deleteEntity, 
 	createEntity, 
 	updateEntity, 
-	refreshEntity, 
 	downloadEntity, 
 	loadEntity, 
 	getParentEntity

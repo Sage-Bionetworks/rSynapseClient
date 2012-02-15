@@ -383,17 +383,6 @@ setMethod(
 )
 
 #####
-## Get the entity from Synapse
-#####
-setMethod(
-		f = "refreshEntity",
-		signature = "SynapseEntity",
-		definition = function(entity){
-			getEntity(entity)
-		}
-)
-
-#####
 ## Refresh the entities annotations
 #####
 setMethod(

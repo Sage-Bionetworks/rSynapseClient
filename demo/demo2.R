@@ -31,7 +31,7 @@ myDataset <- createEntity(Dataset(list(name="my Data", parentId=propertyValue(my
 onWeb(myDataset)
 
 ## refresh the local copy of myDataset
-myDataset <- refreshEntity(myDataset)
+myDataset <- getEntity(myDataset)
 
 
 ################
