@@ -5,17 +5,6 @@
 
 setMethod(
   f = "addObject",
-  signature = signature("Layer", "ANY", "missing", "missing"),
-  definition = function(entity, object){
-    name = deparse(substitute(object, env=parent.frame()))
-    name <- gsub("\\\"", "", name)
-    addObject(entity, object, name)
-  }
-)
-
-
-setMethod(
-  f = "addObject",
   signature = signature("Layer", "ANY", "character", "missing"),
   definition = function(entity, object, name){
     entity@location <- addObject(entity@location, object, name)

@@ -37,10 +37,3 @@ setMethod(
   }
 )
 
-setMethod(
-  f = "renameObject",
-  signature = signature("GithubCode", "ANY", "ANY"),
-  definition = function(entity, which, name){
-    stop("Cannot rename objects for class GithubCode - synced with a github tag.")
-  }
-)
