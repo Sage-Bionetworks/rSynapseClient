@@ -1,0 +1,239 @@
+## Test CRUD operations for S4 entities
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
+###############################################################################
+.setUp <- 
+  function()
+{
+  synapseClient:::.setCache("testProjectName", paste('R Entity S4 CRUD Integration Test Project', gsub(':', '_', date())))
+}
+
+.tearDown <- 
+  function()
+{
+  if(!is.null(synapseClient:::.getCache("testProject"))) {
+    deleteEntity(synapseClient:::.getCache("testProject"))	
+    synapseClient:::.deleteCache("testProject")
+  }
+}
+
+integrationTestCreateS4Entities <- 
+  function()
+{
+  ## Create Project
+  project <- new(Class="Project")
+  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  checkEquals(propertyValue(createdProject,"name"), synapseClient:::.getCache("testProjectName"))
+  
+  ## Create DataSet
+  dataset <- new(Class="Dataset")
+  propertyValue(dataset, "name") <- "testDatasetName"
+  propertyValue(dataset,"parentId") <- propertyValue(createdProject, "id")
+  createdDataset <- createEntity(dataset)
+  checkEquals(propertyValue(createdDataset,"name"), propertyValue(dataset, "name"))
+  checkEquals(propertyValue(createdDataset,"parentId"), propertyValue(createdProject, "id"))
+  dataset <- createdDataset
+  
+  ## Create Layer
+  layer <- new(Class = "PhenotypeLayer")
+  propertyValue(layer, "name") <- "testPhenoLayerName"
+  propertyValue(layer, "parentId") <- propertyValue(dataset,"id")
+  checkEquals(propertyValue(layer,"type"), "C")
+  createdLayer <- createEntity(layer)
+  checkEquals(propertyValue(createdLayer,"name"), propertyValue(layer, "name"))
+  checkEquals(propertyValue(createdLayer,"parentId"), propertyValue(dataset, "id"))
+  
+  ## expression
+  layer <- new(Class = "ExpressionLayer")
+  propertyValue(layer, "name") <- "testExprLayerName"
+  propertyValue(layer, "parentId") <- propertyValue(dataset,"id")
+  checkEquals(propertyValue(layer,"type"), "E")
+  createdLayer <- createEntity(layer)
+  checkEquals(propertyValue(createdLayer,"name"), propertyValue(layer, "name"))
+  checkEquals(propertyValue(createdLayer,"parentId"), propertyValue(dataset, "id"))
+  
+  ## genotype
+  layer <- new(Class = "GenotypeLayer")
+  propertyValue(layer, "name") <- "testGenoLayerName"
+  propertyValue(layer, "parentId") <- propertyValue(dataset,"id")
+  checkEquals(propertyValue(layer,"type"), "G")
+  createdLayer <- createEntity(layer)
+  checkEquals(propertyValue(createdLayer,"name"), propertyValue(layer, "name"))
+  checkEquals(propertyValue(createdLayer,"parentId"), propertyValue(dataset, "id"))
+  
+  
+}
+
+integrationTestCreateEntityWithAnnotations <- 
+  function()
+{
+  ## Create Project
+  project <- new(Class="Project")
+  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
+  annotValue(project, "annotationKey") <- "projectAnnotationValue"
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
+  
+  ## Create Dataset
+  dataset <- new(Class="Dataset")
+  propertyValue(dataset, "name") <- "testDatasetName"
+  propertyValue(dataset,"parentId") <- propertyValue(createdProject, "id")
+  annotValue(dataset, "annotKey") <- "annotValue"
+  createdDataset <- createEntity(dataset)
+  checkEquals(propertyValue(createdDataset,"name"), propertyValue(dataset, "name"))
+  checkEquals(propertyValue(createdDataset,"parentId"), propertyValue(createdProject, "id"))
+  checkEquals(annotValue(createdDataset,"annotKey"), annotValue(dataset, "annotKey"))
+  
+}
+
+integrationTestCreateEntityWithNAAnnotations <- 
+  function()
+{
+  ## Create Project
+  project <- new(Class="Project")
+  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
+  annotValue(project, "annotationKey") <- "projectAnnotationValue"
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
+  
+  ## Create Dataset
+  dataset <- new(Class="Dataset")
+  propertyValue(dataset, "name") <- "testDatasetName"
+  propertyValue(dataset,"parentId") <- propertyValue(createdProject, "id")
+  
+  annots <- list()
+  annots$rawdataavailable <- TRUE 
+  annots$number_of_samples <- 33 
+  annots$contact <- NA 
+  annots$platform <- "HG-U133_Plus_2"
+  annotationValues(dataset) <- annots
+  
+  createdDataset <- createEntity(dataset)
+  
+  checkEquals(propertyValue(createdDataset,"name"), propertyValue(dataset, "name"))
+  checkEquals(propertyValue(createdDataset,"parentId"), propertyValue(createdProject, "id"))
+  checkEquals(annotValue(createdDataset,"platform"), "HG-U133_Plus_2")
+# TODO this should be a number, not a string
+  checkEquals(annotValue(createdDataset,"number_of_samples"), "33")
+# TODO this should be a boolean, not a string
+  checkEquals(annotValue(createdDataset,"rawdataavailable"), "TRUE")
+# TODO this should probably be NA instead of NULL
+  checkTrue(is.null(annotValue(createdDataset,"contact")[[1]]))
+}
+
+integrationTestUpdateS4Entity <-
+  function()
+{
+  ## Create Project
+  project <- new(Class="Project")
+  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  checkEquals(propertyValue(createdProject,"name"), propertyValue(project,"name"))
+  
+  ## set an annotation value and update. 
+  annotValue(createdProject, "newKey") <- "newValue"
+  updatedProject <- updateEntity(createdProject)
+  checkEquals(propertyValue(updatedProject,"id"), propertyValue(createdProject,"id"))
+  checkTrue(propertyValue(updatedProject, "etag") != propertyValue(createdProject, "etag"))
+  
+  ## create a dataset
+  dataset <- new(Class="Dataset")
+  propertyValue(dataset, "name") <- "testDatasetName"
+  propertyValue(dataset,"parentId") <- propertyValue(createdProject, "id")
+  createdDataset <- createEntity(dataset)
+  
+  ## update the dataset annotations
+  annotValue(createdDataset, "newKey") <- "newValue"
+  updatedDataset <- updateEntity(createdDataset)
+  checkEquals(annotValue(createdDataset, "newKey"), annotValue(updatedDataset, "newKey"))
+  checkTrue(propertyValue(createdDataset, "etag") != propertyValue(updatedDataset, "etag"))
+  checkEquals(propertyValue(createdDataset, "id"), propertyValue(updatedDataset, "id"))
+  
+  ## create a layer
+  layer <- new(Class = "PhenotypeLayer")
+  propertyValue(layer, "name") <- "testPhenoLayerName"
+  propertyValue(layer, "parentId") <- propertyValue(createdDataset,"id")
+  createdLayer <- createEntity(layer)
+  checkEquals(propertyValue(createdLayer,"name"), propertyValue(layer,"name"))
+  
+  
+  ## update the description property
+  propertyValue(createdLayer, "description") <- "This is a description"
+  updatedLayer <- updateEntity(createdLayer)
+  checkEquals(propertyValue(createdLayer, "description"), propertyValue(updatedLayer, "description"))
+  
+  ## update the description property on a project
+  createdProject <- getEntity(createdProject)
+  propertyValue(createdProject, "description") <- "This is a new description"
+  updatedProject <- updateEntity(createdProject)
+  checkEquals(propertyValue(createdProject, "description"), propertyValue(updatedProject, "description"))
+  
+}
+
+integrationTestDeleteEntity <- 
+  function()
+{
+  project <- new(Class="Project")
+  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  
+  dataset <- new(Class="Dataset")
+  propertyValue(dataset, "name") <- "testDatasetName"
+  propertyValue(dataset,"parentId") <- propertyValue(createdProject, "id")
+  createdDataset <- createEntity(dataset)
+  createdLayer <- Layer(list(name="aLayer", type="C", parentId=propertyValue(createdDataset, "id")))
+  layer <- addObject(createdLayer, "foo", "bar")
+  createdLayer <- storeEntity(createdLayer)
+  
+  cacheDir <- createdLayer$cacheDir
+  checkTrue(file.exists(cacheDir))
+  deleteEntity(createdLayer)
+  checkTrue(!file.exists(cacheDir))
+  
+  
+  deletedProject <- deleteEntity(createdProject)
+  checkEquals(propertyValue(deletedProject, "id"), NULL)
+  
+  checkTrue(!any(grepl('createdProject', ls())))
+  createdProject <- synapseClient:::.getCache("testProject")
+  checkEquals(propertyValue(createdProject, "name"), propertyValue(deletedProject, "name"))
+  checkEquals(propertyValue(deletedProject,"id"), NULL)
+  
+  checkException(getEntity(createdDataset))
+  checkException(getEntity(createdProject))
+  synapseClient:::.deleteCache("testProject")
+}
+
+integrationTestGetEntity <-
+  function()
+{
+  ## Create Project
+  project <- new(Class="Project")
+  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  checkEquals(propertyValue(createdProject,"name"), synapseClient:::.getCache("testProjectName"))
+  
+  fetchedProject <- getEntity(propertyValue(createdProject, "id"))
+  checkEquals(propertyValue(fetchedProject, "id"), propertyValue(createdProject, "id"))
+  checkEquals(propertyValue(fetchedProject,"name"), synapseClient:::.getCache("testProjectName"))
+  
+  fetchedProject <- getEntity(as.character(propertyValue(createdProject, "id")))
+  checkEquals(propertyValue(fetchedProject, "id"), propertyValue(createdProject, "id"))
+  checkEquals(propertyValue(fetchedProject,"name"), synapseClient:::.getCache("testProjectName"))
+  
+  fetchedProject <- getEntity(synapseClient:::.extractEntityFromSlots(createdProject))
+  checkEquals(propertyValue(fetchedProject, "id"), propertyValue(createdProject, "id"))
+  checkEquals(propertyValue(fetchedProject,"name"), synapseClient:::.getCache("testProjectName"))
+  
+  fetchedProject <- getEntity(createdProject)
+  checkEquals(propertyValue(fetchedProject, "id"), propertyValue(createdProject, "id"))
+  checkEquals(propertyValue(fetchedProject,"name"), synapseClient:::.getCache("testProjectName"))
+}
+
