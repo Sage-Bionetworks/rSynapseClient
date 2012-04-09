@@ -1,3 +1,8 @@
+/* curl reader/writer function for use by RCurl package
+ *
+ * Author: Martin Morgan <mtmorgan@fhcrc.org>
+ */
+
 #include <Rdefines.h>
 #include <stdio.h>
 

@@ -1,10 +1,10 @@
 \name{onWeb}
 \alias{onWeb}
 \title{
-	View an Entity's Synapse Web Page 
+View an Entity's Synapse Web Page 
 }
 \description{
-	Show an Entity on The Synapse Website
+Show an Entity on The Synapse Website
 }
 \usage{
 onWeb(entity)

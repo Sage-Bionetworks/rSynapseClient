@@ -1,3 +1,5 @@
 demo   Basic example of browsing data in Synapse and creating your own project
 demo2  Curation example
 provenanceDemo   Provenance example
+code  Example code file used in demo2
+rawTcgaDataDemo  example TCGA curation demo

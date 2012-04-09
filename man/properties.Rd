@@ -6,10 +6,10 @@
 \alias{propertyValues}
 \alias{deleteProperty}
 \title{
-	Functions for Manipulating Entity Properties
+Functions for Manipulating Entity Properties
 }
 \description{
-	Manage entity properties
+Manage entity properties
 }
 \usage{
 properties(entity)

@@ -1,53 +1,52 @@
-# TODO: Add comment
-# 
-# Author: furia
+## Synapse Code entity constructors
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
-
 setMethod(
-		f = "Code",
-		signature = "character",
-		definition = function(entity){
-			getEntity(entity)
-		}
+  f = "Code",
+  signature = "character",
+  definition = function(entity){
+    getEntity(entity)
+  }
 )
 
 setMethod(
-		f = "Code",
-		signature = "numeric",
-		definition = function(entity){
-			Code(as.character(entity))
-		}
+  f = "Code",
+  signature = "numeric",
+  definition = function(entity){
+    Code(as.character(entity))
+  }
 )
 
 setMethod(
-		f = "Code",
-		signature = "list",
-		definition = function(entity){
-			code <- Layer(entity=entity)
-			
-			## coerce to Code
-			class(code) <- "Code"
-			code <- initialize(code)
-			synapseEntityKind(code) <- synapseEntityKind(new(Class="Code"))
-			code
-		}
+  f = "Code",
+  signature = "list",
+  definition = function(entity){
+    code <- Layer(entity=entity)
+    
+    ## coerce to Code
+    class(code) <- "Code"
+    code <- initialize(code)
+    synapseEntityKind(code) <- synapseEntityKind(new(Class="Code"))
+    code
+  }
 )
 
 setMethod(
-		f = "Code",
-		signature = "missing",
-		definition = function(entity){
-			Code(list())
-		}
+  f = "Code",
+  signature = "missing",
+  definition = function(entity){
+    Code(list())
+  }
 )
 
 setMethod(
-		f = "initialize",
-		signature = "Code",
-		definition = function(.Object, ...){
-			annotValue(.Object, "format") <- "code"
-			.Object@location <- new("CachedLocation")
-			.Object
-		}
+  f = "initialize",
+  signature = "Code",
+  definition = function(.Object, ...){
+    annotValue(.Object, "format") <- "code"
+    .Object@location <- new("CachedLocation")
+    .Object
+  }
 )

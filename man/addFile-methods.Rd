@@ -2,31 +2,25 @@
 \docType{methods}
 \alias{addFile-methods}
 \alias{addFile,CachedLocation,character,character-method}
-\alias{addFile,Layer,character,ANY-method}
-\alias{addFile,Layer,character,character-method}
-\alias{addFile,Layer,missing,character-method}
-\alias{addFile,Layer,missing,missing-method}
+\alias{addFile,LocationOwner,character,missing-method}
+\alias{addFile,LocationOwner,character,character-method}
 \title{Methods for Function \code{addFile}}
 \description{
-	Methods for function \code{addFile}
+  Methods for function \code{addFile}
 }
 \section{Methods}{
-\describe{
-
-\item{\code{signature(entity = "CachedLocation", file = "character", path = "character")}}{
-	This method is not intended to be called by the user.
+  \describe{
+    \item{\code{signature(entity = "CachedLocation", file = "character", path = "character")}}{
+      Adds the file to the CachedLocation. This method is not intended to be called by the user. Instead
+      user's should call the addFile methods for the LocationOwner directly which will call this method
+      on their behalf.
+    }
+    \item{\code{signature(entity = "LocationOwner", file = "character", path = "character")}}{
+      Add the file to the entity's cache directory under the subdirectory specified by the path argument.
+    }
+    \item{\code{signature(entity = "LocationOwner", file = "character", path = "missing")}}{
+      Add the file to the root of the entity's cached directory.
+    }
+  }
 }
-
-\item{\code{signature(entity = "Layer", file = "character", path = "character")}}{
-	Add a file and specify the path.
-}
-
-\item{\code{signature(entity = "Layer", file = "missing", path = "character")}}{
-Calling this method will open a file select dialog and will place the selected file in the subdirectory specified by path.
-}
-
-\item{\code{signature(entity = "Layer", file = "missing", path = "missing")}}{
-	Calling this method will open a file select dialog and will place the selected file in the root directory of the zip file.
-}
-}}
 \keyword{methods}

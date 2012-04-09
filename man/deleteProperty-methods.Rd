@@ -11,11 +11,11 @@
 \describe{
 
 \item{\code{signature(object = "SynapseAnnotation", which = "character")}}{
-	Delete the specified property
+Delete the specified property
 }
 
 \item{\code{signature(object = "SynapseEntity", which = "character")}}{
-	Delete the specified property
+Delete the specified property
 }
 }}
 \keyword{methods}

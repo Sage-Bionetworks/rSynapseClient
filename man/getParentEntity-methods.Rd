@@ -10,7 +10,7 @@
 \describe{
 
 \item{\code{signature(entity = "SynapseEntity")}}{
-	Get the parent entity
+Get the parent entity
 }
 }}
 \keyword{methods}

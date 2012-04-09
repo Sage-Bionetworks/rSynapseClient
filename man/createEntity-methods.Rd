@@ -14,23 +14,23 @@
 \describe{
 
 \item{\code{signature(entity = "CachedLocation")}}{
-	internal method. Create a Cached Location entity
+internal method. Create a Cached Location entity
 }
 
 \item{\code{signature(entity = "Layer")}}{
-	Create a layer entity
+Create a layer entity
 }
 
 \item{\code{signature(entity = "list")}}{
-	(deprecated) create an entity from a list
+(deprecated) create an entity from a list
 }
 
 \item{\code{signature(entity = "Location")}}{
-	internal method. Create a  Location entity
+internal method. Create a  Location entity
 }
 
 \item{\code{signature(entity = "SynapseEntity")}}{
-	create a generic entity
+create a generic entity
 }
 }}
 \keyword{methods}

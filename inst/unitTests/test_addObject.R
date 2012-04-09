@@ -1,226 +1,226 @@
-# Unit tests for adding objects to Layer entity
-# 
-# Author: Matt Furia
+## Unit tests for adding objects to Layer entity
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
+
 .setUp <-
-		function()
+  function()
 {
-	synapseClient:::.setCache("oldSynapseCacheDir", synapseClient:::.getCache("synapseCacheDir"))
-	synapseClient:::.setCache("synapseCacheDir", tempfile())
+  synapseClient:::.setCache("oldSynapseCacheDir", synapseClient:::.getCache("synapseCacheDir"))
+  synapseClient:::.setCache("synapseCacheDir", tempfile())
 }
 
 .tearDown <-
-		function()
+  function()
 {
-	unlink(synapseClient:::.getCache("synapseCacheDir"), recursive = TRUE)
-	synapseClient:::.setCache("synapseCacheDir", synapseClient:::.getCache("oldSynapseCacheDir"))
-	synapseClient:::.deleteCache("oldSynapseCacheDir")
+  unlink(synapseClient:::.getCache("synapseCacheDir"), recursive = TRUE)
+  synapseClient:::.setCache("synapseCacheDir", synapseClient:::.getCache("oldSynapseCacheDir"))
+  synapseClient:::.deleteCache("oldSynapseCacheDir")
 }
 
 unitTestDefaultName <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	checkEquals(length(layer@location@objects), 0L)
-	
-	id <- 1234
-	addObject(layer, id)
-	
-	checkEquals(length(layer@location@objects), 1L)
-	checkEquals(objects(layer@location@objects), "id")
-	checkEquals(layer$objects$id, id)
+  layer <- new(Class="Layer")
+  checkEquals(length(layer@location@objects), 0L)
+  
+  id <- 1234
+  addObject(layer, id)
+  
+  checkEquals(length(layer@location@objects), 1L)
+  checkEquals(objects(layer@location@objects), "id")
+  checkEquals(layer$objects$id, id)
 }
 
 unitTestDefaultNameStringConstant <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	checkEquals(length(layer@location@objects), 0L)
-	
-	addObject(layer, "foo")
-	
-	checkEquals(length(layer@location@objects), 1L)
-	checkEquals(objects(layer@location@objects), "foo")
-	checkEquals(layer$objects$foo, "foo")
+  layer <- new(Class="Layer")
+  checkEquals(length(layer@location@objects), 0L)
+  
+  addObject(layer, "foo")
+  
+  checkEquals(length(layer@location@objects), 1L)
+  checkEquals(objects(layer@location@objects), "foo")
+  checkEquals(layer$objects$foo, "foo")
 }
 
 unitTestDefaultNameNumericExpression <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	checkEquals(length(layer@location@objects), 0L)
-	
-	addObject(layer, 1:5)
-	
-	checkEquals(length(layer@location@objects), 1L)
-	
-	checkEquals(objects(layer@location@objects), "1:5")
-	checkTrue(all(layer$objects[["1:5"]] == 1:5))
+  layer <- new(Class="Layer")
+  checkEquals(length(layer@location@objects), 0L)
+  
+  addObject(layer, 1:5)
+  
+  checkEquals(length(layer@location@objects), 1L)
+  
+  checkEquals(objects(layer@location@objects), "1:5")
+  checkTrue(all(layer$objects[["1:5"]] == 1:5))
 }
 
 unitTestSpecifyName <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	checkEquals(length(layer@location@objects), 0L)
-	
-	name <- "aName"
-	
-	id <- 1234
-	addObject(layer, id, name)
-	
-	checkEquals(length(layer@location@objects), 1L)
-	checkEquals(objects(layer@location@objects), name)
-	checkEquals(layer$objects[[name]], id)
+  layer <- new(Class="Layer")
+  checkEquals(length(layer@location@objects), 0L)
+  
+  name <- "aName"
+  
+  id <- 1234
+  addObject(layer, id, name)
+  
+  checkEquals(length(layer@location@objects), 1L)
+  checkEquals(objects(layer@location@objects), name)
+  checkEquals(layer$objects[[name]], id)
 }
 
 unitTestSpecifyNameStringConstant <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	checkEquals(length(layer@location@objects), 0L)
-	
-	name <- "aName"
-	addObject(layer, "foo", name)
-	
-	checkEquals(length(layer@location@objects), 1L)
-	checkEquals(objects(layer@location@objects), name)
-	checkEquals(layer$objects[[name]], "foo")
-	
+  layer <- new(Class="Layer")
+  checkEquals(length(layer@location@objects), 0L)
+  
+  name <- "aName"
+  addObject(layer, "foo", name)
+  
+  checkEquals(length(layer@location@objects), 1L)
+  checkEquals(objects(layer@location@objects), name)
+  checkEquals(layer$objects[[name]], "foo")
+  
 }
 
 unitTestCatchReturnValue <-
-		function()
+  function()
 {
-	layer <- new("Layer",list(name="testLayer"))
-	
-	caughtLayer <- addObject(layer, "foo")
-	checkEquals(names(caughtLayer$objects), "foo")
-	
-	checkEquals(propertyValue(layer, "name"), propertyValue(caughtLayer, "name"))
+  layer <- new("Layer",list(name="testLayer"))
+  
+  caughtLayer <- addObject(layer, "foo")
+  checkEquals(names(caughtLayer$objects), "foo")
+  
+  checkEquals(propertyValue(layer, "name"), propertyValue(caughtLayer, "name"))
 }
 
 unitTestAddSingleAsList <- 
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, list(foo="bar"))
-	checkEquals(layer$objects$foo, "bar")
-	checkEquals(length(layer$objects), 1L)
+  layer <- new("Layer")
+  addObject(layer, list(foo="bar"))
+  checkEquals(layer$objects$foo, "bar")
+  checkEquals(length(layer$objects), 1L)
 }
 
 unitTestAddMultipleAsList <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, list(foo="bar", boo="goo"))
-	checkEquals(layer$objects$foo, "bar")
-	checkEquals(layer$objects$boo, "goo")
-	checkEquals(length(layer$objects), 2L)
+  layer <- new("Layer")
+  addObject(layer, list(foo="bar", boo="goo"))
+  checkEquals(layer$objects$foo, "bar")
+  checkEquals(layer$objects$boo, "goo")
+  checkEquals(length(layer$objects), 2L)
 }
 
 unitTestAddSingleAsListNoName <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	checkException(addObject(layer, list("bar")))
+  layer <- new("Layer")
+  checkException(addObject(layer, list("bar")))
 }
 
 unitTestAddMultipleAsListNoName <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	checkException(addObject(layer, list("bar", foo="goo")))
+  layer <- new("Layer")
+  checkException(addObject(layer, list("bar", foo="goo")))
 }
 
 unitTestAddMatrixSpecifyName <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, diag(nrow=10, ncol=10), "diag")
-	checkTrue(all(layer@location@objects$diag == diag(nrow=10, ncol=10)))
+  layer <- new("Layer")
+  addObject(layer, diag(nrow=10, ncol=10), "diag")
+  checkTrue(all(layer@location@objects$diag == diag(nrow=10, ncol=10)))
 }
 
 unitTestAddMatrixNoName <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, diag(nrow=10, ncol=10))
-	checkEquals(length(layer$objects), 1L)
-	checkTrue(all(layer$objects[[1]] == diag(nrow=10, ncol=10)))
+  layer <- new("Layer")
+  addObject(layer, diag(nrow=10, ncol=10))
+  checkEquals(length(layer$objects), 1L)
+  checkTrue(all(layer$objects[[1]] == diag(nrow=10, ncol=10)))
 }
 
 unitTestAddDataFrameNoName <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	data <- data.frame(x=1:4, y=c("a", "b", "c", "d"))
-	addObject(layer, data)
-	checkEquals(length(objects(layer@location@objects)), 1L)
-	checkTrue(all(layer$objects$data == data))
+  layer <- new(Class="Layer")
+  data <- data.frame(x=1:4, y=c("a", "b", "c", "d"))
+  addObject(layer, data)
+  checkEquals(length(objects(layer@location@objects)), 1L)
+  checkTrue(all(layer$objects$data == data))
 }
 
 unitTestAddDataFrameWithName <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	data <- data.frame(x=1:4, y=c("a", "b", "c", "d"))
-	addObject(layer, data, "newName")
-	checkEquals(length(objects(layer@location@objects)), 1L)
-	checkTrue(all(get("newName", envir=layer@location@objects)== data))
+  layer <- new(Class="Layer")
+  data <- data.frame(x=1:4, y=c("a", "b", "c", "d"))
+  addObject(layer, data, "newName")
+  checkEquals(length(objects(layer@location@objects)), 1L)
+  checkTrue(all(get("newName", envir=layer@location@objects)== data))
 }
 
 unitTestAddListOfDataFramesNoName <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	checkException(addObject(layer, list(data.frame(x=1:4, y=c("a", "b", "c", "d")), data.frame(y=c("a", "b", "c", "d"), z=5:8))))
+  layer <- new(Class="Layer")
+  checkException(addObject(layer, list(data.frame(x=1:4, y=c("a", "b", "c", "d")), data.frame(y=c("a", "b", "c", "d"), z=5:8))))
 }
 
 unitTestAddListUnlistFalse <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	foo <- list(one=1, two=2)
-	addObject(layer, foo, unlist=F)
-	checkEquals(length(layer$objects), 1L)
+  layer <- new("Layer")
+  foo <- list(one=1, two=2)
+  addObject(layer, foo, unlist=F)
+  checkEquals(length(layer$objects), 1L)
 }
 
 unitTestAddListUnlistTrue <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	foo <- list(one=1, two=2)
-	addObject(layer, foo, unlist=T)
-	checkEquals(length(layer$objects), 2L)
+  layer <- new("Layer")
+  foo <- list(one=1, two=2)
+  addObject(layer, foo, unlist=T)
+  checkEquals(length(layer$objects), 2L)
 }
 
 unitTestAddListUnlistFalseSpecifyName <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	foo <- list(one=1, two=2)
-	addObject(layer, foo, name="aName")
-	checkEquals(length(layer$objects), 1L)
-	checkEquals("aName", names(layer$objects))
+  layer <- new("Layer")
+  foo <- list(one=1, two=2)
+  addObject(layer, foo, name="aName")
+  checkEquals(length(layer$objects), 1L)
+  checkEquals("aName", names(layer$objects))
 }
 
 unitTestAddListUnlistTrueSpecifyName <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	foo <- list(one=1, two=2)
-	checkException(addObject(layer, foo, name="aName", unlist=T))
+  layer <- new("Layer")
+  foo <- list(one=1, two=2)
+  checkException(addObject(layer, foo, name="aName", unlist=T))
 }
 
-
-## TODO: This test is broke. FIX ME!
-#unitTestAddFromEnvironmentNoName <-
-#		function()
-#{
-#	layer <- new("Layer")
-#	env <- new.env()
-#	env$foo <- list(one=1, two=2)
-#	addObject(layer, env$foo, unlist=F)
-#	checkEquals("foo", names(layer$objects))
-#}
+## TODO This test is broke. FIX ME!
+##unitTestAddFromEnvironmentNoName <-
+##		function()
+##{
+##	layer <- new("Layer")
+##	env <- new.env()
+##	env$foo <- list(one=1, two=2)
+##	addObject(layer, env$foo, unlist=F)
+##	checkEquals("foo", names(layer$objects))
+##}

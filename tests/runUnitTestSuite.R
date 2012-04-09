@@ -1,9 +1,14 @@
-# This test is only run during R CMD check
-# It should invoke all unit tests but no integration tests
+## run unit test suite
+## 
+## Author: Nicole Deflaxu <nicole.deflaux@sagebase.org>
+###############################################################################
+
+## This test is only run during R CMD check
+## It should invoke all unit tests but no integration tests
 require("synapseClient") || stop("unable to load synapseClient package")
 synapseClient:::.doTestConfigureNamespace()
 synapseAuthServiceEndpoint("https://staging-auth.thisShouldNotWork.com")
 synapseRepoServiceEndpoint("https://staging-reposervice.thisShouldNotWork.com")
 tryCatch(synapseClient:::.test(),
-	finally = synapseClient:::.undoTestConfigureNamespace()
+  finally = synapseClient:::.undoTestConfigureNamespace()
 )

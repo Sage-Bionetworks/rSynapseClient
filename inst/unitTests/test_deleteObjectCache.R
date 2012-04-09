@@ -1,50 +1,50 @@
-# TODO: Add comment
-# 
-# Author: furia
+## Unit tests for deleting file from object cache
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
 .setUp <-
-		function()
+  function()
 {
-	synapseClient:::.setCache("oldSynapseCacheDir", synapseClient:::.getCache("synapseCacheDir"))
-	synapseClient:::.setCache("synapseCacheDir", tempfile())
+  synapseClient:::.setCache("oldSynapseCacheDir", synapseClient:::.getCache("synapseCacheDir"))
+  synapseClient:::.setCache("synapseCacheDir", tempfile())
 }
 
 .tearDown <-
-		function()
+  function()
 {
-	unlink(synapseClient:::.getCache("synapseCacheDir"), recursive = TRUE)
-	synapseClient:::.setCache("synapseCacheDir", synapseClient:::.getCache("oldSynapseCacheDir"))
-	synapseClient:::.deleteCache("oldSynapseCacheDir")
+  unlink(synapseClient:::.getCache("synapseCacheDir"), recursive = TRUE)
+  synapseClient:::.setCache("synapseCacheDir", synapseClient:::.getCache("oldSynapseCacheDir"))
+  synapseClient:::.deleteCache("oldSynapseCacheDir")
 }
 
 unitTestDelete <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	cacheDir <- file.path(synapseClient:::.getCache("synapseCacheDir"), synapseClient:::.getCache("rObjCacheDir"))
-	
-	object1 <- "foo"
-	addObject(layer, object1)
-	deleteObject(layer, "object1")
-	
-	checkTrue(!file.exists(file.path(cacheDir, "object1.rbin")))
-	
+  layer <- new(Class="Layer")
+  cacheDir <- file.path(synapseClient:::.getCache("synapseCacheDir"), synapseClient:::.getCache("rObjCacheDir"))
+  
+  object1 <- "foo"
+  addObject(layer, object1)
+  deleteObject(layer, "object1")
+  
+  checkTrue(!file.exists(file.path(cacheDir, "object1.rbin")))
+  
 }
 
 unitTestDeleteMultiple <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	cacheDir <- file.path(synapseClient:::.getCache("synapseCacheDir"), synapseClient:::.getCache("rObjCacheDir"))
-	
-	object1 <- "foo"
-	object2 <- "bar"
-	addObject(layer, object1)
-	addObject(layer, object2)
-	deleteObject(layer, c("object1", "object2"))
-	
-	checkTrue(!file.exists(file.path(cacheDir, "object1.rbin")))
-	checkTrue(!file.exists(file.path(cacheDir, "object2.rbin")))
+  layer <- new(Class="Layer")
+  cacheDir <- file.path(synapseClient:::.getCache("synapseCacheDir"), synapseClient:::.getCache("rObjCacheDir"))
+  
+  object1 <- "foo"
+  object2 <- "bar"
+  addObject(layer, object1)
+  addObject(layer, object2)
+  deleteObject(layer, c("object1", "object2"))
+  
+  checkTrue(!file.exists(file.path(cacheDir, "object1.rbin")))
+  checkTrue(!file.exists(file.path(cacheDir, "object2.rbin")))
 }
 

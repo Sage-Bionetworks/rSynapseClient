@@ -1,41 +1,41 @@
-# Unit tests for in-memory cache for global variables
-# 
-# Author: Matt Furia
+## Unit tests for in-memory cache for global variables
+## 
+## Author:Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
 .setUp <- 
-		function()
+  function()
 {
-	synapseClient:::.setCache("testGetKey", "testGetValue")
-	synapseClient:::.setCache("testDeleteKey", "testDeleteValue")
-	synapseClient:::.setCache("testSetKey", "testSetValue")
+  synapseClient:::.setCache("testGetKey", "testGetValue")
+  synapseClient:::.setCache("testDeleteKey", "testDeleteValue")
+  synapseClient:::.setCache("testSetKey", "testSetValue")
 }
 
 .tearDown <- 
-		function()
+  function()
 {
-	synapseClient:::.deleteCache("testGetKey")
-	synapseClient:::.deleteCache("testDeleteKey")
-	synapseClient:::.deleteCache("testSetKey")
+  synapseClient:::.deleteCache("testGetKey")
+  synapseClient:::.deleteCache("testDeleteKey")
+  synapseClient:::.deleteCache("testSetKey")
 }
 
 unitTestGetCacheValue <- 
-		function()
+  function()
 {
-	checkEquals(synapseClient:::.getCache("testGetKey"), "testGetValue")
+  checkEquals(synapseClient:::.getCache("testGetKey"), "testGetValue")
 }
 
 unitTestSetCacheValue <- 
-		function()
+  function()
 {
-	checkEquals(synapseClient:::.getCache("testSetKey"), "testSetValue")
-	synapseClient:::.setCache("testSetKey", "testSetValueNew")
-	checkEquals(synapseClient:::.getCache("testSetKey"), "testSetValueNew")
+  checkEquals(synapseClient:::.getCache("testSetKey"), "testSetValue")
+  synapseClient:::.setCache("testSetKey", "testSetValueNew")
+  checkEquals(synapseClient:::.getCache("testSetKey"), "testSetValueNew")
 }
 
 unitTestDeleteCacheValue <- 
-		function()
+  function()
 {
-	synapseClient:::.deleteCache("testDeleteKey")
-	checkTrue(is.null(synapseClient:::.getCache("testDeleteKey")))
+  synapseClient:::.deleteCache("testDeleteKey")
+  checkTrue(is.null(synapseClient:::.getCache("testDeleteKey")))
 }

@@ -11,11 +11,11 @@
 \describe{
 
 \item{\code{signature(entity = "ANY")}}{
-	Get the dataset layers for the dataset entity
+Get the dataset layers for the dataset entity
 }
 
 \item{\code{signature(entity = "SynapseEntity")}}{
-	Get the dataset layers for the dataset entity
+Get the dataset layers for the dataset entity
 }
 }}
 \keyword{methods}

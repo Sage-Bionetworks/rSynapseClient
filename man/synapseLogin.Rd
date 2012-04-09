@@ -4,37 +4,37 @@
 \alias{.getPassword}
 \alias{.getUsername}
 \title{
-	Authentication
+Authentication
 }
 \description{
-	Functions for handling Synapse authentication.
+Functions for handling Synapse authentication.
 }
 \usage{
-	synapseLogin(username, password, mode = "auth")
-	synapseLogout(localOnly=FALSE)
-	.getUsername
-	.getPassword()
+synapseLogin(username, password, mode = "auth")
+synapseLogout(localOnly=FALSE)
+.getUsername
+.getPassword()
 }
 
 \arguments{
   \item{username}{
-		Synapse username
-	}
+Synapse username
+}
   \item{password}{
-		API password associated with the username (see details)
-	}
+API password associated with the username (see details)
+}
   \item{localOnly}{
   		boolean controlling whether logout is done locally only, or propagated to Synapse
-	}
+}
   \item{mode}{
   		The authentication mode. either "auth" or "hmac"
   }
 }
 \details{
-	If username and/or password arguments are not provided, the user will be prompted for input. If logout is propagated to
-	Synapse (ie. localOnly = TRUE), it is likely that the user will be logged out for all clients currently in use
+If username and/or password arguments are not provided, the user will be prompted for input. If logout is propagated to
+Synapse (ie. localOnly = TRUE), it is likely that the user will be logged out for all clients currently in use
 }
 
 \author{
-	Matt Furia
+Matt Furia
 }

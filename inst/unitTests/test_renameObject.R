@@ -1,136 +1,137 @@
-# Unit test for renaming Layer entity objects
-# 
-# Author: Matt Furia
+## Unit test for renaming Layer entity objects
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org
 ###############################################################################
+
 .setUp <-
-		function()
+  function()
 {
-	synapseClient:::.setCache("oldSynapseCacheDir", synapseClient:::.getCache("synapseCacheDir"))
-	synapseClient:::.setCache("synapseCacheDir", tempfile())
+  synapseClient:::.setCache("oldSynapseCacheDir", synapseClient:::.getCache("synapseCacheDir"))
+  synapseClient:::.setCache("synapseCacheDir", tempfile())
 }
 
 .tearDown <-
-		function()
+  function()
 {
-	unlink(synapseClient:::.getCache("synapseCacheDir"), recursive = TRUE)
-	synapseClient:::.setCache("synapseCacheDir", synapseClient:::.getCache("oldSynapseCacheDir"))
-	synapseClient:::.deleteCache("oldSynapseCacheDir")
+  unlink(synapseClient:::.getCache("synapseCacheDir"), recursive = TRUE)
+  synapseClient:::.setCache("synapseCacheDir", synapseClient:::.getCache("oldSynapseCacheDir"))
+  synapseClient:::.deleteCache("oldSynapseCacheDir")
 }
 unitTestRename <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, "foo")
-	
-	renameObject(layer, "foo", "bar")
-	checkEquals(length(layer$objects), 1L)
-	checkEquals(names(layer$objects), "bar")
+  layer <- new("Layer")
+  addObject(layer, "foo")
+  
+  renameObject(layer, "foo", "bar")
+  checkEquals(length(layer$objects), 1L)
+  checkEquals(names(layer$objects), "bar")
 }
 
 unitTestCatchReturn <-
-		function()
+  function()
 {
-	layer <- new("Layer", list(name="testLayer"))
-	addObject(layer, "foo")
-	
-	caughtLayer <- renameObject(layer, "foo", "bar")
-	checkEquals(length(caughtLayer$objects), 1L)
-	checkEquals(names(caughtLayer$objects), "bar")
-	checkEquals(propertyValue(layer, "name"), propertyValue(caughtLayer, "name"))
+  layer <- new("Layer", list(name="testLayer"))
+  addObject(layer, "foo")
+  
+  caughtLayer <- renameObject(layer, "foo", "bar")
+  checkEquals(length(caughtLayer$objects), 1L)
+  checkEquals(names(caughtLayer$objects), "bar")
+  checkEquals(propertyValue(layer, "name"), propertyValue(caughtLayer, "name"))
 }
 
 unitTestRenameInvalidObject <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	checkException(renameObject(layer, "foo", "bar"))
-	
-	addObject(layer, "foo")
-	checkException(renameObject(layer, "bar", "boo"))
+  layer <- new("Layer")
+  checkException(renameObject(layer, "foo", "bar"))
+  
+  addObject(layer, "foo")
+  checkException(renameObject(layer, "bar", "boo"))
 }
 
 unitTestRenameSameName <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, "foo")
-	renameObject(layer, "foo", "foo")
-	checkEquals(length(layer$objects), 1L)
-	checkEquals(names(layer$objects), "foo")
+  layer <- new("Layer")
+  addObject(layer, "foo")
+  renameObject(layer, "foo", "foo")
+  checkEquals(length(layer$objects), 1L)
+  checkEquals(names(layer$objects), "foo")
 }
 
 unitTestMultipleRename <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, "foo", "foo")
-	addObject(layer, "goo", "goo")
-	addObject(layer, "keepMe", "ok")
-	
-	renameObject(layer, c("foo", "goo"), c("goo", "foo"))
-	checkEquals(length(layer$objects), 3L)
-	checkEquals(layer$objects$foo, "goo")
-	checkEquals(layer$objects$goo, "foo")
-	checkEquals(layer$objects$ok, "keepMe")
-	
+  layer <- new("Layer")
+  addObject(layer, "foo", "foo")
+  addObject(layer, "goo", "goo")
+  addObject(layer, "keepMe", "ok")
+  
+  renameObject(layer, c("foo", "goo"), c("goo", "foo"))
+  checkEquals(length(layer$objects), 3L)
+  checkEquals(layer$objects$foo, "goo")
+  checkEquals(layer$objects$goo, "foo")
+  checkEquals(layer$objects$ok, "keepMe")
+  
 }
 
 unitTestMoreNamesThanObjects <- 
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, "foo")
-	checkException(renameObject(layer, "foo", c("bar", "boo")))
+  layer <- new("Layer")
+  addObject(layer, "foo")
+  checkException(renameObject(layer, "foo", c("bar", "boo")))
 }
 
 unitTestMoreObjectsThanNames <- 
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, "foo")
-	addObject(layer, "boo")
-	checkException(renameObject(layer, c("foo","boo"), "boo"))
+  layer <- new("Layer")
+  addObject(layer, "foo")
+  addObject(layer, "boo")
+  checkException(renameObject(layer, c("foo","boo"), "boo"))
 }
 
 unitTestInvalidWhich <- 
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, "foo")
-	checkException(renameObject(layer, "boo", "goo"))
+  layer <- new("Layer")
+  addObject(layer, "foo")
+  checkException(renameObject(layer, "boo", "goo"))
 }
 
 unitTestOverwrite <- 
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, "foo")
-	addObject(layer, "goo")
-	renameObject(layer, "foo", "goo")
-	checkEquals(length(layer$objects), 1L)
-	checkEquals(layer$objects$goo, "foo")
+  layer <- new("Layer")
+  addObject(layer, "foo")
+  addObject(layer, "goo")
+  renameObject(layer, "foo", "goo")
+  checkEquals(length(layer$objects), 1L)
+  checkEquals(layer$objects$goo, "foo")
 }
 
 unitTestRenameToNew <- 
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, "foo")
-	renameObject(layer, "foo", "goo")
-	checkEquals(length(layer$objects), 1L)
-	checkEquals(layer$objects$goo, "foo")
+  layer <- new("Layer")
+  addObject(layer, "foo")
+  renameObject(layer, "foo", "goo")
+  checkEquals(length(layer$objects), 1L)
+  checkEquals(layer$objects$goo, "foo")
 }
 
 unitTestOverwriteOneRenameToNewAnother <- 
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer, "foo")
-	addObject(layer, "goo")
-	renameObject(layer, c("foo", "goo"), c("goo", "bar"))
-	checkEquals(length(layer$objects), 2L)
-	checkEquals(layer$objects$goo, "foo")
-	checkEquals(layer$objects$bar, "goo")
+  layer <- new("Layer")
+  addObject(layer, "foo")
+  addObject(layer, "goo")
+  renameObject(layer, c("foo", "goo"), c("goo", "bar"))
+  checkEquals(length(layer$objects), 2L)
+  checkEquals(layer$objects$goo, "foo")
+  checkEquals(layer$objects$bar, "goo")
 }
 
 

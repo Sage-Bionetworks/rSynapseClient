@@ -10,7 +10,7 @@
 \describe{
 
 \item{\code{signature(x = "Layer")}}{
-	list the names of the Layer entity
+list the names of the Layer entity
 }
 }}
 \keyword{methods}

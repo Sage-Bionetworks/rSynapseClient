@@ -1,78 +1,79 @@
-# Unit Tests for deleting objects from Layer entities
-# 
-# Author: Matt Furia
+## Unit Tests for deleting objects from Layer entities
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
+
 .setUp <-
-		function()
+  function()
 {
-	synapseClient:::.setCache("oldSynapseCacheDir", synapseClient:::.getCache("synapseCacheDir"))
-	synapseClient:::.setCache("synapseCacheDir", tempfile())
+  synapseClient:::.setCache("oldSynapseCacheDir", synapseClient:::.getCache("synapseCacheDir"))
+  synapseClient:::.setCache("synapseCacheDir", tempfile())
 }
 
 .tearDown <-
-		function()
+  function()
 {
-	unlink(synapseClient:::.getCache("synapseCacheDir"), recursive = TRUE)
-	synapseClient:::.setCache("synapseCacheDir", synapseClient:::.getCache("oldSynapseCacheDir"))
-	synapseClient:::.deleteCache("oldSynapseCacheDir")
+  unlink(synapseClient:::.getCache("synapseCacheDir"), recursive = TRUE)
+  synapseClient:::.setCache("synapseCacheDir", synapseClient:::.getCache("oldSynapseCacheDir"))
+  synapseClient:::.deleteCache("oldSynapseCacheDir")
 }
 
 unitTestDelete <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer,"foo", "bar")
-	
-	checkEquals(length(objects(layer@location@objects)), 1L)
-	
-	deleteObject(layer, "bar")
-	checkEquals(length(objects(layer@location@objects)), 0L)
+  layer <- new("Layer")
+  addObject(layer,"foo", "bar")
+  
+  checkEquals(length(objects(layer@location@objects)), 1L)
+  
+  deleteObject(layer, "bar")
+  checkEquals(length(objects(layer@location@objects)), 0L)
 }
 
 unitTestDeleteOneOfTwo <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer,"foo")
-	checkEquals(length(objects(layer@location@objects)), 1L)
-	
-	addObject(layer,"goo")
-	checkEquals(length(objects(layer@location@objects)), 2L)
-	
-	deleteObject(layer, "goo")
-	checkEquals(length(objects(layer@location@objects)), 1L)
-	checkEquals(names(layer$objects), "foo")
+  layer <- new("Layer")
+  addObject(layer,"foo")
+  checkEquals(length(objects(layer@location@objects)), 1L)
+  
+  addObject(layer,"goo")
+  checkEquals(length(objects(layer@location@objects)), 2L)
+  
+  deleteObject(layer, "goo")
+  checkEquals(length(objects(layer@location@objects)), 1L)
+  checkEquals(names(layer$objects), "foo")
 }
 
 unitTestDeleteAll <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	addObject(layer,"foo")
-	addObject(layer,"goo")
-	checkEquals(length(objects(layer@location@objects)), 2L)
-	
-	deleteObject(layer, c("goo", "foo"))
-	checkEquals(length(objects(layer@location@objects)), 0L)
+  layer <- new("Layer")
+  addObject(layer,"foo")
+  addObject(layer,"goo")
+  checkEquals(length(objects(layer@location@objects)), 2L)
+  
+  deleteObject(layer, c("goo", "foo"))
+  checkEquals(length(objects(layer@location@objects)), 0L)
 }
 
 unitTestDeleteNonExisting <-
-		function()
+  function()
 {
-	layer <- new("Layer")
-	
-	## this should warn, but not fail
-	deleteObject(layer, "fakeObject")
+  layer <- new("Layer")
+  
+  ## this should warn, but not fail
+  deleteObject(layer, "fakeObject")
 }
 
 unitTestCatchReturnValue <-
-		function()
+  function()
 {
-	layer <- new("Layer",list(name="testLayer"))
-		
-	addObject(layer, "foo")
-	caughtLayer <- deleteObject(layer, "foo")
-	checkEquals(length(layer$objects), 0L)
-	
-	checkEquals(propertyValue(layer, "name"), propertyValue(caughtLayer, "name"))	
+  layer <- new("Layer",list(name="testLayer"))
+  
+  addObject(layer, "foo")
+  caughtLayer <- deleteObject(layer, "foo")
+  checkEquals(length(layer$objects), 0L)
+  
+  checkEquals(propertyValue(layer, "name"), propertyValue(caughtLayer, "name"))	
 }

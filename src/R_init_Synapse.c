@@ -1,3 +1,7 @@
+/* Initialize c functions for curl reader/writer in R
+ *
+ * Author: Martin Morgan <mtmorgan@fhcrc.org>
+ */
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
 #include "synapse_curl.h"

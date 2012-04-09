@@ -11,10 +11,10 @@
 \describe{
 
 \item{\code{signature(entity = "Layer")}}{
-	Store the Layer entity
+Store the Layer entity
 }
 
 \item{\code{signature(entity = "SynapseEntity")}}{
-	Store the SynapseEntity
+Store the SynapseEntity
 }
 }}

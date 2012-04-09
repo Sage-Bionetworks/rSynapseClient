@@ -5,17 +5,17 @@
 \alias{annotationValues<-,SynapseEntity,list-method}
 \title{ Methods for Function \code{annotationValues<-}  }
 \description{
-	Methods for function \code{annotationValues<-}
+Methods for function \code{annotationValues<-}
 }
 \section{Methods}{
 \describe{
 
 \item{\code{signature(entity = "SynapseAnnotation", value = "list")}}{
-	set the annotations in list to the SynapseAnnotation entity
+set the annotations in list to the SynapseAnnotation entity
 }
 
 \item{\code{signature(entity = "SynapseEntity", value = "list")}}{
-	set the annotations in list to the SynapseAnnotation entity held by the SynapseEntity
+set the annotations in list to the SynapseAnnotation entity held by the SynapseEntity
 }
 }}
 \keyword{methods}

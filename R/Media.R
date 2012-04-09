@@ -1,8 +1,7 @@
-# TODO: Add comment
-# 
-# Author: furia
+## Media entity constructors and methods
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
-
 
 setMethod(
 		f = "Media",

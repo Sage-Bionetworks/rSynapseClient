@@ -13,15 +13,15 @@
 \describe{
 
 \item{\code{signature(entity = "character")}}{
-	Delete the entity with the provided id
+Delete the entity with the provided id
 }
 
 \item{\code{signature(entity = "numeric")}}{
-	Delete the entity with the provided id
+Delete the entity with the provided id
 }
 
 \item{\code{signature(entity = "SynapseEntity")}}{
-	Delete the entity provided
+Delete the entity provided
 }
 }}
 \keyword{methods}

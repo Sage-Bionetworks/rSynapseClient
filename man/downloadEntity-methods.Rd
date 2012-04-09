@@ -14,19 +14,19 @@
 \describe{
 
 \item{\code{signature(entity = "character")}}{
-	Download the entity with the specified ID
+Download the entity with the specified ID
 }
 
 \item{\code{signature(entity = "Layer")}}{
-	Download the Layer entity
+Download the Layer entity
 }
 
 \item{\code{signature(entity = "numeric")}}{
-	Download the entity with the specified ID
+Download the entity with the specified ID
 }
 
 \item{\code{signature(entity = "SynapseEntity")}}{
-	Download the specified SynapseEntity. This should throw an exception.
+Download the specified SynapseEntity. This should throw an exception.
 }
 }}
 \keyword{methods}

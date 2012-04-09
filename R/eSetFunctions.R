@@ -1,9 +1,14 @@
+## Make a copy of an entity that is not attached to the origial.
+## 
+## Author: Brian Bot <brian.bot@sagebase.org>
+###############################################################################
+
 ######################################################################################
 ## GENERAL FUNCTION THAT TAKES A TAB DELIMITED FILE AND PUTS INTO USEFUL R DATA FRAME
 ## USED BY ALL OTHER SUBSEQUENT FUNCTIONS
 ######################################################################################
 .readTxtFile <- 
-		function(file)
+  function(file)
 {
   tmp <- read.delim(file=file, as.is=TRUE, header = FALSE)
   names(tmp) <- tmp[1,]
@@ -16,7 +21,7 @@
 ## EXPRESSION MATRIX TO assayData OBJECT
 #########################################
 .loadAffyExprDataFromFile <- 
-		function(exprsFile)
+  function(exprsFile)
 {
   tmp <- .readTxtFile(exprsFile)
   assayDataNew(exprs = tmp)
@@ -26,7 +31,7 @@
 ## FEATURE FILES
 #################
 .loadFeatureDataFromFile <- 
-		function(featureFile)
+  function(featureFile)
 {
   tmp <- .readTxtFile(featureFile)
   new("AnnotatedDataFrame", data = tmp)
@@ -40,7 +45,7 @@
 ## PHENOTYPE MATRIX TO AnnotatedDataFrame OBJECT
 #################################################
 .loadPhenoDataFromFile <- 
-		function(phenFile, descFile)
+  function(phenFile, descFile)
 {
   tmpPhen <- as.data.frame(t(.readTxtFile(phenFile)))
   tmpDesc <- .readTxtFile(descFile)

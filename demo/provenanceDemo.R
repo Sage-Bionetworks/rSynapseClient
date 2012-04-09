@@ -22,14 +22,14 @@ expressionData <- getEntity(48344)
 ## Create a project for results
 myName <- paste("Nicole A. Deflaux",  gsub(':', '_', date()))
 project <- Project(list(
-	name=paste("Machine Learning Results - ", myName)
-	))
+    name=paste("Machine Learning Results - ", myName)
+  ))
 project <- createEntity(project)
 ## Create a dataset for results
 dataset <- Dataset(list(
-	name="Analysis Plots",
-	parentId=propertyValue(project, "id")
-	))
+    name="Analysis Plots",
+    parentId=propertyValue(project, "id")
+  ))
 dataset <- createEntity(dataset)
 
 ## Create a Graph
@@ -42,17 +42,17 @@ jpeg(outputFileElasticNet)
 
 # Store the resulting graph in Synapse
 elasticNetLayer <- Layer(list(
-	name="ElasticNet Results for PLX4720",
-	type="M", 
-	parentId=propertyValue(dataset, "id")))
+    name="ElasticNet Results for PLX4720",
+    type="M", 
+    parentId=propertyValue(dataset, "id")))
 elasticNetLayer <- addFile(elasticNetLayer, outputFileElasticNet)
 elasticNetLayer <- storeEntity(elasticNetLayer)
 # --> refresh the Step web UI page and see how it changed
 
 ## I'm going to share what I did with my colleagues
 analysis <- Analysis(list(description="glmnet algorithm applied to Cell Line Data and Sanger Drug Response data", 
-													name="myFirstAnalysis",
-													parentId=propertyValue(project, "id")))
+    name="myFirstAnalysis",
+    parentId=propertyValue(project, "id")))
 analysis <- createEntity(analysis)
 # --> refresh the Step web UI page and see how it changed
 

@@ -11,12 +11,12 @@
 \describe{
 
 \item{\code{signature(object = "SynapseAnnotation")}}{
-	get the annotations as a list
+get the annotations as a list
 }
 
 \item{\code{signature(object = "SynapseEntity")}}{
 get the annotations as a list
-	
+
 }
 }}
 \keyword{methods}

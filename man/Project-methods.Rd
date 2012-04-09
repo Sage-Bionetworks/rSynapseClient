@@ -12,7 +12,7 @@
 \describe{
 
 \item{\code{signature(entity = "list")}}{
-	Construct a Project entity from a list of properties
+Construct a Project entity from a list of properties
 }
 }}
 \keyword{methods}

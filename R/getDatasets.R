@@ -1,41 +1,46 @@
-getDatasets <- 
-		function(queryParams)
-{
-	if(missing(queryParams)){
-		queryParams <- list()
-	}
-	if(!is.list(queryParams)){
-		stop("params must be a list")
-	}
-	
-	## constants
-	kService <- "/query?query"
-	kQueryRoot <- "select * from dataset"
-	kLimit <- 20L
-	## end constants
-	
-	## check the limit query param
-	if("limit" %in% names(queryParams)){
-		if(queryParams$limit > kLimit){
-			warning(sprintf("Can only retrieve %s records at a time", kLimit))
-			queryParams$limit <- kLimit
-		}
-	}else{
-		queryParams$limit <- kLimit
-	}
-	
-	## add queary parameters to the uri
-	paramString <- paste(names(queryParams), queryParams, sep=" ", collapse=" ")
-	query <- sprintf("%s %s", kQueryRoot, paramString)
-	uri <- sprintf("%s=%s", kService, curlEscape(query))
-	
-	jsonRecords <- synapseGet(uri=uri, anonymous=FALSE)
-	result <- .parseJSONRecords(jsonRecords$results)
-	attr(result, "totalNumberOfResults") <- jsonRecords$totalNumberOfResults
-	
-	## drop the dataset prefix from field names
-	names(result) <- gsub("^dataset[\\.]", "", names(result))
+## Get a table of Synapse datasets
+## 
+## Author: Nicole Deflaux <nicole.deflaux@sagebase.org>
+###############################################################################
 
-	return(result)
+getDatasets <- 
+  function(queryParams)
+{
+  if(missing(queryParams)){
+    queryParams <- list()
+  }
+  if(!is.list(queryParams)){
+    stop("params must be a list")
+  }
+  
+  ## constants
+  kService <- "/query?query"
+  kQueryRoot <- "select * from dataset"
+  kLimit <- 20L
+  ## end constants
+  
+  ## check the limit query param
+  if("limit" %in% names(queryParams)){
+    if(queryParams$limit > kLimit){
+      warning(sprintf("Can only retrieve %s records at a time", kLimit))
+      queryParams$limit <- kLimit
+    }
+  }else{
+    queryParams$limit <- kLimit
+  }
+  
+  ## add queary parameters to the uri
+  paramString <- paste(names(queryParams), queryParams, sep=" ", collapse=" ")
+  query <- sprintf("%s %s", kQueryRoot, paramString)
+  uri <- sprintf("%s=%s", kService, curlEscape(query))
+  
+  jsonRecords <- synapseGet(uri=uri, anonymous=FALSE)
+  result <- .parseJSONRecords(jsonRecords$results)
+  attr(result, "totalNumberOfResults") <- jsonRecords$totalNumberOfResults
+  
+  ## drop the dataset prefix from field names
+  names(result) <- gsub("^dataset[\\.]", "", names(result))
+  
+  return(result)
 }
 

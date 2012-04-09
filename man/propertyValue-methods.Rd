@@ -11,10 +11,10 @@
 \describe{
 
 \item{\code{signature(object = "SynapseAnnotation", which = "character")}}{
-	get the property value
+get the property value
 }
 
 \item{\code{signature(object = "SynapseEntity", which = "character")}}{
-	get the property value
+get the property value
 }
 }}

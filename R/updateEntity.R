@@ -1,82 +1,87 @@
+## Update an entity in Synapse
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
+###############################################################################
+
 .updateEntity <- 
-		function(kind, entity)
+  function(kind, entity)
 {
-	if(missing(entity)) {
-		stop("missing entity parameter")
-	}
-	
-	if(!is.list(entity)){
-		stop("the entity must be an R list")
-	}
-	
-	if(!"uri" %in% names(entity)){
-		stop("entities must exist in Synapse before they can be updated")
-	}
-	
-	synapsePut(uri=entity$uri, entity=entity, anonymous=FALSE)
+  if(missing(entity)) {
+    stop("missing entity parameter")
+  }
+  
+  if(!is.list(entity)){
+    stop("the entity must be an R list")
+  }
+  
+  if(!"uri" %in% names(entity)){
+    stop("entities must exist in Synapse before they can be updated")
+  }
+  
+  synapsePut(uri=entity$uri, entity=entity, anonymous=FALSE)
 }
 
 # TODO can we dynamically generate these functions?
 
 updateDataset <- 
-		function(entity)
+  function(entity)
 {
-	.updateEntity(kind="dataset", entity=entity)
+  .updateEntity(kind="dataset", entity=entity)
 }
 
 updateLayer <- 
-		function(entity)
+  function(entity)
 {
-	.updateEntity(kind="layer", entity=entity)
+  .updateEntity(kind="layer", entity=entity)
 }
 
 updateLocation <- 
-		function(entity)
+  function(entity)
 {
-	.updateEntity(kind="location", entity=entity)
+  .updateEntity(kind="location", entity=entity)
 }
 
 updatePreview <- 
-		function(entity)
+  function(entity)
 {
-	.updateEntity(kind="preview", entity=entity)
+  .updateEntity(kind="preview", entity=entity)
 }
 
 updateProject <- 
-		function(entity)
+  function(entity)
 {
-	.updateEntity(kind="project", entity=entity)
+  .updateEntity(kind="project", entity=entity)
 }
 
 setMethod(
-		f = "updateEntity",
-		signature = signature("SynapseEntity"),
-		definition = function(entity){
-			## update the entity and store the result
-			oldAnnotations <- annotations(entity)
-			entity <- do.call(class(entity), list(entity = .updateEntity(kind = synapseEntityKind(entity), entity=.extractEntityFromSlots(entity))))
-			
-			## merge annotations
-			newAnnotations <- annotations(entity)
-			annotationValues(newAnnotations) <- as.list(oldAnnotations)
-			annotations(entity) <- newAnnotations
-			
-			tryCatch(entity <- updateAnnotations(entity),
-					error = function(e){
-						cat("Failed to update Annotations. Manually merge modifications into new object retrieved from database and try update again\n")
-						stop(e)
-					}
-			)
-			entity
-		}
+  f = "updateEntity",
+  signature = signature("SynapseEntity"),
+  definition = function(entity){
+    ## update the entity and store the result
+    oldAnnotations <- annotations(entity)
+    entity <- do.call(class(entity), list(entity = .updateEntity(kind = synapseEntityKind(entity), entity=.extractEntityFromSlots(entity))))
+    
+    ## merge annotations
+    newAnnotations <- annotations(entity)
+    annotationValues(newAnnotations) <- as.list(oldAnnotations)
+    annotations(entity) <- newAnnotations
+    
+    tryCatch(entity <- updateAnnotations(entity),
+      error = function(e){
+        cat("Failed to update Annotations. Manually merge modifications into new object retrieved from database and try update again\n")
+        stop(e)
+      }
+    )
+    entity
+  }
 )
 setMethod(
-		f = "updateEntity",
-		signature = signature("SynapseAnnotation"),
-		definition = function(entity){
-			entity <- updateAnnotations(.extractEntityFromSlots(entity))
-			SynapseAnnotation(entity)
-		}
+  f = "updateEntity",
+  signature = signature("SynapseAnnotation"),
+  definition = function(entity){
+    entity <- updateAnnotations(.extractEntityFromSlots(entity))
+    SynapseAnnotation(entity)
+  }
 )
 
 ######
@@ -86,41 +91,41 @@ setMethod(
 ## to the values for the new Location, which were returned by the createEntity call.
 ######
 setMethod(
-		f = "updateEntity",
-		signature = "Location",
-		definition = function(entity){
-			## create the entity
-			if(length(as.list(annotations(entity))) > 0L)
-				warning("Annotations can not be automatically persisted for Location entities and so are being discarded")
-			entity <- do.call(class(entity), list(entity = .updateEntity(kind = synapseEntityKind(entity), entity=.extractEntityFromSlots(entity))))
-		}
+  f = "updateEntity",
+  signature = "Location",
+  definition = function(entity){
+    ## create the entity
+    if(length(as.list(annotations(entity))) > 0L)
+      warning("Annotations can not be automatically persisted for Location entities and so are being discarded")
+    entity <- do.call(class(entity), list(entity = .updateEntity(kind = synapseEntityKind(entity), entity=.extractEntityFromSlots(entity))))
+  }
 )
 
 setMethod(
-		f = "updateEntity",
-		signature = "CachedLocation",
-		definition = function(entity){
-			oldClass <- class(entity)
-			class(entity) <- "Location"
-			updatedEntity <- updateEntity(entity)
-			class(updatedEntity) <- oldClass
-			class(entity) <- oldClass
-			updatedEntity@cacheDir <- entity@cacheDir
-			updatedEntity@files <- entity@files
-			updatedEntity
-		}
+  f = "updateEntity",
+  signature = "CachedLocation",
+  definition = function(entity){
+    oldClass <- class(entity)
+    class(entity) <- "Location"
+    updatedEntity <- updateEntity(entity)
+    class(updatedEntity) <- oldClass
+    class(entity) <- oldClass
+    updatedEntity@cacheDir <- entity@cacheDir
+    updatedEntity@files <- entity@files
+    updatedEntity
+  }
 )
 
 setMethod(
-		f = "updateEntity",
-		signature = "LocationOwner",
-		definition = function(entity){
-			oldClass <- class(entity)
-			class(entity) <- "SynapseEntity"
-			updatedEntity <- updateEntity(entity)
-			class(updatedEntity) <- oldClass
-			class(entity) <- oldClass
-			updatedEntity@location <- entity@location
-			updatedEntity
-		}
+  f = "updateEntity",
+  signature = "LocationOwner",
+  definition = function(entity){
+    oldClass <- class(entity)
+    class(entity) <- "SynapseEntity"
+    updatedEntity <- updateEntity(entity)
+    class(updatedEntity) <- oldClass
+    class(entity) <- oldClass
+    updatedEntity@location <- entity@location
+    updatedEntity
+  }
 )

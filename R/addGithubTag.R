@@ -1,4 +1,8 @@
-## TRY A LITTLE GIT INTEGRATION
+## Add a GitHub tag to a Code entity
+## 
+## Author: Brian Bot <brian.bot@sagebase.org>
+###############################################################################
+
 setMethod(
   f = "addGithubTag",
   signature = signature("Code", "character"),

@@ -3,15 +3,15 @@
 \alias{synapseDownloadFileToDestination}
 \alias{synapseUploadFile}
 \title{
-	Upload/Download a File from Synapse
+Upload/Download a File from Synapse
 }
 \description{
-	Functions for uploading and downloading files using the libcurl library that is part of RCurl.
+Functions for uploading and downloading files using the libcurl library that is part of RCurl.
 }
 \usage{
-	synapseDownloadFile(url, checksum, curlHandle = getCurlHandle(), cacheDir = synapseCacheDir(), opts = .getCache("curlOpts"))
-	synapseDownloadFileToDestination(url, destfile, checksum, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"))
-	synapseUploadFile(url, srcfile, checksum, contentType =
+synapseDownloadFile(url, checksum, curlHandle = getCurlHandle(), cacheDir = synapseCacheDir(), opts = .getCache("curlOpts"))
+synapseDownloadFileToDestination(url, destfile, checksum, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"))
+synapseUploadFile(url, srcfile, checksum, contentType =
                  "application/binary", method = "curl", quiet = FALSE,
                  mode = "w", cacheOK = TRUE)
 
@@ -19,23 +19,23 @@
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{url}{
-		url of the remote file
-	}
+url of the remote file
+}
   \item{srcfile}{
   		local file to upload
   	}
   \item{checksum}{
-		checksum of the local file
-	}
+checksum of the local file
+}
   \item{curlHandle}{
   		curlHandle for the request
-	}
+}
   \item{cacheDir}{
-		local file cache directory where downloaded files will be stored
-	}
+local file cache directory where downloaded files will be stored
+}
   \item{opts}{
-		curl options
-	}
+curl options
+}
   \item{destfile}{
   		local file location
   	}
@@ -54,23 +54,23 @@
   \item{contentType}{
   		content type
   }
-	
+
 }
 \details{
-	These functions bypass R's memory using c curlWriter and curlReader functions.
+These functions bypass R's memory using c curlWriter and curlReader functions.
 }
 \value{
-	synapseDownloadFile returns a list of the files that were downloaded
+synapseDownloadFile returns a list of the files that were downloaded
 }
 
 \author{
-	Matt Furia
+Matt Furia
 }
 \note{
-	This is an internal method and should not be called by the user
+This is an internal method and should not be called by the user
 }
 
 \seealso{
-	\code{\link{curlPerform}}
+\code{\link{curlPerform}}
 }
 

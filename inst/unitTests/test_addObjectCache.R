@@ -1,41 +1,41 @@
-# TODO: Add comment
-# 
-# Author: matt furia
+## Unit tests for adding serialzed object files to cache
+##
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
 unitTestAddCache <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	cacheDir <- file.path(layer$cacheDir, synapseClient:::.getCache("rObjCacheDir"))
-	
-	object1 <- "foo"
-	addObject(layer, object1)
-	
-	checkTrue(file.exists(file.path(cacheDir, "object1.rbin")))
-	env <- new.env()
-	load(file.path(cacheDir, "object1.rbin"))
-	checkTrue(all(object1 == env$object1))
+  layer <- new(Class="Layer")
+  cacheDir <- file.path(layer$cacheDir, synapseClient:::.getCache("rObjCacheDir"))
+  
+  object1 <- "foo"
+  addObject(layer, object1)
+  
+  checkTrue(file.exists(file.path(cacheDir, "object1.rbin")))
+  env <- new.env()
+  load(file.path(cacheDir, "object1.rbin"))
+  checkTrue(all(object1 == env$object1))
 }
 
 unitTestAddCacheMultiple <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	cacheDir <- file.path(layer$cacheDir, synapseClient:::.getCache("rObjCacheDir"))
-	
-	object1 <- "foo"
-	addObject(layer, object1)
-	object2 <- "bar"
-	addObject(layer, object2)
-	
-	checkTrue(file.exists(file.path(cacheDir, "object1.rbin")))
-	checkTrue(file.exists(file.path(cacheDir, "object2.rbin")))
-	
-	env <- new.env()
-	load(file.path(cacheDir, "object1.rbin"), envir = env)
-	checkEquals(object1, env$object1, envir = env)
-	env <- new.env()
-	load(file.path(cacheDir, "object2.rbin"), envir = env)
-	checkEquals(object2, env$object2, envir = env)
+  layer <- new(Class="Layer")
+  cacheDir <- file.path(layer$cacheDir, synapseClient:::.getCache("rObjCacheDir"))
+  
+  object1 <- "foo"
+  addObject(layer, object1)
+  object2 <- "bar"
+  addObject(layer, object2)
+  
+  checkTrue(file.exists(file.path(cacheDir, "object1.rbin")))
+  checkTrue(file.exists(file.path(cacheDir, "object2.rbin")))
+  
+  env <- new.env()
+  load(file.path(cacheDir, "object1.rbin"), envir = env)
+  checkEquals(object1, env$object1, envir = env)
+  env <- new.env()
+  load(file.path(cacheDir, "object2.rbin"), envir = env)
+  checkEquals(object2, env$object2, envir = env)
 }

@@ -1,3 +1,7 @@
+/* Initialize c functions for curl reader/writer in R
+ *
+ * Author: Martin Morgan <mtmorgan@fhcrc.org>
+ */
 #ifndef WRITER_H
 #define WRITER_H
 

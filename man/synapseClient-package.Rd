@@ -3,10 +3,10 @@
 \alias{synapseClient}
 \docType{package}
 \title{
-	Synapse Client
+Synapse Client
 }
 \description{
-	A client for interacting with the Synapse web services.
+A client for interacting with the Synapse web services.
 }
 \details{
 \tabular{ll}{
@@ -19,12 +19,12 @@ LazyLoad: \tab yes\cr
 }
 }
 \author{
-	Matt Furia and Nicole Deflaux
-	Maintainer: Matt Furia <matt.furia@sagebase.org>
+Matt Furia and Nicole Deflaux
+Maintainer: Matt Furia <matt.furia@sagebase.org>
 }
 \keyword{ package }
 \examples{
-	## Not Run
-	
-	## End Not Run
+## Not Run
+
+## End Not Run
 }

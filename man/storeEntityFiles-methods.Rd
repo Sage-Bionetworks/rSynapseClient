@@ -11,7 +11,7 @@
 \describe{
 
 \item{\code{signature(entity = "Layer")}}{
-	Store the files associated with the Layer
+Store the files associated with the Layer
 }
 
 }}

@@ -4,34 +4,34 @@
 \alias{synapsePortalEndpoint}
 \alias{synapseResetEndpoints}
 \title{
-	Synapse Endpoints
+Synapse Endpoints
 }
 \description{
-	Manage the Synapse endpoints
+Manage the Synapse endpoints
 }
 \usage{
-	synapseAuthServiceEndpoint(endpoint)
-	synapseRepoServiceEndpoint(endpoint)
-	synapsePortalEndpoint(endpoint)
-	synapseResetEndpoints()
+synapseAuthServiceEndpoint(endpoint)
+synapseRepoServiceEndpoint(endpoint)
+synapsePortalEndpoint(endpoint)
+synapseResetEndpoints()
 }
 \arguments{
   \item{endpoint}{
-		The desired service endpoint
-	}
+The desired service endpoint
+}
 }
 \details{
-	If called with no arguments, get the desired endpoint. Otherwise, set the endpoint to the value provided.
-	
-	SynapseResetEndpoints sets the three endpoints to their default values.
+If called with no arguments, get the desired endpoint. Otherwise, set the endpoint to the value provided.
+
+SynapseResetEndpoints sets the three endpoints to their default values.
 }
 \value{
-	If called with no arguments, all but synapseResetEndpoints return the value of the endpoint.
+If called with no arguments, all but synapseResetEndpoints return the value of the endpoint.
 }
 \author{
-	Matt Furia
+Matt Furia
 }
 
 \seealso{
-	\code{\link{synapseLogin}}
+\code{\link{synapseLogin}}
 }

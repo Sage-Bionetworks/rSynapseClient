@@ -11,10 +11,10 @@
 \describe{
 
 \item{\code{signature(object = "SynapseAnnotation", value = "list")}}{
-	set the property values
+set the property values
 }
 
 \item{\code{signature(object = "SynapseEntity", value = "list")}}{
-	set the property values
+set the property values
 }
 }}

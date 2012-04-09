@@ -6,13 +6,13 @@
 \alias{Layer,numeric-method}
 \title{Layer}
 \description{
-	Layer entity constructors.
+Layer entity constructors.
 }
 \section{Methods}{
 \describe{
 
 \item{\code{signature(entity = "list")}}{
-	Build a Layer entity from a list of properties.
+Build a Layer entity from a list of properties.
 }
 
 }}

@@ -1,33 +1,34 @@
-# Unit tests for getObject method
-# 
-# Author: Matt Furia
+## Unit tests for getObject method
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
+
 .setUp <-
-		function()
+  function()
 {
-	synapseClient:::.setCache("oldSynapseCacheDir", synapseClient:::.getCache("synapseCacheDir"))
-	synapseClient:::.setCache("synapseCacheDir", tempfile())
+  synapseClient:::.setCache("oldSynapseCacheDir", synapseClient:::.getCache("synapseCacheDir"))
+  synapseClient:::.setCache("synapseCacheDir", tempfile())
 }
 
 .tearDown <-
-		function()
+  function()
 {
-	unlink(synapseClient:::.getCache("synapseCacheDir"), recursive = TRUE)
-	synapseClient:::.setCache("synapseCacheDir", synapseClient:::.getCache("oldSynapseCacheDir"))
-	synapseClient:::.deleteCache("oldSynapseCacheDir")
+  unlink(synapseClient:::.getCache("synapseCacheDir"), recursive = TRUE)
+  synapseClient:::.setCache("synapseCacheDir", synapseClient:::.getCache("oldSynapseCacheDir"))
+  synapseClient:::.deleteCache("oldSynapseCacheDir")
 }
 
 unitTestGet <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	addObject(layer, "foo", "bar")
-	checkEquals(getObject(layer, "bar"), "foo")
+  layer <- new(Class="Layer")
+  addObject(layer, "foo", "bar")
+  checkEquals(getObject(layer, "bar"), "foo")
 }
 
 unitTestGetInvalidObject <-
-		function()
+  function()
 {
-	layer <- new(Class="Layer")
-	checkException(getObject(layer, "bar"))
+  layer <- new(Class="Layer")
+  checkException(getObject(layer, "bar"))
 }

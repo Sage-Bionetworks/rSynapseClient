@@ -12,15 +12,15 @@
 \describe{
 
 \item{\code{signature(entity = "character")}}{
-	Load the entity with the specified ID
+Load the entity with the specified ID
 }
 
 \item{\code{signature(entity = "Layer")}}{
-	Load the specified entity
+Load the specified entity
 }
 
 \item{\code{signature(entity = "numeric")}}{
-		Load the entity with the specified ID
+Load the entity with the specified ID
 }
 }}
 \keyword{methods}

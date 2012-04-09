@@ -17,35 +17,35 @@
 \describe{
 
 \item{\code{signature(object = "SynapseAnnotation", which = "character", value = "character")}}{
-	set a character annotation
+set a character annotation
 }
 
 \item{\code{signature(object = "SynapseAnnotation", which = "character", value = "integer")}}{
-	set an integer annotation
+set an integer annotation
 }
 
 \item{\code{signature(object = "SynapseAnnotation", which = "character", value = "logical")}}{
-	set a logical annotation
+set a logical annotation
 }
 
 \item{\code{signature(object = "SynapseAnnotation", which = "character", value = "numeric")}}{
-	set a numeric annotation
+set a numeric annotation
 }
 
 \item{\code{signature(object = "SynapseEntity", which = "character", value = "character")}}{
-	set a character annotation
+set a character annotation
 }
 
 \item{\code{signature(object = "SynapseEntity", which = "character", value = "integer")}}{
-	set an integer annotation
+set an integer annotation
 }
 
 \item{\code{signature(object = "SynapseEntity", which = "character", value = "logical")}}{
-	set a logical annotation
+set a logical annotation
 }
 
 \item{\code{signature(object = "SynapseEntity", which = "character", value = "numeric")}}{
-	set a numeric annotation
+set a numeric annotation
 }
 }}
 \keyword{methods}

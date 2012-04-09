@@ -13,15 +13,15 @@
 \describe{
 
 \item{\code{signature(entity = "character")}}{
-	Get the specified entity
+Get the specified entity
 }
 
 \item{\code{signature(entity = "numeric")}}{
-	Get the specified entity
+Get the specified entity
 }
 
 \item{\code{signature(entity = "SynapseEntity")}}{
-	Get the specified entity
+Get the specified entity
 }
 }}
 \keyword{methods}

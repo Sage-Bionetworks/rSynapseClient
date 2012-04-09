@@ -10,6 +10,6 @@
 \describe{
 
 \item{\code{signature(entity = "Layer", which = "character", name = "character")}}{
-	Rename the entity object
+Rename the entity object
 }
 }}

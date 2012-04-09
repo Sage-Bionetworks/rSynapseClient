@@ -1,36 +1,43 @@
-# Generic method definitions
-# 
-# Author: matt furia
-###############################################################################
+## Generic method definitions
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
+################################################################################
 
 setGeneric(name="as.list")
 
 setGeneric(
-		name = "Media",
-		def = function(entity){
-			standardGeneric("Media")
-		}
-		
+  name = "Media",
+  def = function(entity){
+    standardGeneric("Media")
+  }
+
 )
 
 setGeneric(
-		name = "deleteFile",
-		def = function(entity, file){
-			standardGeneric("deleteFile")
-		}
+  name = "deleteFile",
+  def = function(entity, file){
+    standardGeneric("deleteFile")
+  }
 )
 setGeneric(
-		name = "moveFile",
-		def = function(entity, src, dest){
-			standardGeneric("moveFile")
-		}
+  name = "moveFile",
+  def = function(entity, src, dest){
+    standardGeneric("moveFile")
+  }
 )
 
 setGeneric(
-		name = "addFile",
-		def = function(entity, file, path){
-			standardGeneric("addFile")
-		}
+  name = "addFile",
+  def = function(entity, file, path){
+    standardGeneric("addFile")
+  }
+)
+
+setGeneric(
+  name = "addObject",
+  def = function(entity, object, name, unlist){
+    standardGeneric("addObject")
+  }
 )
 
 setGeneric(
@@ -41,137 +48,137 @@ setGeneric(
 )
 
 setGeneric(
-		name = "summarizeObjects",
-		def = function(entity){
-			standardGeneric("summarizeObjects")
-		}
+  name = "summarizeObjects",
+  def = function(entity){
+    standardGeneric("summarizeObjects")
+  }
 )
 
 setGeneric(
-		name = "summarizeCacheFiles",
-		def = function(entity){
-			standardGeneric("summarizeCacheFiles")
-		}
-		
+  name = "summarizeCacheFiles",
+  def = function(entity){
+    standardGeneric("summarizeCacheFiles")
+  }
+
 )
 
 setGeneric(
-		name = "copyEntity",
-		def = function(entity){
-			standardGeneric("copyEntity")
-		}
+  name = "copyEntity",
+  def = function(entity){
+    standardGeneric("copyEntity")
+  }
 )
 
 setGeneric(
-		name = "CachedLocation",
-		def = function(location, files){
-			standardGeneric("CachedLocation")
-		}
+  name = "CachedLocation",
+  def = function(location, files){
+    standardGeneric("CachedLocation")
+  }
 )
 
 setGeneric(
-		name = "storeFile",
-		def = function(entity, filePath){
-			standardGeneric("storeFile")
-		}
+  name = "storeFile",
+  def = function(entity, filePath){
+    standardGeneric("storeFile")
+  }
 )
 
 setGeneric(
-		name = ".cacheEntity",
-		def = function(entity){
-			standardGeneric(".cacheEntity")
-		}
+  name = ".cacheEntity",
+  def = function(entity){
+    standardGeneric(".cacheEntity")
+  }
 )
 
 setGeneric(
-		name = "storeEntityFiles",
-		def = function(entity){
-			standardGeneric("storeEntityFiles")
-		}
+  name = "storeEntityFiles",
+  def = function(entity){
+    standardGeneric("storeEntityFiles")
+  }
 )
 
 setGeneric(
-		name = "Eula",
-		def = function(entity){
-			standardGeneric("Eula")
-		}
+  name = "Eula",
+  def = function(entity){
+    standardGeneric("Eula")
+  }
 )
 
 setGeneric(
-		name = "Code",
-		def = function(entity){
-			standardGeneric("Code")
-		}
+  name = "Code",
+  def = function(entity){
+    standardGeneric("Code")
+  }
 )
 
 setGeneric(
-		name = ".loadSageBioPacket",
-		def = function(entity){
-			standardGeneric(".loadSageBioPacket")
-		}
-		
+  name = ".loadSageBioPacket",
+  def = function(entity){
+    standardGeneric(".loadSageBioPacket")
+  }
+
 )
 
 setGeneric(
-		name = "CachedLayer",
-		def = function(entity, files){
-			standardGeneric("CachedLayer")
-		}
+  name = "CachedLayer",
+  def = function(entity, files){
+    standardGeneric("CachedLayer")
+  }
 )
 
 setGeneric(
-		name = "downloadEntity",
-		def = function(entity){
-			standardGeneric("downloadEntity")
-		}
+  name = "downloadEntity",
+  def = function(entity){
+    standardGeneric("downloadEntity")
+  }
 )
 
 setGeneric(
-		name = "loadEntity",
-		def = function(entity){
-			standardGeneric("loadEntity")
-		}
+  name = "loadEntity",
+  def = function(entity){
+    standardGeneric("loadEntity")
+  }
 )
 
 setGeneric(
-		name = "loadEntity",
-		def = function(entity){
-			standardGeneric("loadEntity")
-		}
+  name = "loadEntity",
+  def = function(entity){
+    standardGeneric("loadEntity")
+  }
 )
 
 setGeneric(
-		name = ".promptEulaAgreement",
-		def = function(entity){
-			standardGeneric(".promptEulaAgreement")
-		}
+  name = ".promptEulaAgreement",
+  def = function(entity){
+    standardGeneric(".promptEulaAgreement")
+  }
 )
 setGeneric(
-		name = "hasSignedEula",
-		def = function(entity){
-			standardGeneric("hasSignedEula")
-		}
-)
-
-setGeneric(
-		name = ".getEntityInfo",
-		def = function(entity){
-			standardGeneric(".getEntityInfo")
-		}
+  name = "hasSignedEula",
+  def = function(entity){
+    standardGeneric("hasSignedEula")
+  }
 )
 
 setGeneric(
-		name = ".signEula",
-		def = function(entity){
-			standardGeneric(".signEula")
-		}
+  name = ".getEntityInfo",
+  def = function(entity){
+    standardGeneric(".getEntityInfo")
+  }
 )
 
 setGeneric(
-		name = "showEula",
-		def = function(entity){
-			standardGeneric("showEula")
-		}
+  name = ".signEula",
+  def = function(entity){
+    standardGeneric(".signEula")
+  }
+)
+
+setGeneric(
+  name = "showEula",
+  def = function(entity){
+    standardGeneric("showEula")
+  }
 )
 
 #setGeneric(
@@ -182,277 +189,277 @@ setGeneric(
 #)
 #
 setGeneric(
-		name = "getParentEntity",
-		def = function(entity){
-			standardGeneric("getParentEntity")
-		}
+  name = "getParentEntity",
+  def = function(entity){
+    standardGeneric("getParentEntity")
+  }
 )
 
 setGeneric(
-		name = "refreshEntity",
-		def = function(entity){
-			standardGeneric("refreshEntity")
-		}
+  name = "refreshEntity",
+  def = function(entity){
+    standardGeneric("refreshEntity")
+  }
 )
 
 setGeneric(
-		name = "refreshAnnotations",
-		def = function(entity){
-			standardGeneric("refreshAnnotations")
-		}
+  name = "refreshAnnotations",
+  def = function(entity){
+    standardGeneric("refreshAnnotations")
+  }
 )
 
 setGeneric(
-		name = "updateEntity",
-		def = function(entity){
-			standardGeneric("updateEntity")
-		}
+  name = "updateEntity",
+  def = function(entity){
+    standardGeneric("updateEntity")
+  }
 )
 
 setGeneric(
-		name = "createEntity",
-		def = function(entity, className){
-			standardGeneric("createEntity")
-		}
+  name = "createEntity",
+  def = function(entity, className){
+    standardGeneric("createEntity")
+  }
 )
 
 setGeneric(
-		name = "getEntity",
-		def = function(entity, ...){
-			standardGeneric("getEntity")
-		}
+  name = "getEntity",
+  def = function(entity, ...){
+    standardGeneric("getEntity")
+  }
 )
 
 setGeneric(
-		name = "deleteProperty",
-		def = function(object, which){
-			standardGeneric("deleteProperty")
-		}
+  name = "deleteProperty",
+  def = function(object, which){
+    standardGeneric("deleteProperty")
+  }
 )
 
 setGeneric(
-		name = "deleteAnnotation",
-		def = function(object, which){
-			standardGeneric("deleteAnnotation")
-		}
+  name = "deleteAnnotation",
+  def = function(object, which){
+    standardGeneric("deleteAnnotation")
+  }
 )
 
 setGeneric(
-		name = "deleteEntity",
-		def = function(entity, ...){
-			standardGeneric("deleteEntity")
-		}
+  name = "deleteEntity",
+  def = function(entity, ...){
+    standardGeneric("deleteEntity")
+  }
 )
 
 setGeneric(
-		name = ".extractEntityFromSlots",
-		def = function(object){
-			standardGeneric(".extractEntityFromSlots")
-		}
+  name = ".extractEntityFromSlots",
+  def = function(object){
+    standardGeneric(".extractEntityFromSlots")
+  }
 )
 
 setGeneric(
-		name = ".populateSlotsFromEntity",
-		def = function(object, entity){
-			standardGeneric(".populateSlotsFromEntity")
-		}
+  name = ".populateSlotsFromEntity",
+  def = function(object, entity){
+    standardGeneric(".populateSlotsFromEntity")
+  }
 )
 
 setGeneric(
-		name = "updateAnnotations",
-		def = function(annotations){
-			standardGeneric("updateAnnotations")
-		}
+  name = "updateAnnotations",
+  def = function(annotations){
+    standardGeneric("updateAnnotations")
+  }
 )
 
 setGeneric(
-		name="annotations<-", 
-		def=function(object,value){
-			standardGeneric("annotations<-")
-		}
+  name="annotations<-", 
+  def=function(object,value){
+    standardGeneric("annotations<-")
+  }
 )
 
 setGeneric(
-		name = "annotations",
-		def = function(object){
-			standardGeneric("annotations")
-		}
+  name = "annotations",
+  def = function(object){
+    standardGeneric("annotations")
+  }
 )
 
 setGeneric(
-		name = "properties",
-		def = function(object){
-			standardGeneric("properties")
-		}
+  name = "properties",
+  def = function(object){
+    standardGeneric("properties")
+  }
 )
 
 setGeneric(
-		name = "properties<-",
-		def = function(object, value){
-			standardGeneric("properties<-")
-		}
+  name = "properties<-",
+  def = function(object, value){
+    standardGeneric("properties<-")
+  }
 )
 
 setGeneric(
-		name = "deleteProperty",
-		def = function(object, which){
-			standardGeneric("deleteProperty")
-		}
+  name = "deleteProperty",
+  def = function(object, which){
+    standardGeneric("deleteProperty")
+  }
 )
 
 setGeneric(
-		name = "annotValue",
-		def = function(object, which){
-			standardGeneric("annotValue")
-		}
+  name = "annotValue",
+  def = function(object, which){
+    standardGeneric("annotValue")
+  }
 )
 
 setGeneric(
-		name = "annotValue<-",
-		def = function(object, which, value){
-			standardGeneric("annotValue<-")
-		}
+  name = "annotValue<-",
+  def = function(object, which, value){
+    standardGeneric("annotValue<-")
+  }
 )
 
 setGeneric(
-		name = "propertyValue",
-		def = function(object, which){
-			standardGeneric("propertyValue")
-		}		
+  name = "propertyValue",
+  def = function(object, which){
+    standardGeneric("propertyValue")
+  }		
 )
 
 setGeneric(
-		name = "propertyValue<-",
-		def = function(object, which, value){
-			standardGeneric("propertyValue<-")
-		}		
+  name = "propertyValue<-",
+  def = function(object, which, value){
+    standardGeneric("propertyValue<-")
+  }		
 )
 
 setGeneric(
-		name = ".setAnnotationValue",
-		def = function(object, which, value, type){
-			standardGeneric(".setAnnotationValue")
-		}
+  name = ".setAnnotationValue",
+  def = function(object, which, value, type){
+    standardGeneric(".setAnnotationValue")
+  }
 )
 
 setGeneric(
-		name = "annotationNames",
-		def = function(object){
-			standardGeneric("annotationNames")
-		}
+  name = "annotationNames",
+  def = function(object){
+    standardGeneric("annotationNames")
+  }
 )
 
 setGeneric(
-		name = "annotationValues",
-		def = function(object){
-			standardGeneric("annotationValues")
-		}
+  name = "annotationValues",
+  def = function(object){
+    standardGeneric("annotationValues")
+  }
 )
 
 setGeneric(
-		name = "annotationValues<-",
-		def = function(object, value){
-			standardGeneric("annotationValues<-")
-		}
+  name = "annotationValues<-",
+  def = function(object, value){
+    standardGeneric("annotationValues<-")
+  }
 )
 
 setGeneric(
-		name = "propertyNames",
-		def = function(object){
-			standardGeneric("propertyNames")
-		}
+  name = "propertyNames",
+  def = function(object){
+    standardGeneric("propertyNames")
+  }
 )
 
 setGeneric(
-		name = "propertyValues",
-		def = function(object){
-			standardGeneric("propertyValues")
-		}
+  name = "propertyValues",
+  def = function(object){
+    standardGeneric("propertyValues")
+  }
 )
 
 setGeneric(
-		name = "propertyValues<-",
-		def = function(object, value){
-			standardGeneric("propertyValues<-")
-		}
+  name = "propertyValues<-",
+  def = function(object, value){
+    standardGeneric("propertyValues<-")
+  }
 )
 
 ## Generic method for setting subclass
 setGeneric(
-		name = "setSubclass",
-		def = function(object){
-			standardGeneric("setSubclass")
-		}
+  name = "setSubclass",
+  def = function(object){
+    standardGeneric("setSubclass")
+  }
 )
 
 ## Generic Location constructor
 setGeneric(
-		name = "Location",
-		def = function(entity){
-			standardGeneric("Location")
-		}
+  name = "Location",
+  def = function(entity){
+    standardGeneric("Location")
+  }
 )
 
 ## Generic Dataset constructor
 setGeneric(
-		name = "Dataset",
-		def = function(entity){
-			standardGeneric("Dataset")	
-		}
+  name = "Dataset",
+  def = function(entity){
+    standardGeneric("Dataset")	
+  }
 )
 
 ## Generic SynapseEntity constructor
 setGeneric(
-		name = "SynapseEntity",
-		def = function(entity){
-			standardGeneric("SynapseEntity")
-		}
+  name = "SynapseEntity",
+  def = function(entity){
+    standardGeneric("SynapseEntity")
+  }
 )
 
 ## Generic Layer constructor
 setGeneric(
-		name = "Layer",
-		def = function(entity){
-			standardGeneric("Layer")
-		}
+  name = "Layer",
+  def = function(entity){
+    standardGeneric("Layer")
+  }
 )
 
 ## Generic Project constructor
 setGeneric(
-		name = "Project",
-		def = function(entity){
-			standardGeneric("Project")
-		}
+  name = "Project",
+  def = function(entity){
+    standardGeneric("Project")
+  }
 )
 
 ## Generic Analysis constructor
 setGeneric(
-	name = "Analysis",
-	def = function(entity){
-		standardGeneric("Analysis")
-	}
-	)
+  name = "Analysis",
+  def = function(entity){
+    standardGeneric("Analysis")
+  }
+)
 
 ## Generic Step constructor
 setGeneric(
-	name = "Step",
-	def = function(entity){
-		standardGeneric("Step")
-	}
-	)
-
-setGeneric(
-		name = "synapseEntityKind",
-		def = function(entity){
-			standardGeneric("synapseEntityKind")
-		}
+  name = "Step",
+  def = function(entity){
+    standardGeneric("Step")
+  }
 )
 
 setGeneric(
-		name = "synapseEntityKind<-",
-		def = function(entity, value){
-			standardGeneric("synapseEntityKind<-")
-		}
+  name = "synapseEntityKind",
+  def = function(entity){
+    standardGeneric("synapseEntityKind")
+  }
+)
+
+setGeneric(
+  name = "synapseEntityKind<-",
+  def = function(entity, value){
+    standardGeneric("synapseEntityKind<-")
+  }
 )
 
 

@@ -12,7 +12,7 @@
 \describe{
 
 \item{\code{signature(entity = "list")}}{
-	Construct a Dataset entity from a list of properties
+Construct a Dataset entity from a list of properties
 }
 
 }}

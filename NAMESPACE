@@ -13,16 +13,17 @@ export(onWeb, attach, detach)
 
 ## S3 utility methods
 export(
-	synapseResetEndpoints, 
-	synapseAuthServiceEndpoint, 
-	synapseRepoServiceEndpoint,
-	synapsePortalEndpoint,
-	synapseLogin, 
-	synapseLogout, 
-	synapseQuery, 
-	synapseCacheDir,
-	hmacSecretKey,
-    .Last.lib
+  synapseResetEndpoints, 
+  synapseAuthServiceEndpoint, 
+  synapseRepoServiceEndpoint,
+  synapsePortalEndpoint,
+  synapseLogin, 
+  synapseLogout, 
+  synapseQuery, 
+  synapseCacheDir,
+  hmacSecretKey,
+  .Last.lib,
+  signEula
 )
 
 ## S3 convenience methods
@@ -33,63 +34,65 @@ exportMethods(getDatasetLayers)
 
 ## S4 entity constructors
 exportMethods(
-	Dataset, 
-	Layer, 
-	Project,
+  Dataset, 
+  Layer, 
+  Project,
   Analysis,
   Step,
-	Code,
-	Media
+  Code,
+  Media
 )
 
 ## entity S4 methods
 exportMethods(
-	storeEntityFiles,
-	storeEntityObjects,
-	storeEntity,
-	copyEntity, 
-	getEntity, 
-	deleteEntity, 
-	createEntity, 
-	updateEntity, 
-	downloadEntity, 
-	loadEntity, 
-	getParentEntity
+  storeEntityFiles,
+  storeEntityObjects,
+  storeEntity,
+  copyEntity, 
+  getEntity, 
+  deleteEntity, 
+  createEntity, 
+  updateEntity, 
+  downloadEntity, 
+  loadEntity, 
+  getParentEntity
 )
 
 ## methods for managing layer files
 exportMethods(
-	addFile,
-	deleteFile,
-	addGithubTag,
-	moveFile,
-	edit
+  addFile,
+  deleteFile,
+  addGithubTag,
+  moveFile,
+  edit
 ) 
 
 exportMethods(
-	addObject,
-	deleteObject,
-	getObject,
-	renameObject
+  addObject,
+  deleteObject,
+  getObject,
+  renameObject
 )
 
 ## entity property/annotation setters and getters
 exportMethods(
-	"annotValue<-",
- 	annotValue, 
- 	annotations, 
- 	"annotationValues<-", 
- 	annotationValues
+  "annotValue<-",
+  annotValue, 
+  annotations, 
+  "annotations<-",
+  "annotationValues<-", 
+  annotationValues,
+  annotationNames
  )
  	
 exportMethods(
-	deleteProperty, 
-	deleteAnnotation, 
- 	propertyValue, 
- 	"propertyValue<-", 
- 	"propertyValues<-", 
- 	propertyValues, 
- 	properties
+  deleteProperty, 
+  deleteAnnotation, 
+  propertyValue, 
+  "propertyValue<-", 
+  "propertyValues<-", 
+  propertyValues, 
+  properties
 )
 
 # Provenance Methods
