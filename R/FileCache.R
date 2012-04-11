@@ -64,6 +64,25 @@ setRefClass(
   )
 )
 
+setMethod(
+  f = "FileCache",
+  signature = signature("character", "missing"),
+  definition = function(cacheDir){
+    fc <- new("FileCache")
+    fc$cacheDir <- cacheDir
+    fc$loadMetaDataFromFile()
+    fc
+  }
+)
+
+setMethod(
+ f = "FileCache",
+ signature = signature("missing", "missing"),
+ definition = function(){
+   new("FileCache")
+ }
+)
+
 ## addFile methods
 setMethod(
   f = "addFile",
