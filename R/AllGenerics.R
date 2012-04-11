@@ -42,3 +42,10 @@ setGeneric(
     standardGeneric("addFile")
   }
 )
+
+setGeneric(
+  name = "FileCache",
+  def = function(cacheDir, object){
+    standardGeneric("FileCache")
+  }
+)
