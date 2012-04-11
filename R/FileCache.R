@@ -7,14 +7,59 @@ setRefClass(
   Class = "FileCache",
   fields = list(
     cacheDir = "character",
-    files = "list"
+    metaData = "list",
+    hasChanged = "logical"
   ),
   methods = list(
     initialize = function(){
       .self$initFields(
         cacheDir = tempfile(pattern = "fileCache"),
-        files = list()
+        metaData = emptyNamedList,
+        hasChanged = FALSE
       )
+    },
+    addFileMetaData = function(srcPath, destPath, ...){
+      .self$metaData[[destPath]] <- list(srcPath = srcPath)
+      elp <- list(...)
+      if(any(names(elp) == ""))
+        stop("All elements must be named")
+      if(length(elp) > 0)
+        .self$metaData[[destPath]] <- c(.self$metaData[[destPath]], elp)
+      .self$hasChanged <- TRUE
+      invisible(.self$metaData)
+    },
+    getFileMetaData = function(destPath){
+      .self$metaData[destPath]
+    },
+    deleteFileMetaData = function(destPath){
+      if(missing(destPath)){
+        .self$metaData <- emptyNamedList
+        .self$hasChanged <- TRUE
+      }else{
+        indx <- which(names(.self$metaData) %in% destPath)
+        if(length(indx) > 0){
+          .self$metaData = metaData[-indx]
+          .self$hasChanged <- TRUE
+        }
+      }
+      invisible(.self$metaData)
+    },
+    cacheFileMetaData = function(){
+      if(!file.exists(.self$cacheDir))
+        dir.create(.self$cacheDir)
+      cat(toJSON(.self$metaData), file=file.path(.self$cacheDir, "files.json"))
+    },
+    deleteMetaDataCache = function(){
+      file.remove(file.path(.self$cacheDir, "files.json"))
+    },
+    loadMetaDataFromFile = function(){
+      file = file.path(.self$cacheDir, "files.json")
+      if(!file.exists(file)){
+        .self$metaData <- emptyNamedList
+      }else{
+        .self$metaData <- fromJSON(file, simplifyWithNames=FALSE)
+      }
+      invisible(.self$metaData)
     }
   )
 )
@@ -43,7 +88,7 @@ setMethod(
     
     if(length(prefix) > 1 && (length(prefix) != length(file)))
       stop("Must provide either a prefix path, or one path for each file")
-      
+    
     
     path <- gsub("[\\/]+$", "", path)
     path <- gsub("[\\/]+", "/", path)
@@ -93,11 +138,11 @@ setMethod(
   definition = function(entity, file, prefix){
     ## the default path
     path = "/"
-
+    
     ## default prefix
     if(missing(prefix))
       prefix <- ""
-
+    
     addFile(entity, file, path=path, prefix = prefix)
   }
 )
