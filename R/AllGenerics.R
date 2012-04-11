@@ -35,3 +35,10 @@ setGeneric(
     standardGeneric("getObject")
   }
 )
+
+setGeneric(
+  name = "addFile",
+  def = function(entity, file, path, prefix){
+    standardGeneric("addFile")
+  }
+)
