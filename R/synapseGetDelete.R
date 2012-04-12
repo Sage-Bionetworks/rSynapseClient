@@ -41,7 +41,7 @@
   ## Prepare the header. If not an anonymous request, stuff the
   ## sessionToken into the header
   header <- .getCache("curlHeader")
-  if(!is.null(anonymous) && !anonymous) {
+  if(is.null(anonymous) || !anonymous) {
     header <- switch(authMode(),
       auth = .stuffHeaderAuth(header),
       hmac = .stuffHeaderHmac(header, uri),
