@@ -56,3 +56,10 @@ setGeneric(
     standardGeneric("addFileMetaData")
   }
 )
+
+setGeneric(
+  name = "deleteFile",
+  def = function(entity, file){
+    standardGeneric("deleteFile")
+  }
+)

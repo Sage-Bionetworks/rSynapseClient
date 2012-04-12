@@ -63,6 +63,9 @@ setRefClass(
             .self$metaData <- fromJSON(file, simplifyWithNames=FALSE)
           }
           invisible(.self$metaData)
+        },
+        files = function(){
+          as.character(unlist(lapply(.self$getFileMetaData(), function(m) m$relativePath)))
         }
     )
 )
@@ -267,8 +270,35 @@ setMethod(
 
 
 ## deleteFile methods
-
-
+setMethod(
+  f = "deleteFile",
+  signature = signature("FileCache", "character"),
+  definition = function(entity, file){
+    file <- gsub("^[\\/]+","", file)
+    file <- gsub("[\\]+","/", file)
+    
+    ## delete from the local cache
+    if(!all(mk <- (file %in% entity$files())))
+      stop(sprintf("Invalid file: %s\n", file[!mk]))
+    
+    indx <- which(entity$files() %in% file)
+    deleteFiles <- names(entity$getFileMetaData())[indx]
+    tryCatch(
+      file.remove(deleteFiles, recursive=TRUE),
+      error = function(e){
+        warning(sprintf("Unable to remove file from local cache: %s", e))
+      }
+    )
+    
+    ## remove from the list of files
+    entity$deleteFileMetaData(deleteFiles)
+    
+    ## clean up empty directories
+    .recursiveDeleteEmptyDirs(entity$cacheDir)
+    
+    invisible(entity)
+  }
+)
 
 
 
