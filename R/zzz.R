@@ -25,4 +25,7 @@
     .setCache("rObjCacheDir", ".R_OBJECTS")
     .setCache("hasZip", TRUE)
   }
+  # not sure if this is to go here
+  .setCache("curlHeader", c('Content-Type'="application/json", Accept = "application/json", "Accept-Charset"="utf-8"))
+  .setCache("sessionRefreshDurationMin", 1440)
 }

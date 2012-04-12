@@ -24,7 +24,7 @@ synapseLogin <-
   .setCache("sessionTimestamp", Sys.time())
   
   # automatic provenance, don't return this object, but it is cached
-  currentStep = startStep()
+  # currentStep = startStep() TODO restore this once new Synapse objects are available
 }
 
 .doHmac <-
@@ -209,7 +209,7 @@ hmacSecretKey <-
     return(key)
   }
   .setCache("base64secretKey", secretKey)
-  if(.getCache("useJavaClient")){
+  if(!is.null(.getCache("useJavaClient")) && .getCache("useJavaClient")){
     .jenv[["syn"]]$setApiKey(secretKey)
   }
   authMode(kAuthMode)
@@ -241,7 +241,7 @@ userName <-
   if(missing(name))
     return(.getCache("username"))
   .setCache("username", name)
-  if(.getCache("useJavaClient")){
+  if(!is.null(.getCache("useJavaClient")) && .getCache("useJavaClient")){
     .jenv[["syn"]]$setUserName(name)
   }
 }
