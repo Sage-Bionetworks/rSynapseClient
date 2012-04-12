@@ -45,7 +45,7 @@ setGeneric(
 
 setGeneric(
   name = "FileCache",
-  def = function(cacheDir, object){
+  def = function(cacheRoot, object, archiveFile){
     standardGeneric("FileCache")
   }
 )
@@ -61,5 +61,12 @@ setGeneric(
   name = "deleteFile",
   def = function(entity, file){
     standardGeneric("deleteFile")
+  }
+)
+
+setGeneric(
+  name = "moveFile",
+  def = function(entity, src, dest){
+    standardGeneric("moveFile")
   }
 )
