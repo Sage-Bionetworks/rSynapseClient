@@ -301,4 +301,39 @@ setMethod(
 )
 
 
+## move file methods
+setMethod(
+  f = "moveFile",
+  signature = "FileCache",
+  definition = function(entity, src, dest){
+    src <- gsub("^[\\\\/]+","", src)
+    dest <- gsub("^[\\\\/]+","", dest)
+    if(!(src %in% entity$files()))
+      stop(sprintf("Invalid file: %s", src))
+    
+    if(dest %in% entity$files())
+      stop(sprintf('Destination file "%s" already exists. Delete it using deleteFile() then try again.', dest))
+    
+    if(any(grepl(sprintf("^%s/",dest), entity$files())))
+      stop(sprintf('Destination file "%s" already exists as a directory. Please choose a different destination filename and try again.', dest))
+    
+    ## if dest is a directory, move but don't rename
+    if(grepl("[\\\\/]$", dest) || dest == ""){
+      addFile(entity, file.path(entity$cacheDir, src), dest)
+    }else{
+      ## rename and copy the file to a temp directory, then add it from there
+      filename <- gsub("^.+[\\\\/]", "", dest)
+      tmpdir <- tempfile()
+      dir.create(tmpdir, recursive=TRUE)
+      newSrc <- file.path(tmpdir, filename)
+      file.copy(file.path(entity$cacheDir, src), newSrc)
+      path <- gsub(sprintf("[\\\\/]?%s$",filename),"", dest)
+      addFile(entity, newSrc, path)               
+    }
+    
+    ## delete the original file 
+    deleteFile(entity, src)
+  }         
+)
+
 
