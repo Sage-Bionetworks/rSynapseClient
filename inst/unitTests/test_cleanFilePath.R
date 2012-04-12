@@ -6,44 +6,45 @@
 unitTestTrailingForwardSlash <-
   function()
 {
-  path <- "foo/"
+  tmp <- tempfile()
+  path <- file.path(tmp, "foo/")
   ans <- synapseClient:::.cleanFilePath(path)
   checkTrue(attr(ans, "isDir"))
   
-  checkEquals(as.character(ans), path)
+  checkEquals(as.character(ans),  gsub("/+", "/", path))
   
-  path <- "foo///"
+  path <- file.path(tmp, "foo///")
   ans <- synapseClient:::.cleanFilePath(path)
   checkTrue(attr(ans, "isDir"))
   
-  checkEquals(as.character(ans), "foo/")
+  checkEquals(as.character(ans), gsub("/+", "/", file.path(tmp, "foo/")))
   
 }
 
 unitTestTrailingBackSlash <-
   function()
 {
-  
+  tmp <- tempfile()
   ## R syntax makes it so backslashes must come in pairs
-  path <- "foo\\"
+  path <- file.path(tmp, "foo\\")
   ans <- synapseClient:::.cleanFilePath(path)
   checkTrue(attr(ans, "isDir"))
   
-  checkEquals(as.character(ans), "foo/")
+  checkEquals(as.character(ans), gsub("/+", "/", file.path(tmp, "foo/")))
   
   ## R syntax makes it so backslashes must come in pairs
-  path <- "foo\\\\"
+  path <- file.path(tmp, "foo\\\\")
   ans <- synapseClient:::.cleanFilePath(path)
   checkTrue(attr(ans, "isDir"))
   
-  checkEquals(as.character(ans), "foo/")
+  checkEquals(as.character(ans), gsub("/+", "/", file.path(tmp, "foo/")))
   
 }
 
 unitTestNoTrailingSlash <-
   function()
 {
-  path <- "foo"
+  path <- file.path(tempfile(), "foo")
 
   ans <- synapseClient:::.cleanFilePath(path)
   checkTrue(!attr(ans, "isDir"))

@@ -19,13 +19,17 @@ unitTestCreateArchive <-
 unitTestUnpackArchive <-
   function()
 {
-  archive <- tempfile(fileext=".zip")
+  cacheRoot <- tempfile()
+  dir.create(cacheRoot)
+  cacheRoot <- sprintf("%s/", normalizePath(cacheRoot))
+  archive <- tempfile(tmpdir=cacheRoot,fileext=".zip")
   archiveFile <- gsub("^.+/", "", archive)
-  cacheRoot <- sprintf("%s/", gsub("/+","/", normalizePath(tempdir())))
   file1 <- tempfile()
   cat(sprintf("THIS IS A TEST: %s", Sys.time()), file = file1)
-  suppressWarnings(zip(archive, files = file1))
-  
+  olddir <- getwd()
+  setwd(tempdir())
+  suppressWarnings(zip(archive, files = gsub("^.+/", "", file1)))
+  setwd(olddir)
   fc <- FileCache(archiveFile=archive)
   
   checkEquals(archiveFile, fc$archiveFile)
@@ -33,8 +37,8 @@ unitTestUnpackArchive <-
 
   checkEquals(file.path(cacheRoot, sprintf("%s_unpacked", archiveFile)), fc$cacheDir)
   
-#  ans <- fc$unpackArchive()
-#  checkTrue(file.exists(ans))
-  
+  ans <- fc$unpackArchive()
+  checkTrue(file.exists(ans))
+  checkTrue(file.exists(file.path(ans,gsub("^.+/", "", file1))))
 }
 

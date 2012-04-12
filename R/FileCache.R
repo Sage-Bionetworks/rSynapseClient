@@ -110,9 +110,19 @@ setRefClass(
             dir.create(.self$cacheRoot, recursive = TRUE)
           
           ## OK, now let's zip. fingers crossed ;)
+          ## change directory to the cache directory
+          oldDir <- getwd()
+          setwd(.self$cacheDir)
           suppressWarnings(
-              zip(file.path(.self$cacheRoot, .self$archiveFile), names(.self$getFileMetaData()))
+            zipRetVal <- zip(file.path(.self$cacheRoot, .self$archiveFile), files=gsub("^/","",.self$files()))
           )
+          setwd(oldDir)
+          
+          ## if zip failes, load uncompressed
+          if(zipRetVal != 0L){
+            msg <- sprintf("Unable to zip Entity Files. Error code: %i.",zipRetVal)
+            stop(msg)
+          }
           
           ##update the meta-data to indicate that all the files are now sourced from the zipFile
           ans <- lapply(names(.self$getFileMetaData()), function(name){
@@ -135,6 +145,10 @@ setRefClass(
         unpackArchive = function(){
           ## unpacks the contents of the archive file, throwing an exception if the archiveFile member variable is not set
           ## invisibly returns the full path to the root directory into which the archive was unpacked
+          
+          ## remove the contents of the cacheDir
+          unlink(.self$cacheDir, force=TRUE, recursive = TRUE)
+          files <- .unpack(file.path(.self$cacheRoot, .self$archiveFile))
           invisible(.self$cacheDir)
         }
     )
