@@ -38,7 +38,35 @@ setGeneric(
 
 setGeneric(
   name = "addFile",
-  def = function(entity, file, path, prefix){
+  def = function(entity, file, path){
     standardGeneric("addFile")
+  }
+)
+
+setGeneric(
+  name = "FileCache",
+  def = function(cacheRoot, object, archiveFile){
+    standardGeneric("FileCache")
+  }
+)
+
+setGeneric(
+  name = "addFileMetaData",
+  def = function(object, srcPath, destPath){
+    standardGeneric("addFileMetaData")
+  }
+)
+
+setGeneric(
+  name = "deleteFile",
+  def = function(entity, file){
+    standardGeneric("deleteFile")
+  }
+)
+
+setGeneric(
+  name = "moveFile",
+  def = function(entity, src, dest){
+    standardGeneric("moveFile")
   }
 )

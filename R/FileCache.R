@@ -4,108 +4,366 @@
 ###############################################################################
 
 setRefClass(
-  Class = "FileCache",
-  fields = list(
-    cacheDir = "character",
-    files = "list"
-  ),
-  methods = list(
-    initialize = function(){
-      .self$initFields(
-        cacheDir = tempfile(pattern = "fileCache"),
-        files = list()
-      )
-    }
-  )
-)
-
-## addFile methods
-setMethod(
-  f = "addFile",
-  signature = signature("FileCache", "character", "character", "ANY"),
-  definition = function(entity, file, path, prefix){
-    if(length(path) > 1 && (length(path) != length(file)))
-      stop("Must provide either a single path, or one path for each file")
-    if(any(file.info(file)$isdir) && length(path) > 1)
-      stop("when adding directories, provide only a single path")
-    
-    if(!all(mk<-file.exists(file)))
-      stop(sprintf("File not found: %s", file[!mk]))
-    
-    if(!hasZip() && length(entity$files) > 0){
-      stop("Unable to add file. Zip is not installed on your system ")
-    }
-    
-    if(missing(prefix))
-      prefix <- ""
-    if(!is.numeric(prefix) && !is.character(prefix))
-      stop("Prefix must be a character or numeric")
-    
-    if(length(prefix) > 1 && (length(prefix) != length(file)))
-      stop("Must provide either a prefix path, or one path for each file")
-      
-    
-    path <- gsub("[\\/]+$", "", path)
-    path <- gsub("[\\/]+", "/", path)
-    path <- gsub("^[/]+", "", path)
-    mk <- path %in% c("")
-    destdir <- rep("/", length(path))
-    cacheDir <- entity$cacheDir
-    if(any(mk))
-      destdir[mk] <- file.path(entity$cacheDir, sprintf("%s%s", prefix[mk],  path[mk]))
-    if(any(!mk))
-      destdir[!mk] <- file.path(entity$cacheDir, sprintf("%s%s", prefix[!mk],  path[!mk]))
-    
-    if(!all(mk <- file.exists(destdir)))
-      lapply(destdir[!mk], function(d) dir.create(d, recursive = TRUE))
-    
-    if(length(file) == length(path)){
-      for(i in 1:length(file)){
-        if(file.info(file[i])$isdir){
-          recursive = TRUE
-        }else{
-          recursive = FALSE
+    Class = "FileCache",
+    fields = list(
+        cacheRoot = "character",
+        cacheDir = "character",
+        metaData = "list",
+        hasChanged = "logical",
+        archiveFile = "character"
+    ),
+    methods = list(
+        initialize = function(){
+          .self$initFields(
+              cacheRoot = normalizePath(tempfile(pattern="cacheRoot"), mustWork=FALSE),
+              metaData = emptyNamedList,
+              hasChanged = FALSE,
+              archiveFile = ""
+          )
+          .self$cacheDir <- tempfile(pattern="cache_unpacked", tmpdir = .self$cacheRoot)
+        },
+        addFileMetaData = function(srcPath, destPath, ...){
+          destPath <- as.character(.cleanFilePath(destPath))
+          .self$metaData[[destPath]] <- list(srcPath = srcPath)
+          elp <- list(...)
+          if(any(names(elp) == ""))
+            stop("All elements must be named")
+          if(length(elp) > 0)
+            .self$metaData[[destPath]] <- c(.self$metaData[[destPath]], elp)
+          .self$hasChanged <- TRUE
+          invisible(.self$metaData)
+        },
+        getFileMetaData = function(destPath){
+          .self$metaData[destPath]
+        },
+        deleteFileMetaData = function(destPath){
+          if(missing(destPath)){
+            .self$metaData <- emptyNamedList
+            .self$hasChanged <- TRUE
+          }else{
+            indx <- which(names(.self$metaData) %in% destPath)
+            if(length(indx) > 0){
+              .self$metaData = metaData[-indx]
+              .self$hasChanged <- TRUE
+            }
+          }
+          invisible(.self$metaData)
+        },
+        cacheFileMetaData = function(){
+          if(!file.exists(.self$cacheRoot))
+            dir.create(.self$cacheRoot)
+          cat(toJSON(list(archiveFile = .self$archiveFile, metaData = .self$metaData)), file=file.path(.self$cacheRoot, "files.json"))
+        },
+        deleteMetaDataCache = function(){
+          file.remove(file.path(.self$cacheRoot, "files.json"))
+        },
+        loadMetaDataFromFile = function(){
+          file = file.path(.self$cacheRoot, "files.json")
+          if(!file.exists(file)){
+            .self$metaData <- emptyNamedList
+            .self$archiveFile <- ""
+          }else{
+            dd <- fromJSON(file, simplifyWithNames=FALSE)
+            .self$metaData <- dd$metaData
+            .self$archiveFile <- dd$archiveFile
+          }
+          invisible(list(archiveFile = .self$archiveFile, metaData = .self$metaData))
+        },
+        files = function(){
+          as.character(unlist(lapply(.self$getFileMetaData(), function(m) m$relativePath)))
+        },
+        createArchive = function(){
+          ## zips up the archive contents and invisibly returns the full path to the created archive file
+          .self$archiveFile <- "/foo/bar.zip"
+          invisible(.self$archiveFile)
+        },
+        getArchiveFile = function(){
+          ## getter for the archive file name. this will be a file name relative to the cacheRoot
+          .self$archiveFile
+        },
+        unpackArchive = function(){
+          ## unpacks the contents of the archive file, throwing an exception if the archiveFile member variable is not set
+          ## invisibly returns the full path to the root directory into which the archive was unpacked
+          .self$cacheDir
         }
-        file.copy(file[i], destdir[i], overwrite = TRUE, recursive=recursive)
-      }
-    }else{
-      file.copy(file, destdir, overwrite=TRUE, recursive=TRUE)
-    }
-    files <- dir(destdir, recursive=TRUE, all.files=T, full.names=T)
-    ## drop directories
-    if(any(mk <- file.info(files)$isdir))
-      files <- files[!mk]
-    
-    ## clip out the cacheDir bit
-    files <- gsub(entity$cacheDir, "", files, fixed=TRUE)
-    
-    files <- gsub("^[\\/]+", "", files)
-    files <- gsub("[\\/]+", "/", files)
-    if(any(!(mk <- files %in% entity$files)))
-      entity$files <- c(entity$files, files[!mk])
-    entity
-  }
+    )
 )
 
 setMethod(
-  f = "addFile",
-  signature = signature("FileCache", "character", "missing", "ANY"),
-  definition = function(entity, file, prefix){
-    ## the default path
-    path = "/"
+    f = "FileCache",
+    signature = signature("character", "missing", "missing"),
+    definition = function(cacheRoot){
+      fc <- new("FileCache")
+      fc$cacheRoot <- cacheRoot
+      fc$loadMetaDataFromFile()
+      fc
+    }
+)
 
-    ## default prefix
-    if(missing(prefix))
-      prefix <- ""
+setMethod(
+    f = "FileCache",
+    signature = signature("missing", "missing", "missing"),
+    definition = function(){
+      new("FileCache")
+    }
+)
 
-    addFile(entity, file, path=path, prefix = prefix)
+setMethod(
+  f = "FileCache",
+  signature = signature("missing", "missing", "character"),
+  definition = function(archiveFile){
+    ## this constructor will unpack the archive file, generated and generate the metadata from the 
+    ## contents of the archive
+    
+    stop("not yet implemented")
   }
+)
+
+.cleanFilePath <- 
+    function(filePath)
+{
+  filePath <- normalizePath(filePath, mustWork = FALSE)
+  filePath <- gsub("[\\/]+", "/", filePath)
+  
+  ##determine if the filePath is a directory by checking for a trailing slash
+  if(grepl("/$", filePath)){
+    isdir <- TRUE
+  }else{
+    isdir <- FALSE
+  }
+  
+  ## If the file exists, check to see if it's a directory
+  info <- file.info(filePath)
+  if(!is.na(info$isdir) && info$isdir)
+    isdir <- TRUE
+  
+  ## set the isDir attribute
+  attr(filePath, "isDir") <- isdir
+  
+  filePath
+}
+
+setMethod(
+    f = "addFileMetaData",  
+    signature = signature("FileCache", "character", "character"),
+    definition = function(object, srcPath, destPath){
+      if(length(srcPath) != 1L)
+        stop("must provide exactly 1 source file")
+      if(length(destPath) != 1L)
+        stop("must provide exactly 1 destination path")
+      
+      info <- file.info(srcPath)
+      if(!is.na(info$isdir) && info$isdir)
+        stop("Adding metaData for directories is not supported")
+      
+      
+      ## get rid of evil back-slashes
+      destPath <- gsub("[\\]+", "/", destPath)
+      
+      ## the dest path is a path relative the the root directory of the cache
+      destPath <- file.path(object$cacheDir, destPath)
+      destPath <- .cleanFilePath(destPath)
+      
+      ## if destPath is a directory, use the original filename
+      ## make sure the srcPath is not a directory either. a little defensive programming here.
+      if(attr(destPath, "isDir") && !(!is.na(info$isdir) && info$isdir)){
+        srcPathClean <- as.character(.cleanFilePath(srcPath))
+        srcFname <- gsub(".+/", "", srcPathClean)
+        destPath <- normalizePath(file.path(as.character(destPath), srcFname), mustWork=FALSE)
+      }
+      
+      ## add some file metadata. for now, just add the default info plus the relative file path and the file size
+      relPath <- gsub(normalizePath(object$cacheDir, mustWork=FALSE), "", as.character(destPath), fixed = TRUE)
+      relPath <- gsub("^/+", "", relPath)
+      info <- as.list(file.info(srcPath))
+      object$addFileMetaData(srcPath, destPath, relativePath = relPath, fileInfo = info)
+    }
+)
+
+setMethod(
+    f = "addFileMetaData",
+    signature = signature("FileCache", "character", "missing"),
+    definition = function(object, srcPath){
+      destPath <- "/"
+      addFileMetaData(object, srcPath, destPath)
+    }
+)
+
+.generateFileList <- function(file, path){
+  cleanPath <- function(x){
+    x <- gsub("[\\/]+$", "", x)
+    x <- gsub("[\\/]+", "/", x)
+    x <- gsub("^/", "", x)
+    mk <- x %in% c("")
+    x[mk] <- "/"
+    x
+  }
+  
+  ## clean up the subdirectories
+  path <- cleanPath(path)
+  file <- unlist(lapply(file, function(f) as.character(synapseClient:::.cleanFilePath(f))))
+  
+  ## get a full listing of the files
+  srcfiles <- lapply(file, function(f){
+        info <- file.info(f)
+        if(is.na(info$isdir) || !info$isdir)
+          return(f)
+        
+        ff <- list.files(f, recursive=TRUE, full.names=TRUE, all.files=TRUE)
+        for(i in 1:length(ff))
+          ff[i] <- synapseClient:::.cleanFilePath(ff[i])
+        ff
+      }
+  )
+  
+  ## build the destination files
+  destfiles <- lapply(file, function(f){
+        info <- file.info(f)
+        if(is.na(info$isdir) || !info$isdir)
+          return(gsub("^.+/", "", f))
+        ff <- list.files(f, recursive=TRUE, full.names=TRUE, all.files=TRUE)
+        f <- as.character(cleanPath(f))
+        dd <- gsub("^.+/", "", f)
+        file.path(dd,cleanPath(gsub(f, "", ff, fixed = TRUE)))
+      }
+  )
+  
+  ## build the relative destination file paths for each block of files
+  if(length(path) == 1){
+    destPaths <- lapply(destfiles, function(ff){
+          rep(path, length(ff))
+        }
+    )
+  }else if(length(path) == length(srcfiles)){
+    destPaths <- lapply(1:length(file), function(i){
+          rep(path[i], length(srcfiles[[i]]))
+        }
+    )
+  }else{
+    ## should never get here. defensive programming
+    stop("error gnerating destination file paths. number of paths did not match number of files")
+  }
+
+  list(
+      srcfiles = unlist(srcfiles),
+      destfiles = unlist(destfiles),
+      path = unlist(destPaths)
+  )
+}
+
+
+setMethod(
+    f = "addFile",
+    signature = signature("FileCache", "character", "character"),
+    definition = function(entity, file, path){
+      
+      if(!all(file.exists(file)))
+        stop("One or more specified files does not exist")
+      
+      ## need to make sure the numbers of files and paths makes sense
+      if(length(path) > 1 && length(path) != length(file))
+        stop("Must provide either a single path value or a number of path values that equals the total number of files")
+      
+      files <- .generateFileList(file, path)
+      
+      ans <- lapply(1:length(files$srcfiles), function(i){
+            ## build up the dest path
+            destPath <- file.path(files$path[i], files$destfile[i])
+            
+            ## create the destination directory if it doesn't exist
+            fname <- gsub("^.+/", "", destPath)
+            pp <- gsub(fname, "", destPath, fixed = TRUE)
+            if(!file.exists(file.path(entity$cacheDir, pp)))
+              dir.create(file.path(entity$cacheDir, pp), recursive=TRUE)
+            
+            ## copy the file
+            file.copy(files$srcfiles[i], file.path(entity$cacheDir, pp), recursive = TRUE)
+            
+            ## add the metadata to the FileCache
+            addFileMetaData(entity, files$srcfiles[i], destPath)
+          }
+      )
+      invisible(entity)
+    }
+)
+
+setMethod(
+    f = "addFile",
+    signature = signature("FileCache", "character", "missing"),
+    definition = function(entity, file){
+      ## the default path
+      path = "/"
+      
+      addFile(entity, file, path=path)
+    }
 )
 
 
 ## deleteFile methods
+setMethod(
+  f = "deleteFile",
+  signature = signature("FileCache", "character"),
+  definition = function(entity, file){
+    file <- gsub("^[\\/]+","", file)
+    file <- gsub("[\\]+","/", file)
+    
+    ## delete from the local cache
+    if(!all(mk <- (file %in% entity$files())))
+      stop(sprintf("Invalid file: %s\n", file[!mk]))
+    
+    indx <- which(entity$files() %in% file)
+    deleteFiles <- names(entity$getFileMetaData())[indx]
+    tryCatch(
+      file.remove(deleteFiles, recursive=TRUE),
+      error = function(e){
+        warning(sprintf("Unable to remove file from local cache: %s", e))
+      }
+    )
+    
+    ## remove from the list of files
+    entity$deleteFileMetaData(deleteFiles)
+    
+    ## clean up empty directories
+    .recursiveDeleteEmptyDirs(entity$cacheDir)
+    
+    invisible(entity)
+  }
+)
 
 
-
+## move file methods
+setMethod(
+  f = "moveFile",
+  signature = "FileCache",
+  definition = function(entity, src, dest){
+    src <- gsub("^[\\\\/]+","", src)
+    dest <- gsub("^[\\\\/]+","", dest)
+    if(!(src %in% entity$files()))
+      stop(sprintf("Invalid file: %s", src))
+    
+    if(dest %in% entity$files())
+      stop(sprintf('Destination file "%s" already exists. Delete it using deleteFile() then try again.', dest))
+    
+    if(any(grepl(sprintf("^%s/",dest), entity$files())))
+      stop(sprintf('Destination file "%s" already exists as a directory. Please choose a different destination filename and try again.', dest))
+    
+    ## if dest is a directory, move but don't rename
+    if(grepl("[\\\\/]$", dest) || dest == ""){
+      addFile(entity, file.path(entity$cacheDir, src), dest)
+    }else{
+      ## rename and copy the file to a temp directory, then add it from there
+      filename <- gsub("^.+[\\\\/]", "", dest)
+      tmpdir <- tempfile()
+      dir.create(tmpdir, recursive=TRUE)
+      newSrc <- file.path(tmpdir, filename)
+      file.copy(file.path(entity$cacheDir, src), newSrc)
+      path <- gsub(sprintf("[\\\\/]?%s$",filename),"", dest)
+      addFile(entity, newSrc, path)               
+    }
+    
+    ## delete the original file 
+    deleteFile(entity, src)
+  }         
+)
 
 
