@@ -13,12 +13,13 @@ setRefClass(
   methods = list(
     initialize = function(){
       .self$initFields(
-        cacheDir = tempfile(pattern = "fileCache"),
+        cacheDir = normalizePath(tempfile(pattern = "fileCache"), mustWork=FALSE),
         metaData = emptyNamedList,
         hasChanged = FALSE
       )
     },
     addFileMetaData = function(srcPath, destPath, ...){
+      destPath <- as.character(.cleanFilePath(destPath))
       .self$metaData[[destPath]] <- list(srcPath = srcPath)
       elp <- list(...)
       if(any(names(elp) == ""))
@@ -82,6 +83,70 @@ setMethod(
    new("FileCache")
  }
 )
+
+.cleanFilePath <- 
+  function(filePath)
+{
+  filePath <- normalizePath(filePath, mustWork = FALSE)
+  filePath <- gsub("[\\/]+", "/", filePath)
+  
+  ##determine if the filePath is a directory by checking for a trailing slash
+  if(grepl("/$", filePath)){
+    isdir <- TRUE
+  }else{
+    isdir <- FALSE
+  }
+  
+  ## If the file exists, check to see if it's a directory
+  info <- file.info(filePath)
+  if(!is.na(info$isdir) && info$isdir)
+    isdir <- TRUE
+  
+  ## set the isDir attribute
+  attr(filePath, "isDir") <- isdir
+  
+  filePath
+}
+
+setMethod(
+  f = "addFileMetaData",  
+  signature = signature("FileCache", "character", "character"),
+  definition = function(object, srcPath, destPath){
+    info <- file.info(srcPath)
+    if(!is.na(info$isdir) && info$isdir)
+      stop("Adding metaData for directories is not supported")
+    
+    ## get rid of evil back-slashes
+    destPath <- gsub("[\\]+", "/", destPath)
+    
+    ## the dest path is a path relative the the root directory of the cache
+    destPath <- file.path(object$cacheDir, destPath)
+    destPath <- .cleanFilePath(destPath)
+    
+    ## if destPath is a directory, use the original filename
+    ## make sure the srcPath is not a directory either. a little defensive programming here.
+    if(attr(destPath, "isDir") && !(!is.na(info$isdir) && info$isdir)){
+      srcPathClean <- as.character(.cleanFilePath(srcPath))
+      srcFname <- gsub(".+/", "", srcPathClean)
+      destPath <- normalizePath(file.path(as.character(destPath), srcFname), mustWork=FALSE)
+    }
+    
+    ## add some file metadata. for now, just add the default info plus the relative file path and the file size
+    relPath <- gsub(normalizePath(object$cacheDir, mustWork=FALSE), "", as.character(destPath), fixed = TRUE)
+    info <- as.list(file.info(srcPath))
+    object$addFileMetaData(srcPath, destPath, fileInfo = info)
+  }
+)
+
+setMethod(
+  f = "addFileMetaData",
+  signature = signature("FileCache", "character", "missing"),
+  definition = function(object, srcPath){
+    destPath <- "/"
+    addFileMetaData(object, srcPath, destPath)
+  }
+)
+
 
 ## addFile methods
 setMethod(
