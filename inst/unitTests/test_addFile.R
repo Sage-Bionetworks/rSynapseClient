@@ -215,3 +215,18 @@ unitTestAddToSubDirKeepName <-
   checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
   
 }
+
+unitTestReturnValue <-
+  function()
+{
+    file <- tempfile()
+    d <- diag(nrow=10, ncol=10)
+    save(d, file=file)
+    path <- "/foo/bar"
+    checksum <- as.character(tools::md5sum(file))
+    
+    fc <- new(Class="FileCache")
+    fc <- addFile(fc, file, path)
+    checkEquals(length(fc$getFileMetaData()), 1L)
+    checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
+}
