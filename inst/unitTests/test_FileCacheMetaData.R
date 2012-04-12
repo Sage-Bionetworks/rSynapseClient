@@ -209,7 +209,7 @@ unitTestPathConstructor <-
   
   fcc$cacheFileMetaData()
   
-  fc <- FileCache(fcc$cacheDir)
+  fc <- FileCache(fcc$cacheRoot)
   ans <- fc$getFileMetaData("destFile1")
   checkEquals(names(ans), "destFile1")
   checkEquals(length(ans), 1L)

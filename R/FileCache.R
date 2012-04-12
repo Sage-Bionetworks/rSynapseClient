@@ -6,19 +6,21 @@
 setRefClass(
     Class = "FileCache",
     fields = list(
+        cacheRoot = "character",
         cacheDir = "character",
         metaData = "list",
-        hasChanged = "logical"
+        hasChanged = "logical",
+        archiveFile = "character"
     ),
     methods = list(
         initialize = function(){
           .self$initFields(
+              cacheRoot = normalizePath(tempfile(pattern="cacheRoot"), mustWork=FALSE),
               metaData = emptyNamedList,
-              hasChanged = FALSE
+              hasChanged = FALSE,
+              archiveFile = ""
           )
-          cc <- tempfile(pattern = "fileCache")
-          cc <- normalizePath(cc, mustWork=FALSE)
-          .self$cacheDir <- cc
+          .self$cacheDir <- tempfile(pattern="cache_unpacked", tmpdir = .self$cacheRoot)
         },
         addFileMetaData = function(srcPath, destPath, ...){
           destPath <- as.character(.cleanFilePath(destPath))
@@ -48,34 +50,51 @@ setRefClass(
           invisible(.self$metaData)
         },
         cacheFileMetaData = function(){
-          if(!file.exists(.self$cacheDir))
-            dir.create(.self$cacheDir)
-          cat(toJSON(.self$metaData), file=file.path(.self$cacheDir, "files.json"))
+          if(!file.exists(.self$cacheRoot))
+            dir.create(.self$cacheRoot)
+          cat(toJSON(list(archiveFile = .self$archiveFile, metaData = .self$metaData)), file=file.path(.self$cacheRoot, "files.json"))
         },
         deleteMetaDataCache = function(){
-          file.remove(file.path(.self$cacheDir, "files.json"))
+          file.remove(file.path(.self$cacheRoot, "files.json"))
         },
         loadMetaDataFromFile = function(){
-          file = file.path(.self$cacheDir, "files.json")
+          file = file.path(.self$cacheRoot, "files.json")
           if(!file.exists(file)){
             .self$metaData <- emptyNamedList
+            .self$archiveFile <- ""
           }else{
-            .self$metaData <- fromJSON(file, simplifyWithNames=FALSE)
+            dd <- fromJSON(file, simplifyWithNames=FALSE)
+            .self$metaData <- dd$metaData
+            .self$archiveFile <- dd$archiveFile
           }
-          invisible(.self$metaData)
+          invisible(list(archiveFile = .self$archiveFile, metaData = .self$metaData))
         },
         files = function(){
           as.character(unlist(lapply(.self$getFileMetaData(), function(m) m$relativePath)))
+        },
+        createArchive = function(){
+          ## zips up the archive contents and invisibly returns the full path to the created archive file
+          .self$archiveFile <- "/foo/bar.zip"
+          invisible(.self$archiveFile)
+        },
+        getArchiveFile = function(){
+          ## getter for the archive file name. this will be a file name relative to the cacheRoot
+          .self$archiveFile
+        },
+        unpackArchive = function(){
+          ## unpacks the contents of the archive file, throwing an exception if the archiveFile member variable is not set
+          ## invisibly returns the full path to the root directory into which the archive was unpacked
+          .self$cacheDir
         }
     )
 )
 
 setMethod(
     f = "FileCache",
-    signature = signature("character", "missing"),
-    definition = function(cacheDir){
+    signature = signature("character", "missing", "missing"),
+    definition = function(cacheRoot){
       fc <- new("FileCache")
-      fc$cacheDir <- cacheDir
+      fc$cacheRoot <- cacheRoot
       fc$loadMetaDataFromFile()
       fc
     }
@@ -83,10 +102,21 @@ setMethod(
 
 setMethod(
     f = "FileCache",
-    signature = signature("missing", "missing"),
+    signature = signature("missing", "missing", "missing"),
     definition = function(){
       new("FileCache")
     }
+)
+
+setMethod(
+  f = "FileCache",
+  signature = signature("missing", "missing", "character"),
+  definition = function(archiveFile){
+    ## this constructor will unpack the archive file, generated and generate the metadata from the 
+    ## contents of the archive
+    
+    stop("not yet implemented")
+  }
 )
 
 .cleanFilePath <- 
