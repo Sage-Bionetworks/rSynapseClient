@@ -38,7 +38,7 @@ setGeneric(
 
 setGeneric(
   name = "addFile",
-  def = function(entity, file, path, prefix){
+  def = function(entity, file, path){
     standardGeneric("addFile")
   }
 )
