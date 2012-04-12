@@ -49,3 +49,10 @@ setGeneric(
     standardGeneric("FileCache")
   }
 )
+
+setGeneric(
+  name = "addFileMetaData",
+  def = function(object, srcPath, destPath){
+    standardGeneric("addFileMetaData")
+  }
+)

@@ -3,7 +3,6 @@
 # Author: furia
 ###############################################################################
 
-
 unitTestAddMetaData <-
   function()
 {
@@ -226,9 +225,106 @@ unitTestPathConstructor <-
     
 }
 
+unitTestAddFileInfo <-
+  function()
+{
+  fc <- new("FileCache")
+  srcFile <- tempfile()
+  cat(sprintf("THIS IS A TEST %s", Sys.time()), file = srcFile)
+  
+  addFileMetaData(fc, srcFile, file.path(fc$cacheDir, "/foo/bar.txt"))
+  
+}
+
+unitTestAddFileInfoTwiceSameNameDifferentSlashes <-
+  function()
+{
+  fc <- new("FileCache")
+  s1 <- tempfile()
+  s2 <- tempfile()
+  
+  path1 <- file.path(fc$cacheDir, "/foo/bar")
+  path2 <- file.path(fc$cacheDir, "///foo\\\bar")
+  addFileMetaData(fc, s1, path1)
+  checkEquals(length(fc$metaData), 1L)
+  addFileMetaData(fc, s2, path1)
+  checkEquals(length(fc$metaData), 1L)
+  
+  ## check that it works properly when the directory exists
+  fc <- new("FileCache")
+  dir.create(file.path(fc$cacheDir, "foo/bar"), recursive = TRUE)
+  path1 <- file.path(fc$cacheDir, "/foo/bar/")
+  path2 <- file.path(fc$cacheDir, "///foo\\\bar")
+  addFileMetaData(fc, s1, path1)
+  checkEquals(length(fc$metaData), 1L)
+  addFileMetaData(fc, s2, path1)
+  checkEquals(length(fc$metaData), 2L)
+  checkTrue(file.remove(file.path(fc$cacheDir, "foo/bar")))
+  checkTrue(file.remove(file.path(fc$cacheDir, "foo")))
+}
+
+
+unitTestAddFileToExistingDirectory <-
+  function()
+{
+  fc <- new("FileCache")
+  checkTrue(dir.create(file.path(fc$cacheDir, "aDir"), recursive = TRUE))
+  s1 <- tempfile()
+  cat(sprintf("THIS IS ANOTHER TEST%s", Sys.time()), file = s1)
+  
+  addFileMetaData(fc, s1, "aDir")
+  addFileMetaData(fc, s1, "/aDir")
+  addFileMetaData(fc, s1, "aDir/")
+  checkEquals(length(fc$metaData), 1L)
+  
+  srcFname <- gsub(tempdir(), "", s1, fixed = TRUE)
+  srcFname <- gsub("[\\/]+", "", srcFname)
+  checkTrue(grepl(sprintf("%s$", srcFname), names(fc$metaData)))
+}
+
+unitTestAddMetaDataByPassingDirectory <-
+  function()
+{
+  fc <- new("FileCache")
+  srcDir <- tempfile()
+  checkTrue(dir.create(srcDir, recursive = TRUE))
+  s1 <- tempfile(tmpdir = srcDir)
+  cat(sprintf("test one %s", Sys.time()), file=s1)
+  s2 <- tempfile(tmpdir = srcDir)
+  cat(sprintf("test two %s", Sys.time()), file=s2)
+  
+  checkException(addFileMetaData(fc, srcDir, "/"))
+  
+}
+
+unitTestAddMetaDataForRootDirContents <-
+  function()
+{
+  fc <- new("FileCache")
+  checkTrue(dir.create(file.path(fc$cacheDir, "aDir"), recursive = TRUE))
+  s1 <- tempfile()
+  cat(sprintf("THIS IS ANOTHER TEST%s", Sys.time()), file = s1)
+  
+  addFileMetaData(fc, s1)
+  addFileMetaData(fc, s1, "//")
+  addFileMetaData(fc, s1, "\\")
+  checkEquals(length(fc$metaData), 1L)
+  
+  srcFname <- gsub(tempdir(), "", s1, fixed = TRUE)
+  srcFname <- gsub("[\\/]+", "", srcFname)
+  checkTrue(grepl(sprintf("%s$", srcFname), names(fc$metaData)))
+}
+
 
 unitTestPassByReference <-
   function()
 {
+  fc <- new("FileCache")
+  fc.copy <- fc
+  
+  fc$addFileMetaData("srcFile1", "destFile1")
+  checkEquals(length(fc.copy$metaData), 1L)
+  checkEquals(names(fc.copy$metaData), names(fc$metaData))
+  
   
 }
