@@ -6,25 +6,46 @@
 # - downloads the entity's annotations, into a local file
 #   <cache>/entity/<id>/annotations.json, or <cache>/entity/<id>/<version>/annotations.json
 #
-entityToFileCache <- function(id, version=NULL)
+synapseEntityToFileCache <- function(id, version=NULL)
 {
+	repoEndpointMethod <- .getRepoEndpointProtocol()
+	
+	entityCachePath <- .entityFileCachePath(id, version)
+	entityUrl = paste(repoEndpointMethod, "://", entityCachePath, sep="")
+	
+	.downloadToFile(entityUrl, entityCachePath, "entity.json")
+	
+	annotationsUrl = paste(entityUrl, "/annotations", sep="")
+	
+	.downloadToFile(annotationsUrl, entityCachePath, "annotations.json")
+}
 
-	uri <- paste("/entity/", id, sep="")
-	if (!is.null(version)) uri <- paste(uri, "/version/", version, sep="")
+#
+# Returns a JSON object for the given entity ID (and optional version), 
+# retrieved from the local file cache
+#
+getEntityFromFileCache<- function(id, version=NULL) {
+	entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
+	content <- readFile(paste(entityCachePath, "entity.json", sep="/"))
+	toJSON(content)
+}
+
+#
+# Returns a JSON object for the annotations of a given entity ID (and optional version), 
+# retrieved from the local file cache
+#
+getEntityAnnotationsFromFileCache<- function(id, version=NULL) {
+	entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
+	content <- readFile(paste(entityCachePath, "annotations.json", sep="/"))
+	toJSON(content)
+}
+
+# note 'filePath' omits the cache root, which is prepended by this function
+.downloadToFile <- function(url, filePath, fileName) {
 	requestMethod <- "GET"
-	host <- .getRepoEndpointLocation()
 	curlHandle <- getCurlHandle()
 	anonymous <- .getCache("anonymous")
-	path <- .getRepoEndpointPrefix()
 	opts <- .getCache("curlOpts")
-
-	## uris formed by the service already have their servlet prefix
-	if(grepl(path, uri)) {
-		uri <- paste(host, uri, sep="")
-	}else {
-		uri <- paste(host, path, uri, sep="")
-	}
-	
 	
 	## Prepare the header. If not an anonymous request, stuff the
 	## sessionToken into the header
@@ -37,40 +58,49 @@ entityToFileCache <- function(id, version=NULL)
 		)		
 	}
 	
-	
-	entityString <- getURL(uri, 
+	content <- getURL(url, 
 			customrequest = requestMethod, 
 			httpheader = header, 
 			curl = curlHandle, 
 			debugfunction=NULL,
 			.opts=opts
 	)
-	.checkCurlResponse(curlHandle, entityString)
+	.checkCurlResponse(curlHandle, content)
 	
+	
+	
+	folder <- .getAbsoluteFileCachePath(filePath)
+	
+	if (!file.exists(file=folder)) dir.create(folder, recursive=TRUE)
+	targetFile<-file(paste(folder, fileName, sep="/"))
+	writeLines(content, targetFile)
+	close(targetFile)
+	
+}
+
+.getCacheRoot<-function() {
 	cacheRoot <- .getCache("cacheRoot")
 	if (is.null(cacheRoot)) cacheRoot <- "~/.synapseCache"
-
-	if (is.null(version)) {
-		entityFileFolder <- paste(cacheRoot, "entity", id,  sep="/")
-	} else {
-		entityFileFolder <- paste(cacheRoot, "entity", id, version, sep="/")
-	}
-	if (!file.exists(file=entityFileFolder)) dir.create(entityFileFolder, recursive=TRUE)
-	entityFile<-file(paste(entityFileFolder, "entity.json", sep="/"))
-	writeLines(entityString, entityFile)
-	close(entityFile)
-	
-	annotationsString <- getURL(paste(uri, "annotations", sep="/"), 
-			customrequest = requestMethod, 
-			httpheader = header, 
-			curl = curlHandle, 
-			debugfunction=NULL,
-			.opts=opts
-	)
-	.checkCurlResponse(curlHandle, annotationsString)
-	
-	
-	annotationsFile<-file(paste(entityFileFolder, "annotations.json", sep="/"))
-	writeLines(annotationsString, annotationsFile)
-	close(annotationsFile)
+	cacheRoot
 }
+
+.getAbsoluteFileCachePath<-function(relativeFileCachePath) {
+	paste(.getCacheRoot(), relativeFileCachePath, sep="/")
+}
+
+.entityFileCachePath<- function(id, version=NULL) {
+	uri <- paste("/entity/", id, sep="")
+	if (!is.null(version)) uri <- paste(uri, "/version/", version, sep="")
+	host<- .getRepoEndpointHost()
+	uriPrefix <- .getRepoEndpointPrefix()
+	paste(host, uriPrefix, uri, sep="")
+}
+
+readFile<-function(fileName) {
+	if (!file.exists(fileName)) stop(paste("file", fileName, "doen't exist."))
+	sourceFile<-file(fileName)
+	content<-readLines(sourceFile)
+	close(sourceFile)
+	content
+}
+

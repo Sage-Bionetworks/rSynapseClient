@@ -10,7 +10,9 @@ synapseRepoServiceEndpoint <-
     .setCache("reposerviceEndpoint", endpoint)
     url <- .ParsedUrl(url=endpoint)
     .setCache("reposerviceEndpointLocation", paste(url@protocol, '://', url@authority, sep=''))
-    .setCache("reposerviceEndpointPrefix", url@path)
+	.setCache("reposerviceEndpointProtocol", url@protocol)
+	.setCache("reposerviceEndpointHost", url@authority)
+	.setCache("reposerviceEndpointPrefix", url@path)
     if(!is.null(.getCache('useJavaClient')) &&  .getCache('useJavaClient')){
       .jenv[["syn"]]$setRepositoryEndpoint(endpoint)
     }
@@ -27,5 +29,13 @@ synapseRepoServiceEndpoint <-
 }
 
 .getRepoEndpointPrefix <- function() {
-  .getCache("reposerviceEndpointPrefix")	
+	.getCache("reposerviceEndpointPrefix")	
+}
+
+.getRepoEndpointProtocol <- function() {
+	.getCache("reposerviceEndpointProtocol")
+}
+
+.getRepoEndpointHost <- function() {
+	.getCache("reposerviceEndpointHost")	
 }
