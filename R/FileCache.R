@@ -18,9 +18,9 @@ setRefClass(
               cacheRoot = normalizePath(tempfile(pattern="cacheRoot"), mustWork=FALSE),
               metaData = emptyNamedList,
               hasChanged = FALSE,
-              archiveFile = ""
+              archiveFile = "archive.zip"
           )
-          .self$cacheDir <- tempfile(pattern="cache_unpacked", tmpdir = .self$cacheRoot)
+          .self$cacheDir <- file.path(.self$cacheRoot, pattern=sprintf("%s_unpacked", .self$archiveFile))
         },
         addFileMetaData = function(srcPath, destPath, ...){
           destPath <- as.character(.cleanFilePath(destPath))
@@ -74,7 +74,58 @@ setRefClass(
         },
         createArchive = function(){
           ## zips up the archive contents and invisibly returns the full path to the created archive file
-          .self$archiveFile <- "/foo/bar.zip"
+          ## this function should also update the metadata to reflect the fact that the archive was changed
+          ## although this is not needed now, but will be when we wait to aggregate added files in the cache
+          ## directory until archive creation time
+          
+          ## if the FileCache has no files, throw and exception
+          if(length(.self$files()) == 0L)
+            stop("There are not files to archive, add files using addFile then try again")
+          
+          ## this check should be done elsewhere, but for now let's leave it here.
+          if(length(.self$files() > 1L) && ! hasZip())
+            stop("Archive could not be created because it contains multiple files yet the system does not have zip installed.")
+          
+          if(!all(file.exists(file.path(.self$cacheDir, .self$files())))){
+            ## more defensive programming. Getting here is potentially a bug unless the user
+            ## mucked with the innards of the FileCache object or deleted a file from the cache directory
+            stop("Not all of the file were present in the cache directory. this may be a bug. please report it.")
+          }
+          
+          ## if the archive file is unset. set it to a logical default. by default we will assume the 
+          ## system has zip installed so will use a .zip extension
+          if(is.null(.self$archiveFile) || .self$archiveFile == ""){
+            if(hasZip()){
+              .self$archiveFile = "archive.zip"
+            }else if(length(.self$files()) == 1L){
+              .self$archiveFile = .self$files()[[1]]
+            }else{
+              ## defensive programming. should never get here
+              stop("An error has occured in FileCache while determining number of files. Please report this bug.")
+            }
+          }
+
+          ## if the cacheRoot doesn't exists, create it. this should never happen
+          if(!file.exists(.self$cacheRoot))
+            dir.create(.self$cacheRoot, recursive = TRUE)
+          
+          ## OK, now let's zip. fingers crossed ;)
+          suppressWarnings(
+              zip(file.path(.self$cacheRoot, .self$archiveFile), names(.self$getFileMetaData()))
+          )
+          
+          ##update the meta-data to indicate that all the files are now sourced from the zipFile
+          ans <- lapply(names(.self$getFileMetaData()), function(name){
+              m <- .self$getFileMetaData()[[name]]
+              m$srcPath <- .self$archiveFile
+              .self$metaData[[name]] <- m
+            }
+          )
+          
+          ## re-cache the metaData to disk
+          .self$cacheFileMetaData()
+          
+          ## invisibly return the archive file name
           invisible(.self$archiveFile)
         },
         getArchiveFile = function(){
@@ -84,7 +135,7 @@ setRefClass(
         unpackArchive = function(){
           ## unpacks the contents of the archive file, throwing an exception if the archiveFile member variable is not set
           ## invisibly returns the full path to the root directory into which the archive was unpacked
-          .self$cacheDir
+          invisible(.self$cacheDir)
         }
     )
 )
@@ -112,10 +163,16 @@ setMethod(
   f = "FileCache",
   signature = signature("missing", "missing", "character"),
   definition = function(archiveFile){
-    ## this constructor will unpack the archive file, generated and generate the metadata from the 
-    ## contents of the archive
+    ## this constructor requires that the archive exists. Currently the archive must be a file
+    ## that can be unpacked using R's unzip function, or it should be a single file. This constructor
+    ## in the future should possibly return a read-only FileCache if the user doesn't have zip installed
+    archiveFile <- normalizePath(archiveFile, mustWork=TRUE)
     
-    stop("not yet implemented")
+    fc <- new("FileCache")
+    fc$archiveFile <- gsub("^.+/", "", archiveFile)
+    fc$cacheRoot <- gsub(fc$archiveFile, "", archiveFile, fixed = TRUE)
+    fc$cacheDir <- file.path(fc$cacheRoot, sprintf("%s_unpacked", fc$archiveFile))
+    fc
   }
 )
 
@@ -176,6 +233,9 @@ setMethod(
       relPath <- gsub(normalizePath(object$cacheDir, mustWork=FALSE), "", as.character(destPath), fixed = TRUE)
       relPath <- gsub("^/+", "", relPath)
       info <- as.list(file.info(srcPath))
+      
+      ## convert all values to character for now
+      lapply(names(info), function(i) info[[i]] <<- as.character(info[[i]]))
       object$addFileMetaData(srcPath, destPath, relativePath = relPath, fileInfo = info)
     }
 )
