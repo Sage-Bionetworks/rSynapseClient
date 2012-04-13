@@ -9,7 +9,6 @@ setRefClass(
         cacheRoot = "character",
         cacheDir = "character",
         metaData = "list",
-        hasChanged = "logical",
         archiveFile = "character"
     ),
     methods = list(
@@ -17,7 +16,6 @@ setRefClass(
           .self$initFields(
               cacheRoot = normalizePath(tempfile(pattern="cacheRoot"), mustWork=FALSE),
               metaData = emptyNamedList,
-              hasChanged = FALSE,
               archiveFile = "archive.zip"
           )
           .self$cacheDir <- file.path(.self$cacheRoot, pattern=sprintf("%s_unpacked", .self$archiveFile))
@@ -30,7 +28,6 @@ setRefClass(
             stop("All elements must be named")
           if(length(elp) > 0)
             .self$metaData[[destPath]] <- c(.self$metaData[[destPath]], elp)
-          .self$hasChanged <- TRUE
           invisible(.self$metaData)
         },
         getFileMetaData = function(destPath){
@@ -39,12 +36,10 @@ setRefClass(
         deleteFileMetaData = function(destPath){
           if(missing(destPath)){
             .self$metaData <- emptyNamedList
-            .self$hasChanged <- TRUE
           }else{
             indx <- which(names(.self$metaData) %in% destPath)
             if(length(indx) > 0){
               .self$metaData = metaData[-indx]
-              .self$hasChanged <- TRUE
             }
           }
           invisible(.self$metaData)
@@ -125,10 +120,8 @@ setRefClass(
           }
           
           ##update the meta-data to indicate that all the files are now sourced from the zipFile
-          ans <- lapply(names(.self$getFileMetaData()), function(name){
-              m <- .self$getFileMetaData()[[name]]
-              m$srcPath <- .self$archiveFile
-              .self$metaData[[name]] <- m
+          ans <- lapply(names(.self$getFileMetaData()), function(fname){
+              .self$setFileSource(fname, .self$archiveFile)
             }
           )
           
@@ -149,7 +142,29 @@ setRefClass(
           ## remove the contents of the cacheDir
           unlink(.self$cacheDir, force=TRUE, recursive = TRUE)
           files <- .unpack(file.path(.self$cacheRoot, .self$archiveFile))
+          
+          ## populate the file metadata
+          files <- .generateFileList(attr(files, "rootDir"))
+          .self$deleteFileMetaData()
+          
+          lapply(files$srcfiles, function(i){
+              info <- file.info(i)
+              for(name in names(info))
+                info[[name]] <- as.character(info[[name]])
+              
+              rPath <- gsub(gsub("/+", "/", .self$cacheDir), "", i, fixed = TRUE)
+              rPath <- gsub("^/", "", rPath)
+              .self$metaData[[i]] <- list(srcPath=.self$archiveFile, relativePath = rPath, fileInfo=info)
+            }
+          )
+          
+          ## persist the metadata to disk
+          .self$cacheFileMetaData()
+          
           invisible(.self$cacheDir)
+        },
+        setFileSource = function(fname, srcPath){
+          .self$metaData[[fname]]$srcPath <- srcPath
         }
     )
 )
@@ -273,8 +288,12 @@ setMethod(
     x
   }
   
+  if(missing(path))
+    path <- "/"
+  
   ## clean up the subdirectories
-  path <- cleanPath(path)
+  if(length(path) > 1L || path != "/")
+    path <- cleanPath(path)
   file <- unlist(lapply(file, function(f) as.character(synapseClient:::.cleanFilePath(f))))
   
   ## get a full listing of the files
