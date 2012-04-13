@@ -6,5 +6,5 @@ importFrom(digest, digest, hmac)
 importFrom(utils, edit)
 
 ## package has a dynamic library
-##useDynLib(synapseClient)
+useDynLib(synapseClient)
 exportPattern("^[^\\.]")
