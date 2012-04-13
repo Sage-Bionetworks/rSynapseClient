@@ -21,7 +21,7 @@ unitTestUnpackArchive <-
 {
   cacheRoot <- tempfile()
   dir.create(cacheRoot)
-  cacheRoot <- sprintf("%s/", normalizePath(cacheRoot))
+  cacheRoot <- normalizePath(cacheRoot)
   archive <- tempfile(tmpdir=cacheRoot,fileext=".zip")
   archiveFile <- gsub("^.+/", "", archive)
   file1 <- tempfile()

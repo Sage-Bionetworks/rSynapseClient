@@ -17,28 +17,28 @@ setMethod(
         grepl("bz$", tolower(archivePath)) 
       ){
         fileCache <- FileCache(archiveFile=archivePath)
-        
         ## should never reach here
         stop("archive file does not exist")
       }
       fileCache <- FileCache(cacheRoot=archivePath)
-      assign(archivePath, fileCache, envir=factory@env)
+      assign(fileCache$cacheRoot, fileCache, envir=factory@env)
       return(fileCache)
     }
     archivePath <- normalizePath(archivePath, mustWork=TRUE)
-    
     archivePath <- gsub("/+", "/", archivePath)
-    archivePath <- gsub("/$", "", archivePath)
-    
-    if(archivePath %in% objects(factory@env))
-      return(get(archivePath, envir = factory@env))
+    archivePath <- gsub("/+$", "", archivePath)
     
     if(file.info(archivePath)$isdir){
       fileCache <- FileCache(cacheRoot=archivePath)
     }else{
       fileCache <- FileCache(archiveFile = archivePath)    
     }
-    assign(archivePath, fileCache, envir=factory@env)
+    
+    ## check to see if the FileCache is already in the factory
+    if(fileCache$cacheRoot %in% objects(factory@env))
+      return(get(fileCache$cacheRoot, envir = factory@env))
+    
+    assign(fileCache$cacheRoot, fileCache, envir=factory@env)
     fileCache
   }
 )

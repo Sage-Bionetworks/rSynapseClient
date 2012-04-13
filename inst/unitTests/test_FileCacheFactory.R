@@ -9,7 +9,9 @@
  }
 
 unitTestNoArg <- function(){
-  
+  fc <- getFileCache()
+  checkEquals(fc$archiveFile, "archive.zip")
+  checkEquals(as.character(class(fc)), "FileCache")
 }
 
 unitTestNewFileCacheInvalidFile <-
@@ -49,13 +51,25 @@ unitTestExistingCacheZipNotInFactory <-
   checkEquals(length(availFileCaches()), 1L)
   checkEquals(availFileCaches(), cacheRoot)
   
+  fc.copy <- getFileCache(fc$cacheRoot)
+  checkEquals(fc.copy$cacheRoot, fc$cacheRoot)
+  checkEquals(fc.copy$files(), fc$files())
+  checkEquals(fc.copy$archiveFile, fc.copy$archiveFile)
+  
+  fc.copy <- getFileCache(archivefile)
+  checkEquals(fc.copy$cacheRoot, fc$cacheRoot)
+  checkEquals(fc.copy$files(), fc$files())
+  checkEquals(fc.copy$archiveFile, fc.copy$archiveFile)
+  
+  checkEquals(length(availFileCaches()), 1L)
+  
 }
 
 unitTestNewArchiveNoArg <-
   function()
 {
   fc <- getFileCache()
-  checkEquals(class(fc), "FileCache")
+  checkEquals(as.character(class(fc)), "FileCache")
   checkEquals(length(availFileCaches()), 0L)
 }
 
@@ -99,12 +113,14 @@ unitTestSingleFileNotInFactory <-
 {
   cacheRoot <- tempfile()
   dir.create(cacheRoot)
+  cacheRoot <- normalizePath(cacheRoot)
   file <- tempfile(tmpdir=cacheRoot)
   cat(sprintf("Testing...1 %s", Sys.time()), file = file)
   
   fc <- getFileCache(file)
-  checkEquals(fc$cacheDir, file.path())
+  checkEquals(fc$cacheDir, file.path(sprintf("%s_unpacked", file)))
 }
+
 
 
 
