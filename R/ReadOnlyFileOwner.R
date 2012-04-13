@@ -3,24 +3,6 @@
 # Author: furia
 ###############################################################################
 
-setRefClass(
-  "ReadOnlyFileOwner",
-  contains = "VIRTUAL",
-  fields = list(
-    cacheDir = "character",
-    files = "character"
-  ),
-  methods = list(
-    initialize = function(){
-      .self$initFields(
-        objects = new("EnhancedEnvironment"),
-        cacheDir = tempfile(),
-        files = character()
-      )
-    }
-  )
-)
-
 setMethod(
   f = "[",
   signature = "ReadOnlyObjectOwner",

@@ -4,6 +4,125 @@
 ###############################################################################
 
 setGeneric(
+  name = ".extractEntityFromSlots",
+  def = function(object){
+    standardGeneric(".extractEntityFromSlots")
+  }
+)
+
+setGeneric(
+  name = ".populateSlotsFromEntity",
+  def = function(object, entity, json){
+    standardGeneric(".populateSlotsFromEntity")
+  }
+)
+
+setGeneric(
+  name = "deleteProperty",
+  def = function(object, which){
+    standardGeneric("deleteProperty")
+  }
+)
+
+setGeneric(
+  name = "properties",
+  def = function(object){
+    standardGeneric("properties")
+  }
+)
+
+setGeneric(
+  name = "properties<-",
+  def = function(object, value){
+    standardGeneric("properties<-")
+  }
+)
+
+setGeneric(
+  name = "propertyValues",
+  def = function(object){
+    standardGeneric("propertyValues")
+  }
+)
+
+setGeneric(
+  name = "propertyValues<-",
+  def = function(object, value){
+    standardGeneric("propertyValues<-")
+  }
+)
+
+setGeneric(
+  name = "annotations",
+  def = function(object){
+    standardGeneric("annotations")
+  }
+)
+
+setGeneric(
+  name = "propertyValue",
+  def = function(object, which){
+    standardGeneric("propertyValue")
+  }
+)
+
+setGeneric(
+  name = "propertyValue<-",
+  def = function(object, which, value){
+    standardGeneric("propertyValue<-")
+  }
+)
+
+setGeneric(
+  name = "annotations<-",
+  def = function(object, value){
+    standardGeneric("annotations<-")
+  }
+)
+
+setGeneric(
+  name = "annotationNames",
+  def = function(object){
+    standardGeneric("annotationNames")
+  }
+)
+
+setGeneric(
+  name = "annotValue",
+  def = function(object, which){
+    standardGeneric("annotValue")
+  }
+)
+
+setGeneric(
+  name = "deleteAnnotation",
+  def = function(object, which){
+    standardGeneric("deleteAnnotation")
+  }
+)
+
+setGeneric(
+  name = "annotValue<-",
+  def = function(object, which, value){
+    standardGeneric("annotValue<-")
+  }
+)
+
+setGeneric(
+  name = "annotationValues",
+  def = function(object){
+    standardGeneric("annotationValues")
+  }
+)
+
+setGeneric(
+  name = "annotationValues<-",
+  def = function(object, value){
+    standardGeneric("annotationValues<-")
+  }
+)
+
+setGeneric(
   name = "TypedPropertyStore",
   def = function(file, data, json){
     standardGeneric("TypedPropertyStore")
@@ -20,6 +139,13 @@ setGeneric(
   name = "propertyNames",
   def = function(object){
     standardGeneric("propertyNames")
+  }
+)
+
+setGeneric(
+  name = "propertyValues",
+  def = function(object){
+    standardGeneric("propertyValues")
   }
 )
 
@@ -150,5 +276,34 @@ setGeneric(
   name = "getValue",
   def = function(object, name, value){
     standardGeneric("getValue")
+  }
+)
+
+
+setGeneric(
+  name = "SynapseEntity",
+  def = function(entity){
+    standardGeneric("SynapseEntity")
+  }
+)
+
+setGeneric(
+  name = "synapseEntityKind",
+  def = function(entity){
+    standardGeneric("synapseEntityKind")
+  }
+)
+
+setGeneric(
+  name = "synapseEntityKind<-",
+  def = function(entity, value){
+    standardGeneric("synapseEntityKind<-")
+  }
+)
+
+setGeneric(
+  name = "refreshAnnotations",
+  def = function(entity){
+    standardGeneric("refreshAnnotations")
   }
 )
