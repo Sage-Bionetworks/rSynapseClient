@@ -3,20 +3,6 @@
 # Author: furia
 ###############################################################################
 
-setClass(
-  Class = "EnhancedEnvironment",
-  representation = representation(
-    env = "environment"
-  )
-)
-
-setMethod(
-  f = "names",
-  signature = "EnhancedEnvironment",
-  definition = function(x){
-    objects(x@env, all.names = TRUE)
-  }
-)
 
 setMethod(
   f = "[",

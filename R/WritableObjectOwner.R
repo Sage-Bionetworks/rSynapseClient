@@ -3,16 +3,7 @@
 # Author: furia
 ###############################################################################
 
-setRefClass(
-  Class = "WritableObjectOwner",
-  contains = c("ReadOnlyObjectOwner", "WritableFileOwner", "VIRTUAL"),
-  methods = list(
-    addObject = function(object, name, unlist = FALSE){
-      if(missing(name) && class(object) == "list")
-        addObject(.self, object, name, unlist)
-    }
-  )
-)
+
 
 ## general purpose function for adding objects and caching to file
 .doAddObjectWithCache <-
