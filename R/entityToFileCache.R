@@ -79,9 +79,7 @@ getEntityAnnotationsFromFileCache<- function(id, version=NULL) {
 }
 
 .getCacheRoot<-function() {
-	cacheRoot <- .getCache("cacheRoot")
-	if (is.null(cacheRoot)) cacheRoot <- "~/.synapseCache"
-	cacheRoot
+	synapseCacheDir()
 }
 
 .getAbsoluteFileCachePath<-function(relativeFileCachePath) {
