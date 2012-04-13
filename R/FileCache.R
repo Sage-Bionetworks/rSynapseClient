@@ -14,11 +14,15 @@ setRefClass(
     methods = list(
         initialize = function(){
           .self$initFields(
-              cacheRoot = normalizePath(tempfile(pattern="cacheRoot"), mustWork=FALSE),
               metaData = emptyNamedList,
               archiveFile = "archive.zip"
           )
-          .self$cacheDir <- file.path(.self$cacheRoot, pattern=sprintf("%s_unpacked", .self$archiveFile))
+          root <- tempfile(pattern="cacheRoot")
+          dir.create(root)
+          .self$cacheRoot <- gsub("/+$", "", gsub("/+", "/", normalizePath(root, mustWork=TRUE)))
+          cdir <- file.path(.self$cacheRoot, pattern=sprintf("%s_unpacked", .self$archiveFile))
+          dir.create(cdir, recursive=T)
+          .self$cacheDir <- gsub("/+", "/", normalizePath(root, mustWork=TRUE))
         },
         addFileMetaData = function(srcPath, destPath, ...){
           destPath <- as.character(.cleanFilePath(destPath))
@@ -61,6 +65,8 @@ setRefClass(
             dd <- fromJSON(file, simplifyWithNames=FALSE)
             .self$metaData <- dd$metaData
             .self$archiveFile <- dd$archiveFile
+            if(.self$archiveFile=="")
+              .self$archiveFile <- "archive.zip"
           }
           invisible(list(archiveFile = .self$archiveFile, metaData = .self$metaData))
         },
@@ -170,14 +176,25 @@ setRefClass(
 )
 
 setMethod(
-    f = "FileCache",
-    signature = signature("character", "missing", "missing"),
-    definition = function(cacheRoot){
-      fc <- new("FileCache")
-      fc$cacheRoot <- cacheRoot
-      fc$loadMetaDataFromFile()
-      fc
-    }
+  f = "FileCache",
+  signature = signature("character", "missing", "missing"),
+  definition = function(cacheRoot){
+    fc <- new("FileCache")
+    if(!file.exists(cacheRoot))
+      tryCatch(
+        dir.create(cacheRoot),
+        warning = function(e){
+          stop(e)
+        }
+      )
+    if(is.na(file.info(cacheRoot)$isdir) || !file.info(cacheRoot)$isdir)
+      stop("Cache root must be a directory")
+    cacheRoot <- gsub("/+$", "", gsub("/+", "/", normalizePath(cacheRoot)))
+    fc$cacheRoot <- cacheRoot
+    fc$cacheDir <- sprintf("%s_unpacked", fc$cacheRoot)
+    fc$loadMetaDataFromFile()
+    fc
+  }
 )
 
 setMethod(
@@ -199,7 +216,7 @@ setMethod(
     
     fc <- new("FileCache")
     fc$archiveFile <- gsub("^.+/", "", archiveFile)
-    fc$cacheRoot <- gsub(fc$archiveFile, "", archiveFile, fixed = TRUE)
+    fc$cacheRoot <- gsub("/+$", "", gsub(fc$archiveFile, "", archiveFile, fixed = TRUE))
     fc$cacheDir <- file.path(fc$cacheRoot, sprintf("%s_unpacked", fc$archiveFile))
     fc
   }
