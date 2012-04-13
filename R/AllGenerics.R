@@ -3,6 +3,26 @@
 # Author: furia
 ###############################################################################
 
+setGeneric(
+  name = "getFileCache",
+  def = function(archivePath){
+    standardGeneric("getFileCache")
+  }
+)
+
+setGeneric(
+  name = "availFileCaches",
+  def = function(factory){
+    standardGeneric("availFileCaches")
+  }
+)
+
+setGeneric(
+  name = "resetFactory",
+  def = function(factory){
+    standardGeneric("resetFactory")
+  }
+)
 
 ## Generic method for addObject
 setGeneric(
