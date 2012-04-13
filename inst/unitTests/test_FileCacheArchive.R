@@ -40,5 +40,11 @@ unitTestUnpackArchive <-
   ans <- fc$unpackArchive()
   checkTrue(file.exists(ans))
   checkTrue(file.exists(file.path(ans,gsub("^.+/", "", file1))))
+  
+  checkEquals(length(fc$getFileMetaData()), 1L)
+  checkEquals(length(fc$files()), 1L)
+  checkEquals(fc$getFileMetaData()[[1]]$srcPath, fc$archiveFile)
+  checkEquals(names(fc$getFileMetaData()) , gsub("/+", "/", file.path(fc$cacheDir, fc$files())))
 }
+
 
