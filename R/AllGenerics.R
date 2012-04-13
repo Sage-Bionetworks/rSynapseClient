@@ -4,6 +4,47 @@
 ###############################################################################
 
 setGeneric(
+  name = "TypedPropertyStore",
+  def = function(file, data, json){
+    standardGeneric("TypedPropertyStore")
+  }
+)
+
+setGeneric(
+  name = "setUpdatePropValue",
+  def = function(object, which, value, type){
+    standardGeneric("setUpdatePropValue")
+  }
+)
+setGeneric(
+  name = "propertyNames",
+  def = function(object){
+    standardGeneric("propertyNames")
+  }
+)
+
+setGeneric(
+  name = "propertyType",
+  def = function(object, which){
+    standardGeneric("propertyType")
+  }
+)
+
+setGeneric(
+  name = "getProperty",
+  def = function(object, which){
+    standardGeneric("getProperty")
+  }
+)
+
+setGeneric(
+  name = "setProperty",
+  def = function(object, which, value){
+    standardGeneric("setProperty")
+  }
+)
+
+setGeneric(
   name = "getFileCache",
   def = function(archivePath){
     standardGeneric("getFileCache")
@@ -88,5 +129,26 @@ setGeneric(
   name = "moveFile",
   def = function(entity, src, dest){
     standardGeneric("moveFile")
+  }
+)
+
+setGeneric(
+  name = "addValue",
+  def = function(object, name, value){
+    standardGeneric("addValue")
+  }
+)
+
+setGeneric(
+  name = "deleteValue",
+  def = function(object, name, value){
+    standardGeneric("deleteValue")
+  }
+)
+
+setGeneric(
+  name = "getValue",
+  def = function(object, name, value){
+    standardGeneric("getValue")
   }
 )
