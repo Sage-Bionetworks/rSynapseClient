@@ -28,4 +28,6 @@
   
   .setCache("curlHeader", c('Content-Type'="application/json", Accept = "application/json", "Accept-Charset"="utf-8"))
   .setCache("sessionRefreshDurationMin", 1440)
+  
+  synapseResetEndpoints()
 }
