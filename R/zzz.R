@@ -25,7 +25,13 @@
     .setCache("rObjCacheDir", ".R_OBJECTS")
     .setCache("hasZip", TRUE)
   }
-  # not sure if this is to go here
+  
+  
+  # not sure if these to go here or elsewhere:
+	
+  # For user preferences and other configuration data
+  .cache <- new.env(parent=emptyenv())
+	
   .setCache("curlHeader", c('Content-Type'="application/json", Accept = "application/json", "Accept-Charset"="utf-8"))
   .setCache("sessionRefreshDurationMin", 1440)
 }
