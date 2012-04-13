@@ -28,7 +28,7 @@ setClass(
 )
 
 setClass(
-    Class = "PropertyStore",
+    Class = "TypedPropertyStore",
     representation = representation(
         stringAnnotations = "list",
         doubleAnnotations = "list",

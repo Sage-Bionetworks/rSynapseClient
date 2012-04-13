@@ -1,0 +1,207 @@
+# TODO: Add comment
+# 
+# Author: furia
+###############################################################################
+
+setMethod(
+  f = "TypedPropertyStore",
+  signature = signature("missing", "missing", "missing"),
+  definition = function(file){
+    new("TypedPropertyStore")
+  }
+)
+
+setMethod(
+  f = "TypedPropertyStore",
+  signature = signature("character", "missing", "missing"),
+  definition = function(file){
+    json <- fromJSON(file)
+    TypedPropertyStore(json = json)
+  }
+)
+
+setMethod(
+  f = "TypedPropertyStore",
+  signature = signature("missing", "list", "missing"),
+  definition = function(data){
+    types <- c("stringAnnotations", "doubleAnnotations", "longAnnotations", "dateAnnotations")
+    types <- intersect(types, names(data))
+    store <- new("TypedPropertyStore")
+    lapply(types, function(t){
+        for(n in names(data[[t]])){
+          ## ensure that all data are stored internally as characters
+          ## type conversion will occur on retrieval
+          data[[t]][[n]] <- as.character(data[[t]][[n]])
+          slot(store, t) <<- data[[t]]
+        }
+      }
+    )
+  }
+)
+
+setMethod(
+  f = "TypedPropertyStore",
+  signature = signature("missing", "missing", "character"),
+  definition = function(json){
+    TypedPropertyStore(list = fromJSON(json))
+  }
+)
+
+setMethod(
+  f = "propertyNames",
+  signature = "TypedPropertyStore",
+  definition = function(object){
+    types <- c("stringAnnotations", "doubleAnnotations", "longAnnotations", "dateAnnotations")
+    nms <- lapply(types, function(t){
+        names(slot(object, t))
+      }
+    )
+    unlist(nms)
+  }
+)
+
+setMethod(
+  f = "propertyType",
+  signature = signature("TypedPropertyStore", "character"),
+  definition = function(object, which){
+    types <- c("stringAnnotations", "doubleAnnotations", "longAnnotations", "dateAnnotations")
+    if(!(which %in% propertyNames(object)))
+      return(NULL)
+    for(t in types){
+      if(which %in% names(slot(object, t)))
+        return(t)
+    }
+    NULL
+  }
+)
+
+setMethod(
+  f = "getProperty",
+  signature = signature("TypedPropertyStore", "character"),
+  definition = function(object, which){
+    nms <- propertyNames(object)
+    if(!any(which %in% nms))
+      return(NULL)
+    if(sum(nms == which) > 1L)
+      warning("Multiple values found for the key provided. Returning the first occurance")
+    type <- propertyType(object, which)
+    val <- slot(object, type)[[which]][[1]]
+    
+    ## coerce the return value to the correct type
+    switch(type,
+      doubleAnnotations = as.numeric(val),
+      longAnnotations = as.integer(val),
+      dateAnnotations =  as.POSIXct(as.integer(val), tz="UTC", origin=ISOdatetime(1970,1,1,0,0,0)),
+      val
+    )
+  }
+)
+
+setMethod(
+  f = "setUpdatePropValue",
+  signature= signature("TypedPropertyStore", "character", "missing", "missing"),
+  definition = function(object, which, type){
+    ## unset the property value
+    type <- propertyType(object, which)
+    for(t in type){
+      object <- setUpdatePropValue(object, which, type = t)
+    }
+    object
+  }
+)
+
+setMethod(
+  f = "setUpdatePropValue",
+  signature= signature("TypedPropertyStore", "character", "missing", "character"),
+  definition = function(object, which, type){
+    ## unset the property value
+    nms <- propertyNames(object)
+    if(!any(which %in% nms))
+      return(object)
+    nms <- names(slot(object, type))
+    slot(object, type) <- slot(object, type)[setdiff(nms, which)]
+    object
+  }
+)
+
+setMethod(
+  f = "setUpdatePropValue",
+  signature= signature("TypedPropertyStore", "character", "character", "character"),
+  definition = function(object, which, value, type){
+    nms <- propertyNames(object)
+    
+    ## clear the existig value if it exists
+    if(any(which %in% nms))
+      object <- setUpdatePropValue(object, which)
+    
+    ## assign the new value to the correct type slot
+    slot(object, type)[[which]] <- value
+    object
+  }
+)
+
+setMethod(
+  f = "setProperty",
+  signature = signature("TypedPropertyStore", "character", "character"),
+  definition = function(object, which, value){
+    setUpdatePropValue(object, which, value, type = "stringAnnotations")
+  }
+)
+
+setMethod(
+  f = "setProperty",
+  signature = signature("TypedPropertyStore", "character", "integer"),
+  definition = function(object, which, value){
+    ## convert the value to a string
+    value <- as.character(value)
+    
+    setUpdatePropValue(object, which, value, type = "longAnnotations")
+  }
+)
+
+setMethod(
+  f = "setProperty",
+  signature = signature("TypedPropertyStore", "character", "numeric"),
+  definition = function(object, which, value){
+    ## convert the value to a string
+    value <- as.character(value)
+    
+    setUpdatePropValue(object, which, value, type = "doubleAnnotations")
+  }
+)
+
+setMethod(
+  f = "setProperty",
+  signature = signature("TypedPropertyStore", "character", "POSIXct"),
+  definition = function(object, which, value){
+    ## convert the value to a string
+    value <- as.character(as.integer(value))
+    
+    setUpdatePropValue(object, which, value, type = "dateAnnotations")
+  }
+)
+
+setMethod(
+  f = "setProperty",
+  signature = signature("TypedPropertyStore", "character", "Date"),
+  definition = function(object, which, value){
+    ## convert the value POSIXct
+    setProperty(object, which, as.POSIXct(value))
+  }
+)
+
+as.list.TypedPropertyStore <- function(x, ...){
+  ret <- list(
+    stringAnnotations = emptyNamedList,
+    doubleAnnotations = emptyNamedList,
+    longAnnotations = emptyNamedList,
+    dateAnnotations = emptyNamedList
+  )
+  for(t in names(ret)){
+      ret[[t]] <- slot(x, t)
+    }
+  ret
+}
+
+
+
