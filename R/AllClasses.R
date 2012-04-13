@@ -42,6 +42,3 @@ setClass(
         dateAnnotations = emptyNamedList
     )
 )
-
-
-
