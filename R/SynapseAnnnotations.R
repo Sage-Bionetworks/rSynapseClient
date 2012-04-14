@@ -93,13 +93,18 @@ as.list.SynapseAnnotation <-
 }
 
 
+## ******* instead of doing this, write the S3 method as.list.SynapseAnnotations as.string(c(as.list(t), as.list(p)))
+## ******* where t is the TypedPropertyStore and p SimplePropertyOwner
 ## Bruce: the methods below are for you
 ## need to 
 setMethod(
   f = ".extractEntityFromSlots",
   signature = "SynapseAnnotations",
   definition = function(object){
-    entity <- list()
+    entity <- list() #TODO needs to be emptyNamedList(), not list()
+	# TODO:  pull values from SynapseAnnotations and put in list
+			# need to get the properties as well as the annots
+			# see PropertyStore.R, as.list.TypedPropertyStore
     stop("need to implement this")
     entity
   }
@@ -111,7 +116,7 @@ setMethod(
   definition = function(object, entity){
     
     stop("Need to implement this")
-    
+    *** bruce to do this ***
     object
   }
 )
