@@ -12,12 +12,65 @@ unitTestAssignment <-
  
 }
 
+unitTestAddObjectAssignment <-
+  function()
+{
+  ee <- new("EnhancedEnvironment")
+  addObject(ee, "bar", "foo")
+  checkEquals(names(ee), "foo")
+  boo <- "blah"
+  copy <- addObject(ee, boo)
+  checkTrue(all(c('foo','boo') %in% names(ee)))
+  checkEquals(length(names(ee)), 2L)
+  
+  checkTrue(all(as.character(class(ee)) == as.character(copy)))
+  checkTrue(all(c('foo','boo') %in% names(copy)))
+  checkEquals(length(names(copy)), 2L)
+}
+
 unitTestNames <-
   function()
 {
   ee <- new("EnhancedEnvironment")
   ee$foo <- "bar"
   checkEquals(names(ee), "foo")
+}
+
+unitTestNameObjectsStartingWithDot <-
+  function()
+{
+  ee <- new("EnhancedEnvironment")
+  ee$foo <- "bar"
+  checkEquals(objects(ee), "foo")
+  
+  ## add names starting with dot
+  addObject(ee, "boo", ".bar")
+  
+  checkEquals(length(names(ee)), 2L)
+  checkTrue(all(c(".bar", "foo") %in% objects(ee)))
+}
+
+unitTestObjects <-
+  function()
+{
+  ee <- new("EnhancedEnvironment")
+  ee$foo <- "bar"
+  checkEquals(objects(ee), "foo")
+}
+
+unitTestListObjectsStartingWithDot <-
+  function()
+{
+  ee <- new("EnhancedEnvironment")
+  ee$foo <- "bar"
+  checkEquals(objects(ee), "foo")
+  
+  ## add names starting with dot
+  addObject(ee, "boo", ".bar")
+  
+  checkEquals(length(objects(ee), all.names=TRUE), 2L)
+  checkEquals(length(objects(ee)), 1L)
+  checkTrue(objects(ee) == "foo")
 }
 
 unitTestBracketAccessor <-
@@ -82,3 +135,83 @@ unitTestShow <-
   ee$boo <- 1
   checkTrue(all(capture.output(show(ee)) == c("[1] boo (numeric)", "[2] foo (character)")))
 }
+
+unitTestShowMulipleClasses <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestBracketAccessorNegativeIndices <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestBracketAccessorNonNegativeIndices <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestDeleteObject <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestDeleteMultipleObjects <-
+  function()
+{
+  stop("Not Yet Implemented")  
+}
+
+unitTestGetObject <-
+  function()
+{
+  stop("Not Yet Implemented") 
+}
+
+unitTestGetMulipleObjects <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestAddList <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestAddDataFrame <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestRenameObject <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestRenameMultipleObjects <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestAsEnvironment <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+
+
+
+
+
+
+

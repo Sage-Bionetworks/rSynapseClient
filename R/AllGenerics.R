@@ -4,6 +4,13 @@
 ###############################################################################
 
 setGeneric(
+  name = ".generateCacheFileRelativePath",
+  def = function(owner, objectName, suffix){
+    standardGeneric(".generateCacheFileRelativePath")
+  }
+)
+
+setGeneric(
   name = ".generateCacheFileName",
   def = function(owner, objectName, suffix){
     standardGeneric(".generateCacheFileNam")

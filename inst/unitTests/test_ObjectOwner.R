@@ -7,13 +7,20 @@
   function()
 {
   env <- attach(NULL, name = "testEnv")
-  setPackageName("testEnv", env)
-  suppressWarnings(
-      setRefClass(
-          "rObjOwn",
+  tryCatch({
+      setPackageName("testEnv", env)
+      suppressWarnings(
+        setRefClass(
+          "ObjOwn",
           contains = "ObjectOwner",
           where = env
+        )
       )
+    }, 
+    error = function(e){
+      detach("testEnv")
+      stop(e)
+    }
   )
 }
 
@@ -26,7 +33,7 @@
 unitTestGet <-
   function()
 {
-  own <- getRefClass("rObjOwn")$new()
+  own <- new("ObjOwn")
   own$objects$bar <- "foo"
   checkEquals(own$objects$bar, "foo")
 }
@@ -34,46 +41,71 @@ unitTestGet <-
 unitTestGetInvalidObject <-
   function()
 {
-  own <- getRefClass("rObjOwn")$new()
+  own <- new("ObjOwn")
   checkException(getObject(own, "bar"))
 }
 
 unitTestNames <-
   function()
 {
-  own <- getRefClass("rObjOwn")$new()
+  own <- new("ObjOwn")
   checkTrue(all(names(own) == c("cacheDir", "files", "objects")))
   own$objects$bar <- "foo"
   checkTrue(all(names(own) == c("cacheDir", "files", "objects")))
 }
 
-unitTestBracketAccessor <-
+unitTestAddObject <-
   function()
 {
-  own <- getRefClass("rObjOwn")$new()
-  own$objects$foo <- "boo"
-  own$objects$bar <- "goo"
-  own$objects$coo <- "zoo"
-  checkTrue(all(names(own[]) == c("cacheDir", "files", "objects")))
-  checkTrue(all(names(own[NULL]) == c("cacheDir", "files", "objects")))
-  
-  checkTrue(all(names(own[c("objects", "files")]) == c("objects", "files")))
-  checkEquals(names(own[1]), "cacheDir")
-  checkTrue(all(names(own[c(2,1)]) == c("files", "cacheDir")))
+  stop("Not Yet Implemented")
 }
 
-unitTestDoubleBracketAccessor <-
+unitTestGetObject <-
   function()
 {
-  own <- getRefClass("rObjOwn")$new()
-  own$objects$foo <- "boo"
-  own$objects$bar <- "goo"
-  own$objects$coo <- "zoo"
-  
-  own$cacheDir <- "/foo/bar"
-  
-  ## this test has a dependency on the behavior of Enhanced Environment
-  checkTrue(all(names(own[['objects']]) == c("bar", "coo", "foo")))
-  checkEquals(own[['cacheDir']], "/foo/bar")
+  stop("Not Yet Implemented")
 }
+
+unitTestDeleteObject <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestRenameObject <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestGetEnv <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestObjects <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestAddListUnlist <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestAddList <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
+unitTestAddDataFrame <-
+  function()
+{
+  stop("Not Yet Implemented")
+}
+
 

@@ -3,7 +3,10 @@
 # Author: furia
 ###############################################################################
 
-
+##
+## Allows caller to assign access elements in the environment using a bracket accessor.
+## works for objects starting with a period as well.
+##
 setMethod(
     f = "[",
     signature = "EnhancedEnvironment",
@@ -31,6 +34,10 @@ setMethod(
     }
 )
 
+##
+## Use double brackets to access a single element in the enclosing environment.
+## works for objects starting with a period as well.
+##
 setMethod(
     f = "[[",
     signature = "EnhancedEnvironment",
@@ -43,6 +50,10 @@ setMethod(
     }
 )
 
+##
+## Allows caller to add a single object to the environment using the double bracket
+## accessor
+##
 setReplaceMethod("[[", 
     signature = signature(
         x = "EnhancedEnvironment",
@@ -55,6 +66,31 @@ setReplaceMethod("[[",
     }
 )
 
+##
+## dollar sign accessor for retrieving a single named object
+##
+setMethod(
+  f = "$",
+  signature = "EnhancedEnvironment",
+  definition = function(x, name){
+    x[[name]]
+  }
+)
+
+##
+## dollar sign accessor's replacement method for adding a single named object
+##
+setReplaceMethod("$", 
+  signature = "EnhancedEnvironment",
+  function(x, name, value) {
+    x[[name]] <- value
+    x
+  }
+)
+
+##
+## Initialize the EnhancedEnvironment by creating a new environment
+##
 setMethod(
     f = "initialize",
     signature = "EnhancedEnvironment",
@@ -64,22 +100,9 @@ setMethod(
     }
 )
 
-setMethod(
-    f = "$",
-    signature = "EnhancedEnvironment",
-    definition = function(x, name){
-      x[[name]]
-    }
-)
-
-setReplaceMethod("$", 
-    signature = "EnhancedEnvironment",
-    function(x, name, value) {
-      x[[name]] <- value
-      x
-    }
-)
-
+##
+## coerce to environment by returning the enclosed environment class
+##
 setMethod(
     f = "as.environment",
     signature = "EnhancedEnvironment",
@@ -88,6 +111,11 @@ setMethod(
     }
 )
 
+##
+## show method displays all the objects held by the EnhancedEnvironment as
+## well as their class type(s). Must support printing multiple values returned
+## by "class" function since R supports multiple inheritance
+##
 setMethod(
     f = "show",
     signature = "EnhancedEnvironment",
@@ -97,12 +125,16 @@ setMethod(
       }else{
         
         for(i in 1:length(object)){
-          cat(sprintf("[%i] %s (%s)\n", i, names(object[i]), class(object[[i]])))
+          cat(sprintf("[%i] %s (%s)\n", i, names(object[i]), paste(class(object[[i]])), sep=","))
         }
       }
     }
 )
 
+##
+## Return a count of the objects in the environment, including ones starting with
+## a period.
+##
 setMethod(
     f = "length",
     signature = "EnhancedEnvironment",
@@ -111,12 +143,9 @@ setMethod(
     }
 )
 
-names.EnhancedEnvironment <-
-    function(x)
-{
-  objects(x@env, all.names = TRUE)
-}
-
+##
+## Delete the object(s) from the environment
+##
 setMethod(
   f = "deleteObject",
   signature = signature("EnhancedEnvironment", "character"),
@@ -125,5 +154,83 @@ setMethod(
   }
 )
 
+##
+## Add an object to the environment
+##
+setMethod(
+  f = "addObject",
+  signature = signature("EnhancedEnvironment", "ANY", "character", "missing"),
+  definition = function(owner, object, name){
+    owner[[name]] <- object
+    invisible(owner)
+  }
+)
 
+##
+## Get object(s) from the environment
+##
+setMethod(
+  f = "getObject",
+  signature = signature("EnhancedEnvironment", "character"),
+  definition = function(owner, which){
+    nms <- names(owner)
+    indx <- which(nms %in% which)
+    if(length(indx) == 0)
+      return(NULL)
+    objs <- lapply(nms[indx], function(n) owner[n])
+    names(objs) <- nms[indx]
+    objs
+  }
+)
+
+##
+## rename object(s) in the environment
+##
+setMethod(
+  f = "renameObject",
+  signature = signature("EnhancedEnvironment", "character", "character"),
+  definition = function(owner, which, name){
+    if(length(which) != length(name))
+      stop("Must supply the same number of names as objects")
+    
+    if(!all(name %in% names(owner)))
+      stop("Invalid objects provided")
+    
+    ## make a copy of the objects that will be moved and delete them from
+    ## the entity
+    ## TODO : make this more performant by only making copies of objects
+    ## when absolutely necessary
+    tmpEnv <- new.env()
+    lapply(which, FUN = function(key){
+        assign(key, getObject(owner, key), envir = tmpEnv)
+        deleteObject(owner, key)
+      }
+    )
+    
+    lapply(1:length(which), FUN=function(i){
+        addObject(owner, get(which[i], envir=tmpEnv), name[i])
+      }
+    )
+    rm(tmpEnv)
+    invisible(owner)
+  }
+)
+
+names.EnhancedEnvironment <-
+    function(x)
+{
+  objects(x, all.names=TRUE)
+}
+
+objects.EnhancedEnvironment <-
+  function(name, all.names = FALSE, pattern)
+{
+  objects(envir = as.environment(name), all.names = all.names, pattern = pattern) 
+} 
+
+as.environment.EnhancedEnvironment <-
+  function(x)
+{
+  x@env  
+}
 
