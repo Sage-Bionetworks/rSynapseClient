@@ -278,6 +278,42 @@ setClass(
   )
 )
 
+
+## A simple wrapper around an environment. This allows the customization
+## of the environment's behavior, including the ability to make the environment
+## read-only
+setClass(
+    Class = "EnhancedEnvironment",
+    representation = representation(
+        env = "environment"
+    )
+)
+
+## This class gives an object the ability to own R binary objects, allowing
+## users to call the CRUD operations giving access to owned R objects. Note
+## that the objects held in the "EnhancedEnvironment" are pass-by-reference.
+## this should be highlighted prominently so user's don't get confused since
+## pass-by-reference is virtually never used in R
+setRefClass(
+    Class = "ObjectOwner",
+    contains = c("VIRTUAL"),
+    fields = list(
+        objects = "EnhancedEnvironment"
+    ),
+    methods = list(
+        getObject = function(which){
+          getObject(.self, which)
+        },
+        addObject = function(object, name, unlist = FALSE){
+          if(missing(name) && class(object) == "list")
+            addObject(.self, object, name, unlist)
+        },
+        getEnv = function(){
+          .self@objects
+        }
+    )
+)
+
 ## All locationable Synapse entities will be derived from this class
 ## If it is possible to determine that an entity with an unrecognized
 ## value of the "type" property is "Locationable", then change this from
@@ -285,25 +321,7 @@ setClass(
 ## contains list
 setClass(
   Class = "SynapseLocationOwner",
-  contains = c("SynapseEntity", "ArchiveOwner", "VIRTUAL")
-)
-
-
-
-
-setClass(
-  Class = "EnhancedEnvironment",
-  representation = representation(
-    env = "environment"
-  )
-)
-
-setMethod(
-  f = "names",
-  signature = "EnhancedEnvironment",
-  definition = function(x){
-    objects(x@env, all.names = TRUE)
-  }
+  contains = c("SynapseEntity", "ArchiveOwner", "ObjectOwner", "VIRTUAL")
 )
 
 ####
@@ -352,14 +370,5 @@ setRefClass(
   )
 )
 
-setRefClass(
-  Class = "WritableObjectOwner",
-  contains = c("ReadOnlyObjectOwner", "WritableFileOwner", "VIRTUAL"),
-  methods = list(
-    addObject = function(object, name, unlist = FALSE){
-      if(missing(name) && class(object) == "list")
-        addObject(.self, object, name, unlist)
-    }
-  )
-)
+
 

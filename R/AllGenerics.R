@@ -4,6 +4,14 @@
 ###############################################################################
 
 setGeneric(
+    name = "getEnv",
+    def = function(object){
+      standardGeneric("getEnv")
+    }
+)
+
+
+setGeneric(
   name = ".extractEntityFromSlots",
   def = function(object){
     standardGeneric(".extractEntityFromSlots")

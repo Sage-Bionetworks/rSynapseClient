@@ -11,7 +11,7 @@
   suppressWarnings(
       setRefClass(
           "rObjOwn",
-          contains = "ReadOnlyObjectOwner",
+          contains = "ObjectOwner",
           where = env
       )
   )
