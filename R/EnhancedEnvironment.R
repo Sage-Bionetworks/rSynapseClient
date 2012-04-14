@@ -59,7 +59,7 @@ setMethod(
     f = "initialize",
     signature = "EnhancedEnvironment",
     definition = function(.Object){
-      .Object@env = new.env()
+      .Object@env = new.env(parent = emptyenv())
       .Object
     }
 )
@@ -116,6 +116,14 @@ names.EnhancedEnvironment <-
 {
   objects(x@env, all.names = TRUE)
 }
+
+setMethod(
+  f = "deleteObject",
+  signature = signature("EnhancedEnvironment", "character"),
+  definition = function(owner, which){
+    rm(list=which, envir=as.envronment(owner))
+  }
+)
 
 
 
