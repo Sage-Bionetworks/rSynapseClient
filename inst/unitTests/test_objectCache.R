@@ -10,7 +10,7 @@
   suppressWarnings(
     setRefClass(
       "wObjOwn",
-      contains = "WritableObjectOwner"
+      contains = "ObjectOwner"
     ) 
   )
 }

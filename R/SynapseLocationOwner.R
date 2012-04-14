@@ -4,7 +4,7 @@
 ###############################################################################
 
 setMethod(
-  name = "addFile",
+  f = "addFile",
   signature = signature("SynapseLocationOwner", "ANY", "ANY"),
   definition = function(entity, file, path){
     addFile(entity@fileCache, file, path)
@@ -12,7 +12,7 @@ setMethod(
 )
 
 setMethod(
-    name = "moveFile",
+    f = "moveFile",
     signature = signature("SynapseLocationOwner", "ANY", "ANY"),
     definition = function(entity, src, dest){
       moveFile(entity@fileCache, src, dest)
@@ -20,10 +20,10 @@ setMethod(
 )
 
 setMethod(
-    name = "deleteFile",
-    signature = signature("SynapseLocationOwner", "ANY", "ANY"),
-    definition = function(entity, file, path){
-      deleteFile(entity@fileCache, file, path)
+    f = "deleteFile",
+    signature = signature("SynapseLocationOwner", "ANY"),
+    definition = function(entity, file){
+      deleteFile(entity@fileCache, file)
     }
 )
 
@@ -64,7 +64,7 @@ setMethod(
 
 setMethod(
     f = "[[",
-    signature = "",
+    signature = "SynapseLocationOwner",
     definition = function(x, i, j, ...){
       if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
         stop("incorrect number of subscripts")
@@ -76,7 +76,7 @@ setMethod(
 
 setMethod(
     f = "$",
-    signature = "",
+    signature = "SynapseLocationOwner",
     definition = function(x, name){
       x[[name]]
     }
