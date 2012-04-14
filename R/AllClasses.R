@@ -243,6 +243,9 @@ setRefClass(
     },
     setFileSource = function(fname, srcPath){
       .self$metaData[[fname]]$srcPath <- srcPath
+    },
+    getCacheDir = function(){
+      .self@cacheDir
     }
   )
 )
@@ -286,6 +289,18 @@ setClass(
     representation = representation(
         env = "environment"
     )
+)
+
+
+## An enhanced environment that caches it's objects to disk using a FileCache
+## class to manage it's on-disk cache
+setClass(
+  Class = "CachingEnhancedEnvironment",
+  contains = "EnhancedEnvironment",
+  representation = representation(
+    cachePrefix = "character",
+    fileCache = "FileCache"    
+  )
 )
 
 ## This class gives an object the ability to own R binary objects, allowing

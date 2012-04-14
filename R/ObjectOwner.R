@@ -3,21 +3,6 @@
 # Author: furia
 ###############################################################################
 
-## general purpose function for adding objects and caching to file
-.doAddObjectWithCache <-
-  function(owner, object, name)
-{
-  owner$objects[[name]] <- object
-  tryCatch(
-    .cacheObject(owner, name),
-    error = function(e){
-      deleteObject(owner, name)
-      stop(e)
-    }
-  )
-  owner
-}
-
 ####
 # Methods for adding general objects
 ####
@@ -25,7 +10,8 @@ setMethod(
   f = "addObject",
   signature = signature("ObjectOwner", "ANY", "character", "missing"),
   definition = function(owner, object, name){
-    invisible(.doAddObjectWithCache(owner, object, name))
+    owner$objects[[name]] <- object
+    invisible(owner)
   }
 )
 
@@ -48,7 +34,7 @@ setMethod(
   definition = function(owner, object, name, unlist){
     if(unlist)
       stop("cannot specify the object name when unlisting")
-    invisible(.doAddObjectWithCache(owner, object, name))
+    addObject(owner, object, name)
   }
 )
 
@@ -98,7 +84,7 @@ setMethod(
   f = "addObject",
   signature = signature("ObjectOwner", "data.frame", "character", "missing"),
   definition = function(owner, object, name){
-    invisible(.doAddObjectWithCache(owner, object, name))
+    addObject(owner, object, name)
   }
 )
 
@@ -106,16 +92,7 @@ setMethod(
   f = "deleteObject",
   signature = signature("ObjectOwner", "character"),
   definition = function(owner, which){
-    rm(list=which, envir=as.environment(owner$objects))
-    tryCatch(
-      .deleteCacheFile(owner, which),
-      error = function(e){
-        warning(sprintf("Unable to delete cache file associated with %s\n%s", which, e))
-      },
-      warning = function(e){
-        warning(sprintf("Unable to delete cache file associated with %s\n%s", which, e))
-      }
-    )
+    deleteObject(getEnv(owner), which)
     invisible(owner)
   }
 )
