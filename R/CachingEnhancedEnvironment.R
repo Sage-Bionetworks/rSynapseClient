@@ -40,7 +40,7 @@ setMethod(
 
 ## generate the full file path the the cached file for the give object
 setMethod(
-    f = .generateCacheFileName,
+    f = ".generateCacheFileName",
     signature = signature("CachingEnhancedEnvironment", "character", "ANY"),
     definition = function(owner, objectName, suffix){
       if(missing(suffix))
