@@ -7,7 +7,7 @@ setMethod(
   f = "propertyNames",
   signature = "SimplePropertyOwner",
   definition = function(object){
-    propertyNames(object@properties)
+    names(object@properties)
   }
 )
 
@@ -22,3 +22,47 @@ setMethod(
     unlist(values)
   }
 )
+
+#####
+## Set multiple property values
+#####
+setMethod(
+		f = "propertyValues<-",
+		signature = signature("SynapseEntity", "list"),
+		definition = function(object, value){
+			if(any(names(value) == "") && length(value) > 0)
+				stop("All entity members must be named")
+			for(name in names(value))
+				propertyValue(object, name) <- value[[name]]
+			return(object)
+		}
+)
+
+#####
+## Delete a property
+#####
+setMethod(
+		f = "deleteProperty",
+		signature = signature("SynapseEntity", "character"),
+		definition = function(object, which){
+			if(!all(which %in% propertyNames(object))){
+				indx <- which(!(which %in% propertyNames(object)))
+				warning(paste(propertyNames(object)[indx], sep="", collapse=","), "were not found in the object, so were not deleted.")
+			}
+			object@properties <- object@properties[setdiff(propertyNames(object), which)]
+			return(object)
+		}
+)
+
+#####
+## set a property value
+#####
+setMethod(
+		f = "propertyValue<-",
+		signature = signature("SynapseEntity", "character"),
+		definition = function(object, which, value){
+			properties(object)[[which]] <- value
+			object
+		}
+)
+

@@ -51,7 +51,7 @@ setClass(
   Class = "SimplePropertyOwner",
   contains = "VIRTUAL",
   representation = representation(
-    attributes = "list"
+    properties = "list"
   ),
   prototype = prototype(
     properties = emptyNamedList
@@ -270,7 +270,8 @@ setClass(
   Class = "SynapseEntity",
   contains = "SimplePropertyOwner",
   representation = representation(
-    annotations = "SynapseAnnotations"
+    annotations = "SynapseAnnotations",
+	synapseEntityKind = "character"
   ),
   prototype = prototype(
     annotations = new("SynapseAnnotations")

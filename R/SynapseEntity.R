@@ -49,7 +49,7 @@ setMethod(
 )
 
 #####
-## Get annotaion values
+## Get annotation values
 #####
 setMethod(
   f = "annotationValues",
@@ -71,79 +71,12 @@ setMethod(
   }
 )
 
-#####
-## getters and setters for SynpaseEntity S4 Class
-#####
-setMethod(
-  f = "annotValue<-",
-  signature = signature("SynapseEntity", "character", "character"),
-  definition = function(object, which, value){
-    if(grepl("date", gsub("update", "", tolower(which))))
-      stop("invalid data type for date annotations. See the documentation for 'POSIXct' or 'Date' for details on how to construct the correct value for date annotations.")
-    type <- names(which(.getCache("annotationTypeMap") == class(value)))
-    annotations(object) <- .setAnnotationValue(object = annotations(object), which = which, value = value, type = type)
-    return(object)
-  }
-)
-
-setMethod(
-  f = "annotValue<-",
-  signature = signature("SynapseEntity", "character", "numeric"),
-  definition = function(object, which, value){
-    if(grepl("date", gsub("update", "", tolower(which))))
-      stop("invalid data type for date annotations. See the documentation for 'POSIXct' or 'Date' for details on how to construct the correct value for date annotations.")
-    type <- names(which(.getCache("annotationTypeMap") == class(value)))
-    #all annotations are stored internally as strings
-    annotations(object) <- .setAnnotationValue(object = annotations(object), which = which, value = as.character(value), type = type)
-    return(object)
-  }
-)
-
-setMethod(
-  f = "annotValue<-",
-  signature = signature("SynapseEntity", "character", "integer"),
-  definition = function(object, which, value){
-    if(grepl("date", gsub("update", "", tolower(which))))
-      stop("invalid data type for date annotations. See the documentation for 'POSIXct' or 'Date' for details on how to construct the correct value for date annotations.")
-    type <- names(which(.getCache("annotationTypeMap") == class(value)))
-    ## all annotations are stored internally as strings
-    annotations(object) <- .setAnnotationValue(object = annotations(object), which = which, value = as.character(value), type = type)
-    return(object)
-  }
-)
-
-## TODO fix this once SYNR-43 is resolved
-## date setting isn't working correctly. Need to figure out how to translate between Synapse dates (stored as integers)
-## and R date classes
-## setMethod(
-##  f = "annotValue<-",
-##  signature = signature("SynapseEntity", "character", "POSIXct"),
-##  definition = function(object, which, value){
-##      if(!grepl("date", tolower(which)))
-##          stop("Annotations with date values must include the string 'date' in the annotation name.")
-##      map <- .getCache("annotationTypeMap")
-##      type <- names(map)[which(map %in% class(value))] ##POSIX dates return 2 class types
-##      #all annotations are stored internally as strings
-##      annotations(object) <- .setAnnotationValue(object = annotations(object), which = which, value =  as.character(as.integer(value)), type = type)
-##      return(object)
-##  }
-##)
-##
-#setMethod(
-##  f = "annotValue<-",
-##  signature = signature("SynapseEntity", "character", "Date"),
-##  definition = function(object, which, value){
-##      annotValue(object = annotations(object), which = which) <- as.POSIXct(value)
-##      return(object)
-##  }
-##)
-
 setMethod(
   f = "annotValue<-",
   signature = signature("SynapseEntity", "character", "logical"),
   definition = function(object, which, value){
     annotValue(object = annotations(object), which = which) <- as.character(value)
-    return(object)
+    object
   }
 )
 
@@ -163,7 +96,7 @@ setMethod(
 #####
 setMethod(
   f = "annotations<-",
-  signature = signature("SynapseEntity","SynapseAnnotation"),
+  signature = signature("SynapseEntity","SynapseAnnotations"),
   definition = function(object, value){
     object@annotations <- value
     object
@@ -177,8 +110,9 @@ setMethod(
   f = "annotations<-",
   signature = signature("SynapseEntity", "list"),
   definition = function(object, value){
-    object@annotations <- new("SynapseAnnotation")
-    annotationValues(object) <- value
+	a <- new("SynapseAnnotations")
+	annotations(a)<-value
+    annotations(object) <- a
     object
   }
 )
@@ -194,83 +128,7 @@ setMethod(
   }
 )
 
-#####
-## get the list of properties for the object
-#####
-setMethod(
-  f = "properties",
-  signature = signature("SynapseEntity"),
-  definition = function(object){
-    kPropertiesSlotName = "properties"
-    slot(object, kPropertiesSlotName)
-  }
-)
 
-#####
-## set the properties list for the object
-#####
-setMethod(
-  f = "properties<-",
-  signature = signature("SynapseEntity", "list"),
-  definition = function(object, value){
-    object@properties <- value
-    return(object)
-  }
-)
-
-#####
-## Get the property names
-#####
-setMethod(
-  f = "propertyNames",
-  signature = signature("SynapseEntity"),
-  definition = function(object){
-    kPropertyFieldName <- "properties"
-    return(names(slot(object, kPropertyFieldName)))
-  }
-)
-
-#####
-## Get the property values
-#####
-setMethod(
-  f = "propertyValues",
-  signature = signature("SynapseEntity"),
-  definition = function(object){
-    lapply(propertyNames(object),FUN=propertyValue, object=object)
-  }
-)
-
-#####
-## Set multiple property values
-#####
-setMethod(
-  f = "propertyValues<-",
-  signature = signature("SynapseEntity", "list"),
-  definition = function(object, value){
-    if(any(names(value) == "") && length(value) > 0)
-      stop("All entity members must be named")
-    for(name in names(value))
-      propertyValue(object, name) <- value[[name]]
-    return(object)
-  }
-)
-
-#####
-## Delete a property
-#####
-setMethod(
-  f = "deleteProperty",
-  signature = signature("SynapseEntity", "character"),
-  definition = function(object, which){
-    if(!all(which %in% propertyNames(object))){
-      indx <- which(!(which %in% propertyNames(object)))
-      warning(paste(propertyNames(object)[indx], sep="", collapse=","), "were not found in the object, so were not deleted.")
-    }
-    object@properties <- object@properties[setdiff(propertyNames(object), which)]
-    return(object)
-  }
-)
 
 #####
 ## Delete an annotation
@@ -280,30 +138,6 @@ setMethod(
   signature = signature("SynapseEntity", "character"),
   definition = function(object, which){
     annotations(object) <- deleteAnnotation(annotations(object), which)
-    return(object)
-  }
-)
-
-#####
-## Get a property value by name
-#####
-setMethod(
-  f = "propertyValue",
-  signature = signature("SynapseEntity", "character"),
-  definition = function(object, which){
-    properties(object)[[which]]
-  }
-)
-
-
-#####
-## set a property value
-#####
-setMethod(
-  f = "propertyValue<-",
-  signature = signature("SynapseEntity", "character"),
-  definition = function(object, which, value){
-    properties(object)[[which]] <- value
     object
   }
 )
@@ -312,12 +146,24 @@ setMethod(
 ## constructor that takes a list entity
 #####
 setMethod(
-  f = "SynapseEntity",
-  signature = signature("list"),
-  definition = function(entity){
-    s4Entity <- new("SynapseEntity")
-    .populateSlotsFromEntity(s4Entity, entity)
-  }
+		f = "SynapseEntity",
+		signature = signature("list"),
+		definition = function(entity){
+			s4Entity <- new("SynapseEntity")
+			.populateSlotsFromEntity(s4Entity, entity)
+		}
+)
+
+#####
+## constructor that takes a serialized JSON object
+#####
+setMethod(
+		f = "SynapseEntity",
+		signature = signature("character"),
+		definition = function(entity){
+			listEntity<-fromJSON(entity)
+			.populateSlotsFromEntity(s4Entity, listEntity)
+		}
 )
 
 #####
@@ -327,15 +173,7 @@ setMethod(
   f = ".extractEntityFromSlots",
   signature = "SynapseEntity",
   definition = function(object){
-    entity <- list()
-    for(n in slotNames(object)){
-      if(n == "properties"){
-        for(nn in names(slot(object,n))){
-          entity[[nn]] <- slot(object,n)[[nn]]
-        }
-      }
-    }
-    return(entity)
+	properties(object)
   }
 )
 
@@ -351,7 +189,7 @@ setMethod(
     
     ## all entity fields should be stored as properties
     for(name in names(entity))
-      object@properties[[name]] <- entity[[name]]
+      propertyValue(object, name) <- entity[[name]]
     object
   }
 )
@@ -375,7 +213,7 @@ setMethod(
   signature = "SynapseEntity",
   definition = function(entity, value){
     entity@synapseEntityKind <- value
-    return(entity)
+    entity
   }
 )
 
@@ -386,7 +224,8 @@ setMethod(
   f = "refreshAnnotations",
   signature = "SynapseEntity",
   definition = function(entity){
+	  #  MF will refactor this code
     annotations(entity) <- do.call(class(annotations(entity)), list(entity = getAnnotations(.extractEntityFromSlots(entity))))
-    return(entity)
+    entity
   }     
 )

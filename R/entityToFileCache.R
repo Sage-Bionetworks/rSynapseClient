@@ -26,8 +26,7 @@ synapseEntityToFileCache <- function(id, version=NULL)
 #
 getEntityFromFileCache<- function(id, version=NULL) {
 	entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
-	content <- readFile(paste(entityCachePath, "entity.json", sep="/"))
-	toJSON(content)
+	fromJSON(paste(entityCachePath, "entity.json", sep="/"))
 }
 
 #
@@ -36,8 +35,7 @@ getEntityFromFileCache<- function(id, version=NULL) {
 #
 getEntityAnnotationsFromFileCache<- function(id, version=NULL) {
 	entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
-	content <- readFile(paste(entityCachePath, "annotations.json", sep="/"))
-	toJSON(content)
+	fromJSON(paste(entityCachePath, "annotations.json", sep="/"))
 }
 
 # note 'filePath' omits the cache root, which is prepended by this function
@@ -94,11 +92,11 @@ getEntityAnnotationsFromFileCache<- function(id, version=NULL) {
 	paste(host, uriPrefix, uri, sep="")
 }
 
-readFile<-function(fileName) {
-	if (!file.exists(fileName)) stop(paste("file", fileName, "doen't exist."))
-	sourceFile<-file(fileName)
-	content<-readLines(sourceFile)
-	close(sourceFile)
-	content
-}
+#readFile<-function(fileName) {
+#	if (!file.exists(fileName)) stop(paste("file", fileName, "doen't exist."))
+#	sourceFile<-file(fileName)
+#	content<-readLines(sourceFile)
+#	close(sourceFile)
+#	content
+#}
 
