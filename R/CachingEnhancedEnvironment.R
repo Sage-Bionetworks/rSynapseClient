@@ -48,7 +48,7 @@ setMethod(
 )
 
 ##
-## Over-ride the deleteObject method inherited from EnhancedEnvironment. The method
+## Override the deleteObject method inherited from EnhancedEnvironment. The method
 ## for CachingEnhancedEnvironment does the same thing as the one for EnhancedEnvironment
 ## but it also deletes the cached binary from disk. Failure to delete the cache file
 ## will print a warning but will not prevent the object from being delted from the
@@ -159,7 +159,7 @@ setMethod(
 ##
 setMethod(
   f = ".generateCacheFileRelativePath",
-  signature = singature("CachingEnhancedEnvironment", "character", "ANY"),
+  signature = signature("CachingEnhancedEnvironment", "character", "ANY"),
   definition = function(owner, objectName, suffix){
     if(missing(suffix))
       suffix <- owner@cacheSuffix
@@ -175,7 +175,7 @@ setMethod(
 ##
 setMethod(
   f = ".generateTmpCacheFileRelativePath",
-  signature = singature("CachingEnhancedEnvironment", "character", "ANY"),
+  signature = signature("CachingEnhancedEnvironment", "character", "ANY"),
   definition = function(owner, objectName, suffix){
     if(missing(suffix))
       suffix <- owner@tmpCacheSuffix

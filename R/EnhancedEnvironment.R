@@ -16,7 +16,7 @@ setMethod(
       if(missing(i))
         return(x[names(x)])
       if(is.numeric(i)){
-        if(any(i > length(names(x))))
+        if(any(abs(i) > length(names(x))))
           stop("subscript out of bounds")
         i <- names(x)[i]
       }else if(is.character(i)){
@@ -125,21 +125,9 @@ setMethod(
       }else{
         
         for(i in 1:length(object)){
-          cat(sprintf("[%i] %s (%s)\n", i, names(object[i]), paste(class(object[[i]])), sep=","))
+          cat(sprintf("[%i] %s (%s)\n", i, names(object[i]), paste(class(object[[i]]), collapse=",")))
         }
       }
-    }
-)
-
-##
-## Return a count of the objects in the environment, including ones starting with
-## a period.
-##
-setMethod(
-    f = "length",
-    signature = "EnhancedEnvironment",
-    definition = function(x){
-      length(names(x))
     }
 )
 
@@ -150,7 +138,7 @@ setMethod(
   f = "deleteObject",
   signature = signature("EnhancedEnvironment", "character"),
   definition = function(owner, which){
-    rm(list=which, envir=as.envronment(owner))
+    rm(list=which, envir=as.environment(owner))
   }
 )
 
@@ -166,6 +154,17 @@ setMethod(
   }
 )
 
+setMethod(
+  f = "addObject",
+  signature = signature("EnhancedEnvironment", "ANY", "missing", "missing"),
+  definition = function(owner, object){
+    name = deparse(substitute(object, env=parent.frame()))
+    name <- gsub("\\\"", "", name)
+    owner[[name]] <- object
+    invisible(owner)
+  }
+)
+
 ##
 ## Get object(s) from the environment
 ##
@@ -174,12 +173,14 @@ setMethod(
   signature = signature("EnhancedEnvironment", "character"),
   definition = function(owner, which){
     nms <- names(owner)
-    indx <- which(nms %in% which)
+    indx <- which(which %in% nms)
     if(length(indx) == 0)
       return(NULL)
-    objs <- lapply(nms[indx], function(n) owner[n])
-    names(objs) <- nms[indx]
-    objs
+    objs <- lapply(which[indx], function(n) owner[[n]])
+    
+    if(length(objs) > 1)
+      return(unlist(objs))
+    objs[[1]]
   }
 )
 
@@ -203,12 +204,12 @@ setMethod(
     tmpEnv <- new.env()
     lapply(which, FUN = function(key){
         assign(key, getObject(owner, key), envir = tmpEnv)
-        deleteObject(owner, key)
+        owner <- deleteObject(owner, key)
       }
     )
     
     lapply(1:length(which), FUN=function(i){
-        addObject(owner, get(which[i], envir=tmpEnv), name[i])
+        owner <- addObject(owner, get(which[i], envir=tmpEnv), name[i])
       }
     )
     rm(tmpEnv)
@@ -216,21 +217,44 @@ setMethod(
   }
 )
 
+##
+## Return the names of the objects held in the environment, including names
+## starting with a period
+##
 names.EnhancedEnvironment <-
     function(x)
 {
   objects(x, all.names=TRUE)
 }
 
+##
+## List the objects held in the environment. By default, this excluded objects
+## starting with a period
+##
 objects.EnhancedEnvironment <-
   function(name, all.names = FALSE, pattern)
 {
   objects(envir = as.environment(name), all.names = all.names, pattern = pattern) 
 } 
 
+##
+## Coerce EnhancedEnvironment to an "environment"
+##
 as.environment.EnhancedEnvironment <-
   function(x)
 {
   x@env  
 }
+
+##
+## Return a count of the objects in the environment, including ones starting with
+## a period.
+##
+length.EnhancedEnvironment <-
+  function(x)
+{
+  length(names(x))
+}
+
+
 
