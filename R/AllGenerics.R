@@ -4,6 +4,70 @@
 ###############################################################################
 
 setGeneric(
+  name = ".generateCacheFileName",
+  def = function(owner, objectName, suffix){
+    standardGeneric(".generateCacheFileNam")
+  }
+)
+
+setGeneric(
+  name = ".generateTmpCacheFileName",
+  def = function(entity, objectName){
+    standardGeneric(".generateTmpCacheFileName")
+  }
+)
+
+setGeneric(
+  name = ".cacheObject",
+  def = function(owner, objectName){
+    standardGeneric(".cacheObject")
+  }
+)
+
+setGeneric(
+  name = ".tmpCacheObject",
+  def = function(destFile){
+    standardGeneric(".tmpCacheObject")
+  }
+)
+
+setGeneric(
+  name = ".tmpCacheObject",
+  def = function(object, objectName){
+    standardGeneric(".tmpCacheObject")
+  }
+)
+
+setGeneric(
+  name = ".renameCacheObjectFromTmp",
+  def = function(object, srcName, destName){
+    standardGeneric(".renameCacheObjectFromTmp")
+  }
+)
+
+setGeneric(
+  name = ".deleteTmpCacheFile",
+  def = function(owner, objectName){
+    standardGeneric(".deleteTmpCacheFile")
+  }
+)
+
+setGeneric(
+  name = ".deleteCacheFile",
+  def = function(owner, objectName){
+    standardGeneric(".deleteCacheFile")
+  }
+)
+
+setGeneric(
+  name = ".loadCachedObjects",
+  def = function(owner){
+    standardGeneric(".loadCachedObjects")
+  }
+)
+
+
+setGeneric(
     name = "getEnv",
     def = function(object){
       standardGeneric("getEnv")

@@ -72,7 +72,7 @@ setClass(
 
 
 ####
-## this class definition is way to complicated. need to move some of the business logic elsewhere
+## this class definition is way too complicated. need to move some of the business logic elsewhere
 ####
 
 setRefClass(
