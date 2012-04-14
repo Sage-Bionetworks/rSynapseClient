@@ -30,6 +30,13 @@ setMethod(
   owner
 }
 
+##
+## Override the deleteObject method inherited from EnhancedEnvironment. The method
+## for CachingEnhancedEnvironment does the same thing as the one for EnhancedEnvironment
+## but it also deletes the cached binary from disk. Failure to delete the cache file
+## will print a warning but will not prevent the object from being delted from the
+## environment.
+##
 setMethod(
     f = "deleteObject",
     signature = signature("EnhancedEnvironment", "character"),
@@ -77,26 +84,30 @@ setMethod(
 
 ## cache the object to disk
 setMethod(
-    f = ".cacheObject",
-    signature = signature("CachingEnhancedEnvironment", "character"),
-    definition = function(owner, objectName)
-    {
-      destFile <- .generateCacheFileName(owner, objectName)
-      save(list = objectName, envir=as.environment(owner), file = destFile)
-    }
+  f = ".generateCacheFileRelativePath",
+  signature = signature("CachingEnhancedEnvironment", "character", "ANY"),
+  definition = function(owner, objectName, suffix){
+    if(missing(suffix))
+      suffix <- owner@cacheSuffix
+    if(!is.character(suffix))
+      stop("suffix must be a character")
+    
+    sprintf("%s%s.%s", owner@cachePrefix, objectName, suffix)
+  }
 )
 
 ## move the object's cache file to a temporary location
 setMethod(
-    f = ".tmpCacheObject",
-    signature = signature("CachingEnhancedEnvironment", "character"),
-    definition = 
-        function(object, objectName)
-    {
-      if(!file.exists(.generateCacheFileName(object, objectName)))
-        stop("source file does not exist")
-      file.rename(.generateCacheFileName(object, objectName), .generateTmpCacheFileName(object, objectName))
-    }
+  f = ".generateTmpCacheFileRelativePath",
+  signature = signature("CachingEnhancedEnvironment", "character", "ANY"),
+  definition = function(owner, objectName, suffix){
+    if(missing(suffix))
+      suffix <- owner@tmpCacheSuffix
+    if(!is.character(suffix))
+      stop("suffix must be a character")
+    
+    generateCacheFileName(object, destName, suffix)
+  }
 )
 
 ## move the object's temporary file to it's new destination

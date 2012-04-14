@@ -13,7 +13,7 @@ setMethod(
       if(missing(i))
         return(x[names(x)])
       if(is.numeric(i)){
-        if(any(i > length(names(x))))
+        if(any(abs(i) > length(names(x))))
           stop("subscript out of bounds")
         i <- names(x)[i]
       }else if(is.character(i)){
@@ -97,33 +97,125 @@ setMethod(
       }else{
         
         for(i in 1:length(object)){
-          cat(sprintf("[%i] %s (%s)\n", i, names(object[i]), class(object[[i]])))
+          cat(sprintf("[%i] %s (%s)\n", i, names(object[i]), paste(class(object[[i]]), collapse=",")))
         }
       }
     }
 )
 
-setMethod(
-    f = "length",
-    signature = "EnhancedEnvironment",
-    definition = function(x){
-      length(names(x))
-    }
-)
-
-names.EnhancedEnvironment <-
-    function(x)
-{
-  objects(x@env, all.names = TRUE)
-}
-
+##
+## Delete the object(s) from the environment
+##
 setMethod(
   f = "deleteObject",
   signature = signature("EnhancedEnvironment", "character"),
   definition = function(owner, which){
-    rm(list=which, envir=as.envronment(owner))
+    rm(list=which, envir=as.environment(owner))
   }
 )
+
+
+setMethod(
+  f = "addObject",
+  signature = signature("EnhancedEnvironment", "ANY", "missing", "missing"),
+  definition = function(owner, object){
+    name = deparse(substitute(object, env=parent.frame()))
+    name <- gsub("\\\"", "", name)
+    owner[[name]] <- object
+    invisible(owner)
+  }
+)
+
+##
+## Get object(s) from the environment
+##
+setMethod(
+  f = "getObject",
+  signature = signature("EnhancedEnvironment", "character"),
+  definition = function(owner, which){
+    nms <- names(owner)
+    indx <- which(which %in% nms)
+    if(length(indx) == 0)
+      return(NULL)
+    objs <- lapply(which[indx], function(n) owner[[n]])
+    
+    if(length(objs) > 1)
+      return(unlist(objs))
+    objs[[1]]
+  }
+)
+
+##
+## rename object(s) in the environment
+##
+setMethod(
+  f = "renameObject",
+  signature = signature("EnhancedEnvironment", "character", "character"),
+  definition = function(owner, which, name){
+    if(length(which) != length(name))
+      stop("Must supply the same number of names as objects")
+    
+    if(!all(name %in% names(owner)))
+      stop("Invalid objects provided")
+    
+    ## make a copy of the objects that will be moved and delete them from
+    ## the entity
+    ## TODO : make this more performant by only making copies of objects
+    ## when absolutely necessary
+    tmpEnv <- new.env()
+    lapply(which, FUN = function(key){
+        assign(key, getObject(owner, key), envir = tmpEnv)
+        owner <- deleteObject(owner, key)
+      }
+    )
+    
+    lapply(1:length(which), FUN=function(i){
+        owner <- addObject(owner, get(which[i], envir=tmpEnv), name[i])
+      }
+    )
+    rm(tmpEnv)
+    invisible(owner)
+  }
+)
+
+##
+## Return the names of the objects held in the environment, including names
+## starting with a period
+##
+names.EnhancedEnvironment <-
+    function(x)
+{
+  objects(x, all.names=TRUE)
+}
+
+##
+## List the objects held in the environment. By default, this excluded objects
+## starting with a period
+##
+objects.EnhancedEnvironment <-
+  function(name, all.names = FALSE, pattern)
+{
+  objects(envir = as.environment(name), all.names = all.names, pattern = pattern) 
+} 
+
+##
+## Coerce EnhancedEnvironment to an "environment"
+##
+as.environment.EnhancedEnvironment <-
+  function(x)
+{
+  x@env  
+}
+
+##
+## Return a count of the objects in the environment, including ones starting with
+## a period.
+##
+length.EnhancedEnvironment <-
+  function(x)
+{
+  length(names(x))
+}
 
 
 

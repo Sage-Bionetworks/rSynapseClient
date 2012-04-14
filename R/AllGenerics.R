@@ -2,6 +2,18 @@
 # 
 # Author: furia
 ###############################################################################
+setGeneric(
+  name = ".generateTmpCacheFileRelativePath",
+  function(owner, objectName, suffix){
+  }
+)
+
+setGeneric(
+  name = "files",
+  def = function(object){
+    standardGeneric("files")
+  }
+)
 
 setGeneric(
   name = ".generateCacheFileName",
