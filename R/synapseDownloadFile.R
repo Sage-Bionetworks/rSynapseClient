@@ -4,7 +4,7 @@
 ###############################################################################
 
 legalFilePath<-function(filePath) {
-	gsub("^\\()`'<>:\"|?*", "_", filePath)
+	gsub("[\\()`'<>:\"|?*]", "_", filePath)
 }
 
 synapseDownloadToLegalFile<- function(url, destfile, opts = opts, curlHandle = curlHandle) {
@@ -23,9 +23,9 @@ synapseDownloadToLegalFile<- function(url, destfile, opts = opts, curlHandle = c
 	
 	## copy then delete. this avoids a cross-device error encountered
 	## on systems with multiple hard drives when using file.rename
-	if(!file.copy(tmpFile, destfile, overwrite = TRUE)){
+	if(!file.copy(tmpFile, legalDestFile, overwrite = TRUE)){
 		file.remove(tmpFile)
-		stop("COULD NOT COPY: ", tmpFile, " TO: ", destfile)
+		stop("COULD NOT COPY: ", tmpFile, " TO: ", legalDestFile)
 	}
 	file.remove(tmpFile)
 
