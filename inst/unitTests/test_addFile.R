@@ -230,3 +230,7 @@ unitTestReturnValue <-
     checkEquals(length(fc$getFileMetaData()), 1L)
     checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
 }
+
+
+
+

@@ -147,6 +147,32 @@ setMethod(
   }
 )
 
+## return the environment wrapped by the enclosed EnhancedEnvironment class
+## should this be done? May not need this method since it encourages callers
+## not to use the API. Commenting it out for now and will add it back later if
+## it's needed
+#setMethod(
+#  f = "getEnv",
+#  signature = "ObjectOwner",
+#  definition = function(object){
+#    object$getEnv()
+#  }
+#)
+
+## delegate "objects" calls to the enclosed EnhancedObjects class
+objects.ObjectOwner <-
+  function(name, all.names, pattern)
+{
+  objects (name@objects, all.names, pattern) 
+}
+
+## delegate "names" calls to the enclosed EnhancedObjects class
+names.ObjectOwner <-
+  function(x)
+{
+  c("cacheDir", "files", "objects")
+  ##names(x$objects) 
+}
 
 
 
