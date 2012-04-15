@@ -102,7 +102,7 @@ setRefClass(
       .self$cacheRoot <- gsub("/+$", "", gsub("/+", "/", normalizePath(root, mustWork=TRUE)))
       cdir <- file.path(.self$cacheRoot, pattern=sprintf("%s_unpacked", .self$archiveFile))
       dir.create(cdir, recursive=T)
-      .self$cacheDir <- gsub("/+", "/", normalizePath(root, mustWork=TRUE))
+      .self$cacheDir <- gsub("/+", "/", normalizePath(cdir, mustWork=TRUE))
     },
     addFileMetaData = function(srcPath, destPath, ...){
       destPath <- as.character(.cleanFilePath(destPath))
@@ -253,7 +253,10 @@ setRefClass(
       .self$metaData[[fname]]$srcPath <- srcPath
     },
     getCacheDir = function(){
-      .self@cacheDir
+      .self$cacheDir
+    },
+    getCacheRoot = function(){
+      .self$cacheRoot
     }
   )
 )

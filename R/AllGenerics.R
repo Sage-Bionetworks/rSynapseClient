@@ -2,16 +2,24 @@
 # 
 # Author: furia
 ###############################################################################
+
 setGeneric(
-  name = ".generateTmpCacheFileRelativePath",
-  function(owner, objectName, suffix){
+  name = "cacheDir",
+  def = function(object){
+    standardGeneric("cacheDir")
   }
 )
-
 setGeneric(
   name = "files",
   def = function(object){
     standardGeneric("files")
+  }
+)
+
+setGeneric(
+  name = ".generateTmpCacheFileRelativePath",
+  function(owner, objectName, suffix){
+    standardGeneric(".generateTmpCacheFileRelativePath")
   }
 )
 
@@ -25,13 +33,13 @@ setGeneric(
 setGeneric(
   name = ".generateCacheFileName",
   def = function(owner, objectName, suffix){
-    standardGeneric(".generateCacheFileNam")
+    standardGeneric(".generateCacheFileName")
   }
 )
 
 setGeneric(
   name = ".generateTmpCacheFileName",
-  def = function(entity, objectName){
+  def = function(owner, objectName){
     standardGeneric(".generateTmpCacheFileName")
   }
 )

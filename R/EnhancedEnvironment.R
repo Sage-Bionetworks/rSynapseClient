@@ -16,17 +16,15 @@ setMethod(
       if(missing(i))
         return(x[names(x)])
       if(is.numeric(i)){
-        if(any(abs(i) > length(names(x))))
-          stop("subscript out of bounds")
         i <- names(x)[i]
-      }else if(is.character(i)){
-        if(!all(i %in% names(x)))
-          stop("undefined objects selected")
+      }else if (is.character(i)){
+        i <- names(x)[match(i, names(x))]
       }else{
         stop(sprintf("invalid subscript type '%s'", class(i)))
       }
       retVal <- lapply(i, function(i){
-            get(i, envir = x@env)
+            if(is.na(i)) return(NULL)
+            get(i, envir = as.environment(x))
           }
       )
       names(retVal) <- i
@@ -44,8 +42,20 @@ setMethod(
     definition = function(x, i, j, ...){
       if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
         stop("incorrect number of subscripts")
+      if(missing(i))
+        stop("invalid subscript type 'symbol'")
+      if(is.numeric(i)){
+        if(length(i) > 1L)
+          stop("attempt to select less than one element")
+        if(i == 0L)
+          stop("attempt to select less than one element")
+        if(i > length(names(x)))
+          stop("subscript out of bounds")
+        i <- (1:length(names(x)))[i]
+      }
       if(length(i) > 1)
-        stop("subscript out of bounds")
+        stop("attempt to select more than one element")
+
       x[i][[1]]
     }
 )
@@ -139,6 +149,7 @@ setMethod(
   signature = signature("EnhancedEnvironment", "character"),
   definition = function(owner, which){
     rm(list=which, envir=as.environment(owner))
+    invisible(owner)
   }
 )
 
@@ -194,7 +205,7 @@ setMethod(
     if(length(which) != length(name))
       stop("Must supply the same number of names as objects")
     
-    if(!all(name %in% names(owner)))
+    if(!all(which %in% names(owner)))
       stop("Invalid objects provided")
     
     ## make a copy of the objects that will be moved and delete them from

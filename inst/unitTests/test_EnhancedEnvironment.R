@@ -19,6 +19,7 @@ unitTestAddObjectAssignment <-
   checkEquals(names(ee), "foo")
   boo <- "blah"
   copy <- addObject(ee, boo)
+  checkEquals("EnhancedEnvironment", as.character(class(copy)))
   checkTrue(all(c('foo','boo') %in% names(ee)))
   checkEquals(length(names(ee)), 2L)
   
@@ -82,6 +83,9 @@ unitTestBracketAccessor <-
   checkEquals(ee["foo"], list(foo="bar"))
   checkEquals(class(ee["foo"]), "list")
   checkEquals(names(ee["foo"]), "foo")
+  checkEquals(names(ee[]), "foo")
+  checkEquals(ee[][[1]], "bar")
+  
 }
 
 unitTestDoubleBracketAccessor <-
@@ -96,6 +100,9 @@ unitTestDoubleBracketAccessor <-
 
   ## get two objects. should be an exception
   checkException(ee[[c("foo", "blah")]])
+  
+  ## need to select exactly one element
+  checkException(ee[[]])
 }
 
 unitTestAccessor <-
@@ -145,7 +152,7 @@ unitTestShowMulipleClasses <-
   ee <- new("EnhancedEnvironment")
   checkEquals(capture.output(show(ee)), "character(0)")
   ee$boo <- 1
-  checkEquals(capture.output(show(ee)), "[1] foo (character)")
+  checkEquals(capture.output(show(ee)), "[1] boo (numeric)")
   foo <- "A"
   class(foo) <- c("FakeClass1", "FakeClass2")
   addObject(ee, foo)
@@ -172,8 +179,13 @@ unitTestDoubleBracketAccessorNegativeIndicesOutOfBounds <-
   ee$boo <- 1
   ee$foo <- "bar"
   
+  checkEquals(ee[[-2]], 1L)
+
+  
+  ee$goo <- "boo"
   checkException(ee[[-2]])
   checkException(ee[[-0]])
+  checkException(ee[[]])
 }
 
 
@@ -190,6 +202,7 @@ unitTestBracketAccessorNegativeIndices <-
   checkEquals(names(ee[-2]), "boo")
   
   checkEquals(length(ee[c(-2, -1)]), 0L)
+  checkEquals("list", as.character(class(ee[-2:-1])))
   
 }
 unitTestBracketAccessorNegativeIndicesOutOfBounds <-
@@ -199,8 +212,15 @@ unitTestBracketAccessorNegativeIndicesOutOfBounds <-
   ee$boo <- 1
   ee$foo <- "bar"
   
-  checkException(ee[-2])
-  checkException(ee[-0])
+  checkEquals(length(ee[-3]), 2L)
+  checkEquals("list", as.character(class(ee[-3])))
+  checkTrue(all(names(ee[-3]) %in% c("foo", "boo")))
+  checkTrue(all(c("foo", "boo") %in% names(ee[-3])))
+  
+  checkEquals(length(ee[-0]), 0L)
+  checkEquals("list", as.character(class(ee[-0])))
+  
+  
 }
 
 unitTestBracketAccessorNumericIndicies <-
@@ -213,7 +233,27 @@ unitTestBracketAccessorNumericIndicies <-
   checkEquals(class(ee[1]), "list")
   checkEquals(names(ee[1]), "foo")
   
-  checkException(ee[2])
+  ## check the values of out-of-bounds numeric indices
+  checkTrue(is.na(names(ee[2])))
+  checkTrue(is.null(ee[2][[1]]))
+  checkEquals("list", as.character(class(ee[2])))
+  
+  ## check the values of out-of-bounds numeric indices
+  checkTrue(is.na(names(ee['c'])))
+  checkTrue(is.null(ee['c'][[1]]))
+  checkEquals("list", as.character(class(ee['c'])))
+  checkEquals(length(ee['c']), 1L)
+  
+  ## one in bounds, one out
+  ## check the values of out-of-bounds numeric indices
+  checkTrue(is.na(names(ee[c('foo','c')])[2]))
+  checkEquals(names(ee[c('foo','c')])[1], "foo")
+  checkTrue(is.null(ee[c('foo','c')][[2]]))
+  checkEquals(ee[c('foo','c')][[1]], "bar")
+  checkTrue(is.null(ee[c('c','foo')][[1]]))
+  checkEquals("list", as.character(class(ee['c'])))
+  checkEquals(length(ee[c('foo','c')]), 2L)
+  
 }
 
 unitTestDoubleBracketAccessorNumericIndicies <-
@@ -248,6 +288,7 @@ unitTestDeleteObject <-
   ee$boo <- "blah"
 
   copy <- deleteObject(ee, "foo")
+  checkEquals("EnhancedEnvironment", as.character(class(copy)))
   checkEquals(length(ee), 1L)
   checkEquals(length(copy), 1L)
   checkEquals(ee[[1]], "blah")
@@ -336,14 +377,28 @@ unitTestAddDataFrame <-
 unitTestRenameObject <-
   function()
 {
-  ee <- new("EnhancedEnvironment")
   
+  ## start with a simple rename
+  ee <- new("EnhancedEnvironment")
+  ee$aList <- 2L
+  checkEquals(length(ee), 1L)
+  checkEquals(2L, getObject(ee, "aList"))
+  
+  copy <- renameObject(ee, 'aList', 'aList1')
+  checkEquals("EnhancedEnvironment", as.character(class(copy)))
+  checkEquals(length(ee), 1L)
+  checkEquals(1L, length(getObject(ee, "aList1")))
+  checkEquals(2L, ee[['aList1']])
+  
+  ## now for something more complicated
+  ee <- new("EnhancedEnvironment")
   ee$aList <- 1L
   checkEquals(length(ee), 1L)
   checkEquals(1L, getObject(ee, "aList"))
   
   ee$aNum <- data.frame(list(foo="bar", boo = "blah"))
   copy <- renameObject(ee, 'aNum', 'aList')
+  checkEquals("EnhancedEnvironment", as.character(class(copy)))
   checkEquals(length(ee), 1L)
   checkEquals("data.frame", class(getObject(ee, "aList")))
   checkEquals(2L, length(getObject(ee, "aList")))

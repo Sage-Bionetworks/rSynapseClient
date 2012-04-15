@@ -159,7 +159,8 @@ objects.ObjectOwner <-
 names.ObjectOwner <-
   function(x)
 {
-  names(x@objects) 
+  c("cacheDir", "files", "objects")
+  ##names(x$objects) 
 }
 
 

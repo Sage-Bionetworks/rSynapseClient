@@ -16,7 +16,7 @@ setMethod(
     .Object@env = new.env(parent = emptyenv())
     .Object@cachePrefix <- ".R_OBJECTS/"
     .Object@fileCache <- FileCache()
-    .Ojbect@cacheSuffix <- "rbin"
+    .Object@cacheSuffix <- "rbin"
     .Object@cacheTmpSuffix <- "rbin.tmp"
     .Object 
   }
@@ -39,13 +39,43 @@ setMethod(
     owner <- tryCatch(
       .cacheObject(owner, name),
       error = function(e){
-        deleteObject(owner, name)
+        oldClass <- class(owner)
+        class(owner) <- "EnhancedEnvironment"
+        owner <- deleteObject(owner, object)
+        class(owner) <- oldClass
         stop(e)
       }
     )
     invisible(owner)
   }
 )
+
+setMethod(
+  f = "addObject",
+  signature = signature("CachingEnhancedEnvironment", "ANY", "missing", "missing"),
+  definition = function(owner, object){
+    name = deparse(substitute(object, env=parent.frame()))
+    name <- gsub("\\\"", "", name)
+    addObject(owner, object, name)
+  }
+)
+
+
+##
+## Allows caller to add a single object to the environment using the double bracket
+## accessor
+##
+setReplaceMethod("[[", 
+  signature = signature(
+    x = "CachingEnhancedEnvironment",
+    i = "character"
+  )
+  ,
+  function(x, i, value) {
+    addObject(x, value, i)
+  }
+)
+
 
 ##
 ## Override the deleteObject method inherited from EnhancedEnvironment. The method
@@ -58,16 +88,76 @@ setMethod(
   f = "deleteObject",
   signature = signature("CachingEnhancedEnvironment", "character"),
   definition = function(owner, which){
-    tryCatch(
+    owner <- tryCatch(
       .deleteCacheFile(owner, which),
       error = function(e){
-        warning(sprintf("Unable to remove cached binary for '%s' object: %s"), which, e)
+        warning(sprintf("Unable to remove cached binary for '%s' object: %s", which, as.character(e)))
+        owner
       }
     )
     oldClass <- class(owner)
     class(owner) <- "EnhancedEnvironment"
-    owner <- deleteObject(owner, name)
+    owner <- deleteObject(owner, which)
     class(owner) <- oldClass
+    invisible(owner)
+  }
+)
+
+##
+## Must also override renameObject method
+##
+setMethod(
+  f = "renameObject",
+  signature = signature("CachingEnhancedEnvironment", "character", "character"),
+  definition = function(owner, which, name){
+    if(length(which) != length(name))
+      stop("Must supply the same number of names as objects")
+    
+    if(!all(which %in% names(owner)))
+      stop("Invalid objects provided")
+    
+    ## temporarily store all objects into an environment. also store the destination objects 
+    ## so that things can be put back if an exception is encountered
+    tmpEnvSrc <- new.env(parent=emptyenv())
+    lapply(which, function(w) assign(w, getObject(owner, w), envir=tmpEnvSrc))
+    
+    tmpEnvDest <- new.env(parent=emptyenv())
+    lapply(intersect(names(owner), name), function(w){
+        assign(w, getObject(owner, w), envir=tmpEnvDest)
+      })
+    
+    ## now perform the move by first deleting the objects then adding them back from the
+    ## temporary environment, but with their new names. put everything back if an error occurs
+    ## or a warning is encountered
+    
+    ## elevate warnings to errors
+    oldWarn <- options("warn")[[1]]
+    options(warn=2)
+    owner <- tryCatch({
+        owner <- deleteObject(owner, which)
+        lapply(1:length(which), function(i){
+          owner <<- addObject(owner, get(which[i], envir=tmpEnvSrc), name[i])
+        })
+        owner
+      },
+      error = function(e){
+        ## put everything back the way it was an then throw
+        ## an exception. it's important to put things back 
+        ## manually since the EnhancedEnvironment is pass-by-reference
+        
+        ## delete all the destination objects
+        lapply(intersect(name, names(owner)), function(w) owner <<- deleteObject(owner, w))
+        
+        ## put the originals back
+        lapply(name, function(w){
+            owner <<- addObject(owner, get(w, envir=tmpEnvDest), name)
+          })
+        
+        ## now that everything is back to it's starting state, throw an exception
+        stop(e)
+      },
+      finally = options(warn=oldWarn)
+    )
     invisible(owner)
   }
 )
@@ -80,13 +170,29 @@ setMethod(
   f = "files",
   signature = "CachingEnhancedEnvironment",
   definition = function(object){
-    files <- owner@fileCache$files()
-    indx <- grep(pattern, files, all.files = TRUE)
-    if(length(indx == 0L))
+    files <- object@fileCache$files()
+    prefix <- gsub("\\.", "\\\\.",object@cachePrefix)
+    suffix <- gsub("\\.", "\\\\.",object@cacheSuffix)
+    pattern <- sprintf("^%s.+\\.%s$", prefix, suffix)
+    indx <- grep(pattern, files)
+    if(length(indx) == 0L)
       return(character())
-    files <- files[indx]  
+    files <- files[indx]
+    files
   }
 )
+
+##
+## print the cache directory
+##
+setMethod(
+  f = "cacheDir",
+  signature = "CachingEnhancedEnvironment",
+  definition = function(object){
+    object@fileCache$getCacheDir()
+  }
+)
+
 
 ##
 ## cache the object to disk. use the FileCache object to store metaData
@@ -99,6 +205,19 @@ setMethod(
   {
     if(!(objectName %in% names(owner)))
       stop("Could not cache object to disk because it was not present in the environment.")
+    
+    ## check that cachesubdir exists
+    cacheDir <- owner@fileCache$getCacheDir()
+    if(grepl("/$", owner@cachePrefix) && !file.exists(file.path(cacheDir, owner@cachePrefix))){
+      cacheDir <- file.path(owner@fileCache$getCacheDir(), owner@cachePrefix)
+      dir.create(cacheDir, recursive=TRUE)
+    }
+    
+    ## make sure the cacheDir is a directory
+    info <- file.info(cacheDir)
+    if(is.na(info$isdir) || !info$isdir)
+      stop("could not create directory for holding cached objects: %s", cacheDir)
+    
     destFile <- .generateCacheFileName(owner, objectName)
     
     ## add meta data about this object to the FileCache object
@@ -112,10 +231,12 @@ setMethod(
         stop(e)
       }
     )
-    addFileMetaData(object@fileCache, destFile, destFile)
+    relPath <- gsub(owner@fileCache$getCacheDir(), "", destFile, fixed = TRUE)
+    relPath <- gsub("^/+", "", relPath)
+    addFileMetaData(owner@fileCache, destFile, relPath)
     
     ## cache the metadata to disk
-    object@fileCache$cacheFileMetaData()
+    owner@fileCache$cacheFileMetaData()
     invisible(owner)
   }
 )
@@ -128,6 +249,7 @@ setMethod(
   signature = signature("CachingEnhancedEnvironment", "character"),
   definition = function(owner, objectName){
     owner@fileCache <- deleteFile(owner@fileCache, .generateCacheFileRelativePath(owner, objectName))
+    
     invisible(owner)
   }
 )
@@ -178,11 +300,11 @@ setMethod(
   signature = signature("CachingEnhancedEnvironment", "character", "ANY"),
   definition = function(owner, objectName, suffix){
     if(missing(suffix))
-      suffix <- owner@tmpCacheSuffix
+      suffix <- owner@cacheTmpSuffix
     if(!is.character(suffix))
       stop("suffix must be a character")
     
-    generateCacheFileName(object, destName, suffix)
+    .generateCacheFileRelativePath(owner, objectName, suffix)
   }
 )
 
@@ -192,9 +314,9 @@ setMethod(
 setMethod(
   f = ".generateTmpCacheFileName",
   signature = signature("CachingEnhancedEnvironment", "character"),
-  definition = function(entity, objectName)
+  definition = function(owner, objectName)
   {
-    .generateCacheFileRelativePath(entity, objectName, owner@cacheTmpSuffix)
+    .generateCacheFileRelativePath(owner, objectName, owner@cacheTmpSuffix)
   }
 )
 
@@ -207,9 +329,9 @@ setMethod(
   definition = 
     function(object, objectName)
   {
-    owner@fileCache <- moveFile(object@fileCache, 
-      .generateCacheFileRelativePath(object, objectName), 
-      .generateTmpCacheFileRelativePath(object, objectName)
+    object@fileCache <- moveFile(object@fileCache, 
+      synapseClient:::.generateCacheFileRelativePath(object, objectName), 
+      synapseClient:::.generateTmpCacheFileRelativePath(object, objectName)
     )
     invisible(object)
   }
@@ -222,11 +344,15 @@ setMethod(
   f = ".renameCacheObjectFromTmp",
   signature = signature("CachingEnhancedEnvironment", "character", "character"),
   definition = function(object, srcName, destName){
-    owner@fileCache <- moveFile(object@fileCache, 
+    ## if the destination file exists, delete it
+    if(.generateCacheFileRelativePath(object, destName) %in% files(object))
+      object@fileCache <- deleteFile(object@fileCache, .generateCacheFileRelativePath(object, destName))
+    
+    object@fileCache <- moveFile(object@fileCache, 
       .generateTmpCacheFileRelativePath(object, srcName), 
       .generateCacheFileRelativePath(object, destName)
     )
-    invisible(owner)
+    invisible(object)
   }
 )
 
@@ -250,9 +376,13 @@ setMethod(
   signature = signature("CachingEnhancedEnvironment"),
   definition = function(owner){
     
+    ## first clear out the owner's environment from all existing
+    ## objects
+    rm(list= names(owner), envir = as.environment(owner))
+    
     ## get the cached files
-    files <- file.path(objects@fileCache$getCacheDir(), files(owner))
-    if(length(indx == 0L))
+    files <- file.path(owner@fileCache$getCacheDir(), files(owner))
+    if(length(files == 0L))
       invisible(owner)
     
     ## load the files into the environment

@@ -10,8 +10,12 @@ unitTestNoArgConstructor <-
   checkEquals(length(fc$cacheDir), 1L)
   checkTrue(fc$cacheDir != "")
   checkTrue(!is.null(fc$cacheDir))
-  fc$addFileMetaData("srcFile1", "destFile1")
-  fc$addFileMetaData("srcFile2", "destFile2")
+  checkTrue(fc$getCacheDir() != fc$getCacheRoot())
+  checkEquals(fc$getCacheDir(), file.path(fc$getCacheRoot(), sprintf("%s_unpacked", fc$getArchiveFile())))
+  
+  checkTrue(file.exists(fc$getCacheDir()))
+  checkTrue(file.exists(fc$getCacheRoot()))
+  
 }
 
 unitTestPathConstructor <-
