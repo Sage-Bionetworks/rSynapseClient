@@ -18,6 +18,8 @@ unitTestDeleteFile <-
   deleteFile(fc, fc$files()[1L])
   checkTrue(length(fc$files()) == 0L)
   checkEquals(length(dir(fc$cacheDir)), 0L)
+  
+  
 }
 
 unitTestCleanUp <-

@@ -4,6 +4,272 @@
 ###############################################################################
 
 setGeneric(
+  name = "cacheDir",
+  def = function(object){
+    standardGeneric("cacheDir")
+  }
+)
+setGeneric(
+  name = "files",
+  def = function(object){
+    standardGeneric("files")
+  }
+)
+
+setGeneric(
+  name = ".generateTmpCacheFileRelativePath",
+  function(owner, objectName, suffix){
+    standardGeneric(".generateTmpCacheFileRelativePath")
+  }
+)
+
+setGeneric(
+  name = ".generateCacheFileRelativePath",
+  def = function(owner, objectName, suffix){
+    standardGeneric(".generateCacheFileRelativePath")
+  }
+)
+
+setGeneric(
+  name = ".generateCacheFileName",
+  def = function(owner, objectName, suffix){
+    standardGeneric(".generateCacheFileName")
+  }
+)
+
+setGeneric(
+  name = ".generateTmpCacheFileName",
+  def = function(owner, objectName){
+    standardGeneric(".generateTmpCacheFileName")
+  }
+)
+
+setGeneric(
+  name = ".cacheObject",
+  def = function(owner, objectName){
+    standardGeneric(".cacheObject")
+  }
+)
+
+setGeneric(
+  name = ".tmpCacheObject",
+  def = function(destFile){
+    standardGeneric(".tmpCacheObject")
+  }
+)
+
+setGeneric(
+  name = ".tmpCacheObject",
+  def = function(object, objectName){
+    standardGeneric(".tmpCacheObject")
+  }
+)
+
+setGeneric(
+  name = ".renameCacheObjectFromTmp",
+  def = function(object, srcName, destName){
+    standardGeneric(".renameCacheObjectFromTmp")
+  }
+)
+
+setGeneric(
+  name = ".deleteTmpCacheFile",
+  def = function(owner, objectName){
+    standardGeneric(".deleteTmpCacheFile")
+  }
+)
+
+setGeneric(
+  name = ".deleteCacheFile",
+  def = function(owner, objectName){
+    standardGeneric(".deleteCacheFile")
+  }
+)
+
+setGeneric(
+  name = ".loadCachedObjects",
+  def = function(owner){
+    standardGeneric(".loadCachedObjects")
+  }
+)
+
+
+setGeneric(
+    name = "getEnv",
+    def = function(object){
+      standardGeneric("getEnv")
+    }
+)
+
+
+setGeneric(
+  name = ".extractEntityFromSlots",
+  def = function(object){
+    standardGeneric(".extractEntityFromSlots")
+  }
+)
+
+setGeneric(
+  name = ".populateSlotsFromEntity",
+  def = function(object, entity, json){
+    standardGeneric(".populateSlotsFromEntity")
+  }
+)
+
+setGeneric(
+  name = "deleteProperty",
+  def = function(object, which){
+    standardGeneric("deleteProperty")
+  }
+)
+
+setGeneric(
+  name = "properties",
+  def = function(object){
+    standardGeneric("properties")
+  }
+)
+
+setGeneric(
+  name = "properties<-",
+  def = function(object, value){
+    standardGeneric("properties<-")
+  }
+)
+
+setGeneric(
+  name = "propertyValues",
+  def = function(object){
+    standardGeneric("propertyValues")
+  }
+)
+
+setGeneric(
+  name = "propertyValues<-",
+  def = function(object, value){
+    standardGeneric("propertyValues<-")
+  }
+)
+
+setGeneric(
+  name = "annotations",
+  def = function(object){
+    standardGeneric("annotations")
+  }
+)
+
+setGeneric(
+  name = "propertyValue",
+  def = function(object, which){
+    standardGeneric("propertyValue")
+  }
+)
+
+setGeneric(
+  name = "propertyValue<-",
+  def = function(object, which, value){
+    standardGeneric("propertyValue<-")
+  }
+)
+
+setGeneric(
+  name = "annotations<-",
+  def = function(object, value){
+    standardGeneric("annotations<-")
+  }
+)
+
+setGeneric(
+  name = "annotationNames",
+  def = function(object){
+    standardGeneric("annotationNames")
+  }
+)
+
+setGeneric(
+  name = "annotValue",
+  def = function(object, which){
+    standardGeneric("annotValue")
+  }
+)
+
+setGeneric(
+  name = "deleteAnnotation",
+  def = function(object, which){
+    standardGeneric("deleteAnnotation")
+  }
+)
+
+setGeneric(
+  name = "annotValue<-",
+  def = function(object, which, value){
+    standardGeneric("annotValue<-")
+  }
+)
+
+setGeneric(
+  name = "annotationValues",
+  def = function(object){
+    standardGeneric("annotationValues")
+  }
+)
+
+setGeneric(
+  name = "annotationValues<-",
+  def = function(object, value){
+    standardGeneric("annotationValues<-")
+  }
+)
+
+setGeneric(
+  name = "TypedPropertyStore",
+  def = function(file, data, json){
+    standardGeneric("TypedPropertyStore")
+  }
+)
+
+setGeneric(
+  name = "setUpdatePropValue",
+  def = function(object, which, value, type){
+    standardGeneric("setUpdatePropValue")
+  }
+)
+setGeneric(
+  name = "propertyNames",
+  def = function(object){
+    standardGeneric("propertyNames")
+  }
+)
+
+setGeneric(
+  name = "propertyValues",
+  def = function(object){
+    standardGeneric("propertyValues")
+  }
+)
+
+setGeneric(
+  name = "propertyType",
+  def = function(object, which){
+    standardGeneric("propertyType")
+  }
+)
+
+setGeneric(
+  name = "getProperty",
+  def = function(object, which){
+    standardGeneric("getProperty")
+  }
+)
+
+setGeneric(
+  name = "setProperty",
+  def = function(object, which, value){
+    standardGeneric("setProperty")
+  }
+)
+
+setGeneric(
   name = "getFileCache",
   def = function(archivePath){
     standardGeneric("getFileCache")
@@ -88,5 +354,55 @@ setGeneric(
   name = "moveFile",
   def = function(entity, src, dest){
     standardGeneric("moveFile")
+  }
+)
+
+setGeneric(
+  name = "addValue",
+  def = function(object, name, value){
+    standardGeneric("addValue")
+  }
+)
+
+setGeneric(
+  name = "deleteValue",
+  def = function(object, name, value){
+    standardGeneric("deleteValue")
+  }
+)
+
+setGeneric(
+  name = "getValue",
+  def = function(object, name, value){
+    standardGeneric("getValue")
+  }
+)
+
+
+setGeneric(
+  name = "SynapseEntity",
+  def = function(entity){
+    standardGeneric("SynapseEntity")
+  }
+)
+
+setGeneric(
+  name = "synapseEntityKind",
+  def = function(entity){
+    standardGeneric("synapseEntityKind")
+  }
+)
+
+setGeneric(
+  name = "synapseEntityKind<-",
+  def = function(entity, value){
+    standardGeneric("synapseEntityKind<-")
+  }
+)
+
+setGeneric(
+  name = "refreshAnnotations",
+  def = function(entity){
+    standardGeneric("refreshAnnotations")
   }
 )

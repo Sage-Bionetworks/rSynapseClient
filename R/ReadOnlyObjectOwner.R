@@ -3,18 +3,6 @@
 # Author: furia
 ###############################################################################
 
-setRefClass(
-  "ReadOnlyObjectOwner",
-  contains = c("ReadOnlyFileOwner", "VIRTUAL"),
-  fields = list(
-    objects = "EnhancedEnvironment"
-  ),
-  methods = list(
-    getObject = function(which){
-      getObject(.self, which)
-    }
-  ) 
-)
 
 setMethod(
   f = "getObject",

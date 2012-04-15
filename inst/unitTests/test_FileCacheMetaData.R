@@ -289,6 +289,27 @@ unitTestPassByReference <-
   fc$addFileMetaData("srcFile1", "destFile1")
   checkEquals(length(fc.copy$metaData), 1L)
   checkEquals(names(fc.copy$metaData), names(fc$metaData))
-  
-  
 }
+
+unitTestSameSourceAndDestFile <-
+  function()
+{
+  file <- tempfile()
+  cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
+  file <- gsub("/+", "/", normalizePath(file))
+  
+  fc <- new("FileCache")
+  file.copy(file, fc$getCacheDir())
+  srcFile <- file.path(fc$getCacheDir(), gsub(".+/", "", file))
+  
+  relPath <- gsub(normalizePath(fc$cacheDir, mustWork=FALSE), "", as.character(srcFile), fixed = TRUE)
+  relPath <- gsub("^/+", "", relPath)
+  
+  addFileMetaData(fc, srcFile, relPath)
+  checkEquals(names(fc$getFileMetaData()), srcFile)
+}
+
+
+
+
+
