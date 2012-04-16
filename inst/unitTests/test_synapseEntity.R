@@ -7,10 +7,13 @@
   function()
 {
   ## make a copy of the old cache
-  oldCache <- synapseClient:::.cache
-  newCache <- new.env(parent=parent.env(oldCache))
-  for(key in ls(oldCache))
-    assign(key,get(key,envir=oldCache), envir=newCache)
+  cache <- new("GlobalCache")
+  oldCache <- new.env(parent=parent.env(as.environment(cache)))
+
+  synapseClient:::.setCache("oldCache", oldCache)
+  for(key in ls(as.environment(cache), all.names=TRUE)){
+    assign(key,get(key,envir=as.environment(cache)), envir=oldCache)
+  }
   
   myGetAnnotations <- 
     function(entity)
@@ -19,7 +22,6 @@
   }
   
   unloadNamespace('synapseClient')
-  assignInNamespace(".cache", newCache, "synapseClient")
   assignInNamespace("getAnnotations", myGetAnnotations, "synapseClient")
   attachNamespace("synapseClient")
   
@@ -32,10 +34,17 @@
 .tearDown <-
   function()
 {
+  cache <- new("GlobalCache")
   oldCache <- synapseClient:::.getCache("oldCache")
-  ## put back the overridden functions and original cache
+  
+  ## clean out the cache
+  rm(list=ls(as.environment(cache), all.names=TRUE), envir=as.environment(cache))
+  
+  for(key in ls(envir=oldCache, all.names=TRUE)){
+    assign(key,get(key,envir=as.environment(oldCache)), envir=as.environment(cache))
+  }
+  
   unloadNamespace("synapseClient")
-  assignInNamespace(".cache", oldCache, "synapseClient")
   attachNamespace("synapseClient")
 }
 
