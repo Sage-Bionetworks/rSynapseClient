@@ -5,25 +5,37 @@
 
 setMethod(
   f = "addFile",
-  signature = signature("SynapseLocationOwner", "ANY", "ANY"),
+  signature = signature("SynapseLocationOwner", "character", "character"),
   definition = function(entity, file, path){
-    addFile(entity@fileCache, file, path)
+    entity@archOwn <- addFile(entity@archOwn, file, path)
+    invisible(entity)
   }
 )
 
 setMethod(
+    f = "addFile",
+    signature = signature("SynapseLocationOwner", "character", "missing"),
+    definition = function(entity, file){
+      entity@archOwn <- addFile(entity@archOwn, file)
+      invisible(entity)
+    }
+)
+
+setMethod(
     f = "moveFile",
-    signature = signature("SynapseLocationOwner", "ANY", "ANY"),
+    signature = signature("SynapseLocationOwner", "character", "character"),
     definition = function(entity, src, dest){
-      moveFile(entity@fileCache, src, dest)
+      entity@archOwn <- moveFile(entity@archOwn, src, dest)
+      invisible(entity)
     }
 )
 
 setMethod(
     f = "deleteFile",
-    signature = signature("SynapseLocationOwner", "ANY"),
+    signature = signature("SynapseLocationOwner", "character"),
     definition = function(entity, file){
-      deleteFile(entity@fileCache, file)
+      entity@archOwn <- deleteFile(entity@archOwn, file)
+      invisible(entity)
     }
 )
 
@@ -52,9 +64,14 @@ setMethod(
       }
       retVal <- lapply(i, function(i){
             if(i=="objects"){
-              objects <- getObjects(slot(x, i))
+              retVal <- x@archOwn@objects
+            }else if(i == "cacheDir"){
+              retVal <- cacheDir(x@archOwn)
+            }else if(i == "files"){
+              retVal <- files(x@archOwn)
+            }else{
+              retVal <- NULL
             }
-            slot(x@objects, i)
           }
       )
       names(retVal) <- i
