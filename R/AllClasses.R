@@ -364,7 +364,7 @@ setClass(
     Class = "SynapseLocationOwner",
     contains = c("SynapseEntity","VIRTUAL"),
     representation = representation(
-        archOwn = "ArchiveOwner" 
+        archOwn = "ArchiveOwner"
     )
 )
 
