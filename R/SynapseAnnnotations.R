@@ -65,8 +65,8 @@ setMethod(
   signature = signature("SynapseAnnotations", "list"),
   def = function(object, value){
     ## this method is broken. need to implement  "propertyValues<-" for PropertyStore class
-    object@annotations <- propertyValues(object) <- value
-    invisible(object)
+    propertyValues(object@annotations) <- value
+    object
   }
 )
 
