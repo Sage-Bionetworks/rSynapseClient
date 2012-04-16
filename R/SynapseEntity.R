@@ -73,7 +73,7 @@ setMethod(
 
 setMethod(
   f = "annotValue<-",
-  signature = signature("SynapseEntity", "character", "logical"),
+  signature = signature("SynapseEntity", "character", "ANY"),
   definition = function(object, which, value){
     annotValue(object = annotations(object), which = which) <- as.character(value)
     object
