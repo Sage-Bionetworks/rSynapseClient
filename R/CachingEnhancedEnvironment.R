@@ -36,12 +36,13 @@ setMethod(
     class(owner) <- "EnhancedEnvironment"
     owner <- addObject(owner, object, name)
     class(owner) <- oldClass
-    owner <- tryCatch(
-      .cacheObject(owner, name),
+    owner <- tryCatch({
+      .cacheObject(owner, name)
+    },
       error = function(e){
         oldClass <- class(owner)
         class(owner) <- "EnhancedEnvironment"
-        owner <- deleteObject(owner, object)
+        owner <- deleteObject(owner, name)
         class(owner) <- oldClass
         stop(e)
       }
@@ -58,6 +59,26 @@ setMethod(
     name <- gsub("\\\"", "", name)
     addObject(owner, object, name)
   }
+)
+
+setMethod(
+    f = "addObject",
+    signature = signature("CachingEnhancedEnvironment", "list", "missing", "logical"),
+    definition = function(owner, object, unlist){
+      if(!unlist){
+        name = deparse(substitute(object, env=parent.frame()))
+        name <- gsub("\\\"", "", name)
+        owner <- addObject(owner, object, name)
+      }else{
+        if(any(names(object) ==""))
+          stop("All list elements must be named when unlisting")
+        
+        lapply(names(object), function(n){
+              owner[[n]] <- object[[n]]
+            })
+      }
+      invisible(owner)
+    }
 )
 
 

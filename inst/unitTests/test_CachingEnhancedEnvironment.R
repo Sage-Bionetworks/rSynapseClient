@@ -658,7 +658,35 @@ unitTestAsEnvironment <-
 }
 
 
+unitTestAddListUnlist <-
+    function()
+{
+  ee <- new("CachingEnhancedEnvironment")
+  aList <- list(foo="bar", boo = "blah")
 
+  copy <- addObject(ee, aList, unlist=TRUE)
+  checkEquals(length(ee), 2L)
+  checkEquals("bar", getObject(ee, "foo"))
+  checkTrue(all(names(ee) == c("boo", "foo")))
+  checkEquals(length(copy), 2L)
+  checkEquals("bar", getObject(copy, "foo"))
+  checkTrue(all(names(copy) == c("boo", "foo")))
+  
+  ee <- new("CachingEnhancedEnvironment")
+  aList <- list(foo="bar", boo = "blah")
+  copy <- addObject(ee, aList)
+  
+  checkEquals(length(ee), 1L)
+  checkEquals("list", class(getObject(ee, "aList")))
+  checkEquals(2L, length(getObject(ee, "aList")))
+  checkTrue(all(names(getObject(ee, "aList")) == c("foo", "boo")))
+  checkTrue(all(as.character(getObject(ee, "aList")) == c("bar", "blah")))
+  checkEquals(length(copy), 1L)
+  checkEquals("list", class(getObject(copy, "aList")))
+  checkEquals(2L, length(getObject(copy, "aList")))
+  checkTrue(all(names(getObject(copy, "aList")) == c("foo", "boo")))
+  checkTrue(all(as.character(getObject(copy, "aList")) == c("bar", "blah")))
+}
 
 
 

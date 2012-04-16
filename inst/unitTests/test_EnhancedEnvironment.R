@@ -3,6 +3,18 @@
 # Author: furia
 ###############################################################################
 
+.setUp <-
+    function()
+{
+  synapseClient:::.setCache("oldWarn", options("warn")[[1]])
+}
+
+.tearDown <-
+    function()
+{
+  options(warn=synapseClient:::.getCache("oldWarn"))
+}
+
 unitTestAssignment <-
   function()
 {
@@ -296,8 +308,9 @@ unitTestDeleteObject <-
   deleteObject(ee, "boo")
   checkEquals(length(ee), 0L)
   
-  ## TODO: get this working
-  ## checkWarning(deleteObject(ee, "fakeObject"))
+  options(warn=2)
+  checkException(deleteObject(ee, "fakeObject"))
+  
 }
 
 unitTestDeleteMultipleObjects <-
@@ -354,6 +367,36 @@ unitTestAddList <-
   checkEquals(2L, length(getObject(ee, "aList")))
   checkTrue(all(names(getObject(ee, "aList")) == c("foo", "boo")))
   checkTrue(all(as.character(getObject(ee, "aList")) == c("bar", "blah")))
+}
+
+unitTestAddListUnlist <-
+    function()
+{
+  ee <- new("EnhancedEnvironment")
+  aList <- list(foo="bar", boo = "blah")
+  
+  copy <- addObject(ee, aList, unlist=TRUE)
+  checkEquals(length(ee), 2L)
+  checkEquals("bar", getObject(ee, "foo"))
+  checkTrue(all(names(ee) == c("boo", "foo")))
+  checkEquals(length(copy), 2L)
+  checkEquals("bar", getObject(copy, "foo"))
+  checkTrue(all(names(copy) == c("boo", "foo")))
+  
+  ee <- new("EnhancedEnvironment")
+  aList <- list(foo="bar", boo = "blah")
+  copy <- addObject(ee, aList, unlist=FALSE)
+  
+  checkEquals(length(ee), 1L)
+  checkEquals("list", class(getObject(ee, "aList")))
+  checkEquals(2L, length(getObject(ee, "aList")))
+  checkTrue(all(names(getObject(ee, "aList")) == c("foo", "boo")))
+  checkTrue(all(as.character(getObject(ee, "aList")) == c("bar", "blah")))
+  checkEquals(length(copy), 1L)
+  checkEquals("list", class(getObject(copy, "aList")))
+  checkEquals(2L, length(getObject(copy, "aList")))
+  checkTrue(all(names(getObject(copy, "aList")) == c("foo", "boo")))
+  checkTrue(all(as.character(getObject(copy, "aList")) == c("bar", "blah")))
 }
 
 unitTestAddDataFrame <-

@@ -176,6 +176,25 @@ setMethod(
   }
 )
 
+setMethod(
+  f = "addObject",
+  signature = signature("EnhancedEnvironment", "list", "missing", "logical"),
+  definition = function(owner, object, unlist){
+    if(!unlist){
+      name = deparse(substitute(object, env=parent.frame()))
+      name <- gsub("\\\"", "", name)
+      owner[[name]] <- object
+      return(owner)
+    }
+    if(any(names(object) == ""))
+      stop("All elements of the list must have names when unlisting")
+    lapply(names(object), function(n){
+          owner <<- addObject(owner, object[[n]], n)
+        })
+    invisible(owner)
+  }
+)
+
 ##
 ## Get object(s) from the environment
 ##
