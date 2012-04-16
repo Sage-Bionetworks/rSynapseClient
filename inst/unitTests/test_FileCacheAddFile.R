@@ -231,6 +231,42 @@ unitTestReturnValue <-
     checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
 }
 
+unitTestNoZip <-
+  function()
+{
+  ## need to verify behavior of file cache when zip is not present:
+  ##
+  ## 1) if a single file is already being managed, fileCache should generate
+  ## an informative error message when a second file is added. and reject
+  ## the change
+  ##
+  ## 2) the archive file name should be the same as the single file currently
+  ## being managed by the FileCache and the archive name should change each time
+  ## the filename being managed changes
+  ##
+  ## 3) the cacheDir name should be equal to file.path(fc$getCacheRoot(), sprintf("%s_unpacked", fc$archiveFile))
+  ## so if there is no zip and a single file named foo.txt is being managed, the
+  ## file should be located in <cacheRoot>/foo.txt_unpacked/foo.txt. there should
+  ## be another copy of the file located in <cacheRoot>/foo.txt, which is the "archive file"
+  ##
+  ## 4) calling fc$createArchive() should copy <cacheRoot>/foo.txt_unpacked/foo.txt
+  ## to <cacheRoot>/foo.txt_unpacked/foo.txt
+  ##
+  ## 5) calling fc$unpackArchive() should copy <cacheRoot>/foo.txt to
+  ## <cacheRoot>/foo.txt_unpacked/foo.txt
+  ##
+  ## 6) when the single file is deleted via a call to deleteFile(), the cacheDir
+  ## foo.txt_unpacked/ should also be deleted, but <cacheRoot> should be left in
+  ## place.
+  ##
+  ## 7) in the event that a user tries to add a file to a subdirectory of the
+  ## cacheRoot, that file should instead be placed directly in the cache root
+  ## and an informative warning message should be printed.
+  ##
+  
+  stop("not yet implemented: Bruce?")
+}
+
 
 
 
