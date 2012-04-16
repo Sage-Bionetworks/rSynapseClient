@@ -39,7 +39,7 @@ setMethod(
   f = "annotValue",
   signature = signature("SynapseAnnotations", "character"),
   definition = function(object, which){
-    propertyValue(objet@annotations, which) 
+    getProperty(object@annotations, which) 
   }
 )
 
@@ -47,8 +47,8 @@ setMethod(
   f = "annotValue<-",
   signature = signature("SynapseAnnotations", "character", "ANY"),
   definition = function(object, which, value){
-    object@annotations <- propertyValue(objet@annotations, which, value)
-    invisible(object)
+    object@annotations <- setProperty(object@annotations, which, value)
+    object
   }
 )
 
@@ -71,6 +71,16 @@ setMethod(
 )
 
 setMethod(
+    f = "propertyValues<-",
+    signature = signature("SynapseAnnotations", "list"),
+    definition = function(object, value){
+      if(any(names(value)))
+      lapply(names(value))
+      object
+    }
+)
+
+setMethod(
   f = "propertyNames",
   signature = "SynapseAnnotations",
   definition = function(object){
@@ -87,7 +97,7 @@ setMethod(
 )
 
 ## S3 method for converting to list
-as.list.SynapseAnnotation <- 
+as.list.SynapseAnnotations <- 
   function(x, ...){
   as.list(x@annotations, ...)
 }

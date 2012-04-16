@@ -34,3 +34,9 @@ as.environment.GlobalCache <-
 {
   x@env
 }
+
+objects.GlobalCache <-
+    function(name, all.names = FALSE, pattern=NULL)
+{
+  objects(envir = as.environment(name), all.names, pattern)
+}

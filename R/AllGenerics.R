@@ -4,6 +4,13 @@
 ###############################################################################
 
 setGeneric(
+    name = "getAnnotations",
+   def = function(entity){
+     standardGeneric("getAnnotations")
+   }
+)
+
+setGeneric(
     name = "loadObjectsFromFiles",
     def = function(owner){
       standardGeneric("loadObjectsFromFiles")

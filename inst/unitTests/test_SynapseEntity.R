@@ -4,24 +4,25 @@
 ###############################################################################
 
 .setUp <- 
-  function()
+    function()
 {
   ## make a copy of the old cache
   cache <- new("GlobalCache")
   oldCache <- new.env(parent=parent.env(as.environment(cache)))
-
-  synapseClient:::.setCache("oldCache", oldCache)
+  
   for(key in ls(as.environment(cache), all.names=TRUE)){
     assign(key,get(key,envir=as.environment(cache)), envir=oldCache)
   }
   
   myGetAnnotations <- 
-    function(entity)
+      function(entity)
   {
     RJSONIO::fromJSON(synapseClient:::.getCache("datasetAnnotationJSON"))
   }
   
-  unloadNamespace('synapseClient')
+  suppressWarnings(
+      unloadNamespace('synapseClient')
+  )
   assignInNamespace("getAnnotations", myGetAnnotations, "synapseClient")
   attachNamespace("synapseClient")
   
@@ -32,19 +33,21 @@
 }
 
 .tearDown <-
-  function()
+    function()
 {
   cache <- new("GlobalCache")
   oldCache <- synapseClient:::.getCache("oldCache")
   
   ## clean out the cache
-  rm(list=ls(as.environment(cache), all.names=TRUE), envir=as.environment(cache))
+  rm(list=objects(as.environment(cache), all.names=TRUE), envir=as.environment(cache))
   
-  for(key in ls(envir=oldCache, all.names=TRUE)){
+  for(key in objects(envir=oldCache, all.names=TRUE)){
     assign(key,get(key,envir=as.environment(oldCache)), envir=as.environment(cache))
   }
   
-  unloadNamespace("synapseClient")
+  suppressWarnings(
+      unloadNamespace("synapseClient")
+  )
   attachNamespace("synapseClient")
 }
 
@@ -54,7 +57,7 @@ unitTestConstructors <-
   ## these just need to work without throwing an exception. the JSON parsing and mapping to
   ## slots is tested elsewhere
   suppressWarnings(entity <- synapseClient:::SynapseEntity(entity = as.list(RJSONIO::fromJSON(synapseClient:::.getCache("datasetJSON")))))
-  entity@annotations <- synapseClient:::SynapseAnnotation(entity = as.list(RJSONIO::fromJSON(synapseClient:::.getCache("datasetAnnotationJSON"))))
+  entity@annotations <- synapseClient:::SynapseAnnotations(entity = as.list(RJSONIO::fromJSON(synapseClient:::.getCache("datasetAnnotationJSON"))))
 }
 
 unitTestProperties <-
@@ -107,7 +110,7 @@ unitTestListSetters <-
   
   dd <- Sys.Date()
   annotationValues(entity) <- list(
-    ##date = dd,
+    date = dd,
     string = "string",
     long = 1L,
     double = 2.0
