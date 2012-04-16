@@ -57,7 +57,7 @@ unitTestConstructors <-
   entity@annotations <- synapseClient:::SynapseAnnotation(entity = as.list(RJSONIO::fromJSON(synapseClient:::.getCache("datasetAnnotationJSON"))))
 }
 
-uniTestProperties <-
+unitTestProperties <-
   function()
 {
   ## test property getters and setters
@@ -79,7 +79,7 @@ uniTestProperties <-
   checkEquals(as.double(propertyValue(entity,"double")), 2.0)
 }
 
-uniTestAnnotations <-
+unitTestAnnotations <-
   function()
 {
   entity <- new(Class="SynapseEntity")
@@ -96,8 +96,8 @@ uniTestAnnotations <-
   ## TODO: remove the type coersion once getters return properly typed values
   ##checkEquals(as.Date(as.numeric(annotValue(entity,"date"))), dd)
   checkEquals(annotValue(entity,"string"), "string")
-  checkEquals(as.integer(annotValue(entity,"long")), 1L)
-  checkEquals(as.double(annotValue(entity,"double")), 2.0)
+  checkEquals(annotValue(entity,"long"), 1L)
+  checkEquals(annotValue(entity,"double"), 2.0)
 }
 
 unitTestListSetters <-
