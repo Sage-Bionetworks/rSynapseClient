@@ -29,3 +29,8 @@
     rm(list=keys[indx], envir=cache@env)
 }
 
+as.environment.GlobalCache <-
+  function(x)
+{
+  x@env
+}
