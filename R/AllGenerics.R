@@ -4,6 +4,13 @@
 ###############################################################################
 
 setGeneric(
+    name = "loadObjectsFromFiles",
+    def = function(owner){
+      standardGeneric("loadObjectsFromFiles")
+    }
+)
+
+setGeneric(
   name = "cacheDir",
   def = function(object){
     standardGeneric("cacheDir")
