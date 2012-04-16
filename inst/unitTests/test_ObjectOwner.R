@@ -34,46 +34,136 @@ unitTestGet <-
 unitTestGetInvalidObject <-
   function()
 {
-  own <- getRefClass("rObjOwn")$new()
-  checkException(getObject(own, "bar"))
+  own <- new("ObjOwn")
+  checkTrue(is.null(getObject(own, "bar")))
 }
 
 unitTestNames <-
   function()
 {
-  own <- getRefClass("rObjOwn")$new()
-  checkTrue(all(names(own) == c("cacheDir", "files", "objects")))
+  own <- new("ObjOwn")
+  checkTrue(all(names(own) == c("objects")))
   own$objects$bar <- "foo"
-  checkTrue(all(names(own) == c("cacheDir", "files", "objects")))
+  checkTrue(all(names(own) == c("objects")))
 }
 
 unitTestBracketAccessor <-
   function()
 {
-  own <- getRefClass("rObjOwn")$new()
-  own$objects$foo <- "boo"
-  own$objects$bar <- "goo"
-  own$objects$coo <- "zoo"
-  checkTrue(all(names(own[]) == c("cacheDir", "files", "objects")))
-  checkTrue(all(names(own[NULL]) == c("cacheDir", "files", "objects")))
+  own <- new("ObjOwn")
+  own$objects$foo <- "bar"
+  checkEquals(names(own$objects), "foo")
+  checkEquals(own$objects$foo, "bar")
   
-  checkTrue(all(names(own[c("objects", "files")]) == c("objects", "files")))
-  checkEquals(names(own[1]), "cacheDir")
-  checkTrue(all(names(own[c(2,1)]) == c("files", "cacheDir")))
+  copy <- addObject(own, "boo", "blah")
+  checkTrue(all(names(own$objects) %in% c("foo", "blah")))
+  checkTrue(all(c("foo", "blah") %in% names(own$objects)))
+  checkEquals(own$objects$foo, "bar")
+  checkEquals(own$objects$blah, "boo")
+  
+  checkTrue(all(names(copy$objects) %in% c("foo", "blah")))
+  
 }
 
 unitTestDoubleBracketAccessor <-
   function()
 {
-  own <- getRefClass("rObjOwn")$new()
-  own$objects$foo <- "boo"
-  own$objects$bar <- "goo"
-  own$objects$coo <- "zoo"
-  
-  own$cacheDir <- "/foo/bar"
-  
-  ## this test has a dependency on the behavior of Enhanced Environment
-  checkTrue(all(names(own[['objects']]) == c("bar", "coo", "foo")))
-  checkEquals(own[['cacheDir']], "/foo/bar")
+  own <- new("ObjOwn")
+  own$objects$foo <- "bar"
+  checkEquals("bar", getObject(own, "foo"))
 }
+
+unitTestDeleteObject <-
+  function()
+{
+  own <- new("ObjOwn")
+  own$objects$foo <- "bar"
+  copy <- deleteObject(own, "foo")
+  checkEquals(length(own$objects), 0L)
+  checkEquals(length(copy$objects), 0L)
+}
+
+unitTestRenameObject <-
+  function()
+{
+  own <- new("ObjOwn")
+  own$objects$foo <- "bar"
+
+  copy <- renameObject(own, "foo", "boo")
+  checkEquals(length(own$objects), 1L)
+  checkEquals(length(copy$objects), 1L)
+  checkEquals(own$objects$boo, "bar")
+  checkEquals(copy$objects$boo, "bar")
+}
+
+## not sure that this method should be exposed
+## leaving getEnv unimplemented for now.
+#unitTestGetEnv <-
+#  function()
+#{
+#  stop("Not Yet Implemented")
+#}
+
+unitTestAddListUnlist <-
+  function()
+{
+  own <- new("ObjOwn")
+  aList <- list(foo = "bar", boo = 1L)
+  addObject(own, aList)
+  
+  checkEquals(length(own$objects), 1L)
+  checkEquals("aList", names(own$objects))
+  checkEquals(own$objects$aList$foo, "bar")
+  checkEquals(own$objects$aList$boo, 1L)
+  checkEquals("list", as.character(class(own$objects$aList)))
+  
+  own <- new("ObjOwn")
+  addObject(own, aList, unlist = TRUE)
+  
+  checkEquals(length(own$objects), 2L)
+  checkTrue(all(c("foo", "boo") %in% names(own$objects)))
+  checkEquals(own$objects$foo, "bar")
+  checkEquals(own$objects$boo, 1L)
+  
+  own <- new("ObjOwn")
+  addObject(own, aList, unlist = FALSE)
+  
+  checkEquals(length(own$objects), 1L)
+  checkEquals("aList", names(own$objects))
+  checkEquals(own$objects$aList$foo, "bar")
+  checkEquals(own$objects$aList$boo, 1L)
+  checkEquals("list", as.character(class(own$objects$aList)))
+  
+}
+
+
+addDataFrameUnlist <-
+    function()
+{
+  own <- new("ObjOwn")
+  aList <- data.frame(foo = "bar", boo = 1L, stringsAsFactors=F)
+  addObject(own, aList)
+  
+  checkEquals(length(own$objects), 1L)
+  checkEquals("aList", names(own$objects))
+  checkEquals(own$objects$aList$foo, "bar")
+  checkEquals(own$objects$aList$boo, 1L)
+  
+  own <- new("ObjOwn")
+  addObject(own, aList, unlist = TRUE)
+  
+  checkEquals(length(own$objects), 2L)
+  checkTrue(all(c("foo", "boo") %in% names(own$objects)))
+  checkEquals(own$objects$foo, "bar")
+  checkEquals(own$objects$boo, 1L)
+  
+  own <- new("ObjOwn")
+  addObject(own, aList, unlist = FALSE)
+  
+  checkEquals(length(own$objects), 1L)
+  checkEquals("aList", names(own$objects))
+  checkEquals(own$objects$aList$foo, "bar")
+  checkEquals(own$objects$aList$boo, 1L)
+}
+
 

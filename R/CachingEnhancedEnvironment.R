@@ -17,23 +17,34 @@ setMethod(
   }
 )
 
-## general purpose function for adding objects and caching to file
-.doAddObjectWithCache <-
-    function(owner, object, name)
-{
-  owner$objects[[name]] <- object
-  tryCatch(
-      .cacheObject(owner, name),
+##
+## Over-ride the addObject method inherited from EnhancedEnvironment. The method
+## for CachingEnhancedEnvironment does the same thing as the one for EnhancedEnvironment
+## but it also caches a binary to disk. Failure to cache will prevent the object from
+## being added to the environment.
+##
+setMethod(
+  f = "addObject",
+  signature = signature("CachingEnhancedEnvironment", "ANY", "character", "missing"),
+  definition = function(owner, object, name){
+    oldClass <- class(owner)
+    class(owner) <- "EnhancedEnvironment"
+    owner <- addObject(owner, object, name)
+    class(owner) <- oldClass
+    owner <- tryCatch({
+      .cacheObject(owner, name)
+    },
       error = function(e){
         oldClass <- class(owner)
         class(owner) <- "EnhancedEnvironment"
-        owner <- deleteObject(owner, object)
+        owner <- deleteObject(owner, name)
         class(owner) <- oldClass
         stop(e)
       }
   )
   owner
-}
+  }
+)
 
 setMethod(
   f = "addObject",
@@ -43,6 +54,26 @@ setMethod(
     name <- gsub("\\\"", "", name)
     addObject(owner, object, name)
   }
+)
+
+setMethod(
+    f = "addObject",
+    signature = signature("CachingEnhancedEnvironment", "list", "missing", "logical"),
+    definition = function(owner, object, unlist){
+      if(!unlist){
+        name = deparse(substitute(object, env=parent.frame()))
+        name <- gsub("\\\"", "", name)
+        owner <- addObject(owner, object, name)
+      }else{
+        if(any(names(object) ==""))
+          stop("All list elements must be named when unlisting")
+        
+        lapply(names(object), function(n){
+              owner[[n]] <- object[[n]]
+            })
+      }
+      invisible(owner)
+    }
 )
 
 
