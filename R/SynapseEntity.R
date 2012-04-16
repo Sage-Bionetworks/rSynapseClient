@@ -75,7 +75,7 @@ setMethod(
   f = "annotValue<-",
   signature = signature("SynapseEntity", "character", "ANY"),
   definition = function(object, which, value){
-    annotValue(object = annotations(object), which = which) <- as.character(value)
+    annotValue(object@annotations, which = which) <- value
     object
   }
 )
@@ -228,3 +228,14 @@ setMethod(
     entity
   }     
 )
+
+
+setMethod(
+  f = "getAnnotations",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    as.list(entity@annotations)
+  }
+)
+
+

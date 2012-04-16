@@ -61,6 +61,39 @@ setMethod(
 )
 
 setMethod(
+  f = "propertyValues",
+  signature = "TypedPropertyStore",
+  definition = function(object){
+    vals <- lapply(propertyNames(object), function(n) getProperty(object,n))
+    if(length(vals) == 1L && as.character(class(vals)) %in% c("data.frame","list"))
+      return(vals)
+    unlist(vals)
+  }
+)
+
+setMethod(
+    f = "propertyValues<-",
+    signature = signature("TypedPropertyStore", "data.frame"),
+    definition = function(object, value){
+      stop("data frame is not a supported property type")
+    }
+)
+
+setMethod(
+    f = "propertyValues<-",
+    signature = signature("TypedPropertyStore", "list"),
+    definition = function(object, value){
+      if(any(names(value) == ""))
+        stop("All elements of list must be named")
+      lapply(names(value), function(n){
+            object <<- setProperty(object, n, value)
+          }
+      )
+      object
+    }
+)
+
+setMethod(
   f = "propertyType",
   signature = signature("TypedPropertyStore", "character"),
   definition = function(object, which){
