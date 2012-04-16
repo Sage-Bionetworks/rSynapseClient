@@ -144,7 +144,7 @@ unitTestAddListUnlist <-
 }
 
 
-addDataFrameUnlist <-
+unitTestaddDataFrameUnlist <-
     function()
 {
   own <- new("ObjOwn")
@@ -172,5 +172,34 @@ addDataFrameUnlist <-
   checkEquals(own$objects$aList$foo, "bar")
   checkEquals(own$objects$aList$boo, 1L)
 }
+
+unitTestNoZip <- 
+  function()
+{
+  ## need to verify the proper behavior when zip is not installed:
+  ##
+  ## 1) Double check the behavior of CachingEnhancedEnvironment (see
+  ## "unitTestNoZip" in test_CachingEnhancedEnvironment.R these tests
+  ## can be less thorough but should server as a double-check
+  ##
+  ## 2) loadCachedObjects() method should recognize and load the object
+  ## with the ".R_OBJECTS_" prefix.
+  ##
+  ## 3) If loadCachedObjects is called on a system with zip for an 
+  ## archive created on a system without zip (as indicated by the presence
+  ## of a file with the ".R_OBJECTS_" prefix) the function should 
+  ## print an informative message with instructions for how to "repair"
+  ## the archive.
+  ##
+  ## 4) The archive can be repaired by calling the loadObjects() method
+  ## on the enclosed CachingEnhancedEnvironment object with and optional
+  ## flag set. (not yet implemented)
+  ##
+  ## 5) Once the archive "repaired", the restriction of a storing only
+  ## a single object should be lifted.
+  
+  stop("Not yet implmented: Bruce?")
+}
+
 
 
