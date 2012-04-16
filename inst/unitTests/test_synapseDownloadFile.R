@@ -51,9 +51,24 @@
 unitTestChecksumMatches <-
   function()
 {
-	checkTrue(!is.null(synapseCacheDir()))
+  checkTrue(!is.null(synapseCacheDir()))
   file <- synapseClient:::synapseDownloadFile(synapseClient:::.getCache("goodURL"),synapseClient:::.getCache("checksum"))
   checkEquals(as.character(tools::md5sum(file)), synapseClient:::.getCache("checksum"))
+}
+
+unitTestLegalFileName <-
+		function() {
+	checkEquals("im_a soemthing _lam_ scientist _ and I use _.zip", legalFilePath("im'a soemthing (lam) scientist \\ and I use *.zip"))
+	checkEquals("____________", legalFilePath("\\()`'<>:\"|?*"))
+}
+
+unitTestSynapseDownloadToLegalFile <- function() {
+	checkTrue(!is.null(synapseCacheDir()))
+	url <-synapseClient:::.getCache("goodURL")
+	filePath <-paste(tempdir(), "foo'bar|.txt")
+	legalFileName <- synapseClient:::synapseDownloadToLegalFile(url, filePath)
+	checkEquals(paste(tempdir(), "foo_bar_.txt"), legalFileName)
+	
 }
 
 unitTestBadChecksum <-
