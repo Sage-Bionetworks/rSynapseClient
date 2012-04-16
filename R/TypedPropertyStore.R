@@ -86,7 +86,7 @@ setMethod(
       if(any(names(value) == ""))
         stop("All elements of list must be named")
       lapply(names(value), function(n){
-            object <<- setProperty(object, n, value)
+            object <<- setProperty(object, n, value[[n]])
           }
       )
       object
