@@ -4,6 +4,15 @@
 ###############################################################################
 
 setMethod(
+    f = "properties",
+    signature = "SimplePropertyOwner",
+    definition = function(object){
+      object@properties
+    }
+    
+)
+
+setMethod(
   f = "propertyNames",
   signature = "SimplePropertyOwner",
   definition = function(object){
