@@ -7,6 +7,7 @@
 SynapseAnnotations <- 
   function(entity)
 {
+  if (missing(entity)) stop("entity is required")
   if(!is.list(entity))
     stop("entity must be a list.")
   if(any(names(entity) == "") && length(entity) > 0)

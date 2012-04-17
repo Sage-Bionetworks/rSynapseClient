@@ -19,6 +19,10 @@
     stop("a uri must be supplied of R type character")
   }
   
+  if (missing(entity) || is.null(entity)) {
+	  stop("no content for post/put")
+  }
+  
   if(!is.list(entity)) {
     stop("an entity must be supplied of R type list")
   }
