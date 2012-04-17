@@ -165,6 +165,17 @@ setMethod(
 )
 
 #####
+## constructor that takes a list entity
+#####
+setMethod(
+  f = "SynapseEntity",
+  signature = signature("missing"),
+  definition = function(entity){
+    SynapseEntity(emptyNamedList)
+  }
+)
+
+#####
 ## constructor that takes a serialized JSON object
 #####
 setMethod(
