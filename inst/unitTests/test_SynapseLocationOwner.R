@@ -119,4 +119,26 @@ uniTestDeleteFile <-
   checkEquals(character(), copy$files)
 }
 
+unitTestDoubleBracketAccessor <-
+    function()
+{
+  own <- new("LocOwn")
+  
+  checkEquals(own[['files']], character())
+  checkEquals(own[['objects']], character())
+  checkEquals(own[['cacheDir']], own$cacheDir)
+}
+
+unitTestBracketAccessor <-
+    function()
+{
+  own <- new("LocOwn")
+  
+  checkEquals(names(own['files']), 'files')
+  checkEquals(names(own['objects']), 'objects')
+  checkEquals(names(own['cacheDir']), 'cacheDir')
+  checkEquals(own['files'][[1]], character())
+  checkEquals(length(own['objects'][[1]]), 0L)
+  checkEquals(own['cacheDir'][[1]],  own$cacheDir)
+}
   
