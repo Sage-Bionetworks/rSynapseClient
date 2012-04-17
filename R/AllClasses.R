@@ -334,10 +334,9 @@ setClass(
 ## this will allow the implemenation of read-only ObjectOwners.
 ##
 setRefClass(
-    Class = "ObjectOwner",
-    contains = c("VIRTUAL"),
+    Class = "CachingObjectOwner",
     fields = list(
-        objects = "EnhancedEnvironment"
+        objects = "CachingEnhancedEnvironment"
     ),
     methods = list(
         getObject = function(which){
@@ -372,7 +371,7 @@ setClass(
     Class = "SynapseLocationOwnerWithObjects",
     contains = c("SynapseLocationOwner", "VIRTUAL"),
     representation(
-      objOwn = "ObjectOwner"
+      objOwn = "CachingObjectOwner"
     )
 )
 
