@@ -37,8 +37,8 @@ getEntityFromFileCache<- function(id, version=NULL) {
 #
 getAnnotationsFromFileCache<- function(id, version=NULL) {
 	entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
-	sa <- SynapseAnnotations()
-	.populateSlotsFromEntity(sa, fromJSON(paste(entityCachePath, ANNOTATIONS_FILE_NAME, sep="/")))
+	sa <- SynapseAnnotations(fromJSON(paste(entityCachePath, ANNOTATIONS_FILE_NAME, sep="/")))
+	#.populateSlotsFromEntity(sa, fromJSON(paste(entityCachePath, ANNOTATIONS_FILE_NAME, sep="/")))
 	sa
 }
 
