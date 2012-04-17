@@ -4,6 +4,24 @@
 ###############################################################################
 
 setMethod(
+    f = "properties",
+    signature = "SimplePropertyOwner",
+    definition = function(object){
+      object@properties
+    }
+)
+
+setMethod(
+    f = "properties<-",
+    signature = "SimplePropertyOwner",
+    definition = function(object, value){
+      object@properties <- value
+      object
+    }
+
+)
+
+setMethod(
   f = "propertyNames",
   signature = "SimplePropertyOwner",
   definition = function(object){
@@ -61,8 +79,17 @@ setMethod(
 		f = "propertyValue<-",
 		signature = signature("SynapseEntity", "character"),
 		definition = function(object, which, value){
-			properties(object)[[which]] <- value
+			properties(object)[[which]] <- as.character(value)
 			object
 		}
 )
+
+setMethod(
+    f = "propertyValue",
+    signature = signature("SynapseEntity", "character"),
+    definition = function(object, which){
+      properties(object)[[which]]
+    }
+)
+
 

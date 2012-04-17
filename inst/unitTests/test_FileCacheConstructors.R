@@ -3,6 +3,14 @@
 # Author: furia
 ###############################################################################
 
+unitTestInitialize <-
+  function()
+{
+  fc <- new("FileCache")
+  fc2 <- new("FileCache")
+  checkTrue(fc$getCacheDir() != fc2$getCacheDir())
+}
+
 unitTestNoArgConstructor <-
   function()
 {

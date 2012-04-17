@@ -52,8 +52,8 @@ setMethod(
 setMethod(
   f = "cacheDir",
   signature = "ArchiveOwner",
-  definition = function(owner){
-    owner@fileCache$getCacheDir()
+  definition = function(object){
+    object@fileCache$getCacheDir()
   }
 )
 

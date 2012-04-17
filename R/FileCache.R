@@ -127,7 +127,7 @@ setMethod(
 
 .generateFileList <- function(file, path){
   cleanPath <- function(x){
-    x <- gsub("[\\/]+$", "", x)
+    ##x <- gsub("[\\/]+$", "", x)
     x <- gsub("[\\/]+", "/", x)
     x <- gsub("^/", "", x)
     mk <- x %in% c("")
@@ -183,7 +183,15 @@ setMethod(
     ## should never get here. defensive programming
     stop("error gnerating destination file paths. number of paths did not match number of files")
   }
-
+  srcfiles <- unlist(srcfiles)
+  destfiles <- unlist(destfiles)
+  destPaths <- unlist(destPaths)
+  mk <- !grepl("/$", destPaths)
+  if(any(mk)){
+    destfiles[mk] <- destPaths[mk]
+    destPaths[mk] <- "/"
+  }
+  
   list(
       srcfiles = unlist(srcfiles),
       destfiles = unlist(destfiles),
@@ -217,7 +225,11 @@ setMethod(
               dir.create(file.path(entity$cacheDir, pp), recursive=TRUE)
             
             ## copy the file
-            file.copy(files$srcfiles[i], file.path(entity$cacheDir, pp), recursive = TRUE)
+            recursive=FALSE
+            if(!is.na(file.info(file.path(entity$cacheDir, destPath))$isdir) && file.info(file.path(entity$cacheDir, destPath))$isdir){
+              recursive <- TRUE
+            }
+            file.copy(files$srcfiles[i], file.path(entity$cacheDir, destPath), overwrite = TRUE, recursive = recursive)
             
             ## add the metadata to the FileCache
             addFileMetaData(entity, files$srcfiles[i], destPath)
@@ -278,6 +290,10 @@ setMethod(
   definition = function(entity, src, dest){
     src <- gsub("^[\\\\/]+","", src)
     dest <- gsub("^[\\\\/]+","", dest)
+    if(length(src) != 1L)
+      stop("only one file can be moved at a time")
+    if(length(src) != length(dest))
+      stop("number of source and destination files must be the same")
     if(!(src %in% entity$files()))
       stop(sprintf("Invalid file: %s", src))
     
@@ -297,7 +313,11 @@ setMethod(
       dir.create(tmpdir, recursive=TRUE)
       newSrc <- file.path(tmpdir, filename)
       file.copy(file.path(entity$cacheDir, src), newSrc)
-      path <- gsub(sprintf("[\\\\/]?%s$",filename),"", dest)
+      path <- dest
+      if(grepl("/", dest)){
+        splits <- strsplit(dest,"/")[[1]]
+        path <- sprintf("%s/",file.path(splits[-length(splits)]))
+      }
       addFile(entity, newSrc, path)               
     }
     

@@ -9,7 +9,7 @@ unitTestOverwriteFile <-
   file <- tempfile()
   d <- diag(nrow=10, ncol=10)
   save(d, file=file)
-  path <- "/foo/bar"
+  path <- "/foo/bar/"
   checksum <- as.character(tools::md5sum(file))
   
   fc <- new(Class="FileCache")
@@ -85,20 +85,20 @@ unitTestMultipleSlashes <-
   file <- tempfile()
   d <- diag(nrow=10, ncol=10)
   save(d, file=file)
-  path <- "////foo//bar"
+  path <- "////foo//bar/"
   
   fc <- new(Class="FileCache")
   addFile(fc, file, path)
   relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
   checkEquals(relPaths[1], sprintf("%s/%s", "foo/bar", gsub("^.+[\\\\//]","",file)))
   
-  path <- "////foo\\\\bar"
+  path <- "////foo\\\\bar/"
   fc <- new(Class="FileCache")
   addFile(fc, file, path)
   relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
   checkEquals(relPaths[1], sprintf("%s/%s", "foo/bar", gsub("^.+[\\\\//]","",file)))
   
-  path <- "\\\\\\\\foo\\\\bar"
+  path <- "\\\\\\\\foo\\\\bar/"
   fc <- new(Class="FileCache")
   addFile(fc, file, path)
   relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
@@ -160,7 +160,15 @@ unitTestAddDirAndFileTwoPaths <-
   d2 <- diag(nrow=1000,ncol=1000)
   save(d2, file=afile2)
   
-  addFile(fc, c(adir,file), c("foo", "bar"))
+  addFile(fc, c(adir,file), c("foo/", "bar/"))
+  
+  checkEquals(length(fc$metaData), 3L)
+  
+  relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
+  expectedPaths <- gsub("/+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
+  checkTrue(all(relPaths %in% expectedPaths))
+  
+  addFile(fc, c(adir,file), c("foo/", "bar/"))
   
   checkEquals(length(fc$metaData), 3L)
   
@@ -180,11 +188,11 @@ unitTestTwoFilesOnePath <-
   file2 <- tempfile()
   d <- diag(x=2,nrow=10,ncol=10)
   save(d, file=file2)
-  path <- "aPath"
+  path <- "aPath/"
   addFile(fc, c(file1, file2), path)
   checkEquals(length(names(fc$getFileMetaData())), 2L)
   relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
-  checkTrue(all(file.path(path, gsub("^.+[\\\\/]+", "", c(file1, file2))) %in% relPaths))
+  checkTrue(all(gsub("/+", "/", file.path(path, gsub("^.+[\\\\/]+", "", c(file1, file2)))) %in% relPaths))
 }
 
 unitTestTwoFilesThreePaths <-
@@ -226,9 +234,98 @@ unitTestReturnValue <-
     checksum <- as.character(tools::md5sum(file))
     
     fc <- new(Class="FileCache")
-    fc <- addFile(fc, file, path)
+    copy <- addFile(fc, file, path)
     checkEquals(length(fc$getFileMetaData()), 1L)
+    checkEquals(length(copy$getFileMetaData()), 1L)
     checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
+    checkEquals(checksum, as.character(tools::md5sum(names(copy$getFileMetaData())[1])))
+}
+
+unitTestAddFileToSubdir <-
+  function()
+{
+  file <- tempfile()
+  d <- diag(nrow=10, ncol=10)
+  save(d, file=file)
+  path <- "/foo/"
+  checksum <- as.character(tools::md5sum(file))
+  
+  fc <- new(Class="FileCache")
+  addFile(fc, file, path)
+  checkEquals(length(fc$getFileMetaData()), 1L)
+  checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
+  
+  file2 <- tempfile()
+  d <- diag(nrow=10, ncol=10)
+  save(d, file=file2)
+  path <- "foo/"
+  checksum2 <- as.character(tools::md5sum(file))
+  addFile(fc, file2, path)
+  checkEquals(length(fc$files()), 2L)
+  checkTrue(all(grepl("^foo/", fc$files())))
+  
+}
+
+unitTestAddFileRename <-
+  function()
+{
+  file <- tempfile()
+  d <- diag(nrow=10, ncol=10)
+  save(d, file=file)
+  checksum <- as.character(tools::md5sum(file))
+  
+  fc <- new(Class="FileCache")
+  addFile(fc, file, "blah.txt")
+  checkEquals(length(fc$getFileMetaData()), 1L)
+  checkEquals(fc$files(), "blah.txt")
+  checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
+  checkTrue(file.exists(file.path(fc$getCacheDir(), fc$files())))
+  checkEquals(checksum, as.character(tools::md5sum(file.path(fc$getCacheDir(), fc$files()))))
+  
+}
+
+
+unitTestAddFileToSubDirRename <-
+  function()
+{
+  file <- tempfile()
+  d <- diag(nrow=10, ncol=10)
+  save(d, file=file)
+  checksum <- as.character(tools::md5sum(file))
+  
+  fc <- new(Class="FileCache")
+  addFile(fc, file, "/foo/blah.txt")
+  checkEquals(length(fc$getFileMetaData()), 1L)
+  checkEquals(fc$files(), "foo/blah.txt")
+  checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
+  checkTrue(file.exists(file.path(fc$getCacheDir(), fc$files())))
+  checkEquals(checksum, as.character(tools::md5sum(file.path(fc$getCacheDir(), fc$files()))))
+  
+  fc <- new(Class="FileCache")
+  addFile(fc, file, "foo/blah.txt")
+  checkEquals(length(fc$getFileMetaData()), 1L)
+  checkEquals(fc$files(), "foo/blah.txt")
+  checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
+  checkTrue(file.exists(file.path(fc$getCacheDir(), fc$files())))
+  checkEquals(checksum, as.character(tools::md5sum(file.path(fc$getCacheDir(), fc$files()))))
+  
+  fc <- new(Class="FileCache")
+  addFile(fc, file, "\\foo\\blah.txt")
+  checkEquals(length(fc$getFileMetaData()), 1L)
+  checkEquals(fc$files(), "foo/blah.txt")
+  checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
+  checkTrue(file.exists(file.path(fc$getCacheDir(), fc$files())))
+  checkEquals(checksum, as.character(tools::md5sum(file.path(fc$getCacheDir(), fc$files()))))
+  
+  
+  fc <- new(Class="FileCache")
+  addFile(fc, file, "/foo/bar")
+  checkEquals(length(fc$getFileMetaData()), 1L)
+  checkEquals(fc$files(), "foo/bar")
+  checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
+  checkTrue(file.exists(file.path(fc$getCacheDir(), fc$files())))
+  checkEquals(checksum, as.character(tools::md5sum(file.path(fc$getCacheDir(), fc$files()))))
+  
 }
 
 unitTestNoZip <-

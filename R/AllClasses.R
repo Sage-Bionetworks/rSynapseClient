@@ -262,6 +262,33 @@ setRefClass(
 )
 
 ##
+## A simple wrapper around an environment. This allows the customization
+## of the environment's behavior, including the ability to make the environment
+## read-only
+##
+setClass(
+    Class = "EnhancedEnvironment",
+    representation = representation(
+        env = "environment"
+    )
+)
+
+##
+## An enhanced environment that caches it's objects to disk using a FileCache
+## class to manage it's on-disk cache
+##
+setClass(
+    Class = "CachingEnhancedEnvironment",
+    contains = "EnhancedEnvironment",
+    representation = representation(
+        cachePrefix = "character",
+        fileCache = "FileCache",
+        cacheSuffix = "character",
+        cacheTmpSuffix = "character"
+    )
+)
+
+##
 ## wrapping FileCache in ArchiveOwner will allow for seamless
 ## switching between read-only and write-only mode in the future
 ## without messing with the FileCache class. For example, we could
@@ -291,33 +318,6 @@ setClass(
     ),
     prototype = prototype(
         annotations = new("SynapseAnnotations")
-    )
-)
-
-##
-## A simple wrapper around an environment. This allows the customization
-## of the environment's behavior, including the ability to make the environment
-## read-only
-##
-setClass(
-    Class = "EnhancedEnvironment",
-    representation = representation(
-        env = "environment"
-    )
-)
-
-##
-## An enhanced environment that caches it's objects to disk using a FileCache
-## class to manage it's on-disk cache
-##
-setClass(
-    Class = "CachingEnhancedEnvironment",
-    contains = "EnhancedEnvironment",
-    representation = representation(
-        cachePrefix = "character",
-        fileCache = "FileCache",
-        cacheSuffix = "character",
-        cacheTmpSuffix = "character"
     )
 )
 
