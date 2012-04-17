@@ -9,10 +9,10 @@ SynapseAnnotations <-
 {
   if(!is.list(entity))
     stop("entity must be a list.")
-  
-  annotations <- new(Class = "SynapseAnnotations")
   if(any(names(entity) == "") && length(entity) > 0)
-    stop("all elements of the entity must be named")
+	stop("all elements of the entity must be named")
+
+  annotations <- new(Class = "SynapseAnnotations")
   .populateSlotsFromEntity(annotations, entity)
 }
 
@@ -93,30 +93,24 @@ as.list.SynapseAnnotation <-
 }
 
 
-## ******* instead of doing this, write the S3 method as.list.SynapseAnnotations as.string(c(as.list(t), as.list(p)))
-## ******* where t is the TypedPropertyStore and p SimplePropertyOwner
-## Bruce: the methods below are for you
-## need to 
-setMethod(
-  f = ".extractEntityFromSlots",
-  signature = "SynapseAnnotations",
-  definition = function(object){
-    entity <- list() #TODO needs to be emptyNamedList(), not list()
-	# TODO:  pull values from SynapseAnnotations and put in list
-			# need to get the properties as well as the annots
-			# see PropertyStore.R, as.list.TypedPropertyStore
-    stop("need to implement this")
-    entity
-  }
-)
+as.list.SynapseAnnotations<-function(x) {
+	c(as.list(x@properties), as.list(x@annotations))
+}
 
+# move content from 'entity' (a list) to 'object' ( a SynapseAnnotations)
 setMethod(
   f = ".populateSlotsFromEntity",
   signature = signature("SynapseAnnotations", "list", "missing"),
   definition = function(object, entity){
-    
-    stop("Need to implement this")
-    ##*** bruce to do this ***
+    for (label in names(entity)) {
+		if (label %in% c("stringAnnotations", "dateAnnotations", "doubleAnnotations", "longAnnotations")) {
+			slot(object,label)<-entity[[label]]
+		} else if (label =="blobAnnotations") {
+				slot(object,label)<-entity[[label]]
+		} else {
+			propertyValue(object, label)<-entity[[label]]
+		}
+	}
     object
   }
 )
@@ -130,9 +124,6 @@ setMethod(
   }
 )
 
-##
-## End Bruce
-##
 
 
 

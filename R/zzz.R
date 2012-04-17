@@ -30,4 +30,9 @@
   .setCache("sessionRefreshDurationMin", 1440)
   synapseResetEndpoints()
   synapseCacheDir("~/.synapseCache")
+  
+  # used in entityToFileCache.R
+  ENTITY_FILE_NAME<<-"entity.json"
+  ANNOTATIONS_FILE_NAME<<-"annotations.json"
+  
 }
