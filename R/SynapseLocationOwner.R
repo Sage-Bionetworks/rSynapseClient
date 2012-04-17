@@ -4,26 +4,76 @@
 ###############################################################################
 
 setMethod(
-  f = "addFile",
-  signature = signature("SynapseLocationOwner", "ANY", "ANY"),
-  definition = function(entity, file, path){
-    addFile(entity@fileCache, file, path)
+  f = "initialize",
+  signature = "SynapseLocationOwner",
+  definition = function(.Object){
+    .Object@archOwn <- new("ArchiveOwner")
+    .Object
   }
 )
 
 setMethod(
+  f = "downloadEntity",
+  signature = "SynapseLocationOwner",
+  definition = function(entity){
+    ## check whether user has signed agreement
+    ## euals are broken. ignore for now
+#    if(!hasSignedEula(entity)){
+#      if(!.promptSignEula())
+#        stop(sprintf("Visit https://synapse.sagebase.org to sign the EULA for entity %s", propertyValue(entity, "id")))
+#      if(!.promptEulaAgreement(entity))
+#        stop("You must sign the EULA to download this dataset. Visit http://synapse.sagebase.org for more information.")
+#      .signEula(entity)
+#    }
+    
+    ## download the archive from S3
+    ## Note that we just use the first location, to future-proof this we would use the location preferred
+    ## by the user, but we're gonna redo this in java so no point in implementing that here right now
+    archivePath = synapseDownloadFile(url = locations[[1]]['path'], checksum = propertyValue(entity, "md5"))
+    
+    ## instantiate the FileCache object
+    entity@archOwn <- getFileCache(archivePath)
+    
+    ## unpack the archive
+    unpackArchive(entity@archOwn)
+    
+    entity
+  }
+)
+
+setMethod(
+  f = "addFile",
+  signature = signature("SynapseLocationOwner", "character", "character"),
+  definition = function(entity, file, path){
+    entity@archOwn <- addFile(entity@archOwn, file, path)
+    invisible(entity)
+  }
+)
+
+setMethod(
+    f = "addFile",
+    signature = signature("SynapseLocationOwner", "character", "missing"),
+    definition = function(entity, file){
+      entity@archOwn <- addFile(entity@archOwn, file)
+      invisible(entity)
+    }
+)
+
+setMethod(
     f = "moveFile",
-    signature = signature("SynapseLocationOwner", "ANY", "ANY"),
+    signature = signature("SynapseLocationOwner", "character", "character"),
     definition = function(entity, src, dest){
-      moveFile(entity@fileCache, src, dest)
+      entity@archOwn <- moveFile(entity@archOwn, src, dest)
+      invisible(entity)
     }
 )
 
 setMethod(
     f = "deleteFile",
-    signature = signature("SynapseLocationOwner", "ANY"),
+    signature = signature("SynapseLocationOwner", "character"),
     definition = function(entity, file){
-      deleteFile(entity@fileCache, file)
+      entity@archOwn <- deleteFile(entity@archOwn, file)
+      invisible(entity)
     }
 )
 
@@ -52,9 +102,14 @@ setMethod(
       }
       retVal <- lapply(i, function(i){
             if(i=="objects"){
-              objects <- getObjects(slot(x, i))
+              retVal <- x@archOwn@objects
+            }else if(i == "cacheDir"){
+              retVal <- cacheDir(x@archOwn)
+            }else if(i == "files"){
+              retVal <- files(x@archOwn)
+            }else{
+              retVal <- NULL
             }
-            slot(x@objects, i)
           }
       )
       names(retVal) <- i
@@ -81,5 +136,92 @@ setMethod(
       x[[name]]
     }
 )
+
+setMethod(
+  f = "show",
+  signature = "SynapseLocationOwner",
+  definition = function(object){
+    cat('An object of class "', class(object), '"\n', sep="")
+    
+    cat("Synapse Entity Name : ", properties(object)$name, "\n", sep="")
+    cat("Synapse Entity Id   : ", properties(object)$id, "\n", sep="")
+    
+    if (!is.null(properties(object)$parentId))
+      cat("Parent Id           : ", properties(object)$parentId, "\n", sep="")
+    if (!is.null(properties(object)$type))
+      cat("Type                : ", properties(object)$type, "\n", sep="")
+    if (!is.null(properties(object)$versionNumber)) {
+      cat("Version Number      : ", properties(object)$versionNumber, "\n", sep="")
+      cat("Version Label       : ", properties(object)$versionLabel, "\n", sep="")
+    }
+    
+    obj.msg <- summarizeObjects(object)
+    if(!is.null(obj.msg)){
+      cat("\n", obj.msg$count,":\n", sep="")
+      cat(obj.msg$objects, sep="\n")
+    }
+    
+    files.msg <- summarizeCacheFiles(object)
+    if(!is.null(files.msg))
+      cat("\n", files.msg$count, "\n", sep="")
+    if(!is.null(propertyValue(object,"id"))){
+      cat("\nFor complete list of annotations, please use the annotations() function.\n")
+      cat(sprintf("To view this Entity on the Synapse website use the 'onWeb()' function\nor paste this url into your browser: %s\n", object@synapseWebUrl))
+    }
+  }
+)
+
+setMethod(
+  f = "summarizeObjects",
+  signature = "SynapseLocationOwner",
+  definition = function(entity){
+    msg <- NULL
+    if(length(entity$objects  ) > 0){
+      msg$count <- sprintf("loaded object(s)")
+      objects <- objects(entity$objects)
+      classes <- unlist(lapply(objects, function(object){paste(class(entity$objects[[object]]), collapse=":")}))
+      msg$objects <- sprintf('[%d] "%s" (%s)', 1:length(objects), objects, classes)
+    }
+    msg
+  }
+)
+
+setMethod(
+  f = "summarizeCacheFiles",
+  signature = "SynapseLocationOwner",
+  definition = function(entity){
+    ## if Cached Files exist, print them out
+    msg <- NULL
+    if(length(entity$cacheDir) != 0){
+      msg$count <- sprintf('%d File(s) cached in "%s"', length(entity$files), entity$cacheDir)
+      if(length(entity$files) > 0)
+        msg$files <- sprintf('[%d] "%s"',1:length(entity$files), entity$files)
+    }
+    msg
+  }
+)
+
+setMethod(
+  f = "loadObjectsFromFiles",
+  signature = "SynapseLocationOwner",
+  definition = function(owner){
+    owner@archOwn <- loadObjectsFromFiles(owner@archOwn)
+    invisible(owner)
+  }
+)
+
+#setMethod(
+#  f = "attach",
+#  signature = "LocationOwner",
+#  definition = function (what, warn.conflicts = TRUE) {
+#    
+#    if(missing(name))
+#      name = getPackageName(what@location@objects)
+#    what <- what@location@objects
+#    attach (what, pos = pos, name = name, warn.conflicts) 
+#  }
+#)
+
+
 
 

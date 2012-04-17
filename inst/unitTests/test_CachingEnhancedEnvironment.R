@@ -189,11 +189,33 @@ unitTestLoadCachedObjects <-
   checkException(renameObject(ee, "food", "boom"))
 }
 
-unitTestCachingAddList <-
+unitTestCachingAddListWithFcn <-
   function()
 {
-  stop("Not Yet Implemented")
+  ee <- new("CachingEnhancedEnvironment")
+  foo <- list(a="b", one=1)
+  copy <- addObject(ee, foo)
+  checkEquals(length(ee), 1L)
+  checkEquals(names(ee), "foo")
+  checkEquals(ee$foo$a, "b")
+  checkEquals(ee$foo$one, 1L)
+  checkEquals(length(copy), 1L)
+  checkEquals(names(copy), "foo")
+  checkEquals(copy$foo$a, "b")
+  checkEquals(copy$foo$one, 1L)
+  
+  ee <- new("CachingEnhancedEnvironment")
+  copy <- addObject(ee, foo, "bar")
+  checkEquals(length(ee), 1L)
+  checkEquals(names(ee), "bar")
+  checkEquals(ee$bar$a, "b")
+  checkEquals(ee$bar$one, 1L)
+  checkEquals(length(copy), 1L)
+  checkEquals(names(copy), "bar")
+  checkEquals(copy$bar$a, "b")
+  checkEquals(copy$bar$one, 1L)
 }
+
 
 unitTestRenameCatchException <-
   function()

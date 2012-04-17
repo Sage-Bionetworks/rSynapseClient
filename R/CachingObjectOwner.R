@@ -15,17 +15,27 @@
 ## delegate addObject calls to the enclosed EnhancedEnvironment class
 #setMethod(
 #  f = "addObject",
-#  signature = signature("ObjectOwner", "ANY", "character", "missing"),
+#  signature = signature("CachingObjectOwner", "ANY", "character", "missing"),
 #  definition = function(owner, object, name){
 #    owner$objects <- addObject(owner$objects, object, name)
 #    invisible(owner)
 #  }
 #)
 
+setMethod(
+  f = "setFileCache",
+  signature = signature("CachingObjectOwner", "FileCache"),
+  definition = function(owner, fileCache){
+    owner@objects <- setFileCache(owner@objects, fileCache)
+    owner
+  }
+)
+
+
 ## delegate deleteObject calls to the enclosed EnhancedEnvironment class
 setMethod(
   f = "deleteObject",
-  signature = signature("ObjectOwner", "character"),
+  signature = signature("CachingObjectOwner", "character"),
   definition = function(owner, which){
     owner$objects <- deleteObject(owner$objects, which)
     invisible(owner)
@@ -35,7 +45,7 @@ setMethod(
 ## delegate renameObject calls to the enclosed EnhancedEnvironment class
 setMethod(
   f = "renameObject",
-  signature = signature("ObjectOwner", "character", "character"),
+  signature = signature("CachingObjectOwner", "character", "character"),
   definition = function(owner, which, name){
     owner$objects <- renameObject(owner$objects, which, name)
     invisible(owner)
@@ -45,7 +55,7 @@ setMethod(
 ## delegate getObject calls to the enclosed EnhancedEnvironment class
 setMethod(
   f = "getObject",
-  signature = signature("ObjectOwner", "character"),
+  signature = signature("CachingObjectOwner", "character"),
   definition = function(owner, which){
     getObject(owner$objects, which)
   }
@@ -60,7 +70,7 @@ setMethod(
 
 setMethod(
     f = "addObject",
-    signature = signature("ObjectOwner", "ANY", "character", "missing"),
+    signature = signature("CachingObjectOwner", "ANY", "character", "missing"),
     definition = function(owner, object, name){
       owner$objects <- addObject(owner$objects, object, name)
       invisible(owner)
@@ -69,7 +79,7 @@ setMethod(
 
 setMethod(
     f = "addObject",
-    signature = signature("ObjectOwner", "ANY", "missing", "missing"),
+    signature = signature("CachingObjectOwner", "ANY", "missing", "missing"),
     definition = function(owner, object){
       name = deparse(substitute(object, env=parent.frame()))
       name <- gsub("\\\"", "", name)
@@ -80,7 +90,7 @@ setMethod(
 
 setMethod(
     f = "addObject",
-    signature = signature("ObjectOwner", "ANY", "missing", "logical"),
+    signature = signature("CachingObjectOwner", "ANY", "missing", "logical"),
     definition = function(owner, object, unlist){
       if(!unlist){
         name = deparse(substitute(object, env=parent.frame()))
@@ -91,6 +101,15 @@ setMethod(
       }
       invisible(owner)
     }
+)
+
+setMethod(
+  f = "loadObjectsFromFiles",
+  signature = "CachingObjectOwner",
+  definition = function(owner){
+    owner$objects <- .loadCachedObjects(owner$objects)
+    owner
+  }
 )
 
 ##
@@ -105,7 +124,7 @@ setMethod(
 ##
 #setMethod(
 #  f = "addObject",
-#  signature = signature("ObjectOwner", "ANY", "missing", "missing"),
+#  signature = signature("CachingObjectOwner", "ANY", "missing", "missing"),
 #  definition = function(owner, object){
 #    name = deparse(substitute(object, env=parent.frame()))
 #    name <- gsub("\\\"", "", name)
@@ -119,21 +138,21 @@ setMethod(
 ## it's needed
 #setMethod(
 #  f = "getEnv",
-#  signature = "ObjectOwner",
+#  signature = "CachingObjectOwner",
 #  definition = function(object){
 #    object$getEnv()
 #  }
 #)
 
 ## delegate "objects" calls to the enclosed EnhancedObjects class
-#objects.ObjectOwner <-
+#objects.CachingObjectOwner <-
 #  function(name, all.names, pattern)
 #{
 #  objects (name$objects, all.names, pattern) 
 #}
 
 ## delegate "names" calls to the enclosed EnhancedObjects class
-names.ObjectOwner <-
+names.CachingObjectOwner <-
   function(x)
 {
   "objects"

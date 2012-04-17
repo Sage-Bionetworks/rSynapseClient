@@ -10,10 +10,13 @@ SynapseAnnotations <-
   if(!is.list(entity))
     stop("entity must be a list.")
   if(any(names(entity) == "") && length(entity) > 0)
-	stop("all elements of the entity must be named")
 
-  annotations <- new(Class = "SynapseAnnotations")
-  .populateSlotsFromEntity(annotations, entity)
+    stop("all elements of the entity must be named")
+  
+  aa <- new(Class = "SynapseAnnotations")
+  ps <- new("TypedPropertyStore")
+  aa@annotations <- .populateSlotsFromEntity(ps, entity)
+  aa
 }
 
 ## show method
@@ -39,7 +42,7 @@ setMethod(
   f = "annotValue",
   signature = signature("SynapseAnnotations", "character"),
   definition = function(object, which){
-    propertyValue(objet@annotations, which) 
+    getProperty(object@annotations, which) 
   }
 )
 
@@ -47,8 +50,8 @@ setMethod(
   f = "annotValue<-",
   signature = signature("SynapseAnnotations", "character", "ANY"),
   definition = function(object, which, value){
-    object@annotations <- propertyValue(objet@annotations, which, value)
-    invisible(object)
+    object@annotations <- setProperty(object@annotations, which, value)
+    object
   }
 )
 
@@ -65,9 +68,19 @@ setMethod(
   signature = signature("SynapseAnnotations", "list"),
   def = function(object, value){
     ## this method is broken. need to implement  "propertyValues<-" for PropertyStore class
-    object@annotations <- propertyValues(object) <- value
-    invisible(object)
+    propertyValues(object@annotations) <- value
+    object
   }
+)
+
+setMethod(
+    f = "propertyValues<-",
+    signature = signature("SynapseAnnotations", "list"),
+    definition = function(object, value){
+      if(any(names(value)))
+      lapply(names(value))
+      object
+    }
 )
 
 setMethod(
@@ -87,10 +100,11 @@ setMethod(
 )
 
 ## S3 method for converting to list
-as.list.SynapseAnnotation <- 
+as.list.SynapseAnnotations <- 
   function(x, ...){
   as.list(x@annotations, ...)
 }
+
 
 
 as.list.SynapseAnnotations<-function(x) {
@@ -98,26 +112,26 @@ as.list.SynapseAnnotations<-function(x) {
 }
 
 # move content from 'entity' (a list) to 'object' ( a SynapseAnnotations)
+
 setMethod(
   f = ".populateSlotsFromEntity",
-  signature = signature("SynapseAnnotations", "list", "missing"),
+  signature = signature("TypedPropertyStore", "list", "missing"),
   definition = function(object, entity){
-    for (label in names(entity)) {
-		if (label %in% c("stringAnnotations", "dateAnnotations", "doubleAnnotations", "longAnnotations")) {
-			slot(object,label)<-entity[[label]]
-		} else if (label =="blobAnnotations") {
-				slot(object,label)<-entity[[label]]
-		} else {
-			propertyValue(object, label)<-entity[[label]]
-		}
-	}
+
+    nms <- c("stringAnnotations",
+      "doubleAnnotations",
+      "longAnnotations",
+      "dateAnnotations",
+      "blobAnnotations")
+    lapply(nms, function(n) slot(object, n) <- entity[[n]])
+
     object
   }
 )
 
 setMethod(
   f = ".populateSlotsFromEntity",
-  signature = signature("SynapseAnnotations", "missing", "character"),
+  signature = signature("TypedPropertyStore", "missing", "character"),
   definition = function(object, json){
     data <- fromJSON(json)
     .populateSlotsFromEntity(object, list=data)
@@ -125,5 +139,13 @@ setMethod(
 )
 
 
+setMethod(
+  f = "show",
+  signature = "SynapseAnnotations",
+  definition = function(object){
+    cat(class(object),"\n")
+    show(object@annotations)
+  }
+)
 
 

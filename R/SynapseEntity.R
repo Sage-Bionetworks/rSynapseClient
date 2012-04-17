@@ -29,6 +29,16 @@ setMethod(
   }
 )
 
+
+setMethod(
+  f = "downloadEntity",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    getEntity(entity)
+  }
+)
+
+
 #####
 ## as.list function. Coerce SynapseEntity to list by returning annotations
 #####
@@ -73,9 +83,9 @@ setMethod(
 
 setMethod(
   f = "annotValue<-",
-  signature = signature("SynapseEntity", "character", "logical"),
+  signature = signature("SynapseEntity", "character", "ANY"),
   definition = function(object, which, value){
-    annotValue(object = annotations(object), which = which) <- as.character(value)
+    annotValue(object@annotations, which = which) <- value
     object
   }
 )
@@ -150,8 +160,9 @@ setMethod(
 		f = "SynapseEntity",
 		signature = signature("list"),
 		definition = function(entity){
-			s4Entity <- new("SynapseEntity")
-			.populateSlotsFromEntity(s4Entity, entity)
+			ee <- new("SynapseEntity")
+			ee@properties <- entity
+            ee
 		}
 )
 
@@ -162,8 +173,9 @@ setMethod(
 		f = "SynapseEntity",
 		signature = signature("character"),
 		definition = function(entity){
-			listEntity<-fromJSON(entity)
-			.populateSlotsFromEntity(s4Entity, listEntity)
+            ee<-fromJSON(entity)
+            ee@properties <- entity
+            ee
 		}
 )
 
@@ -230,3 +242,14 @@ setMethod(
     entity
   }     
 )
+
+
+setMethod(
+  f = "getAnnotations",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    as.list(entity@annotations)
+  }
+)
+
+

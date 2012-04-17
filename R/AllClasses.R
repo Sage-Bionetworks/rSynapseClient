@@ -7,11 +7,11 @@
 ## the global cache is a singleton
 ##
 setClass(
-  Class = "GlobalCache",
-  representation = representation(env = "environment"),
-  prototype = prototype(
-    env = new.env(parent=emptyenv())
-  )
+    Class = "GlobalCache",
+    representation = representation(env = "environment"),
+    prototype = prototype(
+        env = new.env(parent=emptyenv())
+    )
 )
 
 ##
@@ -19,9 +19,9 @@ setClass(
 ## of a file cache object hold a reference to the same copy
 ##
 setClass(
-  Class = "FileCacheFactory",
-  representation = representation(env = "environment"),
-  prototype = new.env(parent = emptyenv())
+    Class = "FileCacheFactory",
+    representation = representation(env = "environment"),
+    prototype = new.env(parent = emptyenv())
 )
 
 ##
@@ -31,19 +31,21 @@ setClass(
 ## with the R Synapse client
 ##
 setClass(
-  Class = "TypedPropertyStore",
-  representation = representation(
-    stringAnnotations = "list",
-    doubleAnnotations = "list",
-    longAnnotations = "list",
-    dateAnnotations = "list"
-  ),
-  prototype = prototype(
-    stringAnnotations = emptyNamedList,
-    doubleAnnotations = emptyNamedList,
-    longAnnotations = emptyNamedList,
-    dateAnnotations = emptyNamedList
-  )
+    Class = "TypedPropertyStore",
+    representation = representation(
+        stringAnnotations = "list",
+        doubleAnnotations = "list",
+        longAnnotations = "list",
+        dateAnnotations = "list",
+        blobAnnotations = "list"
+    ),
+    prototype = prototype(
+        stringAnnotations = emptyNamedList,
+        doubleAnnotations = emptyNamedList,
+        longAnnotations = emptyNamedList,
+        dateAnnotations = emptyNamedList,
+        blobAnnotations = emptyNamedList
+    )
 )
 
 ##
@@ -55,210 +57,236 @@ setClass(
 ## entity
 ##
 setClass(
-  Class = "SimplePropertyOwner",
-  contains = "VIRTUAL",
-  representation = representation(
-    properties = "list"
-  ),
-  prototype = prototype(
-    properties = emptyNamedList
-  )
+    Class = "SimplePropertyOwner",
+    contains = "VIRTUAL",
+    representation = representation(
+        properties = "list"
+    ),
+    prototype = prototype(
+        properties = emptyNamedList
+    )
 )
 
 ##
 ## A class for representing the Synapse Annotations entity
 ##
 setClass(
-  Class = "SynapseAnnotations",
-  contains = "SimplePropertyOwner",
-  representation = representation(
-    annotations = "TypedPropertyStore"
-  ),
-  prototype = prototype(
-    annotations <- new("TypedPropertyStore")  
-  )
+    Class = "SynapseAnnotations",
+    contains = "SimplePropertyOwner",
+    representation = representation(
+        annotations = "TypedPropertyStore"
+    ),
+    prototype = prototype(
+        annotations <- new("TypedPropertyStore")  
+    )
 )
-
 
 ##
 ## this class definition is way too complicated. need to move some of the business logic elsewhere
 ##
 setRefClass(
-  Class = "FileCache",
-  fields = list(
-    cacheRoot = "character",
-    cacheDir = "character",
-    metaData = "list",
-    archiveFile = "character"
-  ),
-  methods = list(
-    initialize = function(){
-      .self$initFields(
-        metaData = emptyNamedList,
-        archiveFile = "archive.zip"
-      )
-      root <- tempfile(pattern="cacheRoot")
-      dir.create(root)
-      .self$cacheRoot <- gsub("/+$", "", gsub("/+", "/", normalizePath(root, mustWork=TRUE)))
-      cdir <- file.path(.self$cacheRoot, pattern=sprintf("%s_unpacked", .self$archiveFile))
-      dir.create(cdir, recursive=T)
-      .self$cacheDir <- gsub("/+", "/", normalizePath(cdir, mustWork=TRUE))
-    },
-    addFileMetaData = function(srcPath, destPath, ...){
-      destPath <- as.character(.cleanFilePath(destPath))
-      .self$metaData[[destPath]] <- list(srcPath = srcPath)
-      elp <- list(...)
-      if(any(names(elp) == ""))
-        stop("All elements must be named")
-      if(length(elp) > 0)
-        .self$metaData[[destPath]] <- c(.self$metaData[[destPath]], elp)
-      invisible(.self$metaData)
-    },
-    getFileMetaData = function(destPath){
-      .self$metaData[destPath]
-    },
-    deleteFileMetaData = function(destPath){
-      if(missing(destPath)){
-        .self$metaData <- emptyNamedList
-      }else{
-        indx <- which(names(.self$metaData) %in% destPath)
-        if(length(indx) > 0){
-          .self$metaData = metaData[-indx]
-        }
-      }
-      invisible(.self$metaData)
-    },
-    cacheFileMetaData = function(){
-      if(!file.exists(.self$cacheRoot))
-        dir.create(.self$cacheRoot)
-      cat(toJSON(list(archiveFile = .self$archiveFile, metaData = .self$metaData)), file=file.path(.self$cacheRoot, "files.json"))
-    },
-    deleteMetaDataCache = function(){
-      file.remove(file.path(.self$cacheRoot, "files.json"))
-    },
-    loadMetaDataFromFile = function(){
-      file = file.path(.self$cacheRoot, "files.json")
-      if(!file.exists(file)){
-        .self$metaData <- emptyNamedList
-        .self$archiveFile <- ""
-      }else{
-        dd <- fromJSON(file, simplifyWithNames=FALSE)
-        .self$metaData <- dd$metaData
-        .self$archiveFile <- dd$archiveFile
-        if(.self$archiveFile=="")
-          .self$archiveFile <- "archive.zip"
-      }
-      invisible(list(archiveFile = .self$archiveFile, metaData = .self$metaData))
-    },
-    files = function(){
-      as.character(unlist(lapply(.self$getFileMetaData(), function(m) m$relativePath)))
-    },
-    createArchive = function(){
-      ## zips up the archive contents and invisibly returns the full path to the created archive file
-      ## this function should also update the metadata to reflect the fact that the archive was changed
-      ## although this is not needed now, but will be when we wait to aggregate added files in the cache
-      ## directory until archive creation time
-      
-      ## if the FileCache has no files, throw and exception
-      if(length(.self$files()) == 0L)
-        stop("There are not files to archive, add files using addFile then try again")
-      
-      ## this check should be done elsewhere, but for now let's leave it here.
-      if(length(.self$files() > 1L) && ! hasZip())
-        stop("Archive could not be created because it contains multiple files yet the system does not have zip installed.")
-      
-      if(!all(file.exists(file.path(.self$cacheDir, .self$files())))){
-        ## more defensive programming. Getting here is potentially a bug unless the user
-        ## mucked with the innards of the FileCache object or deleted a file from the cache directory
-        stop("Not all of the file were present in the cache directory. this may be a bug. please report it.")
-      }
-      
-      ## if the archive file is unset. set it to a logical default. by default we will assume the 
-      ## system has zip installed so will use a .zip extension
-      if(is.null(.self$archiveFile) || .self$archiveFile == ""){
-        if(hasZip()){
-          .self$archiveFile = "archive.zip"
-        }else if(length(.self$files()) == 1L){
-          .self$archiveFile = .self$files()[[1]]
-        }else{
-          ## defensive programming. should never get here
-          stop("An error has occured in FileCache while determining number of files. Please report this bug.")
-        }
-      }
-      
-      ## if the cacheRoot doesn't exists, create it. this should never happen
-      if(!file.exists(.self$cacheRoot))
-        dir.create(.self$cacheRoot, recursive = TRUE)
-      
-      ## OK, now let's zip. fingers crossed ;)
-      ## change directory to the cache directory
-      oldDir <- getwd()
-      setwd(.self$cacheDir)
-      suppressWarnings(
-        zipRetVal <- zip(file.path(.self$cacheRoot, .self$archiveFile), files=gsub("^/","",.self$files()))
-      )
-      setwd(oldDir)
-      
-      ## if zip failes, load uncompressed
-      if(zipRetVal != 0L){
-        msg <- sprintf("Unable to zip Entity Files. Error code: %i.",zipRetVal)
-        stop(msg)
-      }
-      
-      ##update the meta-data to indicate that all the files are now sourced from the zipFile
-      ans <- lapply(names(.self$getFileMetaData()), function(fname){
-          .self$setFileSource(fname, .self$archiveFile)
-        }
-      )
-      
-      ## re-cache the metaData to disk
-      .self$cacheFileMetaData()
-      
-      ## invisibly return the archive file name
-      invisible(.self$archiveFile)
-    },
-    getArchiveFile = function(){
-      ## getter for the archive file name. this will be a file name relative to the cacheRoot
-      .self$archiveFile
-    },
-    unpackArchive = function(){
-      ## unpacks the contents of the archive file, throwing an exception if the archiveFile member variable is not set
-      ## invisibly returns the full path to the root directory into which the archive was unpacked
-      
-      ## remove the contents of the cacheDir
-      unlink(.self$cacheDir, force=TRUE, recursive = TRUE)
-      files <- .unpack(file.path(.self$cacheRoot, .self$archiveFile))
-      
-      ## populate the file metadata
-      files <- .generateFileList(attr(files, "rootDir"))
-      .self$deleteFileMetaData()
-      
-      lapply(files$srcfiles, function(i){
-          info <- file.info(i)
-          for(name in names(info))
-            info[[name]] <- as.character(info[[name]])
+    Class = "FileCache",
+    fields = list(
+        cacheRoot = "character",
+        cacheDir = "character",
+        metaData = "list",
+        archiveFile = "character"
+    ),
+    methods = list(
+        initialize = function(){
+          .self$initFields(
+              metaData = emptyNamedList,
+              archiveFile = "archive.zip"
+          )
+          root <- tempfile(pattern="cacheRoot")
+          dir.create(root)
+          .self$cacheRoot <- gsub("/+$", "", gsub("/+", "/", normalizePath(root, mustWork=TRUE)))
+          cdir <- file.path(.self$cacheRoot, pattern=sprintf("%s_unpacked", .self$archiveFile))
+          dir.create(cdir, recursive=T)
+          .self$cacheDir <- gsub("/+", "/", normalizePath(cdir, mustWork=TRUE))
+        },
+        addFileMetaData = function(srcPath, destPath, ...){
+          destPath <- as.character(.cleanFilePath(destPath))
+          .self$metaData[[destPath]] <- list(srcPath = srcPath)
+          elp <- list(...)
+          if(any(names(elp) == ""))
+            stop("All elements must be named")
+          if(length(elp) > 0)
+            .self$metaData[[destPath]] <- c(.self$metaData[[destPath]], elp)
+          invisible(.self$metaData)
+        },
+        getFileMetaData = function(destPath){
+          .self$metaData[destPath]
+        },
+        deleteFileMetaData = function(destPath){
+          if(missing(destPath)){
+            .self$metaData <- emptyNamedList
+          }else{
+            indx <- which(names(.self$metaData) %in% destPath)
+            if(length(indx) > 0){
+              .self$metaData = metaData[-indx]
+            }
+          }
+          invisible(.self$metaData)
+        },
+        cacheFileMetaData = function(){
+          if(!file.exists(.self$cacheRoot))
+            dir.create(.self$cacheRoot)
+          cat(toJSON(list(archiveFile = .self$archiveFile, metaData = .self$metaData)), file=file.path(.self$cacheRoot, "files.json"))
+        },
+        deleteMetaDataCache = function(){
+          file.remove(file.path(.self$cacheRoot, "files.json"))
+        },
+        loadMetaDataFromFile = function(){
+          file = file.path(.self$cacheRoot, "files.json")
+          if(!file.exists(file)){
+            .self$metaData <- emptyNamedList
+            .self$archiveFile <- ""
+          }else{
+            dd <- fromJSON(file, simplifyWithNames=FALSE)
+            .self$metaData <- dd$metaData
+            .self$archiveFile <- dd$archiveFile
+            if(.self$archiveFile=="")
+              .self$archiveFile <- "archive.zip"
+          }
+          invisible(list(archiveFile = .self$archiveFile, metaData = .self$metaData))
+        },
+        files = function(){
+          as.character(unlist(lapply(.self$getFileMetaData(), function(m) m$relativePath)))
+        },
+        createArchive = function(){
+          ## zips up the archive contents and invisibly returns the full path to the created archive file
+          ## this function should also update the metadata to reflect the fact that the archive was changed
+          ## although this is not needed now, but will be when we wait to aggregate added files in the cache
+          ## directory until archive creation time
           
-          rPath <- gsub(gsub("/+", "/", .self$cacheDir), "", i, fixed = TRUE)
-          rPath <- gsub("^/", "", rPath)
-          .self$metaData[[i]] <- list(srcPath=.self$archiveFile, relativePath = rPath, fileInfo=info)
+          ## if the FileCache has no files, throw and exception
+          if(length(.self$files()) == 0L)
+            stop("There are not files to archive, add files using addFile then try again")
+          
+          ## this check should be done elsewhere, but for now let's leave it here.
+          if(length(.self$files() > 1L) && ! hasZip())
+            stop("Archive could not be created because it contains multiple files yet the system does not have zip installed.")
+          
+          if(!all(file.exists(file.path(.self$cacheDir, .self$files())))){
+            ## more defensive programming. Getting here is potentially a bug unless the user
+            ## mucked with the innards of the FileCache object or deleted a file from the cache directory
+            stop("Not all of the file were present in the cache directory. this may be a bug. please report it.")
+          }
+          
+          ## if the archive file is unset. set it to a logical default. by default we will assume the 
+          ## system has zip installed so will use a .zip extension
+          if(is.null(.self$archiveFile) || .self$archiveFile == ""){
+            if(hasZip()){
+              .self$archiveFile = "archive.zip"
+            }else if(length(.self$files()) == 1L){
+              .self$archiveFile = .self$files()[[1]]
+            }else{
+              ## defensive programming. should never get here
+              stop("An error has occured in FileCache while determining number of files. Please report this bug.")
+            }
+          }
+          
+          ## if the cacheRoot doesn't exists, create it. this should never happen
+          if(!file.exists(.self$cacheRoot))
+            dir.create(.self$cacheRoot, recursive = TRUE)
+          
+          ## OK, now let's zip. fingers crossed ;)
+          ## change directory to the cache directory
+          oldDir <- getwd()
+          setwd(.self$cacheDir)
+          suppressWarnings(
+              zipRetVal <- zip(file.path(.self$cacheRoot, .self$archiveFile), files=gsub("^/","",.self$files()))
+          )
+          setwd(oldDir)
+          
+          ## if zip failes, load uncompressed
+          if(zipRetVal != 0L){
+            msg <- sprintf("Unable to zip Entity Files. Error code: %i.",zipRetVal)
+            stop(msg)
+          }
+          
+          ##update the meta-data to indicate that all the files are now sourced from the zipFile
+          ans <- lapply(names(.self$getFileMetaData()), function(fname){
+                .self$setFileSource(fname, .self$archiveFile)
+              }
+          )
+          
+          ## re-cache the metaData to disk
+          .self$cacheFileMetaData()
+          
+          ## invisibly return the archive file name
+          invisible(.self$archiveFile)
+        },
+        getArchiveFile = function(){
+          ## getter for the archive file name. this will be a file name relative to the cacheRoot
+          .self$archiveFile
+        },
+        unpackArchive = function(){
+          ## unpacks the contents of the archive file, throwing an exception if the archiveFile member variable is not set
+          ## invisibly returns the full path to the root directory into which the archive was unpacked
+          
+          ## remove the contents of the cacheDir
+          unlink(.self$cacheDir, force=TRUE, recursive = TRUE)
+          files <- .unpack(file.path(.self$cacheRoot, .self$archiveFile))
+          
+          ## populate the file metadata
+          files <- .generateFileList(attr(files, "rootDir"))
+          .self$deleteFileMetaData()
+          
+          lapply(files$srcfiles, function(i){
+                info <- file.info(i)
+                for(name in names(info))
+                  info[[name]] <- as.character(info[[name]])
+                
+                rPath <- gsub(gsub("/+", "/", .self$cacheDir), "", i, fixed = TRUE)
+                rPath <- gsub("^/", "", rPath)
+                .self$metaData[[i]] <- list(srcPath=.self$archiveFile, relativePath = rPath, fileInfo=info)
+              }
+          )
+          
+          ## persist the metadata to disk
+          .self$cacheFileMetaData()
+          
+          invisible(.self$cacheDir)
+        },
+        setFileSource = function(fname, srcPath){
+          .self$metaData[[fname]]$srcPath <- srcPath
+        },
+        getCacheDir = function(){
+          .self$cacheDir
+        },
+        getCacheRoot = function(){
+          .self$cacheRoot
         }
-      )
-      
-      ## persist the metadata to disk
-      .self$cacheFileMetaData()
-      
-      invisible(.self$cacheDir)
-    },
-    setFileSource = function(fname, srcPath){
-      .self$metaData[[fname]]$srcPath <- srcPath
-    },
-    getCacheDir = function(){
-      .self$cacheDir
-    },
-    getCacheRoot = function(){
-      .self$cacheRoot
-    }
-  )
+    )
+)
+
+##
+## A simple wrapper around an environment. This allows the customization
+## of the environment's behavior, including the ability to make the environment
+## read-only
+##
+setClass(
+    Class = "EnhancedEnvironment",
+    representation = representation(
+        env = "environment"
+    )
+)
+
+##
+## An enhanced environment that caches it's objects to disk using a FileCache
+## class to manage it's on-disk cache
+##
+setClass(
+    Class = "CachingEnhancedEnvironment",
+    contains = "EnhancedEnvironment",
+    representation = representation(
+        cachePrefix = "character",
+        fileCache = "FileCache",
+        cacheSuffix = "character",
+        cacheTmpSuffix = "character"
+    )
 )
 
 ##
@@ -272,53 +300,28 @@ setRefClass(
 ## backward compatibility of the user interface
 ##
 setClass(
-  Class = "ArchiveOwner",
-  contains = "VIRTUAL",
-  representation = representation(
-    fileCache = "FileCache"
-  )
+    Class = "ArchiveOwner",
+    representation = representation(
+        fileCache = "FileCache",
+        objects = "EnhancedEnvironment"
+    )
 )
 
 ##
 ## All non-locationable Synapse entities will be derived from this class
 ##
 setClass(
-  Class = "SynapseEntity",
-  contains = "SimplePropertyOwner",
-  representation = representation(
-    annotations = "SynapseAnnotations",
-    synapseEntityKind = "character"
-  ),
-  prototype = prototype(
-    annotations = new("SynapseAnnotations")
-  )
-)
-
-##
-## A simple wrapper around an environment. This allows the customization
-## of the environment's behavior, including the ability to make the environment
-## read-only
-##
-setClass(
-  Class = "EnhancedEnvironment",
-  representation = representation(
-    env = "environment"
-  )
-)
-
-##
-## An enhanced environment that caches it's objects to disk using a FileCache
-## class to manage it's on-disk cache
-##
-setClass(
-  Class = "CachingEnhancedEnvironment",
-  contains = "EnhancedEnvironment",
-  representation = representation(
-    cachePrefix = "character",
-    fileCache = "FileCache",
-    cacheSuffix = "character",
-    cacheTmpSuffix = "character"
-  )
+    Class = "SynapseEntity",
+    contains = "SimplePropertyOwner",
+    representation = representation(
+        annotations = "SynapseAnnotations",
+        synapseEntityKind = "character",
+        synapseWebUrl = "character"
+    ),
+    prototype = prototype(
+        annotations = new("SynapseAnnotations"),
+        synapseWebUrl = ""
+    )
 )
 
 ##
@@ -334,23 +337,25 @@ setClass(
 ## this will allow the implemenation of read-only ObjectOwners.
 ##
 setRefClass(
-  Class = "ObjectOwner",
-  contains = c("VIRTUAL"),
-  fields = list(
-    objects = "EnhancedEnvironment"
-  ),
-  methods = list(
-    getObject = function(which){
-      getObject(.self, which)
-    },
-    addObject = function(object, name, unlist = FALSE){
-      if(missing(name) && class(object) == "list")
-        addObject(.self, object, name, unlist)
-    },
-    getEnv = function(){
-      .self@objects
-    }
-  )
+    Class = "CachingObjectOwner",
+    fields = list(
+        objects = "CachingEnhancedEnvironment"
+    ),
+    methods = list(
+        getObject = function(which){
+          getObject(.self, which)
+        },
+        addObject = function(object, name, unlist = FALSE){
+          if(missing(name) && class(object) == "list")
+            addObject(.self, object, name, unlist)
+        },
+        getEnv = function(){
+          .self@objects
+        },
+        initialize = function(){
+          .self$objects <- new("CachingEnhancedEnvironment")
+        }
+    )
 )
 
 ##
@@ -361,8 +366,19 @@ setRefClass(
 ## contains list
 ##
 setClass(
-  Class = "SynapseLocationOwner",
-  contains = c("SynapseEntity", "ArchiveOwner", "ObjectOwner", "VIRTUAL")
+    Class = "SynapseLocationOwner",
+    contains = c("SynapseEntity"),
+    representation = representation(
+        archOwn = "ArchiveOwner"
+    )
+)
+
+setClass(
+    Class = "SynapseLocationOwnerWithObjects",
+    contains = c("SynapseLocationOwner"),
+    representation(
+      objOwn = "CachingObjectOwner"
+    )
 )
 
 ####
@@ -370,43 +386,119 @@ setClass(
 ####
 
 setRefClass(
-  "ReadOnlyFileOwner",
-  contains = "VIRTUAL",
-  fields = list(
-    cacheDir = "character",
-    files = "character"
-  ),
-  methods = list(
-    initialize = function(){
-      .self$initFields(
-        objects = new("EnhancedEnvironment"),
-        cacheDir = tempfile(),
-        files = character()
-      )
-    }
-  )
+    "ReadOnlyFileOwner",
+    contains = "VIRTUAL",
+    fields = list(
+        cacheDir = "character",
+        files = "character"
+    ),
+    methods = list(
+        initialize = function(){
+          .self$initFields(
+              objects = new("EnhancedEnvironment"),
+              cacheDir = tempfile(),
+              files = character()
+          )
+        }
+    )
 )
 
 setRefClass(
-  "ReadOnlyObjectOwner",
-  contains = c("ReadOnlyFileOwner", "VIRTUAL"),
-  fields = list(
-    objects = "EnhancedEnvironment"
-  ),
-  methods = list(
-    getObject = function(which){
-      getObject(.self, which)
-    }
-  ) 
+    "ReadOnlyObjectOwner",
+    contains = c("ReadOnlyFileOwner", "VIRTUAL"),
+    fields = list(
+        objects = "EnhancedEnvironment"
+    ),
+    methods = list(
+        getObject = function(which){
+          getObject(.self, which)
+        }
+    ) 
 )
 
 setRefClass(
-  "WritableFileOwner",
-  contains = c("ReadOnlyFileOwner", "VIRTUAL"),
-  methods = list(
-    initialize = function(){
-      .self$initFields(cacheDir=tempfile())
-      dir.create(.self$cacheDir)
-    }
+    "WritableFileOwner",
+    contains = c("ReadOnlyFileOwner", "VIRTUAL"),
+    methods = list(
+        initialize = function(){
+          .self$initFields(cacheDir=tempfile())
+          dir.create(.self$cacheDir)
+        }
+    )
+)
+
+
+##
+##
+## Below are the objects that users will interact with
+##
+##
+
+setClass(
+  "Step",
+  contains = "SynapseEntity",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Step"
   )
 )
+
+setClass(
+  "Analysis",
+  contains = "SynapseEntity",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Analysis"
+  )
+)
+
+
+setClass(
+  "Project",
+  contains = "SynapseEntity",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Project"
+  )
+)
+
+setClass(
+  "Link",
+  contains = "SynapseEntity",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Link"
+  )
+)
+
+setClass(
+  "Code",
+  contains="SynapseLocationOwner",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Code"
+  )
+)
+
+setClass(
+  "Study",
+  contains = "SynapseLocationOwnerWithObjects",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Study"
+  )
+)
+
+setClass(
+  "Project",
+  contains = "SynapseLocationOwnerWithObjects",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Data"
+  )
+)
+
+setClass(
+  Class = "Media",
+  contains = "SynapseLocationOwner",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Media"
+  )
+)
+
+
+
+
