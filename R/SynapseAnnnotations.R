@@ -9,11 +9,13 @@ SynapseAnnotations <-
 {
   if(!is.list(entity))
     stop("entity must be a list.")
-  
-  annotations <- new(Class = "SynapseAnnotations")
   if(any(names(entity) == "") && length(entity) > 0)
     stop("all elements of the entity must be named")
-  .populateSlotsFromEntity(annotations, entity)
+  
+  aa <- new(Class = "SynapseAnnotations")
+  ps <- new("TypedPropertyStore")
+  aa@annotations <- .populateSlotsFromEntity(ps, entity)
+  aa
 }
 
 ## show method
@@ -102,38 +104,23 @@ as.list.SynapseAnnotations <-
   as.list(x@annotations, ...)
 }
 
-
-## ******* instead of doing this, write the S3 method as.list.SynapseAnnotations as.string(c(as.list(t), as.list(p)))
-## ******* where t is the TypedPropertyStore and p SimplePropertyOwner
-## Bruce: the methods below are for you
-## need to 
-setMethod(
-  f = ".extractEntityFromSlots",
-  signature = "SynapseAnnotations",
-  definition = function(object){
-    entity <- list() #TODO needs to be emptyNamedList(), not list()
-	# TODO:  pull values from SynapseAnnotations and put in list
-			# need to get the properties as well as the annots
-			# see PropertyStore.R, as.list.TypedPropertyStore
-    stop("need to implement this")
-    entity
-  }
-)
-
 setMethod(
   f = ".populateSlotsFromEntity",
-  signature = signature("SynapseAnnotations", "list", "missing"),
+  signature = signature("TypedPropertyStore", "list", "missing"),
   definition = function(object, entity){
-    
-    stop("Need to implement this")
-    *** bruce to do this ***
+    nms <- c("stringAnnotations",
+      "doubleAnnotations",
+      "longAnnotations",
+      "dateAnnotations",
+      "blobAnnotations")
+    lapply(nms, function(n) slot(object, n) <- entity[[n]])
     object
   }
 )
 
 setMethod(
   f = ".populateSlotsFromEntity",
-  signature = signature("SynapseAnnotations", "missing", "character"),
+  signature = signature("TypedPropertyStore", "missing", "character"),
   definition = function(object, json){
     data <- fromJSON(json)
     .populateSlotsFromEntity(object, list=data)
@@ -144,5 +131,13 @@ setMethod(
 ## End Bruce
 ##
 
+setMethod(
+  f = "show",
+  signature = "SynapseAnnotations",
+  definition = function(object){
+    cat(class(object),"\n")
+    show(object@annotations)
+  }
+)
 
 

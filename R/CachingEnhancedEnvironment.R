@@ -17,6 +17,16 @@ setMethod(
   }
 )
 
+setMethod(
+  f = "setFileCache",
+  signature = signature("CachingEnhancedEnvironment", "FileCache"),
+  definition = function(owner, fileCache){
+    owner@fileCache <- fileCache
+    owner
+  }
+)
+
+
 ##
 ## Over-ride the addObject method inherited from EnhancedEnvironment. The method
 ## for CachingEnhancedEnvironment does the same thing as the one for EnhancedEnvironment
