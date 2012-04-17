@@ -290,6 +290,10 @@ setMethod(
   definition = function(entity, src, dest){
     src <- gsub("^[\\\\/]+","", src)
     dest <- gsub("^[\\\\/]+","", dest)
+    if(length(src) != 1L)
+      stop("only one file can be moved at a time")
+    if(length(src) != length(dest))
+      stop("number of source and destination files must be the same")
     if(!(src %in% entity$files()))
       stop(sprintf("Invalid file: %s", src))
     
@@ -309,7 +313,11 @@ setMethod(
       dir.create(tmpdir, recursive=TRUE)
       newSrc <- file.path(tmpdir, filename)
       file.copy(file.path(entity$cacheDir, src), newSrc)
-      path <- gsub(sprintf("[\\\\/]?%s$",filename),"", dest)
+      path <- dest
+      if(grepl("/", dest)){
+        splits <- strsplit(dest,"/")[[1]]
+        path <- sprintf("%s/",file.path(splits[-length(splits)]))
+      }
       addFile(entity, newSrc, path)               
     }
     

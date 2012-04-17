@@ -3,13 +3,71 @@
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
+unitTestSimpleMove <-
+  function()
+{
+  fc <- new("FileCache")
+  file <- tempfile()
+  cat("THIS IS A TEST %s", Sys.time(), file = file)
+  
+  addFile(fc, file)
+  checkEquals(length(fc$files), 1L)
+  
+  copy <- moveFile(fc, fc$files(), "foo.bar")
+  checkEquals(length(fc$files()), 1L)
+  checkEquals(fc$files(), "foo.bar")
+}
+
+unitTestSimpleMoveToDir <-
+  function()
+{
+  fc <- new("FileCache")
+  file <- tempfile()
+  cat("THIS IS A TEST %s", Sys.time(), file = file)
+  
+  addFile(fc, file, "foo.bar")
+  checkEquals(length(fc$files), 1L)
+  
+  copy <- moveFile(fc, fc$files(), "blah/")
+  checkEquals(length(fc$files()), 1L)
+  checkEquals(fc$files(), "blah/foo.bar")
+  
+  
+  fc <- new("FileCache")
+  file <- tempfile()
+  cat("THIS IS A TEST %s", Sys.time(), file = file)
+  
+  addFile(fc, file, "foo.bar")
+  checkEquals(length(fc$files), 1L)
+  
+  copy <- moveFile(fc, fc$files(), "/blah/")
+  checkEquals(length(fc$files()), 1L)
+  checkEquals(fc$files(), "blah/foo.bar")
+}
+
+unitTestSimpleMoveToRoot <-
+  function()
+{
+  fc <- new("FileCache")
+  file <- tempfile()
+  cat("THIS IS A TEST %s", Sys.time(), file = file)
+  
+  addFile(fc, file, "subdir/foo.bar")
+  checkEquals(length(fc$files), 1L)
+  
+  copy <- moveFile(fc, fc$files(), "/")
+  checkEquals(length(fc$files()), 1L)
+  checkEquals(fc$files(), "foo.bar")
+}
+
+
 unitTestMoveFileNewPathDirExists <-
   function()
 {
   file <- tempfile()
   d <- diag(nrow=10, ncol=10)
   save(d, file=file)
-  path <- "/foo/bar"
+  path <- "/foo/bar/"
   checksum <- as.character(tools::md5sum(file))
   
   fc <- new(Class="FileCache")
@@ -27,7 +85,7 @@ unitTestMoveFileNewPath <-
   file <- tempfile()
   d <- diag(nrow=10, ncol=10)
   save(d, file=file)
-  path <- "/foo/bar"
+  path <- "/foo/bar/"
   checksum <- as.character(tools::md5sum(file))
   
   fc <- new(Class="FileCache")
@@ -54,13 +112,13 @@ unitTestMoveFileNewPath <-
 }
 
 
-unitTestRenameFile <-
+unitTestMoveFile <-
   function()
 {
   file <- tempfile()
   d <- diag(nrow=10, ncol=10)
   save(d, file=file)
-  path <- "/foo/bar"
+  path <- "/foo/bar/"
   checksum <- as.character(tools::md5sum(file))
   
   fc <- new(Class="FileCache")
@@ -74,7 +132,7 @@ unitTestRenameFile <-
   
 }
 
-unitTestRenameFileNewPath <-
+unitTestMoveFileNewPath <-
   function()
 {
   file <- tempfile()
@@ -97,7 +155,7 @@ unitTestRenameFileNewPath <-
   
 }
 
-unitTestRenameFileToRoot <-
+unitTestMoveFileToRoot <-
   function()
 {
   file <- tempfile()
@@ -125,7 +183,7 @@ unitTestMoveFileToRoot <-
   file <- tempfile()
   d <- diag(nrow=10, ncol=10)
   save(d, file=file)
-  path <- "/foo/bar"
+  path <- "/foo/bar/"
   checksum <- as.character(tools::md5sum(file))
   
   fc <- new(Class="FileCache")
@@ -188,3 +246,47 @@ unitTestReturnValue <-
   fc <- addFile(fc, file, path)
   checkTrue(length(fc$files()) == 1L)
 }
+
+unitTestMoveFileRenameIntoNewSubDir <-
+  function()
+{
+
+  file <- tempfile()
+  d <- diag(nrow=10, ncol=10)
+  save(d, file=file)
+  checksum <- as.character(tools::md5sum(file))
+  
+  fc <- new(Class="FileCache")
+  addFile(fc, file)
+  checkTrue(length(fc$files()) == 1L)
+  checkEquals(checksum, as.character(tools::md5sum(file.path(fc$cacheDir, fc$files()[1]))))
+  
+  ## path specified with a leading slash
+  path <- "/subdir/newName.rbin"
+  moveFile(fc, fc$files(), path)
+  checkEquals(fc$files(), "subdir/newName.rbin")
+  
+  ## no leading slash
+  path <- "subdir2/newName2.rbin"
+  moveFile(fc, fc$files(), path)
+  checkEquals(fc$files(), "subdir2/newName2.rbin")
+}
+
+unitTestMoveDirectoryToRoot <-
+  function()
+{
+  stop("not yet implemented")
+}
+
+unitTestMoveDirectoryToNewSubdir <-
+  function()
+{
+  stop("not yet implemented")
+}
+
+
+
+
+
+
+

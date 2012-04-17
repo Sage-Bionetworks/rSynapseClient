@@ -63,9 +63,9 @@ unitTestAddFile <-
   checkEquals(gsub("^.+/", "", file), own$files)
   
   addFile(own, file, "foo.bar")
-  checkEquals()
-  
-  
+  checkEquals(length(own$files), 2L)
+  checkTrue(all(c(gsub("^.+/", "", file), "foo.bar") %in% own$files))
+  checkTrue(all(own$files %in% c(gsub("^.+/", "", file), "foo.bar")))
 }
 
 unitTestMoveFile <-
@@ -77,10 +77,21 @@ unitTestMoveFile <-
   checkEquals(character(), own$files)
   file <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
-  copy <- addFile(own, file)
+  addFile(own, file)
   checkEquals(gsub("^.+/", "", file), own$files)
-  checkEquals(gsub("^.+/", "", file), copy$files)
   
+  copy <- moveFile(own, own$files, "newName.txt")
+  checkEquals("newName.txt", copy$files)
+  checkEquals("newName.txt", own$files)
+  
+  moveFile(own, own$files, "subdir/")
+  checkEquals("subdir/newName.txt", own$files)
+  
+  moveFile(own, own$files, "/newSubDir2/anotherName2.txt")
+  checkEquals("newSubDir2/anotherName2.txt", own$files)
+  
+  moveFile(own, own$files, "/newSubDir/anotherName.txt")
+  checkEquals("newSubDir/anotherName.txt", own$files)
   
 }
 

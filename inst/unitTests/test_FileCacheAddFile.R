@@ -302,6 +302,14 @@ unitTestAddFileToSubDirRename <-
   checkEquals(checksum, as.character(tools::md5sum(file.path(fc$getCacheDir(), fc$files()))))
   
   fc <- new(Class="FileCache")
+  addFile(fc, file, "foo/blah.txt")
+  checkEquals(length(fc$getFileMetaData()), 1L)
+  checkEquals(fc$files(), "foo/blah.txt")
+  checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
+  checkTrue(file.exists(file.path(fc$getCacheDir(), fc$files())))
+  checkEquals(checksum, as.character(tools::md5sum(file.path(fc$getCacheDir(), fc$files()))))
+  
+  fc <- new(Class="FileCache")
   addFile(fc, file, "\\foo\\blah.txt")
   checkEquals(length(fc$getFileMetaData()), 1L)
   checkEquals(fc$files(), "foo/blah.txt")
