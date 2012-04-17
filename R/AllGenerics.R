@@ -4,6 +4,28 @@
 ###############################################################################
 
 setGeneric(
+       name = "getChildEntities",
+       def = function(entity){
+           standardGeneric("getChildEntities")
+       }
+)
+
+setGeneric(
+  name = "getParentEntity",
+  def = function(entity){
+    standardGeneric("getParentEntity")
+  }
+)
+
+
+setGeneric(
+  name = "Media",
+  def = function(entity){
+    standardGeneric("Media")
+  }
+)
+
+setGeneric(
   name = "onWeb",
   def = function(entity){
     standardGeneric("onWeb")

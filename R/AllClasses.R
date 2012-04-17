@@ -472,4 +472,14 @@ setClass(
   )
 )
 
+setClass(
+  Class = "Media",
+  contains = "SynapseLocationOwner",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Media"
+  )
+)
+
+
+
 
