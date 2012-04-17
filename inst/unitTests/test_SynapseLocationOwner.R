@@ -5,22 +5,22 @@
 .setUp <- 
   function()
 {
-  env <- attach(NULL, name = "testEnv")
-  tryCatch({
-      setPackageName("testEnv", env)
-      suppressWarnings(
-        setClass(
-          "LocOwn",
-          contains = "SynapseLocationOwner",
-          where = env
-        ) 
-      )
-    },
-    error = function(e){
-      detach("testEnv")
-      stop(e)
-    }
-  )
+#  env <- attach(NULL, name = "testEnv")
+#  tryCatch({
+#      setPackageName("testEnv", env)
+#      suppressWarnings(
+#        setClass(
+#          "LocOwn",
+#          contains = "SynapseLocationOwner",
+#          where = env
+#        ) 
+#      )
+#    },
+#    error = function(e){
+#      detach("testEnv")
+#      stop(e)
+#    }
+#  )
   
   synapseClient:::.setCache("oldWarn", options("warn")[[1]])
   options(warn=2L)
@@ -29,7 +29,7 @@
 .tearDown <-
   function()
 {
-  detach("testEnv")
+#  detach("testEnv")
   options(warn = synapseClient:::.getCache("oldWarn"))
 }
 
@@ -49,7 +49,7 @@ unitTestConstructorArchivePath <-
 unitTestAddFile <- 
   function()
 {
-  own <- new("LocOwn")
+  own <- new("SynapseLocationOwner")
   
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
@@ -61,7 +61,7 @@ unitTestAddFile <-
   
   ## make sure the cache re-initializes but running the exact same
   ## test again
-  own <- new("LocOwn")
+  own <- new("SynapseLocationOwner")
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
   file <- tempfile()
@@ -78,7 +78,7 @@ unitTestAddFile <-
 unitTestMoveFile <-
   function()
 {
-  own <- new("LocOwn")
+  own <- new("SynapseLocationOwner")
   
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
@@ -105,7 +105,7 @@ unitTestMoveFile <-
 uniTestDeleteFile <-
   function()
 {
-  own <- new("LocOwn")
+  own <- new("SynapseLocationOwner")
   
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
@@ -122,17 +122,17 @@ uniTestDeleteFile <-
 unitTestDoubleBracketAccessor <-
     function()
 {
-  own <- new("LocOwn")
+  own <- new("SynapseLocationOwner")
   
   checkEquals(own[['files']], character())
-  checkEquals(own[['objects']], character())
+  checkEquals(own[['objects']][], RJSONIO::emptyNamedList)
   checkEquals(own[['cacheDir']], own$cacheDir)
 }
 
 unitTestBracketAccessor <-
     function()
 {
-  own <- new("LocOwn")
+  own <- new("SynapseLocationOwner")
   
   checkEquals(names(own['files']), 'files')
   checkEquals(names(own['objects']), 'objects')

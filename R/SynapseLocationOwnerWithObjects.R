@@ -28,13 +28,15 @@ setMethod(
     signature = signature("SynapseLocationOwnerWithObjects", "list", "missing", "logical"),
     definition = function(owner, object, unlist){
       if(unlist){
-        any(names(object) == "")
-        stop("All list elements must be named when unlisting")
-        owner@objOwn <- addObject(owner, object, name, unlist)
+        if(any(names(object) == ""))
+          stop("All list elements must be named when unlisting")
+        lapply(names(object), function(n){
+          owner <<- addObject(owner, object[[n]], n)
+        })
       }else{
         owner <- addObject(owner, object)
       }
-      invisible(object)
+      invisible(owner)
     }
 )
 
@@ -104,11 +106,11 @@ setMethod(
       }
       retVal <- lapply(i, function(i){
             switch(i,
-                objects = x@archOwn@objects,
+                objects = .doGetObjects(x),
                 cacheDir = cacheDir(x@archOwn),
                 files = files(x@archOwn),
-                fileObjects = objects(x@archOwn),
-                binObjects = objects(x@objOwn),
+                fileObjects = x@archOwn@objects,
+                binObjects = x@objOwn$objects[],
                 NULL
             )
           }
@@ -116,6 +118,21 @@ setMethod(
       names(retVal) <- i
       retVal
     }
+)
+
+setMethod(
+  f = ".doGetObjects",
+  signature = "SynapseLocationOwnerWithObjects",
+  definition = function(x){
+    oo <- union(objects(x@archOwn@objects, all.names=T), objects(x@objOwn$objects, all.names=T))
+    retVal <- lapply(oo, function(oName){
+        if(oName %in% objects(x@archOwn@objects, all.names=T))
+          return(x@archOwn@objects[[oName]])
+        return(x@objOwn$objects[[oName]])
+      })
+    names(retVal) <- oo
+    retVal
+  }
 )
 
 setMethod(
@@ -134,8 +151,39 @@ names.SynapseLocationOwnerWithObjects <-
   c("objects", "cacheDir","files", "fileObjects", "binObjects")
 }
 
+setMethod(
+  f = "summarizeObjects",
+  signature = "SynapseLocationOwnerWithObjects",
+  definition = function(entity){
+    msg <- NULL
+    if(length(names(entity$objects)) > 0){
+      msg$count <- sprintf("loaded object(s)")
+      objects <- names(entity$objects)
+      classes <- unlist(lapply(objects, function(object){paste(class(entity$objects[[object]]), collapse=":")}))
+      msg$objects <- sprintf('[%d] "%s" (%s)', 1:length(objects), objects, classes)
+    }
+    msg
+  }
+)
+
+objects.SynapseLocationOwnerWithObjects <-
+  function(name)
+{
+  union(objects(own@archOwn@objects, all.names=T), objects(own@objOwn$objects, all.names=T))
+}
 
 
+setMethod(
+  f = "loadObjectsFromFiles",
+  signature = "SynapseLocationOwnerWithObjects",
+  definition = function(owner){
+    ## call the superclass method
+    lfun <- getMethod("loadObjectsFromFiles", "SynapseLocationOwner")
+    owner <- lfun(owner)
+    owner@objOwn <- loadObjectsFromFiles(owner@objOwn)
+    invisible(owner)
+  }
+)
 
 
 

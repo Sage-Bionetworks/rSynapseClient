@@ -3,6 +3,28 @@
 # Author: furia
 ###############################################################################
 
+
+setGeneric(
+  name = ".doGetObjects",
+  def = function(x){
+    standardGeneric(".doGetObjects")
+  }
+)
+
+setGeneric(
+  name = "summarizeCacheFiles",
+  def = function(entity){
+    standardGeneric("summarizeCacheFiles")
+  }
+)
+
+setGeneric(
+  name = "summarizeObjects",
+  def = function(entity){
+    standardGeneric("summarizeObjects")
+  }
+)
+
 setGeneric(
     name = "getAnnotations",
    def = function(entity){
