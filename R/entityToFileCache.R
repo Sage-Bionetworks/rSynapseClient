@@ -1,4 +1,7 @@
-
+## TODO: add description
+## 
+## Author: Bruce Hoff <bruce.hoff@sagebase.org
+###############################################################################
 
 # This function downloads a Synapse entity into the local file cache:
 # - downloads entity itself, as JSON, and creates a local file, 
@@ -26,9 +29,10 @@ getAnnotationsFromSynapse <- function(id, version=NULL)
 #
 getEntityFromFileCache<- function(id, version=NULL) {
 	entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
-	se <- new("SynapseEntity")
-	.populateSlotsFromEntity(se, as.list(fromJSON(paste(entityCachePath, ENTITY_FILE_NAME, sep="/"))))
-	se
+    
+    ## not using this for now
+    ## .populateSlotsFromEntity(se, as.list(fromJSON(paste(entityCachePath, ENTITY_FILE_NAME, sep="/"))))
+    getEntityInstance(as.list(fromJSON(paste(entityCachePath, ENTITY_FILE_NAME, sep="/"))))
 }
 
 #
@@ -58,7 +62,7 @@ getAnnotationsFromFileCache<- function(id, version=NULL) {
 	if (is.null(content)) stop("No content to write.")
 	writeLines(content, targetFile)
 	close(targetFile)
-	
+	targetFile
 }
 
 .getCacheRoot<-function() {
