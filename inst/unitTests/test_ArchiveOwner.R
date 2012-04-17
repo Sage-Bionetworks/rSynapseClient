@@ -16,6 +16,14 @@
   options(warn = synapseClient:::.getCache("oldWarn"))
 }
 
+unitTestInitialize <-
+  function()
+{
+  aa <- new("ArchiveOwner")
+  ab <- new("ArchiveOwner")
+  checkTrue(cacheDir(aa) != cacheDir(ab))
+}
+
 unitTestAddFile <-
     function()
 {
