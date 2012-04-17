@@ -96,6 +96,15 @@ setMethod(
     }
 )
 
+setMethod(
+  f = "loadObjectsFromFiles",
+  signature = "CachingObjectOwner",
+  definition = function(owner){
+    owner$objects <- .loadCachedObjects(owner$objects)
+    owner
+  }
+)
+
 ##
 ## Since data frames are a type of list, we need to customize thier behavior.By default
 ## unlist should be FALSE for data frames

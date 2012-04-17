@@ -302,10 +302,12 @@ setClass(
     contains = "SimplePropertyOwner",
     representation = representation(
         annotations = "SynapseAnnotations",
-        synapseEntityKind = "character"
+        synapseEntityKind = "character",
+        synapseWebUrl = "character"
     ),
     prototype = prototype(
-        annotations = new("SynapseAnnotations")
+        annotations = new("SynapseAnnotations"),
+        synapseWebUrl = ""
     )
 )
 
@@ -344,7 +346,7 @@ setRefClass(
 ## contains list
 setClass(
     Class = "SynapseLocationOwner",
-    contains = c("SynapseEntity","VIRTUAL"),
+    contains = c("SynapseEntity"),
     representation = representation(
         archOwn = "ArchiveOwner"
     )
@@ -352,7 +354,7 @@ setClass(
 
 setClass(
     Class = "SynapseLocationOwnerWithObjects",
-    contains = c("SynapseLocationOwner", "VIRTUAL"),
+    contains = c("SynapseLocationOwner"),
     representation(
       objOwn = "CachingObjectOwner"
     )
@@ -404,5 +406,68 @@ setRefClass(
     )
 )
 
+
+##
+##
+## Below are the objects that users will interact with
+##
+##
+
+setClass(
+  "Step",
+  contains = "SynapseEntity",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Step"
+  )
+)
+
+setClass(
+  "Analysis",
+  contains = "SynapseEntity",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Analysis"
+  )
+)
+
+
+setClass(
+  "Project",
+  contains = "SynapseEntity",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Project"
+  )
+)
+
+setClass(
+  "Link",
+  contains = "SynapseEntity",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Link"
+  )
+)
+
+setClass(
+  "Code",
+  contains="SynapseLocationOwner",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Code"
+  )
+)
+
+setClass(
+  "Study",
+  contains = "SynapseLocationOwnerWithObjects",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Study"
+  )
+)
+
+setClass(
+  "Project",
+  contains = "SynapseLocationOwnerWithObjects",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Data"
+  )
+)
 
 

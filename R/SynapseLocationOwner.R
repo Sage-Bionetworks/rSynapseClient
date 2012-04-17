@@ -108,4 +108,78 @@ setMethod(
     }
 )
 
+setMethod(
+  f = "show",
+  signature = "SynapseLocationOwner",
+  definition = function(object){
+    cat('An object of class "', class(object), '"\n', sep="")
+    
+    cat("Synapse Entity Name : ", properties(object)$name, "\n", sep="")
+    cat("Synapse Entity Id   : ", properties(object)$id, "\n", sep="")
+    
+    if (!is.null(properties(object)$parentId))
+      cat("Parent Id           : ", properties(object)$parentId, "\n", sep="")
+    if (!is.null(properties(object)$type))
+      cat("Type                : ", properties(object)$type, "\n", sep="")
+    if (!is.null(properties(object)$versionNumber)) {
+      cat("Version Number      : ", properties(object)$versionNumber, "\n", sep="")
+      cat("Version Label       : ", properties(object)$versionLabel, "\n", sep="")
+    }
+    
+    obj.msg <- summarizeObjects(object)
+    if(!is.null(obj.msg)){
+      cat("\n", obj.msg$count,":\n", sep="")
+      cat(obj.msg$objects, sep="\n")
+    }
+    
+    files.msg <- summarizeCacheFiles(object)
+    if(!is.null(files.msg))
+      cat("\n", files.msg$count, "\n", sep="")
+    if(!is.null(propertyValue(object,"id"))){
+      cat("\nFor complete list of annotations, please use the annotations() function.\n")
+      cat(sprintf("To view this Entity on the Synapse website use the 'onWeb()' function\nor paste this url into your browser: %s\n", object@synapseWebUrl))
+    }
+  }
+)
+
+setMethod(
+  f = "summarizeObjects",
+  signature = "SynapseLocationOwner",
+  definition = function(entity){
+    msg <- NULL
+    if(length(entity$objects  ) > 0){
+      msg$count <- sprintf("loaded object(s)")
+      objects <- objects(entity$objects)
+      classes <- unlist(lapply(objects, function(object){paste(class(entity$objects[[object]]), collapse=":")}))
+      msg$objects <- sprintf('[%d] "%s" (%s)', 1:length(objects), objects, classes)
+    }
+    msg
+  }
+)
+
+setMethod(
+  f = "summarizeCacheFiles",
+  signature = "SynapseLocationOwner",
+  definition = function(entity){
+    ## if Cached Files exist, print them out
+    msg <- NULL
+    if(length(entity$cacheDir) != 0){
+      msg$count <- sprintf('%d File(s) cached in "%s"', length(entity$files), entity$cacheDir)
+      if(length(entity$files) > 0)
+        msg$files <- sprintf('[%d] "%s"',1:length(entity$files), entity$files)
+    }
+    msg
+  }
+)
+
+setMethod(
+  f = "loadObjectsFromFiles",
+  signature = "SynapseLocationOwner",
+  definition = function(owner){
+    owner@archOwn <- loadObjectsFromFiles(owner@archOwn)
+    invisible(owner)
+  }
+)
+
+
 

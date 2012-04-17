@@ -46,6 +46,8 @@
   ## put back the overridden functions and original cache
   suppressWarnings(unloadNamespace("synapseClient"))
   attachNamespace("synapseClient")
+  suppressWarnings(unloadNamespace("synapseClient"))
+  attachNamespace("synapseClient")
 }
 
 unitTestChecksumMatches <-
