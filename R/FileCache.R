@@ -127,7 +127,7 @@ setMethod(
 
 .generateFileList <- function(file, path){
   cleanPath <- function(x){
-    x <- gsub("[\\/]+$", "", x)
+    ##x <- gsub("[\\/]+$", "", x)
     x <- gsub("[\\/]+", "/", x)
     x <- gsub("^/", "", x)
     mk <- x %in% c("")
@@ -183,7 +183,15 @@ setMethod(
     ## should never get here. defensive programming
     stop("error gnerating destination file paths. number of paths did not match number of files")
   }
-
+  srcfiles <- unlist(srcfiles)
+  destfiles <- unlist(destfiles)
+  destPaths <- unlist(destPaths)
+  mk <- !grepl("/$", destPaths)
+  if(any(mk)){
+    destfiles[mk] <- destPaths[mk]
+    destPaths[mk] <- "/"
+  }
+  
   list(
       srcfiles = unlist(srcfiles),
       destfiles = unlist(destfiles),
@@ -217,7 +225,11 @@ setMethod(
               dir.create(file.path(entity$cacheDir, pp), recursive=TRUE)
             
             ## copy the file
-            file.copy(files$srcfiles[i], file.path(entity$cacheDir, pp), recursive = TRUE)
+            recursive=FALSE
+            if(!is.na(file.info(file.path(entity$cacheDir, destPath))$isdir) && file.info(file.path(entity$cacheDir, destPath))$isdir){
+              recursive <- TRUE
+            }
+            file.copy(files$srcfiles[i], file.path(entity$cacheDir, destPath), overwrite = TRUE, recursive = recursive)
             
             ## add the metadata to the FileCache
             addFileMetaData(entity, files$srcfiles[i], destPath)

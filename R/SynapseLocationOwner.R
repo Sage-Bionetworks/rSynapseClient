@@ -4,6 +4,15 @@
 ###############################################################################
 
 setMethod(
+  f = "initialize",
+  signature = "SynapseLocationOwner",
+  definition = function(.Object){
+    .Object@archOwn <- new("ArchiveOwner")
+    .Object
+  }
+)
+
+setMethod(
   f = "addFile",
   signature = signature("SynapseLocationOwner", "character", "character"),
   definition = function(entity, file, path){
