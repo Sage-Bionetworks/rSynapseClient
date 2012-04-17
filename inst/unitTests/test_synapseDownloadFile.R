@@ -4,7 +4,7 @@
 ###############################################################################
 
 .setUp <- 
-  function()
+    function()
 {
   badFilePath <- tempfile()
   goodFilePath <- tempfile()
@@ -14,7 +14,7 @@
   
   ## override synapseDownloadFile
   myCurlWriterDownload <-
-    function(url, destfile=tempfile(), curlHandle = getCurlHandle(), writeFunction=synapseClient:::.getCache('curlWriter'), opts = synapseClient:::.getCache("curlOpts"))
+      function(url, destfile=tempfile(), curlHandle = getCurlHandle(), writeFunction=synapseClient:::.getCache('curlWriter'), opts = synapseClient:::.getCache("curlOpts"))
   {
     if(url == synapseClient:::.getCache("goodURL")){
       filePath <- synapseClient:::.getCache("goodFilePath")
@@ -26,7 +26,7 @@
     file.copy(filePath,destfile)
     destfile	
   }
-  unloadNamespace('synapseClient')
+  suppressWarnings(unloadNamespace('synapseClient'))
   assignInNamespace(".curlWriterDownload", myCurlWriterDownload, "synapseClient")
   attachNamespace("synapseClient")
   synapseClient:::.setCache("goodFilePath", goodFilePath)
@@ -34,22 +34,22 @@
   synapseClient:::.setCache("checksum", as.character(tools::md5sum(goodFilePath)))
   synapseClient:::.setCache("goodURL", "http://fakeUrl.goodChecksum")
   synapseClient:::.setCache("badURL", "http://fakeUrl.badChecksum")
-
-
+  
+  
   synapseCacheDir(file.path(tempdir(), ".synapseCache"))
   
 }
 
 .tearDown <-
-  function()
+    function()
 {
   ## put back the overridden functions and original cache
-  unloadNamespace("synapseClient")
+  suppressWarnings(unloadNamespace("synapseClient"))
   attachNamespace("synapseClient")
 }
 
 unitTestChecksumMatches <-
-  function()
+    function()
 {
   checkTrue(!is.null(synapseCacheDir()))
   file <- synapseClient:::synapseDownloadFile(synapseClient:::.getCache("goodURL"),synapseClient:::.getCache("checksum"))
@@ -57,22 +57,22 @@ unitTestChecksumMatches <-
 }
 
 unitTestLegalFileName <-
-		function() {
-	checkEquals("im_a soemthing _lam_ scientist _ and I use _.zip", legalFilePath("im'a soemthing (lam) scientist \\ and I use *.zip"))
-	checkEquals("____________", legalFilePath("\\()`'<>:\"|?*"))
+    function() {
+  checkEquals("im_a soemthing _lam_ scientist _ and I use _.zip", legalFilePath("im'a soemthing (lam) scientist \\ and I use *.zip"))
+  checkEquals("____________", legalFilePath("\\()`'<>:\"|?*"))
 }
 
 unitTestSynapseDownloadToLegalFile <- function() {
-	checkTrue(!is.null(synapseCacheDir()))
-	url <-synapseClient:::.getCache("goodURL")
-	filePath <-paste(tempdir(), "foo'bar|.txt")
-	legalFileName <- synapseClient:::synapseDownloadToLegalFile(url, filePath)
-	checkEquals(paste(tempdir(), "foo_bar_.txt"), legalFileName)
-	
+  checkTrue(!is.null(synapseCacheDir()))
+  url <-synapseClient:::.getCache("goodURL")
+  filePath <-paste(tempdir(), "foo'bar|.txt")
+  legalFileName <- synapseClient:::synapseDownloadToLegalFile(url, filePath)
+  checkEquals(paste(tempdir(), "foo_bar_.txt"), legalFileName)
+  
 }
 
 unitTestBadChecksum <-
-  function()
+    function()
 {
   file <- synapseClient:::.curlWriterDownload(synapseClient:::.getCache('badURL'))
   checkEquals(as.character(tools::md5sum(file)), as.character(tools::md5sum(synapseClient:::.getCache("badFilePath"))))

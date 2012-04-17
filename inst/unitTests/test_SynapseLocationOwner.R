@@ -23,6 +23,7 @@
   )
   
   synapseClient:::.setCache("oldWarn", options("warn")[[1]])
+  options(warn=2L)
 }
 
 .tearDown <-
@@ -33,8 +34,14 @@
 }
 
 
-unitTestConstructors <-
+unitTestNoArgConstructor <-
   function()
+{
+  stop("not yet implemented")
+}
+
+unitTestConstructorArchivePath <-
+    function()
 {
   stop("not yet implemented")
 }
@@ -98,12 +105,18 @@ unitTestMoveFile <-
 uniTestDeleteFile <-
   function()
 {
-  stop("not yet implemented")
+  own <- new("LocOwn")
+  
+  checkTrue(grepl("_unpacked$", own$cacheDir))
+  checkEquals(character(), own$files)
+  file <- tempfile()
+  cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
+  addFile(own, file, "aFile.txt")
+  checkEquals("aFile.txt", own$files)
+  
+  copy <- deleteFile(own, own$files)
+  checkEquals(character(), own$files)
+  checkEquals(character(), copy$files)
 }
 
-unitTestLoadFromFiles <-
-  function()
-{
-  
-}
   

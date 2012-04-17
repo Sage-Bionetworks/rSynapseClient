@@ -317,10 +317,9 @@ setClass(
 ## this should be highlighted prominently so user's don't get confused since
 ## pass-by-reference is virtually never used in R
 setRefClass(
-    Class = "ObjectOwner",
-    contains = c("VIRTUAL"),
+    Class = "CachingObjectOwner",
     fields = list(
-        objects = "EnhancedEnvironment"
+        objects = "CachingEnhancedEnvironment"
     ),
     methods = list(
         getObject = function(which){
@@ -353,7 +352,7 @@ setClass(
     Class = "SynapseLocationOwnerWithObjects",
     contains = c("SynapseLocationOwner", "VIRTUAL"),
     representation(
-      objOwn = "ObjectOwner"
+      objOwn = "CachingObjectOwner"
     )
 )
 

@@ -6,27 +6,20 @@
 .setUp <- 
   function()
 {
-  env <- attach(NULL, name = "testEnv")
-  setPackageName("testEnv", env)
-  suppressWarnings(
-      setRefClass(
-          "rObjOwn",
-          contains = "ObjectOwner",
-          where = env
-      )
-  )
+  synapseClient:::.setCache("oldWarn", options("warn")[[1]])
+  options(warn=2)
 }
 
 .tearDown <-
   function()
 {
-  detach("testEnv")
+  options(warn=synapseClient:::.getCache("oldWarn"))
 }
 
 unitTestGet <-
   function()
 {
-  own <- getRefClass("rObjOwn")$new()
+  own <- new("CachingObjectOwner")
   own$objects$bar <- "foo"
   checkEquals(own$objects$bar, "foo")
 }
@@ -34,14 +27,14 @@ unitTestGet <-
 unitTestGetInvalidObject <-
   function()
 {
-  own <- new("ObjOwn")
+  own <- new("CachingObjectOwner")
   checkTrue(is.null(getObject(own, "bar")))
 }
 
 unitTestNames <-
   function()
 {
-  own <- new("ObjOwn")
+  own <- new("CachingObjectOwner")
   checkTrue(all(names(own) == c("objects")))
   own$objects$bar <- "foo"
   checkTrue(all(names(own) == c("objects")))
@@ -50,7 +43,7 @@ unitTestNames <-
 unitTestBracketAccessor <-
   function()
 {
-  own <- new("ObjOwn")
+  own <- new("CachingObjectOwner")
   own$objects$foo <- "bar"
   checkEquals(names(own$objects), "foo")
   checkEquals(own$objects$foo, "bar")
@@ -68,7 +61,7 @@ unitTestBracketAccessor <-
 unitTestDoubleBracketAccessor <-
   function()
 {
-  own <- new("ObjOwn")
+  own <- new("CachingObjectOwner")
   own$objects$foo <- "bar"
   checkEquals("bar", getObject(own, "foo"))
 }
@@ -76,7 +69,7 @@ unitTestDoubleBracketAccessor <-
 unitTestDeleteObject <-
   function()
 {
-  own <- new("ObjOwn")
+  own <- new("CachingObjectOwner")
   own$objects$foo <- "bar"
   copy <- deleteObject(own, "foo")
   checkEquals(length(own$objects), 0L)
@@ -86,7 +79,7 @@ unitTestDeleteObject <-
 unitTestRenameObject <-
   function()
 {
-  own <- new("ObjOwn")
+  own <- new("CachingObjectOwner")
   own$objects$foo <- "bar"
 
   copy <- renameObject(own, "foo", "boo")
@@ -107,7 +100,7 @@ unitTestRenameObject <-
 unitTestAddListUnlist <-
   function()
 {
-  own <- new("ObjOwn")
+  own <- new("CachingObjectOwner")
   aList <- list(foo = "bar", boo = 1L)
   addObject(own, aList)
   
@@ -117,7 +110,7 @@ unitTestAddListUnlist <-
   checkEquals(own$objects$aList$boo, 1L)
   checkEquals("list", as.character(class(own$objects$aList)))
   
-  own <- new("ObjOwn")
+  own <- new("CachingObjectOwner")
   addObject(own, aList, unlist = TRUE)
   
   checkEquals(length(own$objects), 2L)
@@ -125,7 +118,7 @@ unitTestAddListUnlist <-
   checkEquals(own$objects$foo, "bar")
   checkEquals(own$objects$boo, 1L)
   
-  own <- new("ObjOwn")
+  own <- new("CachingObjectOwner")
   addObject(own, aList, unlist = FALSE)
   
   checkEquals(length(own$objects), 1L)
@@ -140,7 +133,7 @@ unitTestAddListUnlist <-
 unitTestaddDataFrameUnlist <-
     function()
 {
-  own <- new("ObjOwn")
+  own <- new("CachingObjectOwner")
   aList <- data.frame(foo = "bar", boo = 1L, stringsAsFactors=F)
   addObject(own, aList)
   
@@ -149,7 +142,7 @@ unitTestaddDataFrameUnlist <-
   checkEquals(own$objects$aList$foo, "bar")
   checkEquals(own$objects$aList$boo, 1L)
   
-  own <- new("ObjOwn")
+  own <- new("CachingObjectOwner")
   addObject(own, aList, unlist = TRUE)
   
   checkEquals(length(own$objects), 2L)
@@ -157,7 +150,7 @@ unitTestaddDataFrameUnlist <-
   checkEquals(own$objects$foo, "bar")
   checkEquals(own$objects$boo, 1L)
   
-  own <- new("ObjOwn")
+  own <- new("CachingObjectOwner")
   addObject(own, aList, unlist = FALSE)
   
   checkEquals(length(own$objects), 1L)

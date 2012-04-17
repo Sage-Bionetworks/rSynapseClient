@@ -49,6 +49,11 @@
       unloadNamespace("synapseClient")
   )
   attachNamespace("synapseClient")
+  
+  suppressWarnings(
+      unloadNamespace("synapseClient")
+  )
+  attachNamespace("synapseClient")
 }
 
 unitTestConstructors <-
