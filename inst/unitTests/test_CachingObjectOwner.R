@@ -58,6 +58,27 @@ unitTestAddObject <-
   
 }
 
+unitTestAddObjectNoName <-
+    function()
+{
+  own <- new("CachingObjectOwner")
+  foo <- "bar"
+  copy <- addObject(own, foo)
+  checkEquals(names(own$objects), "foo")
+  checkEquals(own$objects$foo, "bar")
+  checkEquals(names(copy$objects), "foo")
+  checkEquals(copy$objects$foo, "bar")
+  
+  copy <- addObject(own, "boo", "blah")
+  checkTrue(all(names(own$objects) %in% c("foo", "blah")))
+  checkTrue(all(c("foo", "blah") %in% names(own$objects)))
+  checkEquals(own$objects$foo, "bar")
+  checkEquals(own$objects$blah, "boo")
+  
+  checkTrue(all(names(copy$objects) %in% c("foo", "blah")))
+  
+}
+
 unitTestGetObject <-
   function()
 {

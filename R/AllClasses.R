@@ -79,7 +79,6 @@ setClass(
     )
 )
 
-
 ##
 ## this class definition is way too complicated. need to move some of the business logic elsewhere
 ##
@@ -348,6 +347,9 @@ setRefClass(
         },
         getEnv = function(){
           .self@objects
+        },
+        initialize = function(){
+          .self$objects <- new("CachingEnhancedEnvironment")
         }
     )
 )
