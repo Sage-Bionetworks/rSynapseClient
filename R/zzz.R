@@ -47,16 +47,12 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   .setCache("debug", FALSE)
   
   synapseResetEndpoints()
-  synapseDataLocationPreferences(kSupportedDataLocationTypes)
-  synapseCacheDir(gsub("[\\/]+", "/", path.expand("~/.synapseCache")))
+  synapseCacheDir("~/.synapseCache")
   
-  ## install cleanup hooks upon shutdown
-  reg.finalizer(topenv(parent.frame()),
-    function(...) .Last.lib(),
-    onexit=TRUE)
-  reg.finalizer(getNamespace("synapseClient"),
-    function(...) .Last.lib(),
-    onexit=TRUE)
+  # used in entityToFileCache.R
+  ENTITY_FILE_NAME<<-"entity.json"
+  ANNOTATIONS_FILE_NAME<<-"annotations.json"
+  
 }
 
 .onUnload <- function(libpath) .Last.lib()

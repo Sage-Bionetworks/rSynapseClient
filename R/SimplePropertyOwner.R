@@ -84,12 +84,20 @@ setMethod(
 		}
 )
 
-setMethod(
-    f = "propertyValue",
-    signature = signature("SynapseEntity", "character"),
-    definition = function(object, which){
-      properties(object)[[which]]
-    }
-)
+## S3 method to convert object to list
+as.list.SimplePropertyOwner<-function(x) {
+	as.list(x@properties)
+}
 
+# move content from 'entity' (a list) to 'object' ( a SimplePropertyOwner)
+setMethod(
+		f = ".populateSlotsFromEntity",
+		signature = signature("SimplePropertyOwner", "list", "missing"),
+		definition = function(object, entity) {
+			for (label in names(entity)) {
+				propertyValue(object, label)<-entity[[label]]
+			}
+			object
+		}
+)
 

@@ -3,14 +3,27 @@
 .setUp <- 
 		function()
 {
+	#synapseClient:::.setCache("debug", TRUE)
 	
+	sessionToken<-sessionToken()
+	if (is.null(sessionToken)) stop("Failed to log in")
+	# note, the repo' service endpoint is set up by the framework that calls the interation test suite
+	
+	# now create a Project
 	entityList <- list(
 			name = paste("myProject", gsub(':', '_', date())),
 			entityType = "org.sagebionetworks.repo.model.Project"
 	)
 	entityList <- synapseClient:::.synapsePostPut("/entity", entityList, "POST")
 	
+	# save the created entity for use in the test(s)
 	synapseClient:::.setCache("testProject", entityList)
+	
+	# set up the file cache
+	testCacheRoot <- paste(tempdir(), ".synapseCache", sep="/")
+	if (file.exists(testCacheRoot)) unlink(testCacheRoot, recursive=TRUE)
+	synapseClient:::.setCache("cacheRoot", testCacheRoot)
+	
 	
 }
 
@@ -24,23 +37,22 @@
 }
 
 
-integrationTestEntitytoFileCache <-
-		function()
+integrationTestGetEntity <- function()
 {
-	
-	sessionToken<-sessionToken()
-	if (is.null(sessionToken)) stop("Failed to log in")
-	# note, the repo' service endpoint is set up by the framework that calls the interation test suite
-			
-	testCacheRoot <- paste(tempdir(), ".synapseCache", sep="/")
-	if (file.exists(testCacheRoot)) unlink(testCacheRoot, recursive=TRUE)
-	synapseClient:::.setCache("cacheRoot", testCacheRoot)
-	
 	testProject <- synapseClient:::.getCache("testProject")
 	entityId <- testProject$id
 	if (is.null(entityId)) stop("Failed to get entity id from object")
-	synapseEntityToFileCache(entityId)
+	getEntityFromSynapse(entityId)
 	
 	checkTrue(!is.null(getEntityFromFileCache(entityId)))
-	checkTrue(!is.null(getEntityAnnotationsFromFileCache(entityId)))
+}
+
+integrationTestGetAnnotations <- function()
+{
+	testProject <- synapseClient:::.getCache("testProject")
+	entityId <- testProject$id
+	if (is.null(entityId)) stop("Failed to get entity id from object")
+	getAnnotationsFromSynapse(entityId)
+	
+	checkTrue(!is.null(getAnnotationsFromFileCache(entityId)))
 }

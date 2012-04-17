@@ -10,12 +10,10 @@ SynapseAnnotations <-
   if(!is.list(entity))
     stop("entity must be a list.")
   if(any(names(entity) == "") && length(entity) > 0)
-    stop("all elements of the entity must be named")
-  
-  aa <- new(Class = "SynapseAnnotations")
-  ps <- new("TypedPropertyStore")
-  aa@annotations <- .populateSlotsFromEntity(ps, entity)
-  aa
+	stop("all elements of the entity must be named")
+
+  annotations <- new(Class = "SynapseAnnotations")
+  .populateSlotsFromEntity(annotations, entity)
 }
 
 ## show method
@@ -104,16 +102,25 @@ as.list.SynapseAnnotations <-
   as.list(x@annotations, ...)
 }
 
+
+as.list.SynapseAnnotations<-function(x) {
+	c(as.list(x@properties), as.list(x@annotations))
+}
+
+# move content from 'entity' (a list) to 'object' ( a SynapseAnnotations)
 setMethod(
   f = ".populateSlotsFromEntity",
   signature = signature("TypedPropertyStore", "list", "missing"),
   definition = function(object, entity){
-    nms <- c("stringAnnotations",
-      "doubleAnnotations",
-      "longAnnotations",
-      "dateAnnotations",
-      "blobAnnotations")
-    lapply(nms, function(n) slot(object, n) <- entity[[n]])
+    for (label in names(entity)) {
+		if (label %in% c("stringAnnotations", "dateAnnotations", "doubleAnnotations", "longAnnotations")) {
+			slot(object,label)<-entity[[label]]
+		} else if (label =="blobAnnotations") {
+				slot(object,label)<-entity[[label]]
+		} else {
+			propertyValue(object, label)<-entity[[label]]
+		}
+	}
     object
   }
 )
@@ -127,9 +134,6 @@ setMethod(
   }
 )
 
-##
-## End Bruce
-##
 
 setMethod(
   f = "show",
