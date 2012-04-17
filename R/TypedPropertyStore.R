@@ -228,7 +228,8 @@ as.list.TypedPropertyStore <- function(x, ...){
     stringAnnotations = emptyNamedList,
     doubleAnnotations = emptyNamedList,
     longAnnotations = emptyNamedList,
-    dateAnnotations = emptyNamedList
+    dateAnnotations = emptyNamedList,
+    blobAnnotations = emptyNamedList
   )
   for(t in names(ret)){
       ret[[t]] <- slot(x, t)

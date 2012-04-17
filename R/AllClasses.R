@@ -36,13 +36,15 @@ setClass(
         stringAnnotations = "list",
         doubleAnnotations = "list",
         longAnnotations = "list",
-        dateAnnotations = "list"
+        dateAnnotations = "list",
+        blobAnnotations = "list"
     ),
     prototype = prototype(
         stringAnnotations = emptyNamedList,
         doubleAnnotations = emptyNamedList,
         longAnnotations = emptyNamedList,
-        dateAnnotations = emptyNamedList
+        dateAnnotations = emptyNamedList,
+        blobAnnotations = emptyNamedList
     )
 )
 

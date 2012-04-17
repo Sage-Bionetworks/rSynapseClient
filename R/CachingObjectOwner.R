@@ -22,6 +22,16 @@
 #  }
 #)
 
+setMethod(
+  f = "setFileCache",
+  signature = signature("CachingObjectOwner", "FileCache"),
+  definition = function(owner, fileCache){
+    owner@objects <- setFileCache(owner@objects, fileCache)
+    owner
+  }
+)
+
+
 ## delegate deleteObject calls to the enclosed EnhancedEnvironment class
 setMethod(
   f = "deleteObject",

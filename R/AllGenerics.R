@@ -3,6 +3,129 @@
 # Author: furia
 ###############################################################################
 
+setGeneric(
+  name = "onWeb",
+  def = function(entity){
+    standardGeneric("onWeb")
+  }
+)
+
+setGeneric(
+  name = "downloadEntity",
+  def = function(entity){
+    standardGeneric("downloadEntity")
+  }
+)
+
+setGeneric(
+  name = "setFileCache",
+  def = function(owner, fileCache){
+    standardGeneric("setFileCache")
+  }
+)
+
+setGeneric(
+  name = "createArchive",
+  def = function(owner){
+    standardGeneric("createArchive")
+  }
+)
+
+setGeneric(
+  name = "unpackArchive",
+  def = function(owner){
+    standardGeneric("unpackArchive")
+  }
+)
+
+setGeneric(
+  name = "getEntity",
+  def = function(entity, fromCache){
+    standardGeneric("getEntity")
+  }
+)
+
+setGeneric(
+  name = "getEntityInstance",
+  def = function(entity){
+    standardGeneric("getEntityInstance")
+  }
+)
+
+setGeneric(
+  name = "addGithubTag",
+  def = function(entity, url){
+    standardGeneric("addGithubTag")
+  }
+)
+
+
+setGeneric(
+  name = "loadEntity", 
+  def=function(entity){
+    standardGeneric("loadEntity")
+  }
+)
+
+setGeneric(
+  name = "SynapseLocationOwnerWithObjects",
+  def = function(entity){
+    standardGeneric("SynapseLocationOwnerWithObjects")
+  }
+)
+
+setGeneric(
+  name = "Code",
+  def = function(entity){
+    standardGeneric("Code")
+  }
+)
+
+setGeneric(
+  name = "Project",
+  def = function(entity){
+    standardGeneric("Project")
+  }
+)
+
+
+setGeneric(
+  name = "Data",
+  def = function(entity){
+    standardGeneric("Data")
+  }
+)
+
+
+setGeneric(
+  name = "Analysis",
+  def = function(entity){
+    standardGeneric("Analysis")
+  }
+)
+
+
+setGeneric(
+  name = "Step",
+  def = function(entity){
+    standardGeneric("Step")
+  }
+)
+
+setGeneric(
+  name = "Study",
+  def = function(entity){
+    standardGeneric("Study")
+  }
+)
+
+setGeneric(
+  name = "Link",
+  def = function(entity){
+    standardGeneric("Link")
+  }
+)
+
 
 setGeneric(
   name = ".doGetObjects",

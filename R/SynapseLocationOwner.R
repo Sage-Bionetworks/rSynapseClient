@@ -13,6 +13,35 @@ setMethod(
 )
 
 setMethod(
+  f = "downloadEntity",
+  signature = "SynapseLocationOwner",
+  definition = function(entity){
+    ## check whether user has signed agreement
+    ## euals are broken. ignore for now
+#    if(!hasSignedEula(entity)){
+#      if(!.promptSignEula())
+#        stop(sprintf("Visit https://synapse.sagebase.org to sign the EULA for entity %s", propertyValue(entity, "id")))
+#      if(!.promptEulaAgreement(entity))
+#        stop("You must sign the EULA to download this dataset. Visit http://synapse.sagebase.org for more information.")
+#      .signEula(entity)
+#    }
+    
+    ## download the archive from S3
+    ## Note that we just use the first location, to future-proof this we would use the location preferred
+    ## by the user, but we're gonna redo this in java so no point in implementing that here right now
+    archivePath = synapseDownloadFile(url = locations[[1]]['path'], checksum = propertyValue(entity, "md5"))
+    
+    ## instantiate the FileCache object
+    entity@archOwn <- getFileCache(archivePath)
+    
+    ## unpack the archive
+    unpackArchive(entity@archOwn)
+    
+    entity
+  }
+)
+
+setMethod(
   f = "addFile",
   signature = signature("SynapseLocationOwner", "character", "character"),
   definition = function(entity, file, path){
@@ -180,6 +209,19 @@ setMethod(
     invisible(owner)
   }
 )
+
+#setMethod(
+#  f = "attach",
+#  signature = "LocationOwner",
+#  definition = function (what, warn.conflicts = TRUE) {
+#    
+#    if(missing(name))
+#      name = getPackageName(what@location@objects)
+#    what <- what@location@objects
+#    attach (what, pos = pos, name = name, warn.conflicts) 
+#  }
+#)
+
 
 
 

@@ -29,6 +29,16 @@ setMethod(
   }
 )
 
+
+setMethod(
+  f = "downloadEntity",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    getEntity(entity)
+  }
+)
+
+
 #####
 ## as.list function. Coerce SynapseEntity to list by returning annotations
 #####
@@ -150,8 +160,9 @@ setMethod(
 		f = "SynapseEntity",
 		signature = signature("list"),
 		definition = function(entity){
-			s4Entity <- new("SynapseEntity")
-			.populateSlotsFromEntity(s4Entity, entity)
+			ee <- new("SynapseEntity")
+			ee@properties <- entity
+            ee
 		}
 )
 
@@ -162,8 +173,9 @@ setMethod(
 		f = "SynapseEntity",
 		signature = signature("character"),
 		definition = function(entity){
-			listEntity<-fromJSON(entity)
-			.populateSlotsFromEntity(s4Entity, listEntity)
+            ee<-fromJSON(entity)
+            ee@properties <- entity
+            ee
 		}
 )
 

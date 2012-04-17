@@ -67,6 +67,7 @@ setMethod(
 
 setMethod(
   f = "loadObjectsFromFiles",
+  signature = "ArchiveOwner",
   definition = function(owner){
     ## default method only loads rbin files
     files <- files(owner)
@@ -75,6 +76,22 @@ setMethod(
           load(file.path(cacheDir(owner), files[ii]), envir=as.environment(owner@objects))
         })
     invisible(owner)
+  }
+)
+
+setMethod(
+  f = "unpackArchive",
+  signature = "ArchiveOwner",
+  definition = function(owner){
+    owner@fileCache$unpackArchive()
+  }
+) 
+
+setMethod(
+  f = "createArchive",
+  signature = "ArchiveOwner",
+  definition = function(owner){
+    owner$fileCache$createArchive()
   }
 )
 

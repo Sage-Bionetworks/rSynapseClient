@@ -3,6 +3,33 @@
 # Author: mfuria
 ###############################################################################
 
+setMethod(
+  f = "SynapseLocationOwnerWithObjects",
+  signature = "list",
+  definition = function(entity){
+    ee <- new("SynapseLocationOwnerWithObjects")
+    ee@properties <- entity
+    ee
+  }
+)
+
+
+setMethod(
+  f = "downloadEntity",
+  signature = "SynapseLocationOwnerWithObjects",
+  definition = function(entity){
+    ## call the superclass method
+    dlfun <- getMethod("downloadEntity", signature="SynapseLocationOwner")
+    entity <- dlfun(entity)
+    
+    ## now set the archive for the caching object owner to be the same
+    ## as the one for the archive owner
+    entity@objOwn <- setFileCache(entity@objOwn, entity@archOwn@fileCache)
+    
+    entity
+  }
+)
+
 
 setMethod(
     f = "addObject",
