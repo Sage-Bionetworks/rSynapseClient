@@ -12,13 +12,11 @@
   }
   attr(myZip, "origFcn") <- utils:::zip
   ## detach packages so their functions can be overridden
-  oldCache <- synapseClient:::.cache
-  unloadNamespace('synapseClient')
+  suppressWarnings(unloadNamespace('synapseClient'))
   suppressWarnings(detach('package:utils', force=TRUE))
   utils:::assignInNamespace("zip", myZip, "utils")
   ##reload detached packages
   library(utils, quietly=TRUE)
-  assignInNamespace(".cache", oldCache, "synapseClient")
   attachNamespace("synapseClient")
   
   ## create project and add to cache
@@ -32,31 +30,31 @@
 .tearDown <- 
   function()
 {
+  testProject <- synapseClient:::.getCache("rIntegrationTestProject")
+  
   ## put back method
-  oldCache <- synapseClient:::.cache
-  unloadNamespace('synapseClient')
+  suppressWarnings(unloadNamespace('synapseClient'))
   suppressWarnings(detach('package:utils', force = TRUE))
   utils:::assignInNamespace("zip", attr(utils:::zip, "origFcn"), "utils")
   library(utils, quietly = TRUE)
-  assignInNamespace(".cache", oldCache, "synapseClient")
   attachNamespace("synapseClient")
   
   ## delete project 
-  deleteEntity(entity=synapseClient:::.getCache("rIntegrationTestProject"))
+  deleteEntity(entity=testProject)
   synapseClient:::.deleteCache("rIntegrationTestProject")
 }
 
 integrationTestNoZipFile <- 
   function()
 {
-  dataset <- Dataset(entity = list(
-      name = 'R Integration Test Dataset',
+  dataset <- Study(entity = list(
+      name = 'R Integration Test Study',
       parentId = propertyValue(synapseClient:::.getCache("rIntegrationTestProject"),"id")
     )
   )
   
-  createdDataset <- createEntity(entity=dataset)
-  checkEquals(propertyValue(dataset, "name"), propertyValue(createdDataset, "name"))
+  createdStudy <- createEntity(entity=dataset)
+  checkEquals(propertyValue(dataset, "name"), propertyValue(createdStudy, "name"))
   
   ## Make an R data object that we will store in a couple different ways
   data <- data.frame(a=1:3, b=letters[10:12],
@@ -66,31 +64,31 @@ integrationTestNoZipFile <-
   dataFile <- file.path(tempdir(), "data.tab")
   write.table(data, file=dataFile, sep="\t", quote=F, row.names=F)
   
-  layer <- Layer(entity = list(
-      name = 'R Integration Test Layer',
+  data <- Data(entity = list(
+      name = 'R Integration Test Data',
       type = 'C',
-      parentId = propertyValue(createdDataset, "id")
+      parentId = propertyValue(createdStudy, "id")
     )
   )
-  layer <- createEntity(layer)
-  layer <- addFile(layer, dataFile)
-  layer <- updateEntity(layer)
+  data <- createEntity(data)
+  data <- addFile(data, dataFile)
+  data <- updateEntity(data)
   
-  loadedLayer <- loadEntity(layer)
-  checkTrue(grepl(sprintf("%s$", "data.tab"), loadedLayer$files[1]))
+  loadedData <- loadEntity(data)
+  checkTrue(grepl(sprintf("%s$", "data.tab"), loadedData$files[1]))
 }
 
 integrationTestNoZipMultipleFiles <- 
   function()
 {
-  dataset <- Dataset(entity = list(
-      name = 'R Integration Test Dataset',
+  dataset <- Study(entity = list(
+      name = 'R Integration Test Study',
       parentId = propertyValue(synapseClient:::.getCache("rIntegrationTestProject"), "id")
     )
   )
   
-  createdDataset <- createEntity(entity=dataset)
-  checkEquals(propertyValue(dataset, "name"), propertyValue(createdDataset, "name"))
+  createdStudy <- createEntity(entity=dataset)
+  checkEquals(propertyValue(dataset, "name"), propertyValue(createdStudy, "name"))
   
   ## Make an R data object that we will store in a couple different ways
   data <- data.frame(a=1:3, b=letters[10:12],
@@ -102,62 +100,62 @@ integrationTestNoZipMultipleFiles <-
   write.table(data, file=dataFile, sep="\t", quote=F, row.names=F)
   write.table(data, file=dataFile2, sep="\t", quote=F, row.names=F)
   
-  layer <- Layer(entity = list(
-      name = 'R Integration Test Layer',
+  data <- Data(entity = list(
+      name = 'R Integration Test Data',
       type = 'C',
-      parentId = propertyValue(createdDataset, "id")
+      parentId = propertyValue(createdStudy, "id")
     )
   )
-  layer <- createEntity(layer)
-  layer <- addFile(layer, c(dataFile, dataFile2))
-  ## This should fail because we've added two files to the layer but we don't have a zip utility
-  checkException(storeEntity(layer))
+  data <- createEntity(data)
+  data <- addFile(data, c(dataFile, dataFile2))
+  ## This should fail because we've added two files to the data but we don't have a zip utility
+  checkException(storeEntity(data))
 }
 
 integrationTestNoZipBinary <- 
   function()
 {
-  dataset <- Dataset(entity = list(
-      name = 'R Integration Test Dataset',
+  dataset <- Study(entity = list(
+      name = 'R Integration Test Study',
       parentId = propertyValue(synapseClient:::.getCache("rIntegrationTestProject"),"id")
     )
   )
   
-  createdDataset <- createEntity(entity=dataset)
-  checkEquals(propertyValue(dataset, "name"), propertyValue(createdDataset, "name"))
+  createdStudy <- createEntity(entity=dataset)
+  checkEquals(propertyValue(dataset, "name"), propertyValue(createdStudy, "name"))
   
   ## Make an R data object that we will store in a couple different ways
   data <- data.frame(a=1:3, b=letters[10:12],
     c=seq(as.Date("2004-01-01"), by = "week", len = 3),
     stringsAsFactors = FALSE)
   
-  layer <- Layer(entity = list(
-      name = 'R Integration Test Layer',
+  data <- Data(entity = list(
+      name = 'R Integration Test Data',
       type = 'C',
-      parentId = propertyValue(createdDataset, "id")
+      parentId = propertyValue(createdStudy, "id")
     )
   )
   
-  layer <- createEntity(layer)
-  layer <- addObject(layer, data)
-  layer <- storeEntity(layer)
+  data <- createEntity(data)
+  data <- addObject(data, data)
+  data <- storeEntity(data)
   
-  loadedLayer <- loadEntity(layer)
-  checkEquals(loadedLayer$files, "data.rbin")
+  loadedData <- loadEntity(data)
+  checkEquals(loadedData$files, "data.rbin")
 }
 
 
 integrationTestNoZipMultipleBinary <- 
   function()
 {
-  dataset <- Dataset(entity = list(
-      name = 'R Integration Test Dataset',
+  dataset <- Study(entity = list(
+      name = 'R Integration Test Study',
       parentId = propertyValue(synapseClient:::.getCache("rIntegrationTestProject"),"id")
     )
   )
   
-  createdDataset <- createEntity(entity=dataset)
-  checkEquals(propertyValue(dataset, "name"), propertyValue(createdDataset, "name"))
+  createdStudy <- createEntity(entity=dataset)
+  checkEquals(propertyValue(dataset, "name"), propertyValue(createdStudy, "name"))
   
   ## Make an R data object that we will store in a couple different ways
   data <- data.frame(a=1:3, b=letters[10:12],
@@ -166,15 +164,15 @@ integrationTestNoZipMultipleBinary <-
   
   data2 <- data
   
-  layer <- Layer(entity = list(
-      name = 'R Integration Test Layer',
+  data <- Data(entity = list(
+      name = 'R Integration Test Data',
       type = 'C',
-      parentId = propertyValue(createdDataset, "id")
+      parentId = propertyValue(createdStudy, "id")
     )
   )
-  layer <- createEntity(layer)
-  layer <- addObject(layer, c(data, data2))
+  data <- createEntity(data)
+  data <- addObject(data, c(data, data2))
   
-  ## This should fail because we've added two objectss to the layer but we don't have a zip utility
-  checkException(storeEntity(layer))
+  ## This should fail because we've added two objectss to the data but we don't have a zip utility
+  checkException(storeEntity(data))
 }

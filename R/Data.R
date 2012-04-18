@@ -14,3 +14,10 @@ setMethod(
   }
 )
 
+setMethod(
+    f = "Data",
+    signature = "missing",
+    definition = function(){
+      Data(list())
+    }
+)

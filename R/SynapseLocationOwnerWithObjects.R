@@ -13,6 +13,17 @@ setMethod(
   }
 )
 
+setMethod(
+    f = "updateEntity",
+    signature = "SynapseLocationOwnerWithObjects",
+    definition = function(entity){
+      ufun <- getMethod("updateEntity", "SynapseLocationOwner")
+      updatedEntity <- ufun(entity)
+      updateEntity@objOwn <- entity@objOwn
+      entity
+    }
+)
+
 
 setMethod(
   f = "downloadEntity",

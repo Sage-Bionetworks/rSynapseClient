@@ -4,6 +4,21 @@
 ###############################################################################
 
 setGeneric(
+    name = "updateEntity",
+    def = function(entity){
+      standardGeneric("deleteEntity")
+    }
+)
+
+
+setGeneric(
+    name = "deleteEntity",
+    def = function(entity){
+      standardGeneric("deleteEntity")
+    }
+)
+
+setGeneric(
        name = "getChildEntities",
        def = function(entity){
            standardGeneric("getChildEntities")
