@@ -21,14 +21,14 @@ integrationTestCreateS4Entities <-
   function()
 {
   ## Create Project
-  project <- new(Class="Project")
+  project <- Project()
   propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
   checkEquals(propertyValue(createdProject,"name"), synapseClient:::.getCache("testProjectName"))
   
   ## Create DataSet
-  study <- new(Class="Study")
+  study <- Study()
   propertyValue(study, "name") <- "testStudyName"
   propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
   createdStudy <- createEntity(study)
@@ -37,7 +37,7 @@ integrationTestCreateS4Entities <-
   study <- createdStudy
   
   ## Create Data
-  data <- new(Class = "PhenotypeData")
+  data <- Data()
   propertyValue(data, "name") <- "testPhenoDataName"
   propertyValue(data, "parentId") <- propertyValue(study,"id")
   checkEquals(propertyValue(data,"type"), "C")
@@ -46,7 +46,7 @@ integrationTestCreateS4Entities <-
   checkEquals(propertyValue(createdData,"parentId"), propertyValue(study, "id"))
   
   ## expression
-  data <- new(Class = "ExpressionData")
+  data <- Data()
   propertyValue(data, "name") <- "testExprDataName"
   propertyValue(data, "parentId") <- propertyValue(study,"id")
   checkEquals(propertyValue(data,"type"), "E")
@@ -55,7 +55,7 @@ integrationTestCreateS4Entities <-
   checkEquals(propertyValue(createdData,"parentId"), propertyValue(study, "id"))
   
   ## genotype
-  data <- new(Class = "GenotypeData")
+  data <- Data()
   propertyValue(data, "name") <- "testGenoDataName"
   propertyValue(data, "parentId") <- propertyValue(study,"id")
   checkEquals(propertyValue(data,"type"), "G")
@@ -70,7 +70,7 @@ integrationTestCreateEntityWithAnnotations <-
   function()
 {
   ## Create Project
-  project <- new(Class="Project")
+  project <- Project()
   propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   annotValue(project, "annotationKey") <- "projectAnnotationValue"
   createdProject <- createEntity(project)
@@ -78,7 +78,7 @@ integrationTestCreateEntityWithAnnotations <-
   checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
   
   ## Create Study
-  study <- new(Class="Study")
+  study <- Study()
   propertyValue(study, "name") <- "testStudyName"
   propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
   annotValue(study, "annotKey") <- "annotValue"
@@ -93,7 +93,7 @@ integrationTestCreateEntityWithNAAnnotations <-
   function()
 {
   ## Create Project
-  project <- new(Class="Project")
+  project <- Project()
   propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   annotValue(project, "annotationKey") <- "projectAnnotationValue"
   createdProject <- createEntity(project)
@@ -101,7 +101,7 @@ integrationTestCreateEntityWithNAAnnotations <-
   checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
   
   ## Create Study
-  study <- new(Class="Study")
+  study <- Study()
   propertyValue(study, "name") <- "testStudyName"
   propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
   
@@ -129,7 +129,7 @@ integrationTestUpdateS4Entity <-
   function()
 {
   ## Create Project
-  project <- new(Class="Project")
+  project <- Project()
   propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
@@ -142,7 +142,7 @@ integrationTestUpdateS4Entity <-
   checkTrue(propertyValue(updatedProject, "etag") != propertyValue(createdProject, "etag"))
   
   ## create a study
-  study <- new(Class="Study")
+  study <- Study()
   propertyValue(study, "name") <- "testStudyName"
   propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
   createdStudy <- createEntity(study)
@@ -155,7 +155,7 @@ integrationTestUpdateS4Entity <-
   checkEquals(propertyValue(createdStudy, "id"), propertyValue(updatedStudy, "id"))
   
   ## create a data
-  data <- new(Class = "PhenotypeData")
+  data <- Data()
   propertyValue(data, "name") <- "testPhenoDataName"
   propertyValue(data, "parentId") <- propertyValue(createdStudy,"id")
   createdData <- createEntity(data)
@@ -178,12 +178,12 @@ integrationTestUpdateS4Entity <-
 integrationTestDeleteEntity <- 
   function()
 {
-  project <- new(Class="Project")
+  project <- Project()
   propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
   
-  study <- new(Class="Study")
+  study <- Study()
   propertyValue(study, "name") <- "testStudyName"
   propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
   createdStudy <- createEntity(study)
@@ -214,7 +214,7 @@ integrationTestGetEntity <-
   function()
 {
   ## Create Project
-  project <- new(Class="Project")
+  project <- Project()
   propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
@@ -241,7 +241,7 @@ integrationTestReplaceAnnotations <-
   function()
 {
   ## Create Project
-  project <- new(Class="Project")
+  project <- Project()
   propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   annotations(project) <- list(annotation1="value1", annotation2="value2")
   createdProject <- createEntity(project)

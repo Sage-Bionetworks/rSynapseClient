@@ -26,6 +26,7 @@ setMethod(
   definition = function(entity){
     ee <- new("Analysis")
     ee@properties <- entity
+    ee@properties$entityType <- getSynapseTypeFromClass(as.character(class(ee)))
     ee
   }
 )
