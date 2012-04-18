@@ -29,7 +29,6 @@ SynapseAnnotations <-
   for (name in names(entity)) {
 	  if (!(name %in% nms)) propertyValue(aa, name)<-entity[[name]]
   }
-  
   aa
 }
 

@@ -200,17 +200,17 @@ setGeneric(
 )
 
 setGeneric(
-  name = "getAnnotations",
-  def = function(entity){
-    standardGeneric("getAnnotations")
-  }
+    name = "getAnnotations",
+   def = function(entity){
+     standardGeneric("getAnnotations")
+   }
 )
 
 setGeneric(
-  name = "loadObjectsFromFiles",
-  def = function(owner){
-    standardGeneric("loadObjectsFromFiles")
-  }
+    name = "loadObjectsFromFiles",
+    def = function(owner){
+      standardGeneric("loadObjectsFromFiles")
+    }
 )
 
 setGeneric(

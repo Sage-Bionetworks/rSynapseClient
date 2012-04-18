@@ -87,7 +87,6 @@ setRefClass(
     methods = list(
         initialize = function(){
           .self$initFields(
-              cacheRoot = "",
               metaData = emptyNamedList,
               archiveFile = "archive.zip"
           )
@@ -98,6 +97,11 @@ setRefClass(
             dir.create(cdir, recursive=TRUE)
           .self$cacheRoot <- normalizePath(root)
           .self$cacheDir <- normalizePath(cdir)
+          dir.create(root)
+          .self$cacheRoot <- gsub("/+$", "", gsub("/+", "/", normalizePath(root, mustWork=TRUE)))
+          cdir <- file.path(.self$cacheRoot, pattern=sprintf("%s_unpacked", .self$archiveFile))
+          dir.create(cdir, recursive=T)
+          .self$cacheDir <- gsub("/+", "/", normalizePath(cdir, mustWork=TRUE))
         },
         addFileMetaData = function(srcPath, destPath, ...){
           destPath <- as.character(.cleanFilePath(destPath))
@@ -161,6 +165,13 @@ setRefClass(
           ## this check should be done elsewhere, but for now let's leave it here.
           if(length(.self$files() > 1L) && ! hasZip())
             stop("Archive could not be created because it contains multiple files yet the system does not have zip installed.")
+          
+          if(!all(file.exists(file.path(.self$cacheDir, .self$files())))){
+            ## more defensive programming. Getting here is potentially a bug unless the user
+            ## mucked with the innards of the FileCache object or deleted a file from the cache directory
+            stop("Not all of the file were present in the cache directory. this may be a bug. please report it.")
+          }
+          
           
           if(!all(file.exists(file.path(.self$cacheDir, .self$files())))){
             ## more defensive programming. Getting here is potentially a bug unless the user
@@ -439,6 +450,39 @@ setClass(
   contains = "SynapseEntity",
   prototype = prototype(
     synapseEntityKind = "org.sagebionetworks.repo.model.Project"
+  )
+)
+
+setClass(
+  "Link",
+  contains = "SynapseEntity",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Link"
+  )
+)
+
+setClass(
+  "Code",
+  contains="SynapseLocationOwner",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Code"
+  )
+)
+
+setClass(
+  "Study",
+  contains = "SynapseLocationOwnerWithObjects",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Study"
+  )
+)
+
+setClass(
+  "Project",
+  contains = "SynapseLocationOwnerWithObjects",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Data"
+
   )
 )
 
