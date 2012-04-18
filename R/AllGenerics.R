@@ -4,10 +4,39 @@
 ###############################################################################
 
 setGeneric(
-       name = "getChildEntities",
-       def = function(entity){
-           standardGeneric("getChildEntities")
-       }
+  name = "storeEntity",
+  def = function(entity){
+    standardGeneric("storeEntity")
+  }
+)
+
+setGeneric(
+  name = "storeFile",
+  def = function(entity, filePath){
+    standardGeneric("storeFile")
+  }
+)
+
+setGeneric(
+  name = "getArchiveFilePath",
+  def = function(owner){
+    standardGeneric("getArchiveFilePath")
+  }
+)
+
+setGeneric(
+  name = "setCacheRoot",
+  def = function(object, path, clean, copy){
+    standardGeneric("setCacheRoot")
+  }
+)
+
+
+setGeneric(
+  name = "getChildEntities",
+  def = function(entity){
+    standardGeneric("getChildEntities")
+  }
 )
 
 setGeneric(
@@ -171,17 +200,17 @@ setGeneric(
 )
 
 setGeneric(
-    name = "getAnnotations",
-   def = function(entity){
-     standardGeneric("getAnnotations")
-   }
+  name = "getAnnotations",
+  def = function(entity){
+    standardGeneric("getAnnotations")
+  }
 )
 
 setGeneric(
-    name = "loadObjectsFromFiles",
-    def = function(owner){
-      standardGeneric("loadObjectsFromFiles")
-    }
+  name = "loadObjectsFromFiles",
+  def = function(owner){
+    standardGeneric("loadObjectsFromFiles")
+  }
 )
 
 setGeneric(
@@ -276,10 +305,10 @@ setGeneric(
 
 
 setGeneric(
-    name = "getEnv",
-    def = function(object){
-      standardGeneric("getEnv")
-    }
+  name = "getEnv",
+  def = function(object){
+    standardGeneric("getEnv")
+  }
 )
 
 
