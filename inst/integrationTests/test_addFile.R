@@ -1,17 +1,13 @@
-## Test funtions for adding files to entities
-## 
-## Author: Matthew D. Furia <matt.furia@sagebase.org>
-################################################################################
-integrationTestWarnMe <-
-  function(){
-  warning("need to fix tests for test_addFile.R")
-}
+### Test funtions for adding files to entities
+### 
+### Author: Matthew D. Furia <matt.furia@sagebase.org>
+#################################################################################
 #
 #.setUp <- 
 #  function()
 #{
 #  ## create a project
-#  project <- new(Class="Project")
+#  project <- Project()
 #  propertyValues(project) <- list(
 #    name = paste("myProject", gsub(':', '_', date()))
 #  )
@@ -36,10 +32,10 @@ integrationTestWarnMe <-
 #  function()
 #{
 #  project <- synapseClient:::.getCache("testProject")
-#  data <- new(Class="Data", properties=list(parentId=propertyValue(project, "id"), type="C"))
+#  data <- Data(list(parentId=propertyValue(project, "id"), type="C"))
 #  
 #  file <- "file1.rbin"
-#  path <- "/apath"
+#  path <- "/apath/"
 #  d <- diag(nrow=10, ncol=10)
 #  save(d, file=file.path(tempdir(), file))
 #  ## add a file in a subdirectory
@@ -50,9 +46,9 @@ integrationTestWarnMe <-
 #  checkEquals(length(data$files), 1L)
 #  
 #  checkTrue(file.exists(file.path(data$cacheDir, data$files)))
-#  checkEquals(data$files, gsub(sprintf("^%s", .Platform$file.sep), "", file.path(path, file)))
+#  checkEquals(data$files, gsub("^/+", "", gsub("/+", "/", file.path(path, file))))
 #  
-#  data <- storeEntityFiles(data)
+#  data <- storeEntity(data)
 #  checkTrue(grepl(synapseClient:::synapseCacheDir(), data$cacheDir, fixed=TRUE))
 #  checkEquals(length(data$files), 1L)
 #  checkTrue(file.exists(file.path(data$cacheDir, data$files)))
@@ -69,7 +65,7 @@ integrationTestWarnMe <-
 #  
 #  checkTrue(all(file.exists(file.path(data$cacheDir, data$files))))
 #  
-#  data <- storeEntityFiles(data)
+#  data <- storeEntity(data)
 #  checkTrue(all(file.remove(file.path(data$cacheDir, data$files))))
 #  data2 <- downloadEntity(propertyValue(data,"id"))
 #  checkEquals(data$cacheDir, data2$cacheDir)
@@ -88,7 +84,7 @@ integrationTestWarnMe <-
 #  checkEquals(data$files[3], gsub(sprintf("^%s+", .Platform$file.sep), "", file.path(path, file)))
 #  checkTrue(grepl(synapseClient:::synapseCacheDir(), data$cacheDir, fixed=TRUE))
 #  
-#  data <- storeEntityFiles(data)
+#  data <- storeEntity(data)
 #  checkEquals(length(data$files), 3L)
 #  checkTrue(all(file.exists(file.path(data$cacheDir, data$files))))
 #  checkTrue(all(file.remove(file.path(data$cacheDir, data$files))))
@@ -110,7 +106,7 @@ integrationTestWarnMe <-
 #  checkEquals(data$files[4], gsub(sprintf("^%s+", .Platform$file.sep), "", file.path(path, file)))
 #  checkTrue(grepl(synapseClient:::synapseCacheDir(), data$cacheDir, fixed=TRUE))
 #  
-#  data <- storeEntityFiles(data)
+#  data <- storeEntity(data)
 #  checkEquals(length(data$files), 4L)
 #  checkTrue(all(file.exists(file.path(data$cacheDir, data$files))))
 #  checkTrue(all(file.remove(file.path(data$cacheDir, data$files))))

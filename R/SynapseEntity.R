@@ -66,20 +66,7 @@ setMethod(
   signature = "SynapseEntity",
   definition = function(entity)
   {
-    ## update the entity
-    updateEntityInFileCache(entity)
-    updatedEntity <- getEntityFromFileCache(entity, "id")
-    aa <- updatedEntity@annotations
-    propertyValue(aa, "ETag") <- propertyValue(updatedEntity, "ETag")
-    
-    ## update the annotations
-    updateAnnotationsInFileCache(aa)
-    updateAnnotationsInSynapse(propertyValue(entity, "id"))
-    
-    ## fetch the entity to get the new etag
-    updateEntityInFileCache(entity)
-    updatedEntity <- getEntityFromFileCache(entity, "id")
-    updatedEntity@annotations <- getAnnotationsFromFileCache(entity, "id")
+    stop("Need to implment update entity")
   }
 )
 

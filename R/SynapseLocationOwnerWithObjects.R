@@ -23,7 +23,16 @@ setMethod(
       entity
     }
 )
-
+setMethod(
+  f = "createEntity",
+  signature = "SynapseLocationOwnerWithObjects",
+  definition = function(entity){
+    cfun <- getMethod("createEntity", "SynapseLocationOwner")
+    ee <- cfun(entity)
+    ee@objOwn <- entity@objOwn
+    ee
+  }
+)
 
 setMethod(
   f = "downloadEntity",
