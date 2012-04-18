@@ -87,15 +87,17 @@ setRefClass(
     methods = list(
         initialize = function(){
           .self$initFields(
+              cacheRoot = "",
               metaData = emptyNamedList,
               archiveFile = "archive.zip"
           )
           root <- tempfile(pattern="cacheRoot")
-          dir.create(root)
-          .self$cacheRoot <- gsub("/+$", "", gsub("/+", "/", normalizePath(root, mustWork=TRUE)))
-          cdir <- file.path(.self$cacheRoot, pattern=sprintf("%s_unpacked", .self$archiveFile))
-          dir.create(cdir, recursive=T)
-          .self$cacheDir <- gsub("/+", "/", normalizePath(cdir, mustWork=TRUE))
+          
+          cdir <- file.path(sprintf("%s_unpacked", .self$archiveFile))
+          if(!file.exists(cdir))
+            dir.create(cdir, recursive=TRUE)
+          .self$cacheRoot <- normalizePath(root)
+          .self$cacheDir <- normalizePath(cdir)
         },
         addFileMetaData = function(srcPath, destPath, ...){
           destPath <- as.character(.cleanFilePath(destPath))

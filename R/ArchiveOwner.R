@@ -95,6 +95,14 @@ setMethod(
   }
 )
 
+setMethod(
+  f = "getArchiveFilePath",
+  signature = "ArchiveOwner",
+  definition = function(owner){
+    owner
+  }
+)
+
 #objects.ArchiveOwner <-
 #    function(name)
 #{

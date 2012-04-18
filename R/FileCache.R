@@ -2,7 +2,50 @@
 # 
 # Author: furia
 ###############################################################################
+setMethod(
+  f = "setCacheRoot",
+  signature = signature("FileCache", "character", "missing", "missing"),
+  definition = function(object, path){
+    setCacheRoot(object, path, FALSE)
+  }
+)
 
+setMethod(
+  f = "setCacheRoot",
+  signature = signature("FileCache", "character", "logical", "missing"),
+  definition = function(object, path, clean){
+    if(file.exists(path)){
+      if(!clean)
+        stop("destination already exists, please remove or set forceClean to TRUE")
+      
+      ## if the new cacheroot is the same as the old one, do nothing
+      if(normalizePath(path) == normalizePath(object$getCacheRoot(), mustWork=FALSE))
+        return(object)
+      
+      ## remove the new cacheroot
+      unlink(path, recursive=TRUE, force=TRUE)
+    }
+    
+    ## compute the cachedir <cacheroot>/<cachedir>
+    cacheDir <- file.path(path, sprintf("%s_unpacked", object$archiveFile))
+    dir.create(cacheDir, recursive=TRUE)
+    
+    ## copy over the existing archive. by default we copy everyting
+    ## TODO: implement different copy modes: all, none, files, archive
+    if(file.exists(object$getCacheRoot()))
+      file.copy(oject$getCacheRoot(), path, recursive=TRUE)
+    
+    ## clean up old files
+    if(clean)
+      unlink(object$getCacheRoot(), force = TRUE, recursive = TRUE)
+    
+    ## set the member variables to reflect the new values
+    object$cacheDir <- normalizePath(cacheDir)
+    object$cacheRoot <- normalizePath(path)
+   
+    invisible(object)
+  }
+)
 
 
 setMethod(
