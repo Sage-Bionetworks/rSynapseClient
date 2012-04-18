@@ -19,8 +19,8 @@ setMethod(
     
     if(fromCache){
       ## if the entity isn't cached, throw an exception
-      if(!file.exists(path.expand(file.path(.entityFileCachePath(id), ENTITY_FILE_NAME)))
-        || !file.exists(path.expand(file.path(.entityFileCachePath(id), ANNOTATIONS_FILE_NAME)))){
+      if(!file.exists(path.expand(file.path(.entityFileCachePath(id), .getCache("ENTITY_FILE_NAME"))))
+        || !file.exists(path.expand(file.path(.entityFileCachePath(id), .getCache("ANNOTATIONS_FILE_NAME"))))){
         stop("entity is not cached on local disk.")
       }
     }else{

@@ -15,3 +15,10 @@ setMethod(
   }
 )
 
+setMethod(
+    f = "Study",
+    signature = "missing",
+    definition = function(){
+      Study(list())
+    }
+)

@@ -10,7 +10,7 @@
 getEntityFromSynapse <- function(id, version=NULL)
 {
 	entityCachePath <- .entityFileCachePath(id, version)
-	.downloadToFile(.getEntityUri(id, version), entityCachePath, ENTITY_FILE_NAME)
+	.downloadToFile(.getEntityUri(id, version), entityCachePath, .getCache("ENTITY_FILE_NAME"))
 }
 
 # This function downloads the annotations of a Synapse entity into the local file cache:
@@ -20,7 +20,7 @@ getEntityFromSynapse <- function(id, version=NULL)
 getAnnotationsFromSynapse <- function(id, version=NULL)
 {
 	entityCachePath <- .entityFileCachePath(id, version)
-	.downloadToFile(.getAnnotationsUri(id, version), entityCachePath, ANNOTATIONS_FILE_NAME)
+	.downloadToFile(.getAnnotationsUri(id, version), entityCachePath, .getCache("ANNOTATIONS_FILE_NAME"))
 }
 
 #
@@ -29,7 +29,11 @@ getAnnotationsFromSynapse <- function(id, version=NULL)
 #
 getEntityFromFileCache<- function(id, version=NULL) {
 	entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
-	SynapseEntity(as.list(fromJSON(paste(entityCachePath, ENTITY_FILE_NAME, sep="/"))))
+
+	#SynapseEntity(as.list(fromJSON(paste(entityCachePath, .getCache("ENTITY_FILE_NAME"), sep="/"))))
+
+    getEntityInstance(as.list(fromJSON(paste(entityCachePath, .getCache("ENTITY_FILE_NAME"), sep="/"))))
+
 }
 
 #
@@ -38,7 +42,7 @@ getEntityFromFileCache<- function(id, version=NULL) {
 #
 getAnnotationsFromFileCache<- function(id, version=NULL) {
 	entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
-	SynapseAnnotations(as.list(fromJSON(paste(entityCachePath, ANNOTATIONS_FILE_NAME, sep="/"))))
+	SynapseAnnotations(as.list(fromJSON(paste(entityCachePath, .getCache("ANNOTATIONS_FILE_NAME"), sep="/"))))
 }
 
 # note 'filePath' omits the cache root, which is prepended by this function
@@ -94,7 +98,7 @@ getAnnotationsFromFileCache<- function(id, version=NULL) {
 createEntity<-function(entity) {
 	# translate entity to list, then serialize to String
 	content <- as.list.SimplePropertyOwner(entity)
-	SynapseEntity(.synapsePostPut("/entity", content, "POST"))
+	getEntityInstance(.synapsePostPut("/entity", content, "POST"))
 }
 
 # Note: 'entity' must be a SimplePropertyOwner
@@ -104,13 +108,13 @@ updateEntityInFileCache<-function(entity) {
 	if (is.null(entityId)) stop("Missing entity id")
 	content <- toJSON(as.list.SimplePropertyOwner(entity))
 	entityCachePath <- .entityFileCachePath(entityId, NULL)
-	.writeToFile(gsub("[\r\n]", "", content), entityCachePath, ENTITY_FILE_NAME)
+	.writeToFile(gsub("[\r\n]", "", content), entityCachePath, .getCache("ENTITY_FILE_NAME"))
 }
 
 updateEntityInSynapse<-function(id, version=NULL) {
 	uri <- .getEntityUri(id, version)
 	filePath <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
-			ENTITY_FILE_NAME, sep="/")
+      .getCache("ENTITY_FILE_NAME"), sep="/")
 	content <- as.list(fromJSON(readLines(filePath)))
 	.synapsePostPut(uri, content, "PUT")
 }
@@ -121,7 +125,7 @@ deleteEntityFromSynapse<-function(id, version=NULL) {
 
 deleteEntityFromFileCache<-function(id, version=NULL) {
 	file <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
-			ENTITY_FILE_NAME, sep="/")
+      .getCache("ENTITY_FILE_NAME"), sep="/")
 	if (file.exists(file)) unlink(file)
 }
 		
@@ -133,13 +137,13 @@ updateAnnotationsInFileCache<-function(annots) {
 	
 	content <- toJSON(as.list(annots))
 	entityCachePath <- .entityFileCachePath(entityId, NULL)
-	.writeToFile(gsub("[\r\n]", "", content), entityCachePath, ANNOTATIONS_FILE_NAME)
+	.writeToFile(gsub("[\r\n]", "", content), entityCachePath, .getCache("ANNOTATIONS_FILE_NAME"))
 }
 
 updateAnnotationsInSynapse<-function(id, version=NULL) {
 	.synapsePostPut(.getAnnotationsUri(id, version), 
 			as.list(fromJSON(readLines(paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
-							ANNOTATIONS_FILE_NAME, sep="/")))), "PUT")
+                      .getCache("ANNOTATIONS_FILE_NAME"), sep="/")))), "PUT")
 }
 
 deleteAnnotationsFromFileCache<-function(id, version=NULL) {
@@ -148,6 +152,6 @@ deleteAnnotationsFromFileCache<-function(id, version=NULL) {
 
 deleteAnnotationsFromSynapse<-function(id, version=NULL) {
 	file <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
-			ANNOTATIONS_FILE_NAME, sep="/")
+      .getCache("ANNOTATIONS_FILE_NAME"), sep="/")
 	if (file.exists(file)) unlink(file)
 }

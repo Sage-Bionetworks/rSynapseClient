@@ -263,6 +263,10 @@ setRefClass(
         },
         getCacheRoot = function(){
           .self$cacheRoot
+        },
+        delete = function(){
+          .self$deleteFileMetaData()
+          unlink(.self$getCacheDir(), recursive=TRUE, force=TRUE)
         }
     )
 )
@@ -478,7 +482,7 @@ setClass(
 )
 
 setClass(
-  "Project",
+  "Data",
   contains = "SynapseLocationOwnerWithObjects",
   prototype = prototype(
     synapseEntityKind = "org.sagebionetworks.repo.model.Data"

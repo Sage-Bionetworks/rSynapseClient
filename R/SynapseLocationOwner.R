@@ -13,59 +13,14 @@ setMethod(
 )
 
 setMethod(
-  f = "storeEntity",
-  signature = "SynapseLocationOwner",
-  definition = function(entity){
-    ## create the archive on disk (which will persist file metaData to disk)
-    createArchive(entity@archOwn)
-    
-    ## upload the archive  file (storeFile also updates the entity)
-    entity <- storeFile( ,file.path(entity@archOwn@fileCache$getCacheRoot(), entity@archOwn@fileCache$getArchiveFile()))
-    entity
-  }
-)
-
-
-setMethod(
-  f = "storeFile",
-  signature = signature("SynapseLocationOwner", "character"),
-  definition = function(entity, filePath) {
-    
-    if(!file.exists(filePath))
-      stop('archive file does not exist')
-    
-    ## make sure that the entity is up to date
-    if(is.null(propertyValue(entity, "id"))){
-      ## Create the LocationOwner in Synapse
-      entity <- createEntity(entity)
-    } else {
-      ## Update the LocationOwner in Synapse just in case any other fields were changed
-      ## TODO is this needed?
-      entity <- updateEntity(entity)
-    } 
-    
-    tryCatch(
-      .performRUpload(entity, filePath),
-      error = function(e){
-        warning(sprintf("failed to upload data file, please try again: %s", e))
-        return(entity)
-      }
-    )
-    
-    ## move the data file from where it is to the local cache directory
-    parsedUrl <- .ParsedUrl(propertyValue(entity, 'locations')[[1]]['path'])
-    destdir <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@pathPrefix))
-    destdir <- path.expand(destdir)
-    
-    ## set the cachRoot to the new location this method should do the right 
-    ## thing. don't move if src and dest are the same. make sure there are
-    ## no straggler files left behind, clean up temp directories, etc.
-    entity@archOwn <- setCachRoot(entity@archOwn, destdir, cleanUp = TRUE)
-  
-    ## unpack the archive into it's new root directory.
-    entity@archive <- unpackArchive(entity@archOwn)
-    invisible(entity)
-  }
+    f = "updateEntity",
+    signature = "SynapseLocationOwner",
+    definition = function(entity){
+      ufun <- getMethod("updateEntity", "SynapseEntity")
+      updatedEntity <- ufun(entity)
+      updateEntity@archOwn <- entity@archOwn
+      entity
+    }
 )
 
 setMethod(
@@ -96,6 +51,18 @@ setMethod(
     entity
   }
 )
+
+setMethod(
+    f = "deleteEntity",
+    signature = "SynapseLocationOwner",
+    definition = function(entity){
+      entity@archOwn@fileCache$delete()
+      dfun <- getMethod("deleteEntity", "SynapseEntity")
+      entity <- dfun(entity)
+      invisible(entity) 
+    }
+)
+
 
 setMethod(
   f = "addFile",

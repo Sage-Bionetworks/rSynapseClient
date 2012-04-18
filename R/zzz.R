@@ -50,8 +50,8 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   synapseCacheDir("~/.synapseCache")
   
   # used in entityToFileCache.R
-  ENTITY_FILE_NAME<<-"entity.json"
-  ANNOTATIONS_FILE_NAME<<-"annotations.json"
+  .setCache("ENTITY_FILE_NAME", "entity.json")
+  .setCache("ANNOTATIONS_FILE_NAME", "annotations.json")
   
   synapseDataLocationPreferences(kSupportedDataLocationTypes)
   synapseCacheDir(gsub("[\\/]+", "/", path.expand("~/.synapseCache")))

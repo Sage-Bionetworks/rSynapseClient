@@ -40,7 +40,7 @@ integrationTestProvenance <-
   checkEquals(propertyValue(data,"parentId"), propertyValue(project, "id"))
   
   ## Create Data
-  data <- new(Class = "PhenotypeData")
+  data <- Data()
   propertyValue(data, "name") <- "testPhenoDataName"
   propertyValue(data, "parentId") <- propertyValue(data,"id")
   checkEquals(propertyValue(data,"type"), "C")
@@ -61,7 +61,7 @@ integrationTestProvenance <-
   checkEquals(propertyValue(inputData, "id"), propertyValue(step, "input")[[1]]$targetId)
   
   ## Create a data, it will be added as output
-  data <- new(Class = "ExpressionData")
+  data <- Data()
   propertyValue(data, "name") <- "testExprDataName"
   propertyValue(data, "parentId") <- propertyValue(data,"id")
   checkEquals(propertyValue(data,"type"), "E")

@@ -7,7 +7,7 @@
   function()
 {
   ### create a project
-  project <- new(Class="Project")
+  project <- Project()
   propertyValues(project) <- list(
     name = paste("myProject", gsub(':', '_', date()))
   )
