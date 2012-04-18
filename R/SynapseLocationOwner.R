@@ -20,8 +20,19 @@ setMethod(
     createArchive(entity@archOwn)
     
     ## upload the archive  file (storeFile also updates the entity)
-    entity <- storeFile( ,file.path(entity@archOwn@fileCache$getCacheRoot(), entity@archOwn@fileCache$getArchiveFile()))
+    entity <- storeFile(entity ,file.path(entity@archOwn@fileCache$getCacheRoot(), entity@archOwn@fileCache$getArchiveFile()))
     entity
+  }
+)
+
+setMethod(
+  f = "createEntity",
+  signature = "SynapseLocationOwner",
+  definition = function(entity){
+    cfun <- getMethod("createEntity", "SynapseEntity")
+    ee <- cfun(entity)
+    ee@archOwn <- entity@archOwn
+    ee
   }
 )
 
@@ -44,7 +55,7 @@ setMethod(
       entity <- updateEntity(entity)
     } 
     
-    tryCatch(
+    entity <- tryCatch(
       .performRUpload(entity, filePath),
       error = function(e){
         warning(sprintf("failed to upload data file, please try again: %s", e))
