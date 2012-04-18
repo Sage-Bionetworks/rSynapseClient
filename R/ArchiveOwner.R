@@ -91,7 +91,7 @@ setMethod(
   f = "createArchive",
   signature = "ArchiveOwner",
   definition = function(owner){
-    owner$fileCache$createArchive()
+    owner@fileCache$createArchive()
   }
 )
 
