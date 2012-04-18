@@ -9,7 +9,15 @@ setMethod(
   definition = function(entity){
     ee <- new("Data")
     ee@properties <- entity
+    ee@properties$entityType <- getSynapseTypeFromClass(as.character(class(ee)))
     ee
   }
 )
 
+setMethod(
+    f = "Data",
+    signature = "missing",
+    definition = function(){
+      Data(list())
+    }
+)

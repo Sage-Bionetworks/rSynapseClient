@@ -23,13 +23,10 @@ setMethod(
 		f = "Media",
 		signature = "list",
 		definition = function(entity){
-			media <- Layer(entity=entity)
-			
-			## coerce to Media
-			class(media) <- "Media"
-			media <- initialize(media)
-			synapseEntityKind(media) <- synapseEntityKind(new(Class="Media"))
-			media
+			ee <- new("Media")
+            ee@properties <- entity
+            ee@properties$entityType <- getSynapseTypeFromClass(as.character(class(ee)))
+            ee
 		}
 )
 

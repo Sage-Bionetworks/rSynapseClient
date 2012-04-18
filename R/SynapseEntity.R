@@ -29,6 +29,47 @@ setMethod(
   }
 )
 
+setMethod(
+    f = "deleteEntity",
+    signature = "SynapseEntity",
+    definition = function(entity){
+      envir <- parent.frame(2)
+      inherits <- FALSE
+      name <- deparse(substitute(entity, env=parent.frame()))
+      deleteEntityFromSynapse(propertyValue(entity, "id"))
+      deleteEntityFromFileCache(propertyValue(entity, "id"))
+      if(any(grepl(name,ls(envir=envir))))
+        remove(list = name, envir=envir, inherits=inherits)
+      entity <- deleteProperty(entity, "id")
+      entity <- deleteProperty(entity, "accessControlList")
+      entity <- deleteProperty(entity, "uri")
+      entity <- deleteProperty(entity, "annotations")
+      entity <- deleteProperty(entity, "etag")
+      invisible(entity)
+    }
+)
+
+setMethod(
+  f = "updateEntity",
+  signature = "SynapseEntity",
+  definition = function(entity)
+  {
+    ## update the entity
+    updateEntityInFileCache(entity)
+    updatedEntity <- getEntityFromFileCache(entity, "id")
+    aa <- updatedEntity@annotations
+    propertyValue(aa, "ETag") <- propertyValue(updatedEntity, "ETag")
+    
+    ## update the annotations
+    updateAnnotationsInFileCache(aa)
+    updateAnnotationsInSynapse(propertyValue(entity, "id"))
+    
+    ## fetch the entity to get the new etag
+    updateEntityInFileCache(entity)
+    updatedEntity <- getEntityFromFileCache(entity, "id")
+    updatedEntity@annotations <- getAnnotationsFromFileCache(entity, "id")
+  }
+)
 
 setMethod(
   f = "downloadEntity",

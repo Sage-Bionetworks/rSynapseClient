@@ -10,6 +10,7 @@ setMethod(
   definition = function(entity){
     ee <- new("Code")
     ee@properties <- entity
+    ee@properties$entityType <- getSynapseTypeFromClass(as.character(class(ee)))
     ee
   }
 )

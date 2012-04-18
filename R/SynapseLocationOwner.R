@@ -69,6 +69,17 @@ setMethod(
 )
 
 setMethod(
+    f = "updateEntity",
+    signature = "SynapseLocationOwner",
+    definition = function(entity){
+      ufun <- getMethod("updateEntity", "SynapseEntity")
+      updatedEntity <- ufun(entity)
+      updateEntity@archOwn <- entity@archOwn
+      entity
+    }
+)
+
+setMethod(
   f = "downloadEntity",
   signature = "SynapseLocationOwner",
   definition = function(entity){
@@ -96,6 +107,18 @@ setMethod(
     entity
   }
 )
+
+setMethod(
+    f = "deleteEntity",
+    signature = "SynapseLocationOwner",
+    definition = function(entity){
+      entity@archOwn@fileCache$delete()
+      dfun <- getMethod("deleteEntity", "SynapseEntity")
+      entity <- dfun(entity)
+      invisible(entity) 
+    }
+)
+
 
 setMethod(
   f = "addFile",

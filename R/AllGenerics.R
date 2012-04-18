@@ -31,12 +31,25 @@ setGeneric(
   }
 )
 
-
 setGeneric(
   name = "getChildEntities",
   def = function(entity){
     standardGeneric("getChildEntities")
   }
+  
+setGeneric(  
+  name = "updateEntity",
+    def = function(entity){
+      standardGeneric("updateEntity")
+    }
+)
+
+
+setGeneric(
+    name = "deleteEntity",
+    def = function(entity){
+      standardGeneric("deleteEntity")
+    }
 )
 
 setGeneric(
