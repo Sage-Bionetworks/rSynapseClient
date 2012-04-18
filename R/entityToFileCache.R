@@ -95,15 +95,12 @@ getAnnotationsFromFileCache<- function(id, version=NULL) {
 # maps an Entity to JSON and POST to Synapse
 # Note: 'entity' must be a SimplePropertyOwner
 # TODO support creating a new *version* of an existing entity
-setMethod(
-"createEntity",
-signature = "SimplePropertyOwner",
-definition = function(entity) {
+doCreateEntity <- function(entity) {
 	# translate entity to list, then serialize to String
 	content <- as.list.SimplePropertyOwner(entity)
 	getEntityInstance(.synapsePostPut("/entity", content, "POST"))
 }
-)
+
 # Note: 'entity' must be a SimplePropertyOwner
 # TODO support updating a specific version of an entity
 updateEntityInFileCache<-function(entity) {
@@ -200,7 +197,7 @@ mergeSynapseEntities<- function(localSynapseEntity, remoteSynapseEntity) {
 # object with id and annotations
 createSynapseEntity<- function(synapseEntity) {
 	# create the entity in Synapse and get back the id
-	id <- propertyValue(createEntity(synapseEntity), "id")
+	id <- propertyValue(doCreateEntity(synapseEntity), "id")
 	# now download the annotations to the local cache
 	getAnnotationsFromSynapse(id)
 	# read annotations from local cache into memory

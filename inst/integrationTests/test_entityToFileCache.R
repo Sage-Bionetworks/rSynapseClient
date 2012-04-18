@@ -63,7 +63,7 @@ integrationTestCreateUpdateDeleteEntity <- function() {
 	entityName<-paste("testName_", gsub(':', '_', date()))
 	entityType<-"org.sagebionetworks.repo.model.Project"
 	s <- SynapseEntity(list(name=entityName, entityType=entityType))
-	s <- createEntity(s)
+	s <- doCreateEntity(s)
 	id <- s@properties[["id"]]
 	checkTrue(!is.null(id))
 	# get the entity, to the file cache
@@ -114,7 +114,7 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 	entityName<-paste("annotTestName_", gsub(':', '_', date()))
 	entityType<-"org.sagebionetworks.repo.model.Project"
 	s <- SynapseEntity(list(name=entityName, entityType=entityType))
-	s <- createEntity(s)
+	s <- doCreateEntity(s)
 	id <- s@properties[["id"]]
 	checkTrue(!is.null(id))
 
