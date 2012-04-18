@@ -90,7 +90,7 @@ setMethod(
   definition = function(object, which, value){
     props <- properties(object)
     val <- list()
-    val[[which]] <- value
+    val[[which]] <- list(value)
     props <- c(props, val)
     object@properties <- props
     object
