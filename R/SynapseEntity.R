@@ -55,14 +55,17 @@ setMethod(
   definition = function(entity)
   {
     ## update the entity
-    updateEntityInFileCache(propertyValue(entity, "id"))
+    updateEntityInFileCache(entity)
+    updatedEntity <- getEntityFromFileCache(entity, "id")
+    aa <- updatedEntity@annotations
+    propertyValue(aa, "ETag") <- propertyValue(updatedEntity, "ETag")
     
     ## update the annotations
-    updateAnnotationsInFileCache(propertyValue(entity, "id"))
+    updateAnnotationsInFileCache(aa)
     updateAnnotationsInSynapse(propertyValue(entity, "id"))
     
     ## fetch the entity to get the new etag
-    updateEntityInFileCache(propertyValue(entity, "id"))
+    updateEntityInFileCache(entity)
     updatedEntity <- getEntityFromFileCache(entity, "id")
     updatedEntity@annotations <- getAnnotationsFromFileCache(entity, "id")
   }
