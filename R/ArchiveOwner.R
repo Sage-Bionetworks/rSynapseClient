@@ -13,6 +13,16 @@ setMethod(
   }
 )
 
+
+setMethod(
+  f = "setCacheRoot",
+  signature = signature("ArchiveOwner", "character", "logical", "missing"),
+  definition = function(object, path, clean){
+    object@fileCache <- setCacheRoot(object@fileCache, path, clean)
+    object
+  }
+)
+
 setMethod(
   f = "addFile",
   signature = signature("ArchiveOwner", "character", "missing"),
@@ -84,6 +94,7 @@ setMethod(
   signature = "ArchiveOwner",
   definition = function(owner){
     owner@fileCache$unpackArchive()
+    owner
   }
 ) 
 
