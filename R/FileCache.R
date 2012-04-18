@@ -33,7 +33,7 @@ setMethod(
     ## copy over the existing archive. by default we copy everyting
     ## TODO: implement different copy modes: all, none, files, archive
     if(file.exists(object$getCacheRoot()))
-      file.copy(oject$getCacheRoot(), path, recursive=TRUE)
+      file.copy(object$getCacheRoot(), path, recursive=TRUE)
     
     ## clean up old files
     if(clean)

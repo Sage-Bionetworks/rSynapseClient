@@ -16,14 +16,27 @@ setMethod(
   f = "storeEntity",
   signature = "SynapseLocationOwner",
   definition = function(entity){
-    ## create the archive on disk (which will persist file metaData to disk)
-    createArchive(entity@archOwn)
-    
-    ## upload the archive  file (storeFile also updates the entity)
-    entity <- storeFile(entity ,file.path(entity@archOwn@fileCache$getCacheRoot(), entity@archOwn@fileCache$getArchiveFile()))
+    if(length$files > 0L){
+      ## create the archive on disk (which will persist file metaData to disk)
+      createArchive(entity@archOwn)
+      
+      ## upload the archive  file (storeFile also updates the entity)
+      entity <- storeFile(entity ,file.path(entity@archOwn@fileCache$getCacheRoot(), entity@archOwn@fileCache$getArchiveFile()))
+    }else{
+      entity <- updateEntity(entity)
+    }
     entity
   }
 )
+
+setMethod(
+  f = "storeEntityFiles",
+  signature = "SynapseLocationOwner",
+  definition = function(entity){
+    storeEntity(entity)
+  }
+)
+
 
 setMethod(
   f = "createEntity",
@@ -71,7 +84,7 @@ setMethod(
     ## set the cachRoot to the new location this method should do the right 
     ## thing. don't move if src and dest are the same. make sure there are
     ## no straggler files left behind, clean up temp directories, etc.
-    entity@archOwn <- setCachRoot(entity@archOwn, destdir, cleanUp = TRUE)
+    entity@archOwn <- setCacheRoot(entity@archOwn, destdir, clean = TRUE)
   
     ## unpack the archive into it's new root directory.
     entity@archive <- unpackArchive(entity@archOwn)

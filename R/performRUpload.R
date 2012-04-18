@@ -36,7 +36,7 @@
   locationData <- list()
   locationData$path <- s3Token$path
   locationData$type <- "awss3"
-  propertyValue(entity, "locations") <- list(locationData)
+  propertyValue(entity, "locations") <- locationData
   propertyValue(entity, "md5") <- s3Token$md5
   propertyValue(entity, "contentType") <- s3Token$contentType
   entity <- updateEntity(entity)    
