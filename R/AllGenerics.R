@@ -36,7 +36,8 @@ setGeneric(
   def = function(entity){
     standardGeneric("getChildEntities")
   }
-  
+)
+
 setGeneric(  
   name = "updateEntity",
     def = function(entity){
