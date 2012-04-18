@@ -95,12 +95,15 @@ getAnnotationsFromFileCache<- function(id, version=NULL) {
 # maps an Entity to JSON and POST to Synapse
 # Note: 'entity' must be a SimplePropertyOwner
 # TODO support creating a new *version* of an existing entity
-createEntity<-function(entity) {
+setMethod(
+"createEntity",
+signature = "SimplePropertyOwner",
+definition = function(entity) {
 	# translate entity to list, then serialize to String
 	content <- as.list.SimplePropertyOwner(entity)
 	getEntityInstance(.synapsePostPut("/entity", content, "POST"))
 }
-
+)
 # Note: 'entity' must be a SimplePropertyOwner
 # TODO support updating a specific version of an entity
 updateEntityInFileCache<-function(entity) {

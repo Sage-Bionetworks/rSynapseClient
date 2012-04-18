@@ -4,6 +4,14 @@
 ###############################################################################
 
 setGeneric(
+  name = "createEntity",
+  def = function(entity){
+    standardGeneric("createEntity")
+  }
+)
+
+
+setGeneric(
   name = "storeEntity",
   def = function(entity){
     standardGeneric("storeEntity")

@@ -1,32 +1,31 @@
 #  This tests entityToFileCache, the utility that downloads an Entity and its Annotations to a local cache
 
-require(RJSONIO)
+##require(RJSONIO)
 
 .setUp <- 
 		function()
 {
 	#synapseClient:::.setCache("debug", TRUE)
-	
+
 	sessionToken<-sessionToken()
 	if (is.null(sessionToken)) stop("Failed to log in")
 	# note, the repo' service endpoint is set up by the framework that calls the interation test suite
-	
+
 	# now create a Project
 	entityList <- list(
 			name = paste("myProject", gsub(':', '_', date())),
 			entityType = "org.sagebionetworks.repo.model.Project"
 	)
 	entityList <- synapseClient:::.synapsePostPut("/entity", entityList, "POST")
-	
+
 	# save the created entity for use in the test(s)
 	synapseClient:::.setCache("testProject", entityList)
-	
+
 	# set up the file cache
 	testCacheRoot <- paste(tempdir(), ".synapseCache", sep="/")
 	if (file.exists(testCacheRoot)) unlink(testCacheRoot, recursive=TRUE)
-	
-	synapseCacheDir(testCacheRoot)
 
+	synapseCacheDir(testCacheRoot)
 }
 
 .tearDown <-
@@ -34,7 +33,7 @@ require(RJSONIO)
 {
 	entityList <- synapseClient:::.getCache("testProject")
 	synapseClient:::.synapseGetDelete(paste("/entity", entityList$id, sep="/"), "DELETE")
-	
+
 	unlink(synapseCacheDir(), recursive=T)
 }
 
@@ -45,7 +44,7 @@ integrationTestGetEntity <- function()
 	entityId <- testProject$id
 	if (is.null(entityId)) stop("Failed to get entity id from object")
 	getEntityFromSynapse(entityId)
-	
+
 	checkTrue(!is.null(getEntityFromFileCache(entityId)))
 }
 
@@ -55,7 +54,7 @@ integrationTestGetAnnotations <- function()
 	entityId <- testProject$id
 	if (is.null(entityId)) stop("Failed to get entity id from object")
 	getAnnotationsFromSynapse(entityId)
-	
+
 	checkTrue(!is.null(getAnnotationsFromFileCache(entityId)))
 }
 
@@ -118,7 +117,7 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 	s <- createEntity(s)
 	id <- s@properties[["id"]]
 	checkTrue(!is.null(id))
-	
+
 	# get the annotations, to the file cache
 	fileDir <- synapseClient:::.getAbsoluteFileCachePath(synapseClient:::.entityFileCachePath(id))
 	filePath <- paste(fileDir, "annotations.json", sep="/")
@@ -135,7 +134,7 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 	checkEquals(id, propertyValue(annots, "id"))
 	fooList<-annotValue(annots, "foo")
 	checkTrue(is.null(fooList))
-	
+
 	# update the annotations in the file cache
 	newArray <- c("bas1", "bas2")
 	annotValue(annots, "foo") <- newArray
@@ -163,7 +162,7 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 	checkEquals(2, length(fooList))
 	checkEquals(newArray, fooList)
 	checkTrue(eTag != propertyValue(annots, "etag"))
-	
+
 	# delete the entity (i.e. to delete the annotations we delete the parent entity
 	deleteEntityFromSynapse(id)
 	# make sure it's deleted.  GETting the id should now create a 404 http status (Not Found)
