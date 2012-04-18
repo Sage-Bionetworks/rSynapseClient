@@ -12,7 +12,6 @@ setMethod(
   }
 )
 
-
 setMethod(
   f = "storeEntity",
   signature = "SynapseLocationOwner",

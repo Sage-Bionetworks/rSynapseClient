@@ -105,6 +105,7 @@ setMethod(
 setMethod(
     f = "propertyValue",
     signature = signature("SimplePropertyOwner", "character"),
+
     definition = function(object, which){
       properties(object)[[which]]
     }

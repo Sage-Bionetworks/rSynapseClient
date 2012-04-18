@@ -6,11 +6,19 @@ require(RJSONIO)
 		function()
 {
 	#synapseClient:::.setCache("debug", TRUE)
+<<<<<<< Updated upstream
 	
 	sessionToken<-sessionToken()
 	if (is.null(sessionToken)) stop("Failed to log in")
 	# note, the repo' service endpoint is set up by the framework that calls the interation test suite
 	
+=======
+	
+	sessionToken<-sessionToken()
+	if (is.null(sessionToken)) stop("Failed to log in")
+	# note, the repo' service endpoint is set up by the framework that calls the interation test suite
+	
+>>>>>>> Stashed changes
 	# now create a Project
 	entityList <- list(
 			name = paste("myProject", gsub(':', '_', date())),
@@ -24,8 +32,14 @@ require(RJSONIO)
 	# set up the file cache
 	testCacheRoot <- paste(tempdir(), ".synapseCache", sep="/")
 	if (file.exists(testCacheRoot)) unlink(testCacheRoot, recursive=TRUE)
+<<<<<<< Updated upstream
 	
 	synapseCacheDir(testCacheRoot)
+=======
+	synapseClient:::.setCache("cacheRoot", testCacheRoot)
+	
+	
+>>>>>>> Stashed changes
 }
 
 .tearDown <-
@@ -56,6 +70,7 @@ integrationTestGetAnnotations <- function()
 	getAnnotationsFromSynapse(entityId)
 	
 	checkTrue(!is.null(getAnnotationsFromFileCache(entityId)))
+<<<<<<< Updated upstream
 }
 
 integrationTestCreateUpdateDeleteEntity <- function() {
@@ -171,3 +186,6 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 }
 
 
+=======
+}
+>>>>>>> Stashed changes
