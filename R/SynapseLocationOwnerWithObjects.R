@@ -46,7 +46,7 @@ setMethod(
     definition = function(entity){
       ufun <- getMethod("updateEntity", "SynapseLocationOwner")
       updatedEntity <- ufun(entity)
-      updateEntity@objOwn <- entity@objOwn
+      updatedEntity@objOwn <- entity@objOwn
       entity
     }
 )
