@@ -9,7 +9,7 @@ setMethod(
   definition = function(entity){
     getEntity(entity, FALSE)
   }
-  
+
 )
 
 setMethod(
@@ -19,32 +19,22 @@ setMethod(
     
     if(fromCache){
       ## if the entity isn't cached, throw an exception
-      if(!file.exists(path.expand(synapseClient:::.getAbsoluteFileCachePath(synapseClient:::.entityFileCachePath(entity)))))
+      if(!file.exists(path.expand(file.path(.entityFileCachePath(id), ENTITY_FILE_NAME)))
+        || !file.exists(path.expand(file.path(.entityFileCachePath(id), ANNOTATIONS_FILE_NAME)))){
         stop("entity is not cached on local disk.")
-    }
-    
-    if(!fromCache){
+      }
+    }else{
       ## download entity and annotations to disk
-      synapseEntityToFileCache(entity)
+      getAnnotationsFromSynapse(entity)
+      getEntityFromSynapse(entity)
     }
-    ## load from disk cache
-    json <- getEntityFromFileCache(entity)
-    if(!is.list(json))
-      json<-as.list(json)
     
     ## instantiate the entity
-    ee <- getEntityInstance(json)
+    ee <- getEntityFromFileCache(entity)
     
     ## load annotations from disk
-    json <- getEntityAnnotationsFromFileCache(entity)
-    if(!is.list(json))
-      json <- as.list(json)
+    ee@annotations <- getAnnotationsFromFileCache(entity)
     
-    ## instantiate the annotations store and put it
-    ## into the annotations slot
-    ee@annotations <- SynapseAnnotations(json)
-    
-    ## return the entity
     ee
   }
 )

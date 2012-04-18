@@ -50,4 +50,8 @@
 #  entity <- getEntity("aFakeId")
 #  checkEquals("SynapseEntity", as.character(class(entity)))
 #}
-stop("Please fix these tests")
+
+unitTestWarnMe <-
+  function(){
+  stop("Please fix these tests")
+}
