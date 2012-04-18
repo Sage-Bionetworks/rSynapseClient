@@ -92,15 +92,14 @@ setRefClass(
           )
           root <- tempfile(pattern="cacheRoot")
           
-          cdir <- file.path(sprintf("%s_unpacked", .self$archiveFile))
+          cdir <- file.path(root, sprintf("%s_unpacked", .self$archiveFile))
           if(!file.exists(cdir))
             dir.create(cdir, recursive=TRUE)
           .self$cacheRoot <- normalizePath(root)
           .self$cacheDir <- normalizePath(cdir)
-          dir.create(root)
+
           .self$cacheRoot <- gsub("/+$", "", gsub("/+", "/", normalizePath(root, mustWork=TRUE)))
           cdir <- file.path(.self$cacheRoot, pattern=sprintf("%s_unpacked", .self$archiveFile))
-          dir.create(cdir, recursive=T)
           .self$cacheDir <- gsub("/+", "/", normalizePath(cdir, mustWork=TRUE))
         },
         addFileMetaData = function(srcPath, destPath, ...){

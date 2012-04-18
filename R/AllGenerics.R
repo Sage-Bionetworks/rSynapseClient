@@ -4,7 +4,42 @@
 ###############################################################################
 
 setGeneric(
-    name = "updateEntity",
+  name = "storeEntity",
+  def = function(entity){
+    standardGeneric("storeEntity")
+  }
+)
+
+setGeneric(
+  name = "storeFile",
+  def = function(entity, filePath){
+    standardGeneric("storeFile")
+  }
+)
+
+setGeneric(
+  name = "getArchiveFilePath",
+  def = function(owner){
+    standardGeneric("getArchiveFilePath")
+  }
+)
+
+setGeneric(
+  name = "setCacheRoot",
+  def = function(object, path, clean, copy){
+    standardGeneric("setCacheRoot")
+  }
+)
+
+setGeneric(
+  name = "getChildEntities",
+  def = function(entity){
+    standardGeneric("getChildEntities")
+  }
+)
+
+setGeneric(  
+  name = "updateEntity",
     def = function(entity){
       standardGeneric("updateEntity")
     }
