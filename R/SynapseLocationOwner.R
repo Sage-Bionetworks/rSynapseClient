@@ -84,7 +84,7 @@ setMethod(
     ## set the cachRoot to the new location this method should do the right 
     ## thing. don't move if src and dest are the same. make sure there are
     ## no straggler files left behind, clean up temp directories, etc.
-    entity@archOwn <- setCachRoot(entity@archOwn, destdir, cleanUp = TRUE)
+    entity@archOwn <- setCacheRoot(entity@archOwn, destdir, clean = TRUE)
   
     ## unpack the archive into it's new root directory.
     entity@archive <- unpackArchive(entity@archOwn)

@@ -33,11 +33,7 @@ setMethod(
   f = "createEntity",
   signature = "SynapseEntity",
   definition = function(entity){
-    ## create the entity
-    content <- as.list.SimplePropertyOwner(entity)
-    ee <- getEntityInstance(.synapsePostPut("/entity", content, "POST"))
-    ## annotations aren't persisted
-    ee
+    createSynapseEntity(entity)
   }
 )
 
@@ -48,8 +44,7 @@ setMethod(
       envir <- parent.frame(2)
       inherits <- FALSE
       name <- deparse(substitute(entity, env=parent.frame()))
-      deleteEntityFromSynapse(propertyValue(entity, "id"))
-      deleteEntityFromFileCache(propertyValue(entity, "id"))
+      deleteSynapseEntity(entity)
       if(any(grepl(name,ls(envir=envir))))
         remove(list = name, envir=envir, inherits=inherits)
       entity <- deleteProperty(entity, "id")
@@ -66,7 +61,7 @@ setMethod(
   signature = "SynapseEntity",
   definition = function(entity)
   {
-    createSynapseEntity(entity)
+    updateSynapseEntity(entity)
   }
 )
 
