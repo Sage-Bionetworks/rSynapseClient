@@ -26,9 +26,7 @@ getAnnotationsFromSynapse <- function(id, version=NULL)
 #
 getEntityFromFileCache<- function(id, version=NULL) {
 	entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
-	se <- new("SynapseEntity")
-	.populateSlotsFromEntity(se, as.list(fromJSON(paste(entityCachePath, ENTITY_FILE_NAME, sep="/"))))
-	se
+	SynapseEntity(as.list(fromJSON(paste(entityCachePath, ENTITY_FILE_NAME, sep="/"))))
 }
 
 #
@@ -37,9 +35,7 @@ getEntityFromFileCache<- function(id, version=NULL) {
 #
 getAnnotationsFromFileCache<- function(id, version=NULL) {
 	entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
-	sa <- SynapseAnnotations(fromJSON(paste(entityCachePath, ANNOTATIONS_FILE_NAME, sep="/")))
-	#.populateSlotsFromEntity(sa, fromJSON(paste(entityCachePath, ANNOTATIONS_FILE_NAME, sep="/")))
-	sa
+	SynapseAnnotations(as.list(fromJSON(paste(entityCachePath, ANNOTATIONS_FILE_NAME, sep="/"))))
 }
 
 # note 'filePath' omits the cache root, which is prepended by this function
@@ -94,21 +90,26 @@ getAnnotationsFromFileCache<- function(id, version=NULL) {
 # TODO support creating a new *version* of an existing entity
 createEntity<-function(entity) {
 	# translate entity to list, then serialize to String
-	.synapsePostPut("/entity", toJSON(as.list(entity)), "POST")
+	content <- as.list.SimplePropertyOwner(entity)
+	SynapseEntity(.synapsePostPut("/entity", content, "POST"))
 }
 
 # Note: 'entity' must be a SimplePropertyOwner
 # TODO support updating a specific version of an entity
 updateEntityInFileCache<-function(entity) {
-	content <- toJSON(as.list(entity))
-	entityCachePath <- .entityFileCachePath(id, NULL)
-	.writeToFile(gsub("[\r\n]", "", content), filePath, ENTITY_FILE_NAME)
+	entityId <- entity@properties[["id"]]
+	if (is.null(entityId)) stop("Missing entity id")
+	content <- toJSON(as.list.SimplePropertyOwner(entity))
+	entityCachePath <- .entityFileCachePath(entityId, NULL)
+	.writeToFile(gsub("[\r\n]", "", content), entityCachePath, ENTITY_FILE_NAME)
 }
 
 updateEntityInSynapse<-function(id, version=NULL) {
-	.synapsePostPut(.getEntityUri(id, version), 
-			readLines(paste(.getAbsoluteFileCachePath(entityFileCachePath(id, version)), 
-							ENTITY_FILE_NAME, sep="/")))
+	uri <- .getEntityUri(id, version)
+	filePath <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
+			ENTITY_FILE_NAME, sep="/")
+	content <- as.list(fromJSON(readLines(filePath)))
+	.synapsePostPut(uri, content, "PUT")
 }
 
 deleteEntityFromSynapse<-function(id, version=NULL) {
@@ -116,36 +117,26 @@ deleteEntityFromSynapse<-function(id, version=NULL) {
 }
 
 deleteEntityFromFileCache<-function(id, version=NULL) {
-	file <- paste(.getAbsoluteFileCachePath(entityFileCachePath(id, version)), 
+	file <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
 			ENTITY_FILE_NAME, sep="/")
 	if (file.exists(file)) unlink(file)
 }
-	
-# map an Annotations to JSON and POST to Synapse
-# Note: 'annots' must be a SynapseAnnotations
-# TODO support creating a new *version* of an existing entity
-createAnnotations<-function(annots) {
-	entityId <- annots@properties[["id"]]
-	if (is.null(entityId)) stop("Missing entity id")
-	# translate entity to list, then serialize to String
-	.synapsePostPut(paste("/entity/", entityId, "/annotations", sep=""), toJSON(as.list(annots)), "POST")
-}
-	
+		
 # Note: 'annots' must be a SynapseAnnotations
 # TODO support updating a specific version of an Annot
 updateAnnotationsInFileCache<-function(annots) {
-	entityId <- annots@properties[["id"]]
+	entityId <- propertyValue(annots, "id")
 	if (is.null(entityId)) stop("Missing entity id")
 	
 	content <- toJSON(as.list(annots))
 	entityCachePath <- .entityFileCachePath(entityId, NULL)
-	.writeToFile(gsub("[\r\n]", "", content), filePath, ANNOTATIONS_FILE_NAME)
+	.writeToFile(gsub("[\r\n]", "", content), entityCachePath, ANNOTATIONS_FILE_NAME)
 }
 
 updateAnnotationsInSynapse<-function(id, version=NULL) {
 	.synapsePostPut(.getAnnotationsUri(id, version), 
-			readLines(paste(.getAbsoluteFileCachePath(entityFileCachePath(id, version)), 
-							ANNOTATIONS_FILE_NAME, sep="/")))
+			as.list(fromJSON(readLines(paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
+							ANNOTATIONS_FILE_NAME, sep="/")))), "PUT")
 }
 
 deleteAnnotationsFromFileCache<-function(id, version=NULL) {
@@ -153,7 +144,7 @@ deleteAnnotationsFromFileCache<-function(id, version=NULL) {
 }
 
 deleteAnnotationsFromSynapse<-function(id, version=NULL) {
-	file <- paste(.getAbsoluteFileCachePath(entityFileCachePath(id, version)), 
+	file <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
 			ANNOTATIONS_FILE_NAME, sep="/")
 	if (file.exists(file)) unlink(file)
 }

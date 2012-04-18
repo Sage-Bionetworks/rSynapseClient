@@ -46,7 +46,7 @@ setMethod(
 #####
 setMethod(
 		f = "propertyValues<-",
-		signature = signature("SynapseEntity", "list"),
+		signature = signature("SimplePropertyOwner", "list"),
 		definition = function(object, value){
 			if(any(names(value) == "") && length(value) > 0)
 				stop("All entity members must be named")
@@ -61,7 +61,7 @@ setMethod(
 #####
 setMethod(
 		f = "deleteProperty",
-		signature = signature("SynapseEntity", "character"),
+		signature = signature("SimplePropertyOwner", "character"),
 		definition = function(object, which){
 			if(!all(which %in% propertyNames(object))){
 				indx <- which(!(which %in% propertyNames(object)))
@@ -77,7 +77,7 @@ setMethod(
 #####
 setMethod(
 		f = "propertyValue<-",
-		signature = signature("SynapseEntity", "character"),
+		signature = signature("SimplePropertyOwner", "character"),
 		definition = function(object, which, value){
 			properties(object)[[which]] <- as.character(value)
 			object
@@ -104,7 +104,7 @@ setMethod(
 
 setMethod(
     f = "propertyValue",
-    signature = signature("SynapseEntity", "character"),
+    signature = signature("SimplePropertyOwner", "character"),
     definition = function(object, which){
       properties(object)[[which]]
     }

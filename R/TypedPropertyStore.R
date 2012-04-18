@@ -97,7 +97,7 @@ setMethod(
   f = "propertyType",
   signature = signature("TypedPropertyStore", "character"),
   definition = function(object, which){
-    types <- c("stringAnnotations", "doubleAnnotations", "longAnnotations", "dateAnnotations")
+    types <- c("stringAnnotations", "doubleAnnotations", "longAnnotations", "dateAnnotations", "blobAnnotations")
     if(!(which %in% propertyNames(object)))
       return(NULL)
     for(t in types){
@@ -116,9 +116,9 @@ setMethod(
     if(!any(which %in% nms))
       return(NULL)
     if(sum(nms == which) > 1L)
-      warning("Multiple values found for the key provided. Returning the first occurance")
+      warning("Multiple values found for the key provided. Returning the first occurrence")
     type <- propertyType(object, which)
-    val <- slot(object, type)[[which]][[1]]
+    val <- slot(object, type)[[which]]
     
     ## coerce the return value to the correct type
     switch(type,

@@ -17,6 +17,18 @@ SynapseAnnotations <-
   aa <- new(Class = "SynapseAnnotations")
   ps <- new("TypedPropertyStore")
   aa@annotations <- .populateSlotsFromEntity(ps, entity)
+  
+  # anything that's not an annotation becomes a property
+  nms <- c("stringAnnotations",
+		  "doubleAnnotations",
+		  "longAnnotations",
+		  "dateAnnotations",
+		  "blobAnnotations")
+  
+  for (name in names(entity)) {
+	  if (!(name %in% nms)) propertyValue(aa, name)<-entity[[name]]
+  }
+  
   aa
 }
 
@@ -124,7 +136,11 @@ setMethod(
       "longAnnotations",
       "dateAnnotations",
       "blobAnnotations")
-    lapply(nms, function(n) slot(object, n) <- entity[[n]])
+   
+    # for some reason this doesn't work
+    #lapply(nms, function(n) slot(object, n) <- entity[[n]])
+	# but this does
+	for (n in nms) slot(object, n)<- entity[[n]]
 
     object
   }
