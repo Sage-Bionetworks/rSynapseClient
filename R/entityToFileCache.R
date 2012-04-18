@@ -155,3 +155,28 @@ deleteAnnotationsFromSynapse<-function(id, version=NULL) {
       .getCache("ANNOTATIONS_FILE_NAME"), sep="/")
 	if (file.exists(file)) unlink(file)
 }
+
+# takes a new SynapseEntity, not yet persisted, and sends it to Synapse 
+# along with its annotations.  Then retreives the entity along with its
+# annotations to the local cache and finally returns the complete SynapseEntity
+# object with id and annotations
+createSynapseEntity<- function(synapseEntity) {
+	stop("Not yet implemented")
+}
+
+# given an entity id, retreives the entity and its annotations into
+# the local file cache, then returns the object as a SynapseEntity
+getSynapseEntity<- function(id) {
+	stop("not yet implemented")
+}
+
+# updates the content of the given SynapseEntity in the local file
+# cache and in Synapse.   Returns the updated entity
+updateSynapseEntity<-function(synapseEntity) {
+	stop("not yet implemented")
+}
+
+# deletes the given SynapseEntity from the local cache and from Synapse
+deleteSynapseEntity<-function(id) {
+	stop("not yet implemented")
+}
