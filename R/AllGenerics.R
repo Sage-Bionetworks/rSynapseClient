@@ -6,7 +6,7 @@
 setGeneric(
     name = "updateEntity",
     def = function(entity){
-      standardGeneric("deleteEntity")
+      standardGeneric("updateEntity")
     }
 )
 
