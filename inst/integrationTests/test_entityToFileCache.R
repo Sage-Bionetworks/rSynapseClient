@@ -170,3 +170,58 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 	checkTrue(any(grep("404", errorMessage)) || typeof(errorMessage)=='try-error')
 }
 
+
+integrationTestCRUDConvenienceMethods <- function() {
+	# create a new SynapseEntity in memory
+	entityName<-paste("convenienceTestName_", gsub(':', '_', date()))
+	entityType<-"org.sagebionetworks.repo.model.Project"
+	s <- SynapseEntity(list(name=entityName, entityType=entityType))
+	fooList<-c("bar", "bas")
+	annotValue(s, "foo")<-fooList
+	
+	s<-createSynapseEntity(s)
+	id<-propertyValue(s, "id")
+
+	checkTrue(!is.null(id))
+
+	fileDir <- synapseClient:::.getAbsoluteFileCachePath(synapseClient:::.entityFileCachePath(id))
+	filePath <- paste(fileDir, "entity.json", sep="/")
+	# make sure file is cached 
+	checkTrue(file.exists(filePath))
+
+	# check the contents
+	eTag <- propertyValue(s, "etag")
+	checkTrue(!is.null(eTag))
+	checkEquals(entityName, propertyValue(s, "name"))
+	checkEquals(entityType, propertyValue(s, "entityType"))
+	checkEquals(fooList, annotValue(s, "foo"))
+	
+	# update the entity in the file cache
+	newName <- paste(entityName, "modified")
+	propertyValue(s, "name")<-newName
+	newFooList<-c("incan", "monkey-god")
+	annotValue(s, "foo")<-newFooList
+	
+	revisedEntity<-updateSynapseEntity(s)
+	
+	# make sure the file has been updated
+	checkEquals(newName, getEntityFromFileCache(id)@properties[["name"]])
+
+	# get the entity and make sure it's updated
+	revisedEntity<-getSynapseEntity(id)
+
+	checkTrue(!is.null(revisedEntity))
+	# check the contents
+	checkEquals(id, propertyValue(revisedEntity, "id"))
+	checkEquals(entityType, propertyValue(revisedEntity, "entityType"))
+	checkTrue(eTag != propertyValue(revisedEntity, "etag"))
+	checkEquals(newName, propertyValue(revisedEntity, "name"))
+	checkEquals(newFooList, annotValue(s, "foo"))
+	
+	# delete the entity
+	deleteSynapseEntity(id)
+	# make sure it's deleted.  GETting the id should now create a 404 http status (Not Found)
+	errorMessage <- try(getEntityFromSynapse(id))
+	checkTrue(any(grep("404", errorMessage)) || typeof(errorMessage)=='try-error')
+}
+
