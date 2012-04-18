@@ -513,13 +513,6 @@ setClass(
   )
 )
 
-setClass(
-  "Project",
-  contains = "SynapseLocationOwnerWithObjects",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Data"
-  )
-)
 
 setClass(
   Class = "Media",
