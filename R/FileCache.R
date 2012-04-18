@@ -32,8 +32,11 @@ setMethod(
     
     ## copy over the existing archive. by default we copy everyting
     ## TODO: implement different copy modes: all, none, files, archive
-    if(file.exists(object$getCacheRoot()))
-      file.copy(object$getCacheRoot(), path, recursive=TRUE)
+    if(file.exists(object$getCacheRoot())){
+      file.copy(file.path(object$getCacheRoot(), object$archiveFile), path)
+      file.copy(object$getCacheDir(), path, recursive=TRUE)
+      file.copy(file.path(object$getCacheRoot(), "files.json"), path)
+    }
     
     ## clean up old files
     if(clean)

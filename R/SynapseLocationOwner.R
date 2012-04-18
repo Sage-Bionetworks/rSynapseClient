@@ -98,7 +98,7 @@ setMethod(
     definition = function(entity){
       ufun <- getMethod("updateEntity", "SynapseEntity")
       updatedEntity <- ufun(entity)
-      updateEntity@archOwn <- entity@archOwn
+      slot(updatedEntity, "archOwn") <- entity@archOwn
       entity
     }
 )

@@ -44,7 +44,7 @@ setMethod(
       envir <- parent.frame(2)
       inherits <- FALSE
       name <- deparse(substitute(entity, env=parent.frame()))
-      deleteSynapseEntity(entity)
+      deleteSynapseEntity(propertyValue(entity,"id"))
       if(any(grepl(name,ls(envir=envir))))
         remove(list = name, envir=envir, inherits=inherits)
       entity <- deleteProperty(entity, "id")

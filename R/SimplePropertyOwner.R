@@ -89,6 +89,9 @@ setMethod(
   signature = signature("SimplePropertyOwner", "character", "list"),
   definition = function(object, which, value){
     props <- properties(object)
+    indx <- which(names(object@properties) == which)
+    if(length(indx) > 0L)
+      props <- props[-indx]
     val <- list()
     val[[which]] <- list(value)
     props <- c(props, val)
