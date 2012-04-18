@@ -66,7 +66,7 @@ setMethod(
   signature = "SynapseEntity",
   definition = function(entity)
   {
-    stop("Need to implment update entity")
+    createSynapseEntity(entity)
   }
 )
 

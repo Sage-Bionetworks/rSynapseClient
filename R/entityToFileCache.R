@@ -3,6 +3,31 @@
 ## Author: Bruce Hoff <bruce.hoff@sagebase.org
 ###############################################################################
 
+
+createSynapseEntity<- function(synapseEntity) {
+  # create the entity in Synapse and get back the id
+  id <- propertyValue(createEntity(synapseEntity), "id")
+  # now download the annotations to the local cache
+  getAnnotationsFromSynapse(id)
+  # read annotations from local cache into memory
+  annots <- getAnnotationsFromFileCache(id)
+  # merge annotations from input variable into 'annots'
+  for (n in annotationNames(synapseEntity)) {
+    annotValue(annots, n)<-annotValue(synapseEntity, n)
+  }
+  # now persist to file cache and to Synapse
+  updateAnnotationsInFileCache(annots)
+  updateAnnotationsInSynapse(id)
+  
+  # at this point the entity and its annotations are created
+  # it remains to ensure the file cache is up-to-date
+  # (in particular the 'update' will increment the etag) and
+  # to construct the latest version of the object
+  getSynapseEntity(id)
+}
+
+
+
 # This function downloads a Synapse entity into the local file cache:
 # - downloads entity itself, as JSON, and creates a local file, 
 #   <cache>/entity/<id>/entity.json, or <cache>/entity/<id>/<version>/entity.json

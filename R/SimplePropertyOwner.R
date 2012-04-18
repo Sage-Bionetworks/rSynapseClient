@@ -84,6 +84,20 @@ setMethod(
 		}
 )
 
+setMethod(
+  f = "propertyValue<-",
+  signature = signature("SimplePropertyOwner", "character", "list"),
+  definition = function(object, which, value){
+    props <- properties(object)
+    val <- list()
+    val[[which]] <- value
+    props <- c(props, val)
+    object@properties <- props
+    object
+  }
+)
+
+
 
 ## S3 method to convert object to list
 as.list.SimplePropertyOwner<-function(x) {
