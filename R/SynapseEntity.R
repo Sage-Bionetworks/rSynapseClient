@@ -30,6 +30,18 @@ setMethod(
 )
 
 setMethod(
+  f = "createEntity",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    ## create the entity
+    content <- as.list.SimplePropertyOwner(entity)
+    ee <- getEntityInstance(.synapsePostPut("/entity", content, "POST"))
+    ## annotations aren't persisted
+    ee
+  }
+)
+
+setMethod(
     f = "deleteEntity",
     signature = "SynapseEntity",
     definition = function(entity){
