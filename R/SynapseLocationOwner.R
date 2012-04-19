@@ -69,7 +69,7 @@ setMethod(
     } 
     
     entity <- tryCatch(
-      .performRUpload(entity, filePath),
+      synapseClient:::.performRUpload(entity, filePath),
       error = function(e){
         warning(sprintf("failed to upload data file, please try again: %s", e))
         return(entity)
@@ -77,7 +77,9 @@ setMethod(
     )
     
     ## move the data file from where it is to the local cache directory
-    parsedUrl <- .ParsedUrl(propertyValue(entity, 'locations')[[1]]['path'])
+    if(is.null(propertyValue(entity, 'locations')[[1]]['path']))
+      stop("NULL URL")
+    parsedUrl <- synapseClient:::.ParsedUrl(propertyValue(entity, 'locations')[[1]]['path'])
     destdir <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@pathPrefix))
     destdir <- path.expand(destdir)
     
@@ -87,8 +89,19 @@ setMethod(
     entity@archOwn <- setCacheRoot(entity@archOwn, destdir, clean = TRUE)
   
     ## unpack the archive into it's new root directory.
-    entity@archive <- unpackArchive(entity@archOwn)
+    entity@archOwn <- unpackArchive(entity@archOwn)
     invisible(entity)
+  }
+)
+
+setMethod(
+  f = "getEntity",
+  signature = "SynapseLocationOwner",
+  definition = function(entity){
+    gfun <- getMethod("getEntity", "SynapseEntity")
+    ee <- gfun(entity)
+    ee@archOwn <- entity@archOwn
+    ee
   }
 )
 
@@ -99,7 +112,7 @@ setMethod(
       ufun <- getMethod("updateEntity", "SynapseEntity")
       updatedEntity <- ufun(entity)
       slot(updatedEntity, "archOwn") <- entity@archOwn
-      entity
+      updatedEntity
     }
 )
 
@@ -120,13 +133,34 @@ setMethod(
     ## download the archive from S3
     ## Note that we just use the first location, to future-proof this we would use the location preferred
     ## by the user, but we're gonna redo this in java so no point in implementing that here right now
-    archivePath = synapseDownloadFile(url = locations[[1]]['path'], checksum = propertyValue(entity, "md5"))
+    dfun <- getMethod("downloadEntity", "SynapseEntity")
+    ee <- dfun(entity)
+    ee@archOwn <- entity@archOwn
     
-    ## instantiate the FileCache object
-    entity@archOwn <- getFileCache(archivePath)
+    if(is.null(propertyValue(entity, "locations")[[1]][['path']]))
+      return(entity)
     
+    ## download the file
+    url <- propertyValue(entity, "locations")[[1]][['path']]
+    
+    parsedUrl <- synapseClient:::.ParsedUrl(url)
+    destfile <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@path))
+    destfile <- path.expand(destfile)
+    cacheRoot <- gsub(basename(destfile), "", destfile, fixed=TRUE)
+    if(!file.exists(cacheRoot))
+      dir.create(cacheRoot, recursive=T)
+    cacheRoot <- normalizePath(cacheRoot)
+    suppressWarnings(
+      entity@archOwn <- setCacheRoot(entity@archOwn, cacheRoot, clean=TRUE)
+    )
+    archiveFile = synapseDownloadFile(url, propertyValue(entity, "md5"))
+    archiveFile <- normalizePath(archiveFile)
+    
+    
+    fc <- getFileCache(archiveFile)
+    entity@archOwn@fileCache <- fc
     ## unpack the archive
-    unpackArchive(entity@archOwn)
+    entity@archOwn <- unpackArchive(entity@archOwn)
     
     entity
   }
