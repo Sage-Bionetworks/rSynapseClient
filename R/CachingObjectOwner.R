@@ -26,7 +26,7 @@ setMethod(
   f = "setFileCache",
   signature = signature("CachingObjectOwner", "FileCache"),
   definition = function(owner, fileCache){
-    owner@objects <- setFileCache(owner@objects, fileCache)
+    owner$objects <- setFileCache(owner$objects, fileCache)
     owner
   }
 )
