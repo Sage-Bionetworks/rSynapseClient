@@ -142,7 +142,7 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 	updateAnnotationsInFileCache(annots)
 	# make sure the file has been updated
 
-	fooList <- annotValue(getAnnotationsFromFileCache(id), "foo")
+	fooList <- annotValue(getAnnotationsFromFileCache(id), "foo")[[1]]
 	checkTrue(!is.null(fooList))
 	checkEquals(2, length(fooList))
 	checkEquals(newArray, fooList)

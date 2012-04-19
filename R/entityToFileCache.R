@@ -57,7 +57,7 @@ getEntityFromFileCache<- function(id, version=NULL) {
 
 	#SynapseEntity(as.list(fromJSON(paste(entityCachePath, .getCache("ENTITY_FILE_NAME"), sep="/"))))
 
-    getEntityInstance(as.list(fromJSON(paste(entityCachePath, .getCache("ENTITY_FILE_NAME"), sep="/"))))
+    getEntityInstance(as.list(fromJSON(paste(entityCachePath, .getCache("ENTITY_FILE_NAME"), sep="/"), simplifyWithNames=FALSE)))
 
 }
 
@@ -67,7 +67,7 @@ getEntityFromFileCache<- function(id, version=NULL) {
 #
 getAnnotationsFromFileCache<- function(id, version=NULL) {
 	entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
-	SynapseAnnotations(as.list(fromJSON(paste(entityCachePath, .getCache("ANNOTATIONS_FILE_NAME"), sep="/"))))
+	SynapseAnnotations(as.list(fromJSON(paste(entityCachePath, .getCache("ANNOTATIONS_FILE_NAME"), sep="/"), simplifyWithNames=FALSE)))
 }
 
 # note 'filePath' omits the cache root, which is prepended by this function
@@ -140,7 +140,7 @@ updateEntityInSynapse<-function(id, version=NULL) {
 	uri <- .getEntityUri(id, version)
 	filePath <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
       .getCache("ENTITY_FILE_NAME"), sep="/")
-	content <- as.list(fromJSON(readLines(filePath)))
+	content <- as.list(fromJSON(readLines(filePath), simplifyWithNames=FALSE))
 	.synapsePostPut(uri, content, "PUT")
 }
 
@@ -166,9 +166,23 @@ updateAnnotationsInFileCache<-function(annots) {
 }
 
 updateAnnotationsInSynapse<-function(id, version=NULL) {
+  annotations <- as.list(fromJSON(readLines(paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
+          .getCache("ANNOTATIONS_FILE_NAME"), sep="/")), simplifyWithNames=FALSE))
+  ## make sure all scalars are converted to lists since the service expects all 
+  ## annotation values to be arrays instead of scalars
+  for(key in names(annotations)){
+    ## This is one of our annotation buckets
+    if(is.list(annotations[[key]])) {
+      for(annotKey in names(annotations[[key]])) {
+        if(!is.list(annotations[[key]][[annotKey]])) {
+          annotations[[key]][[annotKey]] <- list(annotations[[key]][[annotKey]])
+        }
+      }
+    }
+  }
+  
 	.synapsePostPut(.getAnnotationsUri(id, version), 
-			as.list(fromJSON(readLines(paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
-                      .getCache("ANNOTATIONS_FILE_NAME"), sep="/")))), "PUT")
+			annotations, "PUT")
 }
 
 
@@ -268,11 +282,26 @@ updateSynapseEntity<-function(synapseEntity) {
 	getAnnotationsFromSynapse(id)
 	# read annotations from local cache into memory
 	annots <- getAnnotationsFromFileCache(id)
-	# merge annotations from input variable into 'annots'
-	# TODO this logic *merges* only.  Need to allow local copy to *delete* annotations
-	for (n in annotationNames(synapseEntity)) {
-		annotValue(annots, n)<-annotValue(synapseEntity, n)
-	}
+    
+    # merge annotations from input variable into 'annots'
+    # TODO this logic *merges* only.  Need to allow local copy to *delete* annotations
+    for (n in annotationNames(synapseEntity)) {
+      annotValue(annots, n)<-annotValue(synapseEntity, n)
+    }
+    
+    ## make sure all scalars are converted to lists since the service expects all 
+    ## annotation values to be arrays instead of scalars
+    for(key in names(annots)){
+      ## This is one of our annotation buckets
+      if(is.list(annots[[key]])) {
+        for(annotKey in names(annots[[key]])) {
+          if(!is.list(annots[[key]][[annotKey]])) {
+            annots[[key]][[annotKey]] <- list(annots[[key]][[annotKey]])
+          }
+        }
+      }
+    }
+  
 	# now persist to file cache and to Synapse
 	updateAnnotationsInFileCache(annots)
 	updateAnnotationsInSynapse(id)
