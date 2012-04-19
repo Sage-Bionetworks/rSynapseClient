@@ -8,7 +8,7 @@ setMethod(
   signature = "CachingEnhancedEnvionment",
   definition = function(.Object){
     ## By default, store the files in subdirectory of the FileCache
-    .Object@env = new.env(parent = emptyenv())
+    .Object@env = new.env()
     .Object@cachePrefix <- ".R_OBJECTS/"
     .Object@fileCache <- FileCache()
     .Object@cacheSuffix <- "rbin"
@@ -144,10 +144,10 @@ setMethod(
     
     ## temporarily store all objects into an environment. also store the destination objects 
     ## so that things can be put back if an exception is encountered
-    tmpEnvSrc <- new.env(parent=emptyenv())
+    tmpEnvSrc <- new.env()
     lapply(which, function(w) assign(w, getObject(owner, w), envir=tmpEnvSrc))
     
-    tmpEnvDest <- new.env(parent=emptyenv())
+    tmpEnvDest <- new.env()
     lapply(intersect(names(owner), name), function(w){
         assign(w, getObject(owner, w), envir=tmpEnvDest)
       })

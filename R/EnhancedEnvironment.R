@@ -69,7 +69,7 @@ setMethod(
     f = "initialize",
     signature = "EnhancedEnvironment",
     definition = function(.Object){
-      .Object@env = new.env(parent = emptyenv())
+      .Object@env = new.env()
       .Object
     }
 )
