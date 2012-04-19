@@ -120,7 +120,22 @@ as.list.SynapseAnnotations <-
 
 
 as.list.SynapseAnnotations<-function(x) {
-	c(as.list(x@properties), as.list(x@annotations))
+  annotations <- as.list(x@annotations)
+    
+    ## make sure all scalars are converted to lists since the service expects all 
+    ## annotation values to be arrays instead of scalars
+    for(key in names(annotations)){
+      ## This is one of our annotation buckets
+      if(is.list(annotations[[key]])) {
+        for(annotKey in names(annotations[[key]])) {
+          if(!is.list(annotations[[key]][[annotKey]])) {
+            annotations[[key]][[annotKey]] <- list(annotations[[key]][[annotKey]])
+          }
+        }
+      }
+    }
+  
+  c(as.list(x@properties), annotations)
 }
 
 # move content from 'entity' (a list) to 'object' ( a SynapseAnnotations)
@@ -128,18 +143,24 @@ setMethod(
   f = ".populateSlotsFromEntity",
   signature = signature("TypedPropertyStore", "list", "missing"),
   definition = function(object, entity){
-
+    
     nms <- c("stringAnnotations",
       "doubleAnnotations",
       "longAnnotations",
       "dateAnnotations",
       "blobAnnotations")
-   
+    
     # for some reason this doesn't work
     #lapply(nms, function(n) slot(object, n) <- entity[[n]])
-	# but this does
-	for (n in nms) slot(object, n)<- entity[[n]]
-
+    # but this does
+    for (n in nms) {
+      if(!is.list(entity[[n]])){
+        slot(object, n)<- as.list(entity[[n]])
+      }else{
+        slot(object, n)<- entity[[n]]
+      }
+    }
+    
     object
   }
 )

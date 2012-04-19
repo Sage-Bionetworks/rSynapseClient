@@ -27,7 +27,7 @@ unitTestChangeRoot <-
   ans <- fc$unpackArchive()
   
   oldCacheDir <- fc$cacheDir
-  oldMD5 <- as.character(md5sum(file.path(fc$cacheRoot, fc$archiveFile)))
+  oldMD5 <- as.character(tools::md5sum(file.path(fc$cacheRoot, fc$archiveFile)))
   ## change the cacheRoot
   newRoot <- tempfile()
   checkTrue(!file.exists(newRoot))
@@ -40,7 +40,7 @@ unitTestChangeRoot <-
   checkTrue(all(dir(cacheRoot) %in% dir(fc$cacheRoot)))
   checkTrue(file.exists(fc$cacheDir))
   
-  checkEquals(as.character(md5sum(file.path(fc$cacheRoot, fc$archiveFile))), oldMD5)
+  checkEquals(as.character(tools::md5sum(file.path(fc$cacheRoot, fc$archiveFile))), oldMD5)
   
   ## now unpack
   unlink(fc$cacheDir, force=T, recursive=T)
@@ -68,7 +68,7 @@ unitTestChangeRoot <-
   checkTrue(all(dir(cacheRoot) %in% dir(fc$cacheRoot)))
   checkTrue(file.exists(fc$cacheDir))
   
-  checkEquals(as.character(md5sum(file.path(fc$cacheRoot, fc$archiveFile))), oldMD5)
+  checkEquals(as.character(tools::md5sum(file.path(fc$cacheRoot, fc$archiveFile))), oldMD5)
   
   checkTrue(!file.exists(root2))
   

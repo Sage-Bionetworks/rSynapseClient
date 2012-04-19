@@ -175,6 +175,14 @@ setMethod(
 
 setMethod(
   f = "setProperty",
+  signature = signature("TypedPropertyStore", "character", "logical"),
+  definition = function(object, which, value){
+    setUpdatePropValue(object, which, as.character(value), type = "stringAnnotations")
+  }
+)
+
+setMethod(
+  f = "setProperty",
   signature = signature("TypedPropertyStore", "character", "character"),
   definition = function(object, which, value){
     setUpdatePropValue(object, which, value, type = "stringAnnotations")
