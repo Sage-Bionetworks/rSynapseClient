@@ -54,7 +54,7 @@ setMethod(
   f = "storeEntity",
   signature = "SynapseLocationOwnerWithObjects",
   definition = function(entity){
-    if((length(data$files) + length(data$objects)) > 0L){
+    if((length(entity$files) + length(entity$objects)) > 0L){
       ## create the archive on disk (which will persist file metaData to disk)
       createArchive(entity@archOwn)
       
@@ -261,6 +261,7 @@ setMethod(
   definition = function(.Object){
     .Object@archOwn <- new("ArchiveOwner")
     .Object@objOwn <- new("CachingObjectOwner")
+    .Object@objOwn$objects@fileCache <- .Object@archOwn@fileCache
     .Object
   }
 )
