@@ -13,30 +13,30 @@ setMethod(
   }
 )
 
-setMethod(
-  f = "downloadEntity",
-  signature = "SynapseLocationOwnerWithObjects",
-  definition = function(entity){
-    ## check whether user has signed agreement
-    ## euals are broken. ignore for now
-#    if(!hasSignedEula(entity)){
-#      if(!.promptSignEula())
-#        stop(sprintf("Visit https://synapse.sagebase.org to sign the EULA for entity %s", propertyValue(entity, "id")))
-#      if(!.promptEulaAgreement(entity))
-#        stop("You must sign the EULA to download this dataset. Visit http://synapse.sagebase.org for more information.")
-#      .signEula(entity)
-#    }
-    
-    ## download the archive from S3
-    ## Note that we just use the first location, to future-proof this we would use the location preferred
-    ## by the user, but we're gonna redo this in java so no point in implementing that here right now
-    dfun <- getMethod("downloadEntity", "SynapseLocationOwner")
-    ee <- dfun(entity)
-    ee@objOwn <- entity@objOwn
-    
-    entity
-  }
-)
+#setMethod(
+#  f = "downloadEntity",
+#  signature = "SynapseLocationOwnerWithObjects",
+#  definition = function(entity){
+#    ## check whether user has signed agreement
+#    ## euals are broken. ignore for now
+##    if(!hasSignedEula(entity)){
+##      if(!.promptSignEula())
+##        stop(sprintf("Visit https://synapse.sagebase.org to sign the EULA for entity %s", propertyValue(entity, "id")))
+##      if(!.promptEulaAgreement(entity))
+##        stop("You must sign the EULA to download this dataset. Visit http://synapse.sagebase.org for more information.")
+##      .signEula(entity)
+##    }
+#    
+#    ## download the archive from S3
+#    ## Note that we just use the first location, to future-proof this we would use the location preferred
+#    ## by the user, but we're gonna redo this in java so no point in implementing that here right now
+#    dfun <- getMethod("downloadEntity", "SynapseLocationOwner")
+#    ee <- dfun(entity)
+#    ee@objOwn <- entity@objOwn
+#    
+#    entity
+#  }
+#)
 
 
 
@@ -62,7 +62,12 @@ setMethod(
       entity <- storeFile(entity ,file.path(entity@archOwn@fileCache$getCacheRoot(), entity@archOwn@fileCache$getArchiveFile()))
 
     }else{
-      entity <- updateEntity(entity)
+      if(is.null(propertyValue(entity, "id")))
+      {
+        entity <- createEntity(entity)
+      }else{
+        entity <- updateEntity(entity)
+      }
     }
     entity
   }
@@ -110,7 +115,9 @@ setMethod(
     
     ## now set the archive for the caching object owner to be the same
     ## as the one for the archive owner
-    ee@objOwn$objects$fileCache <- entity@archOwn@fileCache
+    oo <- entity@objOwn
+    setFileCache(oo, entity@archOwn@fileCache)
+    ee@objOwn <- oo
     
     ee
   }
