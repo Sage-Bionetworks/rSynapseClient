@@ -168,7 +168,12 @@ setMethod(
       object <- setUpdatePropValue(object, which)
     
     ## assign the new value to the correct type slot
-    slot(object, type)[[which]] <- value
+	# note: by convention the values in the key-value pairs are *vectors* not *scalars*
+	if (is.list(value) | is.vector(value)) {
+    	slot(object, type)[[which]] <- value
+	} else {
+		slot(object, type)[[which]] <- c(value)
+	}
     object
   }
 )
