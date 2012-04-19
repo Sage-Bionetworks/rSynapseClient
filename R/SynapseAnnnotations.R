@@ -111,11 +111,13 @@ setMethod(
   }
 )
 
-## S3 method for converting to list
-as.list.SynapseAnnotations <- 
-  function(x, ...){
-  as.list(x@annotations, ...)
+
+# for some reason the method above doesn't do what you expect, but this DOES
+as_list_SynapseAnnotations <- 
+		function(x, ...){
+	as.list(x@annotations, ...)
 }
+
 
 
 
@@ -128,7 +130,7 @@ as.list.SynapseAnnotations<-function(x) {
       ## This is one of our annotation buckets
       if(is.list(annotations[[key]])) {
         for(annotKey in names(annotations[[key]])) {
-          if(!is.list(annotations[[key]][[annotKey]])) {
+          if(!is.list(annotations[[key]][[annotKey]]) && !is.vector(annotations[[key]][[annotKey]])) {
             annotations[[key]][[annotKey]] <- list(annotations[[key]][[annotKey]])
           }
         }
