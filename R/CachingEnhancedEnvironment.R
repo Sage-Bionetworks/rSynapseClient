@@ -412,7 +412,10 @@ setMethod(
     rm(list= names(owner), envir = as.environment(owner))
     
     ## get the cached files
-    files <- file.path(owner@fileCache$getCacheDir(), files(owner))
+    ##files <- file.path(owner@fileCache$getCacheDir(), files(owner))
+    ##
+    ##major hack need to fix this once the FileCache is fixed
+    files <- dir(file.path(owner@fileCache$cacheDir, owner@cachePrefix), full.names=T)
     if(length(files == 0L))
       invisible(owner)
     
