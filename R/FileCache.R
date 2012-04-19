@@ -23,7 +23,7 @@ setMethod(
         return(object)
       
       ## remove the new cacheroot
-      unlink(path, recursive=TRUE, force=TRUE)
+      unlink(path, recursive=TRUE)
     }
     
     ## compute the cachedir <cacheroot>/<cachedir>
@@ -40,7 +40,7 @@ setMethod(
     
     ## clean up old files
     if(clean)
-      unlink(object$getCacheRoot(), force = TRUE, recursive = TRUE)
+      unlink(object$getCacheRoot(), recursive = TRUE)
     
     ## set the member variables to reflect the new values
     object$cacheDir <- normalizePath(cacheDir)
