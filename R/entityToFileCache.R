@@ -6,7 +6,7 @@
 
 createSynapseEntity<- function(synapseEntity) {
   # create the entity in Synapse and get back the id
-  id <- propertyValue(createEntity(synapseEntity), "id")
+  id <- propertyValue(doCreateEntity(synapseEntity), "id")
   # now download the annotations to the local cache
   getAnnotationsFromSynapse(id)
   # read annotations from local cache into memory

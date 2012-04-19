@@ -49,19 +49,19 @@ integrationTestAddToNewDataEntity <-
   checkEquals(data$files, gsub("^/+", "", gsub("/+", "/", file.path(path, file))))
   
   data <- storeEntity(data)
-  checkTrue(grepl(synapseClient:::synapseCacheDir(), data$cacheDir, fixed=TRUE))
+  checkTrue(grepl(normalizePath(synapseClient:::synapseCacheDir()), data$cacheDir, fixed=TRUE))
   checkEquals(length(data$files), 1L)
   checkTrue(file.exists(file.path(data$cacheDir, data$files)))
   
   ##update the data
   file <- "file2.rbin"
-  path <- "/apath2"
+  path <- "/apath2/"
   d <- diag(x=2,nrow=10, ncol=10)
   save(d, file=file.path(tempdir(), file))
   data <- addFile(data, file.path(tempdir(), file), path)
   checkEquals(length(data$files), 2L)
-  checkEquals(data$files[2], gsub(sprintf("^%s", .Platform$file.sep), "", file.path(path, file)))
-  checkTrue(grepl(synapseClient:::synapseCacheDir(), data$cacheDir, fixed=TRUE))
+  checkEquals(data$files[2], gsub("/+","/",gsub(sprintf("^%s", .Platform$file.sep), "", file.path(path, file))))
+  checkTrue(grepl(normalizePath(synapseClient:::synapseCacheDir()), data$cacheDir, fixed=TRUE))
   
   checkTrue(all(file.exists(file.path(data$cacheDir, data$files))))
   
@@ -82,7 +82,7 @@ integrationTestAddToNewDataEntity <-
   data <- addFile(data, file.path(tempdir(), file), path)
   checkEquals(length(data$files), 3L)
   checkEquals(data$files[3], gsub(sprintf("^%s+", .Platform$file.sep), "", file.path(path, file)))
-  checkTrue(grepl(synapseClient:::synapseCacheDir(), data$cacheDir, fixed=TRUE))
+  checkTrue(grepl(normalizePath(synapseClient:::synapseCacheDir()), data$cacheDir, fixed=TRUE))
   
   data <- storeEntity(data)
   checkEquals(length(data$files), 3L)
@@ -104,7 +104,7 @@ integrationTestAddToNewDataEntity <-
   data <- addFile(data, file.path(tempdir(), file), path)
   checkEquals(length(data$files), 4L)
   checkEquals(data$files[4], gsub(sprintf("^%s+", .Platform$file.sep), "", file.path(path, file)))
-  checkTrue(grepl(synapseClient:::synapseCacheDir(), data$cacheDir, fixed=TRUE))
+  checkTrue(grepl(normalizePath(synapseClient:::synapseCacheDir()), data$cacheDir, fixed=TRUE))
   
   data <- storeEntity(data)
   checkEquals(length(data$files), 4L)

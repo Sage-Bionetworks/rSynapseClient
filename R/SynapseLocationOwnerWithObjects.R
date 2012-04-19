@@ -14,6 +14,43 @@ setMethod(
 )
 
 setMethod(
+  f = "downloadEntity",
+  signature = "SynapseLocationOwnerWithObjects",
+  definition = function(entity){
+    ## check whether user has signed agreement
+    ## euals are broken. ignore for now
+#    if(!hasSignedEula(entity)){
+#      if(!.promptSignEula())
+#        stop(sprintf("Visit https://synapse.sagebase.org to sign the EULA for entity %s", propertyValue(entity, "id")))
+#      if(!.promptEulaAgreement(entity))
+#        stop("You must sign the EULA to download this dataset. Visit http://synapse.sagebase.org for more information.")
+#      .signEula(entity)
+#    }
+    
+    ## download the archive from S3
+    ## Note that we just use the first location, to future-proof this we would use the location preferred
+    ## by the user, but we're gonna redo this in java so no point in implementing that here right now
+    dfun <- getMethod("downloadEntity", "SynapseLocationOwner")
+    ee <- dfun(entity)
+    ee@objOwn <- entity@objOwn
+    
+    entity
+  }
+)
+
+
+
+setMethod(
+  f = "getEntity",
+  signature = "SynapseLocationOwnerWithObjects",
+  definition = function(entity){
+    gfun <- getMethod("getEntity", "SynapseLocationOwner")
+    ee <- gfun(entity)
+    ee@objOwn <- entity@objOwn
+    ee
+  }
+)
+setMethod(
   f = "storeEntity",
   signature = "SynapseLocationOwnerWithObjects",
   definition = function(entity){
@@ -23,6 +60,7 @@ setMethod(
       
       ## upload the archive  file (storeFile also updates the entity)
       entity <- storeFile(entity ,file.path(entity@archOwn@fileCache$getCacheRoot(), entity@archOwn@fileCache$getArchiveFile()))
+
     }else{
       entity <- updateEntity(entity)
     }
@@ -47,7 +85,7 @@ setMethod(
       ufun <- getMethod("updateEntity", "SynapseLocationOwner")
       updatedEntity <- ufun(entity)
       updatedEntity@objOwn <- entity@objOwn
-      entity
+      updatedEntity
     }
 )
 setMethod(
@@ -67,13 +105,14 @@ setMethod(
   definition = function(entity){
     ## call the superclass method
     dlfun <- getMethod("downloadEntity", signature="SynapseLocationOwner")
-    entity <- dlfun(entity)
+    ee <- dlfun(entity)
+    ee@objOwn <- entity@objOwn
     
     ## now set the archive for the caching object owner to be the same
     ## as the one for the archive owner
-    entity@objOwn <- setFileCache(entity@objOwn, entity@archOwn@fileCache)
+    ee@objOwn$objects$fileCache <- entity@archOwn@fileCache
     
-    entity
+    ee
   }
 )
 

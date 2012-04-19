@@ -58,7 +58,7 @@ setMethod(
     fc <- new("FileCache")
     if(!file.exists(cacheRoot))
       tryCatch(
-        dir.create(cacheRoot),
+        dir.create(cacheRoot, recursive=TRUE),
         warning = function(e){
           stop(e)
         }

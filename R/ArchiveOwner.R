@@ -13,6 +13,17 @@ setMethod(
   }
 )
 
+setMethod(
+  f = "getEntity",
+  signature = "SynapseLocationOwner",
+  definition = function(entity){
+    gfun <- getMethod("getEntity", "SynapseEntity")
+    ee <- gfun(entity)
+    ee@archOwn <- entity@archOwn
+    ee
+  }
+)
+
 
 setMethod(
   f = "setCacheRoot",

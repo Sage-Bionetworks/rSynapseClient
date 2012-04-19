@@ -3,6 +3,15 @@
 # Author: furia
 ###############################################################################
 
+
+
+setGeneric(
+  name = "initialzeEntity",
+  def = function(entity){
+    standardGeneric("initialzeEntity")
+  }
+)
+
 setGeneric(
   name = "storeEntityObjects",
   def = function(entity){
@@ -135,7 +144,7 @@ setGeneric(
 
 setGeneric(
   name = "getEntity",
-  def = function(entity, fromCache){
+  def = function(entity){
     standardGeneric("getEntity")
   }
 )
