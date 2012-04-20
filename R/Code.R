@@ -55,7 +55,7 @@ edit.Code <-
 #    name <- addFile(name, file)
 #  }
   
-  file.edit(file.path(name$cacheDir, file), ...)
+  file.edit(sprintf("/%s", file), ...)
   invisible(name)
 }
 

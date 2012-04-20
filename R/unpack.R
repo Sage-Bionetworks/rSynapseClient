@@ -4,12 +4,11 @@
 ###############################################################################
 
 .unpack <- 
-  function(filename, suffix = "unpacked")
+  function(filename, destdir)
 {
   filename <- path.expand(filename)
-  splits <- strsplit(filename, "\\.")
+  splits <- strsplit(basename(filename), "\\.")
   extension <- splits[[1]][length(splits[[1]])]
-  destdir <-  sprintf("%s_%s", filename, suffix)
   extension <- tolower(extension)
   
   switch(extension,
