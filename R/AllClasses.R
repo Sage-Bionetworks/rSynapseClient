@@ -146,7 +146,6 @@ setRefClass(
           file = file.path(.self$cacheRoot, "files.json")
           if(!file.exists(file)){
             .self$metaData <- emptyNamedList
-            .self$archiveFile <- ""
           }else{
             dd <- fromJSON(file, simplifyWithNames=FALSE)
             .self$metaData <- dd$metaData
@@ -168,6 +167,15 @@ setRefClass(
           ## if the FileCache has no files, throw and exception
           if(length(.self$files()) == 0L)
             stop("There are not files to archive, add files using addFile then try again")
+          
+          ## if the archive file doesn't have a zip extension. simply copy it to the root
+          if(!grepl("\\.gz",.self$archiveFile)){
+            if(length(.self$files()) != 1L)
+              stop("can only have one file when not zipping")
+            file.copy(file.path(.self$cacheDir, .self$files()), .self$cacheRoot)
+            ## re-cache the metaData to disk
+            .self$cacheFileMetaData()
+          }
           
           ## this check should be done elsewhere, but for now let's leave it here.
           if(length(.self$files() > 1L) && ! hasZip())
@@ -247,7 +255,7 @@ setRefClass(
           .self$deleteFileMetaData()
           
           lapply(files$srcfiles, function(i){
-                info <- file.info(i)
+                info <- file.info(files$srcfiles[i])
                 for(name in names(info))
                   info[[name]] <- as.character(info[[name]])
                 
