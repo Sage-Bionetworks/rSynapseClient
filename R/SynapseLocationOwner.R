@@ -133,10 +133,10 @@ setMethod(
     ## download the archive from S3
     ## Note that we just use the first location, to future-proof this we would use the location preferred
     ## by the user, but we're gonna redo this in java so no point in implementing that here right now
-    dfun <- getMethod("downloadEntity", "SynapseEntity")
-    ee <- dfun(entity)
-    ee@archOwn <- entity@archOwn
-    
+#    dfun <- getMethod("downloadEntity", "SynapseEntity")
+#    ee <- dfun(entity)
+#    ee@archOwn <- entity@archOwn
+  
     if(is.null(propertyValue(entity, "locations")[[1]][['path']]))
       return(entity)
     
@@ -147,13 +147,16 @@ setMethod(
     destfile <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@path))
     destfile <- path.expand(destfile)
     cacheRoot <- gsub(basename(destfile), "", destfile, fixed=TRUE)
-    if(!file.exists(cacheRoot))
-      dir.create(cacheRoot, recursive=T)
-    cacheRoot <- normalizePath(cacheRoot)
-    suppressWarnings(
-      entity@archOwn <- setCacheRoot(entity@archOwn, cacheRoot, clean=TRUE)
-    )
-    archiveFile = synapseDownloadFile(url, propertyValue(entity, "md5"))
+    entity@archOwn <- setCacheRoot(entity@archOwn, cacheRoot, clean=TRUE)
+
+    
+    ## passing the md5 sum causes this funciton to only download the file
+    ## if the cached copy does not match that md5 sum
+    if(file.exists(destfile)){
+      archiveFile = synapseDownloadFile(url, propertyValue(entity, "md5"))
+    }else{
+      archiveFile = synapseDownloadFile(url)
+    }
     archiveFile <- normalizePath(archiveFile)
     
     
