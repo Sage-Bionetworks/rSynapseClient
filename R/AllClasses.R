@@ -232,7 +232,7 @@ setRefClass(
           
           ## remove the contents of the cacheDir
           unlink(.self$cacheDir, force=TRUE, recursive = TRUE)
-          files <- .unpack(file.path(.self$cacheRoot, .self$archiveFile))
+          files <- .unpack(file.path(.self$cacheRoot, .self$archiveFile), .self$cacheDir)
           
           ## populate the file metadata
           files <- .generateFileList(attr(files, "rootDir"))
