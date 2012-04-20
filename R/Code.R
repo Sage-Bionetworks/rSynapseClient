@@ -45,7 +45,7 @@ edit.Code <-
   if(any(which) > length(name$files))
     stop("Invalid file specified")
 
-  file <- name$files[which]
+  file <- file.path(name$cacheDir, name$files)[which]
 #  if(!("file" %in% names(args))){
 #    tmpFile <- tempfile()
 #    file.create(tmpFile)
@@ -55,7 +55,7 @@ edit.Code <-
 #    name <- addFile(name, file)
 #  }
   
-  file.edit(sprintf("/%s", file), ...)
+  file.edit(file, ...)
   invisible(name)
 }
 
@@ -75,7 +75,7 @@ setMethod(
     tryCatch(
       lapply(entity$files[indx],
         function(f){
-          f <- file.path(f)
+          f <- file.path(entity$cacheDir, f)
           sys.source(f, env = as.environment(as.environment(entity@archOwn@objects)))
         }
       ),

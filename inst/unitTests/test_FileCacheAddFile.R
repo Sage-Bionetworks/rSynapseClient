@@ -109,72 +109,71 @@ unitTestMultipleSlashes <-
 unitTestAddDirNoPathTwoFiles <-
   function()
 {
-#  dir <- tempfile()
-#  dir.create(file.path(dir,"/subdir"), recursive=T)
-#  file <- file.path(dir, "/subdir/myFile.rbin")
-#  d <- diag(nrow=10, ncol=10)
-#  save(d, file=file)
-#  
-#  file2 <- file.path(dir, "myFile2.rbin")
-#  d <- diag(x=2,nrow=10, ncol=10)
-#  save(d, file=file2)
-#  
-#  fc <- new(Class="FileCache")
-#  addFile(fc, dir)
-#  relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
-#  checkTrue(all(file.path(gsub("^.+[\\\\/]+", "", dir), c("subdir/myFile.rbin", "myFile2.rbin")) %in% relPaths))
+  dir <- tempfile()
+  dir.create(file.path(dir,"/subdir"), recursive=T)
+  file <- file.path(dir, "/subdir/myFile.rbin")
+  d <- diag(nrow=10, ncol=10)
+  save(d, file=file)
+  
+  file2 <- file.path(dir, "myFile2.rbin")
+  d <- diag(x=2,nrow=10, ncol=10)
+  save(d, file=file2)
+  
+  fc <- new(Class="FileCache")
+  addFile(fc, dir)
+  relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
+  checkTrue(all(file.path(gsub("^.+[\\\\/]+", "", dir), c("subdir/myFile.rbin", "myFile2.rbin")) %in% relPaths))
   
 }
 
 unitTestAddDirNoPath <-
   function()
 {
-#  dir <- tempfile()
-#  file <- file.path(dir, "/subdir/myFile.rbin")
-#  dir.create(file.path(dir, "/subdir"), recursive = TRUE)
-#  d <- diag(nrow=10, ncol=10)
-#  save(d, file=file)
-#  
-#  fc <- new(Class="FileCache")
-#  addFile(fc, dir)
-  ##checkEquals(fc$getFileMetaData()[[1]]$relativePath, sprintf("%s/%s", gsub("^.+[\\\\/]", "", dir), "subdir/myFile.rbin"))
-  warning("disabled test")
+  dir <- tempfile()
+  file <- file.path(dir, "/subdir/myFile.rbin")
+  dir.create(file.path(dir, "/subdir"), recursive = TRUE)
+  d <- diag(nrow=10, ncol=10)
+  save(d, file=file)
+  
+  fc <- new(Class="FileCache")
+  addFile(fc, dir)
+  checkEquals(fc$getFileMetaData()[[1]]$relativePath, sprintf("%s/%s", gsub("^.+[\\\\/]", "", dir), "subdir/myFile.rbin"))
 }
 
 unitTestAddDirAndFileTwoPaths <-
   function()
 {
-#  fc <- new(Class="FileCache")
-#  file <- tempfile()
-#  file <- normalizePath(file, mustWork=F)
-#  d <- diag(nrow=10,ncol=10)
-#  save(d, file=file)
-#  
-#  adir <- normalizePath(tempfile(), mustWork=F)
-#  dir.create(adir, recursive=T)
-#  afile1 <- normalizePath(tempfile(tmpdir=adir), mustWork=F)
-#  d1 <- diag(nrow=100,ncol=100)
-#  save(d1, file=afile1)
-#  
-#  afile2 <- normalizePath(tempfile(tmpdir=adir), mustWork=F)
-#  d2 <- diag(nrow=1000,ncol=1000)
-#  save(d2, file=afile2)
-#  
-#  addFile(fc, c(adir,file), c("foo/", "bar/"))
-#  
-#  checkEquals(length(fc$metaData), 3L)
-#  
-#  relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
-#  expectedPaths <- gsub("/+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
-#  checkTrue(all(relPaths %in% expectedPaths))
-#  
-#  addFile(fc, c(adir,file), c("foo/", "bar/"))
-#  
-#  checkEquals(length(fc$metaData), 3L)
-#  
-#  relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
-#  expectedPaths <- gsub("/+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
-#  checkTrue(all(relPaths %in% expectedPaths))
+  fc <- new(Class="FileCache")
+  file <- tempfile()
+  file <- normalizePath(file, mustWork=F)
+  d <- diag(nrow=10,ncol=10)
+  save(d, file=file)
+  
+  adir <- normalizePath(tempfile(), mustWork=F)
+  dir.create(adir, recursive=T)
+  afile1 <- normalizePath(tempfile(tmpdir=adir), mustWork=F)
+  d1 <- diag(nrow=100,ncol=100)
+  save(d1, file=afile1)
+  
+  afile2 <- normalizePath(tempfile(tmpdir=adir), mustWork=F)
+  d2 <- diag(nrow=1000,ncol=1000)
+  save(d2, file=afile2)
+  
+  addFile(fc, c(adir,file), c("foo/", "bar/"))
+  
+  checkEquals(length(fc$metaData), 3L)
+  
+  relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
+  expectedPaths <- gsub("/+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
+  checkTrue(all(relPaths %in% expectedPaths))
+  
+  addFile(fc, c(adir,file), c("foo/", "bar/"))
+  
+  checkEquals(length(fc$metaData), 3L)
+  
+  relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
+  expectedPaths <- gsub("/+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
+  checkTrue(all(relPaths %in% expectedPaths))
 }
 
 unitTestTwoFilesOnePath <-
