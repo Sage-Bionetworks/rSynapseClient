@@ -3,6 +3,8 @@
 # Author: furia
 ###############################################################################
 
+is.scalar<-function(x) {!is.list(x) && (!is.vector(x) || length(x)<2)}
+
 setMethod(
   f = "TypedPropertyStore",
   signature = signature("missing", "missing", "missing"),
@@ -169,11 +171,7 @@ setMethod(
     
     ## assign the new value to the correct type slot
 	# note: by convention the values in the key-value pairs are *vectors* not *scalars*
-	if (is.list(value) | is.vector(value)) {
-    	slot(object, type)[[which]] <- value
-	} else {
-		slot(object, type)[[which]] <- c(value)
-	}
+    slot(object, type)[[which]] <- value
     object
   }
 )

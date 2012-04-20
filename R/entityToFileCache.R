@@ -176,7 +176,7 @@ updateAnnotationsInSynapse<-function(id, version=NULL) {
     ## This is one of our annotation buckets
     if(is.list(annotations[[key]])) {
       for(annotKey in names(annotations[[key]])) {
-        if(!is.list(annotations[[key]][[annotKey]]) && !is.vector(annotations[[key]][[annotKey]])) {
+        if(is.scalar(annotations[[key]][[annotKey]])) {
           annotations[[key]][[annotKey]] <- list(annotations[[key]][[annotKey]])
         }
       }
@@ -297,7 +297,7 @@ updateSynapseEntity<-function(synapseEntity) {
       ## This is one of our annotation buckets
       if(is.list(annots[[key]])) {
         for(annotKey in names(annots[[key]])) {
-          if(!is.list(annots[[key]][[annotKey]]) && !is.vector(annotations[[key]][[annotKey]])) {
+          if(is.scalar(annotations[[key]][[annotKey]])) {
             annots[[key]][[annotKey]] <- list(annots[[key]][[annotKey]])
           }
         }
