@@ -4,7 +4,7 @@
 ###############################################################################
 
 .unpack <- 
-  function(filename, destdir)
+  function(filename, destdir=tempfile())
 {
   if(missing(destdir))
     destdir <- dirname(filename)

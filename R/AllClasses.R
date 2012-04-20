@@ -161,7 +161,7 @@ setRefClass(
             stop("There are not files to archive, add files using addFile then try again")
           
           ## if the archive file doesn't have a zip extension. simply copy it to the root
-          if(!grepl("\\.gz",.self$archiveFile)){
+          if(!grepl("\\.zip",.self$archiveFile)){
             if(length(.self$files()) != 1L)
               stop("can only have one file when not zipping")
             file.copy(file.path(.self$cacheDir, .self$files()), .self$cacheRoot)
