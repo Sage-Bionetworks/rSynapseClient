@@ -129,7 +129,7 @@ as.list.SynapseAnnotations<-function(x) {
       ## This is one of our annotation buckets
       if(is.list(annotations[[key]])) {
         for(annotKey in names(annotations[[key]])) {
-          if(!is.list(annotations[[key]][[annotKey]]) && !is.vector(annotations[[key]][[annotKey]])) {
+          if(is.scalar(annotations[[key]][[annotKey]])) {
             annotations[[key]][[annotKey]] <- list(annotations[[key]][[annotKey]])
           }
         }

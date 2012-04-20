@@ -17,7 +17,7 @@
   ## create a project
   project <- Project(list(name="MyDataSet", parentId=propertyValue(project, "id")))
   project <- createEntity(project)
-  synapseClient:::.setCache("testProject", project)
+  synapseClient:::.setCache("testProject2", project)
 }
 
 .tearDown <-
@@ -25,7 +25,7 @@
 {
   deleteEntity(synapseClient:::.getCache("testProject"))
   synapseClient:::.deleteCache("testProject")
-  synapseClient:::.deleteCache("testProject")
+  synapseClient:::.deleteCache("testProject2")
 }
 
 integrationTestStoreNoFiles <-
