@@ -75,7 +75,7 @@ setMethod(
     tryCatch(
       lapply(entity$files[indx],
         function(f){
-          f <- file.path(entity$cacheDir, f)
+          f <- file.path(f)
           sys.source(f, env = as.environment(as.environment(entity@archOwn@objects)))
         }
       ),

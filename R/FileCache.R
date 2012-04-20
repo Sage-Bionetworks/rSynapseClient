@@ -67,7 +67,7 @@ setMethod(
       stop("Cache root must be a directory")
     cacheRoot <- gsub("/+$", "", gsub("/+", "/", normalizePath(cacheRoot)))
     fc$cacheRoot <- cacheRoot
-    fc$cacheDir <- sprintf("%s_unpacked", fc$cacheRoot)
+    fc$cacheDir <- file.path(fc$cacheRoot, sprintf("%s_unpacked", fc$archiveFile))
     fc$loadMetaDataFromFile()
     fc
   }

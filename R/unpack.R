@@ -6,6 +6,8 @@
 .unpack <- 
   function(filename, destdir)
 {
+  if(missing(destdir))
+    destdir <- dirname(filename)
   filename <- path.expand(filename)
   splits <- strsplit(basename(filename), "\\.")
   extension <- splits[[1]][length(splits[[1]])]
@@ -16,8 +18,16 @@
     gz = {unlink(destdir); untar(filename, exdir = destdir)},
     tar = {unlink(destdir); untar(filename, exdir = destdir)},
     { ## default
-      splits <- strsplit(filename, .Platform$file.sep)
-      destdir <- paste(splits[[1]][-length(splits[[1]])], collapse=.Platform$file.sep)
+#      splits <- strsplit(filename, .Platform$file.sep)
+#      destdir <- paste(splits[[1]][-length(splits[[1]])], collapse=.Platform$file.sep)
+#      attr(filename, "rootDir") <- destdir
+      if(file.info(filename)$isdir)
+        stop("directories are not supported by unpack")
+      if(file.exists(destdir))
+        unlink(destdir, recursive=T)
+      dir.create(destdir)
+      file.copy(filename, file.path(destdir, basename(filename)))
+      filename <- file.path(destdir,basename(filename))
       attr(filename, "rootDir") <- destdir
       return(filename)
     }
