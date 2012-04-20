@@ -82,11 +82,12 @@ getAnnotationsFromFileCache<- function(id, version=NULL) {
 	folder <- .getAbsoluteFileCachePath(filePath)
 	
 	if (!file.exists(file=folder)) dir.create(folder, recursive=TRUE)
-	targetFile<-file(paste(folder, fileName, sep="/"))
+	targetFileName<-paste(folder, fileName, sep="/")
+	targetFile<-file(targetFileName)
 	if (is.null(content)) stop("No content to write.")
 	writeLines(content, targetFile)
 	close(targetFile)
-	targetFile
+	targetFileName
 }
 
 .getCacheRoot<-function() {
@@ -168,13 +169,14 @@ updateAnnotationsInFileCache<-function(annots) {
 updateAnnotationsInSynapse<-function(id, version=NULL) {
   annotations <- as.list(fromJSON(readLines(paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
           .getCache("ANNOTATIONS_FILE_NAME"), sep="/")), simplifyWithNames=FALSE))
+
   ## make sure all scalars are converted to lists since the service expects all 
   ## annotation values to be arrays instead of scalars
   for(key in names(annotations)){
     ## This is one of our annotation buckets
     if(is.list(annotations[[key]])) {
       for(annotKey in names(annotations[[key]])) {
-        if(!is.list(annotations[[key]][[annotKey]])) {
+        if(is.scalar(annotations[[key]][[annotKey]])) {
           annotations[[key]][[annotKey]] <- list(annotations[[key]][[annotKey]])
         }
       }
@@ -295,7 +297,7 @@ updateSynapseEntity<-function(synapseEntity) {
       ## This is one of our annotation buckets
       if(is.list(annots[[key]])) {
         for(annotKey in names(annots[[key]])) {
-          if(!is.list(annots[[key]][[annotKey]])) {
+          if(is.scalar(annotations[[key]][[annotKey]])) {
             annots[[key]][[annotKey]] <- list(annots[[key]][[annotKey]])
           }
         }

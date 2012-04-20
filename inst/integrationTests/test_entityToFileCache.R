@@ -142,7 +142,7 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 	updateAnnotationsInFileCache(annots)
 	# make sure the file has been updated
 
-	fooList <- annotValue(getAnnotationsFromFileCache(id), "foo")[[1]]
+	fooList <- annotValue(getAnnotationsFromFileCache(id), "foo")
 	checkTrue(!is.null(fooList))
 	checkEquals(2, length(fooList))
 	checkEquals(newArray, fooList)
@@ -157,7 +157,7 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 	checkTrue(!is.null(annots))
 	# check the contents
 	checkEquals(id, propertyValue(annots, "id"))
-	fooList <- annotValue(annots, "foo")
+	fooList <- annotValue(annots, "foo") # NOTE: This reflects a change in the deser behavior:  Annot lists are not deserialized!
 	checkTrue(!is.null(fooList))
 	checkEquals(2, length(fooList))
 	checkEquals(newArray, fooList)
