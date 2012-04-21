@@ -1,7 +1,7 @@
-### Tests to check behavior when zip is not installed on client computer
-### 
-### Author: Matthew D. Furia <matt.furia@sagebase.org>
-#################################################################################
+#### Tests to check behavior when zip is not installed on client computer
+#### 
+#### Author: Matthew D. Furia <matt.furia@sagebase.org>
+##################################################################################
 #
 #.setUp <- 
 #  function()

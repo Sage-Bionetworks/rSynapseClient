@@ -32,6 +32,19 @@ SynapseAnnotations <-
   aa
 }
 
+setMethod(
+  f = "annotations<-",
+  signature = signature("SynapseAnnotations", "list"),
+  definition = function(object, value){
+    if(any(names(value) == ""))
+      stop("all elements must be named")
+    for(n in names(value)){
+          annotValue(object, n) <- value[[n]]
+        }
+    object
+  }
+)
+
 ## show method
 setMethod(
   f = "show",

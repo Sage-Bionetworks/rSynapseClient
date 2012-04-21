@@ -222,18 +222,18 @@ integrationTestGetEntity <-
 integrationTestReplaceAnnotations <- 
   function()
 {
-  ## fix this test
-#  ## Create Project
-#  project <- Project()
-#  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
-#  annotations(project) <- list(annotation1="value1", annotation2="value2")
-#  createdProject <- createEntity(project)
-#  synapseClient:::.setCache("testProject", createdProject)
-#  
-#  annotations(createdProject) <- list(annotation3="value3", annotation4="value4", annotation5="value5")
-#  createdProject <- updateEntity(createdProject)
-#  
-#  checkEquals(length(annotationNames(createdProject)), 3L)
-#  checkTrue(all(c("annotation3", "annotation4", "annotation5") %in% annotationNames(createdProject)))
+  # fix this test
+  ## Create Project
+  project <- Project()
+  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
+  annotations(project) <- list(annotation1="value1", annotation2="value2")
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  
+  annotations(createdProject) <- list(annotation3="value3", annotation4="value4", annotation5="value5")
+  createdProject <- updateEntity(createdProject)
+  
+  checkEquals(length(annotationNames(createdProject)), 3L)
+  checkTrue(all(c("annotation3", "annotation4", "annotation5") %in% annotationNames(createdProject)))
 }
 

@@ -1,20 +1,20 @@
-### Integration tests for provenance
-### 
-### Author: Nicole Deflaux <nicole.deflaux@sagebase.org
-#################################################################################
+#### Integration tests for provenance
+#### 
+#### Author: Nicole Deflaux <nicole.deflaux@sagebase.org
+##################################################################################
 integrationTestWarnMe <-
-  function(){
+    function(){
   warning("need to fix tests for test_provenance.R")
 }
-
+#
 #.setUp <- 
-#  function()
+#    function()
 #{
 #  synapseClient:::.setCache("testProjectName", paste('Provenance Integration Test Project', gsub(':', '_', date())))
 #}
 #
 #.tearDown <- 
-#  function()
+#    function()
 #{
 #  if(!is.null(synapseClient:::.getCache("testProject"))) {
 #    deleteEntity(synapseClient:::.getCache("testProject"))	
@@ -23,24 +23,24 @@ integrationTestWarnMe <-
 #}
 #
 #integrationTestProvenance <- 
-#  function() 
+#    function() 
 #{
 #  ## Create Project
 #  project <- createEntity(
-#    Project(
-#      list(
-#        name=synapseClient:::.getCache("testProjectName")
-#      )))
+#      Project(
+#          list(
+#              name=synapseClient:::.getCache("testProjectName")
+#          )))
 #  synapseClient:::.setCache("testProject", project)
 #  checkEquals(propertyValue(project,"name"), synapseClient:::.getCache("testProjectName"))
 #  
 #  ## Create Study
 #  study <- createEntity(
-#    Study(
-#      list(
-#        name="testStudyName",
-#        parentId=propertyValue(project, "id")
-#      )))
+#      Study(
+#          list(
+#              name="testStudyName",
+#              parentId=propertyValue(project, "id")
+#          )))
 #  checkEquals(propertyValue(data,"name"), "testStudyName")
 #  checkEquals(propertyValue(data,"parentId"), propertyValue(project, "id"))
 #  
@@ -79,8 +79,8 @@ integrationTestWarnMe <-
 #  
 #  ## Create an Analysis, it will become the parent of the step
 #  analysis <- createEntity(Analysis(list(parentId=propertyValue(project, "id"),
-#        name='test analysis name',
-#        description='test analysis description')))
+#              name='test analysis name',
+#              description='test analysis description')))
 #  step <- getStep()
 #  checkEquals(propertyValue(analysis, "id"), propertyValue(step, "parentId"))
 #  

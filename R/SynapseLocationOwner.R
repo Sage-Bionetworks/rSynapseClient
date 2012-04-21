@@ -12,6 +12,32 @@ setMethod(
   }
 )
 
+
+setMethod(
+    f = "loadEntity",
+    signature = "SynapseLocationOwner",
+    definition = function(entity){
+      ##if(length(entity$files) == 0)
+      entity <- downloadEntity(entity)
+      
+      entity@archOwn <- loadObjectsFromFiles(entity@archOwn)
+      
+      
+#    if(is.null(annotValue(entity, "format"))){
+#      ##setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
+#      return(entity)
+#    }
+#    entity@location@objects <- switch(annotValue(entity, "format"),
+#      rbin = .loadRbinaryFiles(file.path(entity@location@cacheDir,entity@location@files)),
+#      sageBioCurated = .loadSageBioPacket(entity),
+#      entity@location@objects
+#    )
+#    setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
+      entity
+    }
+)
+
+
 setMethod(
   f = "storeEntity",
   signature = "SynapseLocationOwner",

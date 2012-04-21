@@ -17,10 +17,12 @@ setMethod(
 		f = "loadEntity",
 		signature = "SynapseLocationOwnerWithObjects",
 		definition = function(entity){
-			##if(length(entity$files) == 0)
-			entity <- downloadEntity(entity)
+      
+      lfun <- getMethod("loadEntity", "SynapseLocationOwner")
+      entity <- lfun(entity)
 			
 			entity@objOwn <- loadObjectsFromFiles(entity@objOwn)
+
 			
 #    if(is.null(annotValue(entity, "format"))){
 #      ##setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
