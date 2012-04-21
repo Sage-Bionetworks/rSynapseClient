@@ -15,8 +15,12 @@ synapseEntityTypeMap <-
     org.sagebionetworks.repo.model.Step = "Step",
     org.sagebionetworks.repo.model.Code = "Code",
     org.sagebionetworks.repo.model.Link = "Link",
-    org.sagebionetworks.repo.model.Media = "Media",
-    org.sagebionetworks.repo.model.ExpressionData = "ExpressionData"
+    org.sagebionetworks.repo.model.ExpressionData = "ExpressionData",
+    org.sagebionetworks.repo.model.GenotypeData = "GenotypeData",
+    org.sagebionetworks.repo.model.PhenotypeData = "PhenotypeData",
+    org.sagebionetworks.repo.model.RObject = "RObject",
+    org.sagebionetworks.repo.model.Folder = "Folder",
+    org.sagebionetworks.repo.model.Preview = "Preview"
   )
 }
 

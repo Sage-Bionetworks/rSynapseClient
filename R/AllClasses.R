@@ -1,6 +1,7 @@
-# Class Definitions
-# 
-# Author: furia
+## Class Definitions. Class definitions for the specific Synapse entity typse
+## are located in SynapseEntityDefinitions.R
+##
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
 ## the global cache is a singleton
@@ -431,105 +432,4 @@ setRefClass(
         }
     )
 )
-
-
-##
-##
-## Below are the objects that users will interact with
-##
-##
-
-setClass(
-  "Step",
-  contains = "SynapseEntity",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Step"
-  )
-)
-
-setClass(
-  "Analysis",
-  contains = "SynapseEntity",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Analysis"
-  )
-)
-
-
-setClass(
-  "Project",
-  contains = "SynapseEntity",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Project"
-  )
-)
-
-setClass(
-  "Link",
-  contains = "SynapseEntity",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Link"
-  )
-)
-
-setClass(
-  "Code",
-  contains="SynapseLocationOwner",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Code"
-  )
-)
-
-setClass(
-  "Study",
-  contains = "SynapseLocationOwnerWithObjects",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Study"
-  )
-)
-
-setClass(
-  "Data",
-  contains = "SynapseLocationOwnerWithObjects",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Data"
-
-  )
-)
-
-setClass(
-  "Link",
-  contains = "SynapseEntity",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Link"
-  )
-)
-
-setClass(
-  "Code",
-  contains="SynapseLocationOwner",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Code"
-  )
-)
-
-setClass(
-  "Study",
-  contains = "SynapseLocationOwnerWithObjects",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Study"
-  )
-)
-
-
-setClass(
-  Class = "Media",
-  contains = "SynapseLocationOwner",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Media"
-  )
-)
-
-
-
 
