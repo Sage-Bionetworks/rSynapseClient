@@ -6,11 +6,12 @@
 .setUp <- 
   function()
 {
+  cacheRoot <- tempfile()
   synapseClient:::.setCache("localJpegFile", file.path(tempdir(), "plot.jpg"))
   synapseClient:::.setCache("localZipFile", file.path(tempdir(), "files.zip"))	
   synapseClient:::.setCache("localTxtFile", file.path(tempdir(), "data.txt"))
-  synapseClient:::.setCache("localCacheDir", file.path(tempdir(), ".synapseCache"))
-  synapseClient:::.setCache("localUnpackDir", file.path(tempdir(), "files.zip_unpacked"))
+  synapseClient:::.setCache("localCacheDir", cacheRoot)
+  synapseClient:::.setCache("localUnpackDir", file.path(cacheRoot, "files.zip_unpacked"))
 }
 
 .tearDown <- 
@@ -84,7 +85,7 @@ unitTestZipFile <-
   ## zip these two files
   suppressWarnings(zip(synapseClient:::.getCache("localZipFile"), files = c(synapseClient:::.getCache("localTxtFile"), synapseClient:::.getCache("localJpegFile"))))
   
-  files <- synapseClient:::.unpack(synapseClient:::.getCache("localZipFile"))
+  files <- synapseClient:::.unpack(synapseClient:::.getCache("localZipFile"), synapseClient:::.getCache("localUnpackDir"))
   
   ## make sure the unpack directory was named correctly
   checkEquals(attr(files, "rootDir"), synapseClient:::.getCache("localUnpackDir"))

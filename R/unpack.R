@@ -13,7 +13,7 @@
   extension <- splits[[1]][length(splits[[1]])]
   extension <- tolower(extension)
   
-  switch(extension,
+  ff <- switch(extension,
     zip = {unlink(destdir); unzip(filename, exdir = destdir)},
     gz = {unlink(destdir); untar(filename, exdir = destdir)},
     tar = {unlink(destdir); untar(filename, exdir = destdir)},
@@ -32,8 +32,8 @@
       return(filename)
     }
   ) 
-  files <- list.files(destdir, full.names = TRUE, recursive=TRUE, all.files = TRUE)
-  files <- setdiff(files, c(".",".."))
-  attr(files, "rootDir") <- destdir
-  files
+#  files <- list.files(destdir, full.names = TRUE, recursive=TRUE, all.files = TRUE)
+#  files <- setdiff(files, c(".",".."))
+  attr(ff, "rootDir") <- destdir
+  ff
 }
