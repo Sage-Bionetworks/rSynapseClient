@@ -3,6 +3,48 @@
 # Author: furia
 ###############################################################################
 
+setGeneric(
+  name = "Folder",
+  def = function(entity){
+    standardGeneric("Folder")
+  }
+)
+
+setGeneric(
+  name = "RObject",
+  def = function(entity){
+    standardGeneric("RObject")
+  }
+)
+
+setGeneric(
+  name = "PhenotypeData",
+  def = function(entity){
+    standardGeneric("PhenotypeData")
+  }
+)
+
+setGeneric(
+  name = "GenotypeData",
+  def = function(entity){
+    standardGeneric("GenotypeData")
+  }
+)
+
+setGeneric(
+  name = "Preview",
+  def = function(entity){
+    standardGeneric("Preview")
+  }
+)
+
+setGeneric(
+  name = "ExpressionData",
+  def = function(entity){
+    standardGeneric("ExpressionData")
+  }
+)
+
 
 
 setGeneric(
