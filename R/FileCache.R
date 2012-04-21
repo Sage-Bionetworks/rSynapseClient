@@ -37,7 +37,7 @@ setMethod(
       if(file.exists(file.path(object$getCacheRoot(), object$archiveFile)))
         file.copy(file.path(object$getCacheRoot(), object$archiveFile), path)
       
-      if(file.exists(file.path(object$getCacheDir(), object$archiveFile)))
+      if(file.exists(object$getCacheDir()))
         file.copy(object$getCacheDir(), path, recursive=TRUE)
       
       if(file.exists(file.path(object$getCacheRoot(), "files.json")))

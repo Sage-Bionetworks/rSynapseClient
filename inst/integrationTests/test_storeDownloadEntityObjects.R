@@ -97,15 +97,13 @@ integrationTestDownloadFilesAndObjects <-
   checkEquals(length(downloadedData$objects), 0L)
   
   loadedData <- loadEntity(downloadedData)
-##  checkEquals(length(downloadedData$files), 0L)
-##  checkEquals(length(downloadedData$objects), 1L)
-  
 ##  checkEquals(length(loadedData$files), 0L)
- ## checkEquals(length(loadedData$objects), 1L)
+  checkEquals(length(loadedData$objects), 2L)
+  
   
   loadedData <- loadEntity(propertyValue(storedData,"id"))
  ## checkEquals(length(downloadedData$files), 0L)
- ## checkEquals(length(downloadedData$objects), 1L)
+  checkEquals(length(downloadedData$objects), 2L)
 }
 
 

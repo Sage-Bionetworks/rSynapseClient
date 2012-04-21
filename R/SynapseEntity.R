@@ -136,6 +136,22 @@ setMethod(
   }
 )
 
+
+setMethod(
+    f = "annotations<-",
+    signature = signature("SynapseEntity", "list"),
+    definition = function(object, value){
+      if(any(names(value) == ""))
+        stop("all elements of the list must be named")
+      aa <- SynapseAnnotations(properties(object))
+      for(n in names(value)){
+            annotValue(aa, n) <- value[[n]]
+          }
+      annotations(object) <- aa
+      object
+    }
+)
+
 #####
 ## set the annotations object
 #####

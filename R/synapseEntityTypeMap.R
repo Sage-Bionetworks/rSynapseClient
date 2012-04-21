@@ -15,7 +15,8 @@ synapseEntityTypeMap <-
     org.sagebionetworks.repo.model.Step = "Step",
     org.sagebionetworks.repo.model.Code = "Code",
     org.sagebionetworks.repo.model.Link = "Link",
-    org.sagebionetworks.repo.model.Media = "Media"
+    org.sagebionetworks.repo.model.Media = "Media",
+    org.sagebionetworks.repo.model.ExpressionData = "ExpressionData"
   )
 }
 
