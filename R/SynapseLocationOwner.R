@@ -42,7 +42,7 @@ setMethod(
   f = "storeEntity",
   signature = "SynapseLocationOwner",
   definition = function(entity){
-    if(length$files > 0L){
+    if(length(entity$files) > 0L){
       ## create the archive on disk (which will persist file metaData to disk)
       createArchive(entity@archOwn)
       
