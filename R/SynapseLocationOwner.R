@@ -42,14 +42,17 @@ setMethod(
   f = "storeEntity",
   signature = "SynapseLocationOwner",
   definition = function(entity){
+    if(is.null(propertyValue(entity, "id"))){
+      entity <- createEntity(entity)
+    }else{
+      entity <- updateEntity(entity)
+    }
     if(length(entity$files) > 0L){
       ## create the archive on disk (which will persist file metaData to disk)
       createArchive(entity@archOwn)
       
       ## upload the archive  file (storeFile also updates the entity)
       entity <- storeFile(entity ,file.path(entity@archOwn@fileCache$getCacheRoot(), entity@archOwn@fileCache$getArchiveFile()))
-    }else{
-      entity <- updateEntity(entity)
     }
     entity
   }
