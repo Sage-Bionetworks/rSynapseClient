@@ -112,6 +112,11 @@ setClass(
   )
 )
 
+setClass(
+  Class = "GithubCode",
+  contains = "Code"
+)
+
 
 
 
