@@ -67,7 +67,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
 .onUnload <- function(libpath) .Last.lib()
 
 .Last.lib <- function(...) {
-  try(stoppedStep <- stopStep(), silent=TRUE)
-
+  if(!is.null(step <- getStep()))
+    try(stoppedStep <- stopStep(step), silent=TRUE)
 }
 
