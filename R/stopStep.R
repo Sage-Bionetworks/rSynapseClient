@@ -50,7 +50,7 @@ setMethod(
     .deleteCache("currentStep")
     step <- getEntity(step)
     propertyValue(step, "endDate") <- .nowAsString()
-    propertyValue(step, "environmentDescriptors")	<- .appendSessionInfoToDescriptors(propertyValue(step, "environmentDescriptors"))
+    propertyValue(step, "environmentDescriptors")	<- .appendSessionInfoToDescriptors(propertyValue(step, "environmentDescriptors"))[[1]]
     annotValue(step, "rHistory") <- .getRHistory()
     step <- updateEntity(step)
     .setCache("previousStep", step)
