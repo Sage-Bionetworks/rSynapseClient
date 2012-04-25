@@ -35,7 +35,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     .setCache("rObjCacheDir", ".R_OBJECTS")
     .setCache("hasZip", TRUE)
   }
-  .setCache("curlOpts", list(followlocation=TRUE, ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))
+  .setCache("curlOpts", list(low.speed.time=60, low.speed.limit=1, connecttimeout=300, followlocation=TRUE, ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))
   .setCache("curlHeader", c('Content-Type'="application/json", Accept = "application/json", "Accept-Charset"="utf-8"))
   .setCache("sessionRefreshDurationMin", 1440)
   .setCache("curlWriter", getNativeSymbolInfo("_writer_write", PACKAGE="synapseClient")$address)
