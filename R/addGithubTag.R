@@ -15,7 +15,7 @@ setMethod(
     
     class(entity) <- "GithubCode"
     
-    destfile <- .curlWriterDownload(url=url)
+    destfile <- synapseClient:::.curlWriterDownload(url=url)
     
     if(!exists("destfile")){
       stop(paste("Downloaded file", destfile, "does not exists"))
@@ -25,7 +25,7 @@ setMethod(
     file.remove(destfile)
     
     ## SET LOCATIONS AND MD5 PROPERTIES
-    propertyValue(entity, "locations") <- list(c(path=url, type="external"))
+    propertyValue(entity, "locations") <- list(path=url, type="external")
     propertyValue(entity, "md5") <- md5
     annotValue(entity, "githubRepo") <- dirname(dirname(url))
     annotValue(entity, "githubRepoTag") <- basename(url)
