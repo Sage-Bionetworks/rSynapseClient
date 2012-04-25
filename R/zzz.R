@@ -22,7 +22,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   file.create(ff)
   zipfile <- tempfile()
   suppressWarnings(
-    ans <- zip(zipfile, ff)
+    ans <- utils::zip(zipfile, ff)
   )
   unlink(ff)
   unlink(zipfile, recursive = TRUE)
