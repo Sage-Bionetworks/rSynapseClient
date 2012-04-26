@@ -47,14 +47,6 @@ setClass(
 )
 
 setClass(
-  "Study",
-  contains = "SynapseLocationOwnerWithObjects",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Study"
-  )
-)
-
-setClass(
   "Data",
   contains = "SynapseLocationOwnerWithObjects",
   prototype = prototype(

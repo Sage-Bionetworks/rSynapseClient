@@ -1,5 +1,5 @@
-\name{Dataset}
-\alias{Dataset}
+\name{SynapseEntity}
+\alias{Study}
 \alias{Media}
 \alias{Code}
 \alias{SynapseEntity}
@@ -15,7 +15,7 @@ Constructors for Synapse Entities
 }
 \usage{
 SynapseEntity(entity)
-Dataset(entity)
+Study(entity)
 Layer(entity)
 Project(entity)
 }

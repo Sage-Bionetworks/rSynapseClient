@@ -29,7 +29,7 @@ setMethod(
 setMethod(
   f = "getStep",
   signature = "missing",
-  definition = function(step) {
+  definition = function() {
     getStep(NA_character_)
   }
 )

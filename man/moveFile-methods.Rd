@@ -1,8 +1,8 @@
 \name{moveFile-methods}
 \docType{methods}
 \alias{moveFile-methods}
-\alias{moveFile,CachedLocation-method}
-\alias{moveFile,Layer-method}
+\alias{moveFile,FileCache-method}
+\alias{moveFile,SynapseLocationOwner-method}
 \title{ ~~ Methods for Function \code{moveFile}  ~~}
 \description{
  ~~ Methods for function \code{moveFile}  ~~
@@ -10,11 +10,11 @@
 \section{Methods}{
 \describe{
 
-\item{\code{signature(entity = "CachedLocation")}}{
+\item{\code{signature(entity = "FileCache")}}{
 Move the file
 }
 
-\item{\code{signature(entity = "Layer")}}{
+\item{\code{signature(entity = "SynapseLocationOwner")}}{
 Move the file
 }
 }}
