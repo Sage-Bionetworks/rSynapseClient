@@ -196,7 +196,7 @@ unitTestAddFileInfo <-
   srcFile <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = srcFile)
   
-  addFileMetaData(fc, srcFile, file.path(fc$cacheDir, "/foo/bar.txt"))
+  synapseClient:::addFileMetaData(fc, srcFile, file.path(fc$cacheDir, "/foo/bar.txt"))
   
 }
 
@@ -209,9 +209,9 @@ unitTestAddFileInfoTwiceSameNameDifferentSlashes <-
   
   path1 <- file.path(fc$cacheDir, "/foo/bar")
   path2 <- file.path(fc$cacheDir, "///foo\\\bar")
-  addFileMetaData(fc, s1, path1)
+  synapseClient:::addFileMetaData(fc, s1, path1)
   checkEquals(length(fc$metaData), 1L)
-  addFileMetaData(fc, s2, path1)
+  synapseClient:::addFileMetaData(fc, s2, path1)
   checkEquals(length(fc$metaData), 1L)
   
   ## check that it works properly when the directory exists
@@ -219,9 +219,9 @@ unitTestAddFileInfoTwiceSameNameDifferentSlashes <-
   dir.create(file.path(fc$cacheDir, "foo/bar"), recursive = TRUE)
   path1 <- file.path(fc$cacheDir, "/foo/bar/")
   path2 <- file.path(fc$cacheDir, "///foo\\\bar")
-  addFileMetaData(fc, s1, path1)
+  synapseClient:::addFileMetaData(fc, s1, path1)
   checkEquals(length(fc$metaData), 1L)
-  addFileMetaData(fc, s2, path1)
+  synapseClient:::addFileMetaData(fc, s2, path1)
   checkEquals(length(fc$metaData), 2L)
   checkTrue(file.remove(file.path(fc$cacheDir, "foo/bar")))
   checkTrue(file.remove(file.path(fc$cacheDir, "foo")))
@@ -236,9 +236,9 @@ unitTestAddFileToExistingDirectory <-
   s1 <- tempfile()
   cat(sprintf("THIS IS ANOTHER TEST%s", Sys.time()), file = s1)
   
-  addFileMetaData(fc, s1, "aDir")
-  addFileMetaData(fc, s1, "/aDir")
-  addFileMetaData(fc, s1, "aDir/")
+  synapseClient:::addFileMetaData(fc, s1, "aDir")
+  synapseClient:::addFileMetaData(fc, s1, "/aDir")
+  synapseClient:::addFileMetaData(fc, s1, "aDir/")
   checkEquals(length(fc$metaData), 1L)
   
   srcFname <- gsub(tempdir(), "", s1, fixed = TRUE)
@@ -257,7 +257,7 @@ unitTestAddMetaDataByPassingDirectory <-
   s2 <- tempfile(tmpdir = srcDir)
   cat(sprintf("test two %s", Sys.time()), file=s2)
   
-  checkException(addFileMetaData(fc, srcDir, "/"))
+  checkException(synapseClient:::addFileMetaData(fc, srcDir, "/"))
   
 }
 
@@ -269,9 +269,9 @@ unitTestAddMetaDataForRootDirContents <-
   s1 <- tempfile()
   cat(sprintf("THIS IS ANOTHER TEST%s", Sys.time()), file = s1)
   
-  addFileMetaData(fc, s1)
-  addFileMetaData(fc, s1, "//")
-  addFileMetaData(fc, s1, "\\")
+  synapseClient:::addFileMetaData(fc, s1)
+  synapseClient:::addFileMetaData(fc, s1, "//")
+  synapseClient:::addFileMetaData(fc, s1, "\\")
   checkEquals(length(fc$metaData), 1L)
   
   srcFname <- gsub(tempdir(), "", s1, fixed = TRUE)
@@ -305,7 +305,7 @@ unitTestSameSourceAndDestFile <-
   relPath <- gsub(normalizePath(fc$cacheDir, mustWork=FALSE), "", as.character(srcFile), fixed = TRUE)
   relPath <- gsub("^/+", "", relPath)
   
-  addFileMetaData(fc, srcFile, relPath)
+  synapseClient:::addFileMetaData(fc, srcFile, relPath)
   checkEquals(names(fc$getFileMetaData()), srcFile)
 }
 

@@ -13,9 +13,7 @@ synapseRepoServiceEndpoint <-
 	.setCache("reposerviceEndpointProtocol", url@protocol)
 	.setCache("reposerviceEndpointHost", url@authority)
 	.setCache("reposerviceEndpointPrefix", url@path)
-    if(!is.null(.getCache('useJavaClient')) &&  .getCache('useJavaClient')){
-      .jenv[["syn"]]$setRepositoryEndpoint(endpoint)
-    }
+    
     synapseClient:::.setCache("sessionToken", NULL)
     synapseClient:::.setCache("hmacSecretKey", NULL) 
   }

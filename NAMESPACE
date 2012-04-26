@@ -28,6 +28,10 @@ export(
 
 ## S3 convenience methods
 ##export(getDatasets)
+export(as.environment.EnhancedEnvironment,as.environment.GlobalCache, as.list.SimplePropertyOwner, 
+as.list.SynapseAnnotations, as.list.TypedPropertyStore, as.environment.EnhancedEnvironment,
+length.EnhancedEnvironment, names.CachingObjectOwner, names.EnhancedEnvironment, names.SynapseLocationOwner,
+names.SynapseLocationOwnerWithObjects)
 
 ## S4 convenience methods
 ##exportMethods(getDatasetLayers)
@@ -46,7 +50,8 @@ exportMethods(
   Step,
   Code,
   Folder,
-  Preview
+  Preview,
+  SynapseEntity
 )
 
 ## entity S4 methods
@@ -61,15 +66,18 @@ exportMethods(
   updateEntity, 
   downloadEntity, 
   loadEntity, 
-  getParentEntity
-)
+  getParentEntity,
+  files
+  )
 
 ## methods for managing layer files
 exportMethods(
   addFile,
   deleteFile,
   addGithubTag,
-  moveFile
+  moveFile,
+  cacheDir,
+  getFileCache
 ) 
 
 exportMethods(
@@ -97,7 +105,8 @@ exportMethods(
   "propertyValue<-", 
   "propertyValues<-", 
   propertyValues, 
-  properties
+  properties,
+  propertyNames
 )
 
 ## Provenance Methods

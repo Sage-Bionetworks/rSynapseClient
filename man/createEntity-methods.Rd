@@ -11,7 +11,7 @@
 \describe{
 
 \item{\code{signature(entity = "SynapseLocationOwner")}}{
-Create a layer entity
+Create a SynapseLocationOwner entity
 }
 
 \item{\code{signature(entity = "SynapseEntity")}}{

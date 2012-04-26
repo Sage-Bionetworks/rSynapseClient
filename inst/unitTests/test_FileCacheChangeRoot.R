@@ -17,7 +17,7 @@ unitTestChangeRoot <-
   setwd(tempdir())
   suppressWarnings(zip(archive, files = gsub("^.+/", "", file1)))
   setwd(olddir)
-  fc <- FileCache(archiveFile=archive)
+  fc <- synapseClient:::FileCache(archiveFile=archive)
   
   checkEquals(archiveFile, fc$archiveFile)
   checkEquals(cacheRoot, fc$cacheRoot)
@@ -31,7 +31,7 @@ unitTestChangeRoot <-
   ## change the cacheRoot
   newRoot <- tempfile()
   checkTrue(!file.exists(newRoot))
-  setCacheRoot(fc, newRoot)
+  synapseClient:::setCacheRoot(fc, newRoot)
 
   checkEquals(normalizePath(newRoot), fc$cacheRoot)
   checkTrue(oldCacheDir != fc$cacheDir)
@@ -59,7 +59,7 @@ unitTestChangeRoot <-
   ## change the cacheRoot
   newRoot <- tempfile()
   checkTrue(!file.exists(newRoot))
-  setCacheRoot(fc, newRoot, clean=T)
+  synapseClient:::setCacheRoot(fc, newRoot, clean=T)
   
   checkEquals(normalizePath(newRoot), fc$cacheRoot)
   checkTrue(oldCacheDir != fc$cacheDir)

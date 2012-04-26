@@ -7,8 +7,8 @@
 {
 	#synapseClient:::.setCache("debug", TRUE)
 
-	sessionToken<-sessionToken()
-	if (is.null(sessionToken)) stop("Failed to log in")
+	sessionToken<-synapseClient:::sessionToken()
+	if (is.null(synapseClient:::sessionToken)) stop("Failed to log in")
 	# note, the repo' service endpoint is set up by the framework that calls the interation test suite
 
 	# now create a Project
@@ -43,9 +43,9 @@ integrationTestGetEntity <- function()
 	testProject <- synapseClient:::.getCache("testProject")
 	entityId <- testProject$id
 	if (is.null(entityId)) stop("Failed to get entity id from object")
-	getEntityFromSynapse(entityId)
+	synapseClient:::getEntityFromSynapse(entityId)
 
-	checkTrue(!is.null(getEntityFromFileCache(entityId)))
+	checkTrue(!is.null(synapseClient:::getEntityFromFileCache(entityId)))
 }
 
 integrationTestGetAnnotations <- function()
@@ -53,9 +53,9 @@ integrationTestGetAnnotations <- function()
 	testProject <- synapseClient:::.getCache("testProject")
 	entityId <- testProject$id
 	if (is.null(entityId)) stop("Failed to get entity id from object")
-	getAnnotationsFromSynapse(entityId)
+	synapseClient:::getAnnotationsFromSynapse(entityId)
 
-	checkTrue(!is.null(getAnnotationsFromFileCache(entityId)))
+	checkTrue(!is.null(synapseClient:::getAnnotationsFromFileCache(entityId)))
 }
 
 integrationTestCreateUpdateDeleteEntity <- function() {
@@ -63,18 +63,18 @@ integrationTestCreateUpdateDeleteEntity <- function() {
 	entityName<-paste("testName_", gsub(':', '_', date()))
 	entityType<-"org.sagebionetworks.repo.model.Project"
 	s <- SynapseEntity(list(name=entityName, entityType=entityType))
-	s <- doCreateEntity(s)
+	s <- synapseClient:::doCreateEntity(s)
 	id <- s@properties[["id"]]
 	checkTrue(!is.null(id))
 	# get the entity, to the file cache
 	fileDir <- synapseClient:::.getAbsoluteFileCachePath(synapseClient:::.entityFileCachePath(id))
 	filePath <- paste(fileDir, "entity.json", sep="/")
 	checkTrue(!file.exists(filePath))
-	getEntityFromSynapse(id)
+	synapseClient:::getEntityFromSynapse(id)
 	# make sure it's there
 	checkTrue(file.exists(filePath))
 	# pull from the file cache
-	entity<-getEntityFromFileCache(id)
+	entity<-synapseClient:::getEntityFromFileCache(id)
 	checkTrue(!is.null(entity))
 	# check the contents
 	eTag <- entity@properties[["etag"]]
@@ -85,27 +85,27 @@ integrationTestCreateUpdateDeleteEntity <- function() {
 	# update the entity in the file cache
 	newName <- paste(entityName, "modified")
 	entity@properties[["name"]]<-newName
-	updateEntityInFileCache(entity)
+    synapseClient:::updateEntityInFileCache(entity)
 	# make sure the file has been updated
-	checkEquals(newName, getEntityFromFileCache(id)@properties[["name"]])
+	checkEquals(newName, synapseClient:::getEntityFromFileCache(id)@properties[["name"]])
 	# push update to Synapse
-	updateEntityInSynapse(id)
+    synapseClient:::updateEntityInSynapse(id)
 	# let's hold on to the original file...
 	origFilePath <- paste(fileDir, "origEntity.json", sep="/")
 	file.rename(filePath, origFilePath)
 	# get the entity and make sure it's updated
-	getEntityFromSynapse(id)
-	entity<-getEntityFromFileCache(id)
+	synapseClient:::getEntityFromSynapse(id)
+	entity<-synapseClient:::getEntityFromFileCache(id)
 	checkTrue(!is.null(entity))
 	# check the contents
 	checkEquals(id, entity@properties[["id"]])
 	checkEquals(entityType, entity@properties[["entityType"]])
 	checkTrue(eTag != entity@properties[["etag"]])
-	checkEquals(newName, getEntityFromFileCache(id)@properties[["name"]])
+	checkEquals(newName, synapseClient:::getEntityFromFileCache(id)@properties[["name"]])
 	# delete the entity
-	deleteEntityFromSynapse(id)
+    synapseClient:::deleteEntityFromSynapse(id)
 	# make sure it's deleted.  GETting the id should now create a 404 http status (Not Found)
-	errorMessage <- try(getEntityFromSynapse(id))
+	errorMessage <- try(synapseClient:::getEntityFromSynapse(id))
 	checkTrue(any(grep("404", errorMessage)) || typeof(errorMessage)=='try-error')
 }
 
@@ -114,7 +114,7 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 	entityName<-paste("annotTestName_", gsub(':', '_', date()))
 	entityType<-"org.sagebionetworks.repo.model.Project"
 	s <- SynapseEntity(list(name=entityName, entityType=entityType))
-	s <- doCreateEntity(s)
+	s <- synapseClient:::doCreateEntity(s)
 	id <- s@properties[["id"]]
 	checkTrue(!is.null(id))
 
@@ -122,11 +122,11 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 	fileDir <- synapseClient:::.getAbsoluteFileCachePath(synapseClient:::.entityFileCachePath(id))
 	filePath <- paste(fileDir, "annotations.json", sep="/")
 	checkTrue(!file.exists(filePath))
-	getAnnotationsFromSynapse(id)
+	synapseClient:::getAnnotationsFromSynapse(id)
 	# make sure it's there
 	checkTrue(file.exists(filePath))
 	# pull from the file cache
-	annots<-getAnnotationsFromFileCache(id)
+	annots<-synapseClient:::getAnnotationsFromFileCache(id)
 	checkTrue(!is.null(annots))
 	# check the contents
 	eTag <- propertyValue(annots, "etag")
@@ -139,21 +139,21 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 	newArray <- c("bas1", "bas2")
 	annotValue(annots, "foo") <- newArray
 
-	updateAnnotationsInFileCache(annots)
+    synapseClient:::updateAnnotationsInFileCache(annots)
 	# make sure the file has been updated
 
-	fooList <- annotValue(getAnnotationsFromFileCache(id), "foo")
+	fooList <- annotValue(synapseClient:::getAnnotationsFromFileCache(id), "foo")
 	checkTrue(!is.null(fooList))
 	checkEquals(2, length(fooList))
 	checkEquals(newArray, fooList)
 	# push update to Synapse
-	updateAnnotationsInSynapse(id)
+    synapseClient:::updateAnnotationsInSynapse(id)
 	# let's hold on to the original file...
 	origFilePath <- paste(fileDir, "origAnnotations.json", sep="/")
 	file.rename(filePath, origFilePath)
 	# get the annotations and make sure it's updated
-	getAnnotationsFromSynapse(id)
-	annots<-getAnnotationsFromFileCache(id)
+	synapseClient:::getAnnotationsFromSynapse(id)
+	annots<-synapseClient:::getAnnotationsFromFileCache(id)
 	checkTrue(!is.null(annots))
 	# check the contents
 	checkEquals(id, propertyValue(annots, "id"))
@@ -164,9 +164,9 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 	checkTrue(eTag != propertyValue(annots, "etag"))
 
 	# delete the entity (i.e. to delete the annotations we delete the parent entity
-	deleteEntityFromSynapse(id)
+    synapseClient:::deleteEntityFromSynapse(id)
 	# make sure it's deleted.  GETting the id should now create a 404 http status (Not Found)
-	errorMessage <- try(getEntityFromSynapse(id))
+	errorMessage <- try(synapseClient:::getEntityFromSynapse(id))
 	checkTrue(any(grep("404", errorMessage)) || typeof(errorMessage)=='try-error')
 }
 
@@ -179,7 +179,7 @@ integrationTestCRUDConvenienceMethods <- function() {
 	fooList<-c("bar", "bas")
 	annotValue(s, "foo")<-fooList
 	
-	s<-createSynapseEntity(s)
+	s<-synapseClient:::createSynapseEntity(s)
 	id<-propertyValue(s, "id")
 
 	checkTrue(!is.null(id))
@@ -202,13 +202,13 @@ integrationTestCRUDConvenienceMethods <- function() {
 	newFooList<-c("incan", "monkey-god")
 	annotValue(s, "foo")<-newFooList
 	
-	revisedEntity<-updateSynapseEntity(s)
+	revisedEntity<-synapseClient:::updateSynapseEntity(s)
 	
 	# make sure the file has been updated
-	checkEquals(newName, getEntityFromFileCache(id)@properties[["name"]])
+	checkEquals(newName, synapseClient:::getEntityFromFileCache(id)@properties[["name"]])
 
 	# get the entity and make sure it's updated
-	revisedEntity<-getSynapseEntity(id)
+	revisedEntity<-synapseClient:::getSynapseEntity(id)
 
 	checkTrue(!is.null(revisedEntity))
 	# check the contents
@@ -219,9 +219,9 @@ integrationTestCRUDConvenienceMethods <- function() {
 	checkEquals(newFooList, annotValue(s, "foo"))
 	
 	# delete the entity
-	deleteSynapseEntity(id)
+    synapseClient:::deleteSynapseEntity(id)
 	# make sure it's deleted.  GETting the id should now create a 404 http status (Not Found)
-	errorMessage <- try(getEntityFromSynapse(id))
+	errorMessage <- try(synapseClient:::getEntityFromSynapse(id))
 	checkTrue(any(grep("404", errorMessage)) || typeof(errorMessage)=='try-error')
 }
 

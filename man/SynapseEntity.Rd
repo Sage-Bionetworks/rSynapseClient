@@ -1,9 +1,9 @@
 \name{SynapseEntity}
 \alias{Study}
-\alias{Media}
 \alias{Code}
+\alias{Data}
 \alias{SynapseEntity}
-\alias{Layer}
+\alias{SynapseLocationOwner}
 \alias{Project}
 \alias{Analysis}
 \alias{Step}
@@ -16,7 +16,7 @@ Constructors for Synapse Entities
 \usage{
 SynapseEntity(entity)
 Study(entity)
-Layer(entity)
+Data(entity)
 Project(entity)
 }
 \arguments{

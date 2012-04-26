@@ -315,7 +315,7 @@ setMethod(
 objects.SynapseLocationOwnerWithObjects <-
   function(name)
 {
-  union(objects(own@archOwn@objects, all.names=T), objects(own@objOwn$objects, all.names=T))
+  union(objects(name@archOwn@objects, all.names=T), objects(name@objOwn$objects, all.names=T))
 }
 
 

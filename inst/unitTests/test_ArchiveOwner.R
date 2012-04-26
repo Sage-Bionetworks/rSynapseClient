@@ -80,13 +80,13 @@ unitTestLoadObjectsFromFiles <-
   save(aMatrix, file=file)
   
   addFile(own, file)
-  loadObjectsFromFiles(own)
+  synapseClient:::loadObjectsFromFiles(own)
   checkEquals(length(objects(own@objects)), 0L)
   checkEquals(length(files(own)), 1L)
   checkEquals(files(own), gsub("^.+/","",file))
   
   moveFile(own,files(own), "file.rbin")
-  loadObjectsFromFiles(own)
+  synapseClient:::loadObjectsFromFiles(own)
   checkEquals(length(objects(own@objects)), 1L)
   checkEquals(length(files(own)), 1L)
   checkEquals(files(own), "file.rbin")
