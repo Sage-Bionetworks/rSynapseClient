@@ -7,7 +7,7 @@
 unitTestCreateArchive <-
   function()
 {
-  fc <- FileCache()
+  fc <- synapseClient:::FileCache()
   file1 <- tempfile()
   cat(sprintf("THIS IS A TEST: %s", Sys.time()), file = file1)
   addFile(fc, file1)
@@ -30,7 +30,7 @@ unitTestUnpackArchive <-
   setwd(tempdir())
   suppressWarnings(zip(archive, files = gsub("^.+/", "", file1)))
   setwd(olddir)
-  fc <- FileCache(archiveFile=archive)
+  fc <- synapseClient:::FileCache(archiveFile=archive)
   
   checkEquals(archiveFile, fc$archiveFile)
   checkEquals(cacheRoot, fc$cacheRoot)

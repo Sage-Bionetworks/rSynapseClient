@@ -9,17 +9,17 @@
 Entity Annotations
 }
 \description{
-Functions for manipulating entity annotations
+Functions for manipulating object annotations
 }
 \usage{
-annotations(entity)
-annotationValues(entity)
-annotValue(entity, which)
-deleteAnnotation(entity, which)
+annotations(object)
+annotationValues(object)
+annotValue(object, which)
+deleteAnnotation(object, which)
 }
 \arguments{
-  \item{entity}{
-The entity whose annotations are being modified.
+  \item{object}{
+The object whose annotations are being modified.
 }
 \item{which}{
 An annotation name
@@ -27,7 +27,7 @@ An annotation name
 }
 \value{
 for deleteAnnotation and annotValue:
-The modified entity.
+The modified object.
 
 for annotations:
 an object of class SynapseAnnotations.
@@ -45,7 +45,7 @@ the annotations() functinon should generally not be called but the end-user and 
 in the future.
 }
 \note{
-when using \code{annotationValues<-}, if the entity already has an annotation with the same name
+when using \code{annotationValues<-}, if the object already has an annotation with the same name
 as an element in the list, it's value wilt be overwritten.
 }
 

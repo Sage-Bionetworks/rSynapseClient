@@ -5,7 +5,7 @@
 
 .tearDown <- function(){
   ## clear out the file cache factory
-  resetFactory(new("FileCacheFactory"))  
+  synapseClient:::resetFactory(new("FileCacheFactory"))  
  }
 
 unitTestNoArg <- function(){
@@ -48,8 +48,8 @@ unitTestExistingCacheZipNotInFactory <-
   
   fc <- getFileCache(archivefile)
   checkEquals(fc$cacheRoot, cacheRoot)
-  checkEquals(length(availFileCaches()), 1L)
-  checkEquals(availFileCaches(), cacheRoot)
+  checkEquals(length(synapseClient:::availFileCaches()), 1L)
+  checkEquals(synapseClient:::availFileCaches(), cacheRoot)
   
   fc.copy <- getFileCache(fc$cacheRoot)
   checkEquals(fc.copy$cacheRoot, fc$cacheRoot)
@@ -61,7 +61,7 @@ unitTestExistingCacheZipNotInFactory <-
   checkEquals(fc.copy$files(), fc$files())
   checkEquals(fc.copy$archiveFile, fc.copy$archiveFile)
   
-  checkEquals(length(availFileCaches()), 1L)
+  checkEquals(length(synapseClient:::availFileCaches()), 1L)
   
 }
 
@@ -70,7 +70,7 @@ unitTestNewArchiveNoArg <-
 {
   fc <- getFileCache()
   checkEquals(as.character(class(fc)), "FileCache")
-  checkEquals(length(availFileCaches()), 0L)
+  checkEquals(length(synapseClient:::availFileCaches()), 0L)
 }
 
 unitTestExistingRootDirNotInFactory <-
@@ -104,8 +104,8 @@ unitTestExistingSingleFileNotInFactory <-
   
   fc <- getFileCache(archivefile)
   checkEquals(fc$cacheRoot, cacheRoot)
-  checkEquals(length(availFileCaches()), 1L)
-  checkEquals(availFileCaches(), cacheRoot)
+  checkEquals(length(synapseClient:::availFileCaches()), 1L)
+  checkEquals(synapseClient:::availFileCaches(), cacheRoot)
 }
 
 unitTestSingleFileNotInFactory <-
@@ -182,7 +182,7 @@ unitTestSetCacheRootNewRootNotExist <-
   
   
   newRoot <- tempfile()
-  setCacheRoot(fc,newRoot)
+  synapseClient:::setCacheRoot(fc,newRoot)
   checkEquals(fc$archiveFile, "archive.zip")
   checkEquals(fc$cacheRoot, normalizePath(newRoot))
   checkEquals(fc$cacheDir, file.path(normalizePath(newRoot), sprintf("%s_unpacked", fc$archiveFile)))

@@ -17,7 +17,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   function(libname, pkgname)
 {
   ##set the R_OBJECT cache directory. check for a funcitonal zip first
-  message("Verifying zip installation")
+  packageStartupMessage("Verifying zip installation")
   ff <- tempfile()
   file.create(ff)
   zipfile <- tempfile()
@@ -31,7 +31,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     .setCache("rObjCacheDir", .Platform$file.sep)
     .setCache("hasZip", FALSE)
   }else{
-    message("OK")
+    packageStartupMessage("OK")
     .setCache("rObjCacheDir", ".R_OBJECTS")
     .setCache("hasZip", TRUE)
   }
@@ -68,7 +68,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
 .onUnload <- function(libpath) .Last.lib()
 
 .Last.lib <- function(...) {
-  if(!is.null(step <- getStep()))
-    try(stoppedStep <- stopStep(step), silent=TRUE)
+  if(!is.null(step <- synapseClient::getStep()))
+    try(stoppedStep <- synapseClient::stopStep(step), silent=TRUE)
 }
 

@@ -1,18 +1,18 @@
-\name{Layer-methods}
+\name{SynapseLocationOwner-methods}
 \docType{methods}
-\alias{Layer-methods}
-\alias{Layer,character-method}
-\alias{Layer,list-method}
-\alias{Layer,numeric-method}
-\title{ Methods for Function \code{Layer} }
+\alias{SynapseLocationOwner-methods}
+\alias{SynapseLocationOwner,character-method}
+\alias{SynapseLocationOwner,list-method}
+\alias{SynapseLocationOwner,numeric-method}
+\title{ Methods for Function \code{SynapseLocationOwner} }
 \description{
- ~~ Methods for function \code{Layer}  ~~
+ ~~ Methods for function \code{SynapseLocationOwner}  ~~
 }
 \section{Methods}{
 \describe{
 
 \item{\code{signature(entity = "list")}}{
-Construct a Layer entity from a list of properties
+Construct a SynapseLocationOwner entity from a list of properties
 }
 
 }}

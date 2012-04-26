@@ -13,7 +13,7 @@ testResetPathNoClean <-
   
   
   newdir <- tempfile()
-  setCacheRoot(fc, newdir, FALSE)
+  synapseClient:::setCacheRoot(fc, newdir, FALSE)
   checkTrue(file.exists(fc$getCacheRoot()))
   checkTrue(file.exists(fc$getCacheDir()))
   checkTrue(file.exists(croot))
@@ -33,7 +33,7 @@ testResetPathClean <-
   
   
   newdir <- tempfile()
-  setCacheRoot(fc, newdir, TRUE)
+  synapseClient:::setCacheRoot(fc, newdir, TRUE)
   checkTrue(file.exists(fc$getCacheRoot()))
   checkTrue(file.exists(fc$getCacheDir()))
   checkTrue(!file.exists(croot))
@@ -54,13 +54,13 @@ testDirExistsNoClean <-
   
   
   newdir <- tempfile()
-  setCacheRoot(fc, newdir, FALSE)
+  synapseClient:::setCacheRoot(fc, newdir, FALSE)
   checkTrue(file.exists(fc$getCacheRoot()))
   checkTrue(file.exists(fc$getCacheDir()))
   checkTrue(file.exists(croot))
   checkTrue(file.exists(cdir))
   
-  checkException(setCacheRoot(fc, croot))
+  checkException(synapseClient:::setCacheRoot(fc, croot))
 }
 
 testDirExistsClean <-
@@ -79,7 +79,7 @@ testDirExistsClean <-
   
   ## don't clean the first time we change
   newdir <- tempfile()
-  setCacheRoot(fc, newdir, FALSE)
+  synapseClient:::setCacheRoot(fc, newdir, FALSE)
   checkTrue(file.exists(fc$getCacheRoot()))
   checkTrue(file.exists(fc$getCacheDir()))
   checkTrue(file.exists(file.path(fc$getCacheRoot(), basename(file))))
@@ -89,5 +89,5 @@ testDirExistsClean <-
   croot <- fc$getCacheRoot()
   cdir <- fc$getCacheDir()
   
-  checkException(setCacheRoot(fc, croot, TRUE))
+  checkException(synapseClient:::setCacheRoot(fc, croot, TRUE))
 }

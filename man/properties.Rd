@@ -9,15 +9,15 @@
 Functions for Manipulating Entity Properties
 }
 \description{
-Manage entity properties
+Manage object properties
 }
 \usage{
-properties(entity)
+properties(object)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{entity}{
-%%     ~~Describe \code{entity} here~~
+  \item{object}{
+%%     ~~Describe \code{object} here~~
 }
 }
 \details{
