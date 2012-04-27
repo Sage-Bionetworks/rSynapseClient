@@ -131,4 +131,16 @@ setMethod(
 #  names(name@objects)
 #}
 
+getPackageName.ArchiveOwner <-
+  function()
+{
+  getPackageName(what@objects)
+}
+
+attach.ArchiveOwner <-
+  function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE) 
+{
+  attach(what@objects, pos = pos, name = name, warn.conflicts = warn.conflicts)
+}
+
 
