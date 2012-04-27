@@ -11,7 +11,7 @@ setMethod(
   signature = "EnhancedEnvironment",
   definition = function(.Object){
     .Object@env = new.env()
-    setPackageName.EnhancedEnvironment(env = .Object)
+    setPackageName(env = .Object)
     .Object
   }
 )
@@ -291,13 +291,15 @@ setMethod(
 ## Function for setting the package name of an EnhancedEnvironment
 ##
 setMethod(
-  f = "setPackageName"    
+  f = "setPackageName",
+  signature = signature(env = "EnhancedEnvironment"),
+  definition = function(pkg, env)
+  {
+    if(missing(pkg))
+      pkg <- basename(tempfile(pattern=as.character(class(env))))
+    setPackageName(pkg=pkg, env=as.environment(env))
+  }
 )
-setPackageName.EnhancedEnvironment <-
-    function(pkg = basename(tempfile(pattern=as.character(class(env)))), env)
-{
-  setPackageName(pkg=pkg, env=as.environment(env))
-}
 
 ##
 ## Function for getting the package name of an EnhancedEnvironment

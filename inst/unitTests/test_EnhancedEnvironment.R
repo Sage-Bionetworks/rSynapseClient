@@ -518,7 +518,7 @@ unitTestAttach <-
   ee <- new("EnhancedEnvironment")
   
   ee$aNum <- 1L
-  synapseClient:::attach.EnhancedEnvironment(ee)
+  attach(ee)
   checkTrue(getPackageName(ee) %in% search())
   checkTrue(objects(getPackageName(ee)) == 'aNum')
 }
@@ -529,9 +529,9 @@ unitTestDetach <-
   ee <- new("EnhancedEnvironment")
   
   ee$aNum <- 1L
-  synapseClient:::attach.EnhancedEnvironment(ee)
+  attach(ee)
   checkTrue(getPackageName(ee) %in% search())
-  synapseClient:::detach.EnhancedEnvironment(ee)
+  detach(ee)
   checkTrue(!(getPackageName(ee) %in% search()))
 }
 
@@ -541,7 +541,7 @@ unitTestPackageName <-
 {
   ee <- new("EnhancedEnvironment")
   checkTrue(grepl("^EnhancedEnvironment.+", getPackageName(ee)))
-  synapseClient:::setPackageName.EnhancedEnvironment("foobar", ee)
+  setPackageName("foobar", ee)
   checkEquals(getPackageName(ee), "foobar")
 }
 
