@@ -379,17 +379,14 @@ setMethod(
   }
 )
 
-#setMethod(
-#  f = "attach",
-#  signature = "LocationOwner",
-#  definition = function (what, warn.conflicts = TRUE) {
-#    
-#    if(missing(name))
-#      name = getPackageName(what@location@objects)
-#    what <- what@location@objects
-#    attach (what, pos = pos, name = name, warn.conflicts) 
-#  }
-#)
+#attach.SynapseLocationOwner <- 
+#    function (what, pos = 2, name = deparse(substitute(what)), warn.conflicts = TRUE) 
+#{
+#  if(missing(name))
+#    name = getPackageName(what@)
+#  what <- what@
+#  attach (what, pos = pos, name = name, warn.conflicts) 
+#}
 
 
 

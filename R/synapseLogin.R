@@ -3,6 +3,13 @@
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
+setApiCredentials <-
+    function(username, secretKey)
+{
+  synapseClient:::userName(username)
+  synapseClient:::hmacSecretKey(secretKey)
+}
+
 synapseLogin <- 
   function(username = "", password = "", mode = "auth")
 {

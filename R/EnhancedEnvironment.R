@@ -70,6 +70,7 @@ setMethod(
     signature = "EnhancedEnvironment",
     definition = function(.Object){
       .Object@env = new.env()
+      setPackageName(env = .Object)
       .Object
     }
 )
@@ -245,6 +246,35 @@ length.EnhancedEnvironment <-
   function(x)
 {
   length(names(x))
+}
+
+##
+## Attach the enhanced environment to the search path
+##
+attach.EnhancedEnvironment <-
+    function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE)
+{
+  attach(as.environment(what), pos = pos, name = name, warn.conflicts = warn.conflicts)
+}
+
+##
+## Function for setting the package name of an EnhancedEnvironment
+##
+setPackageName.EnhancedEnvironment <-
+    function(pkg, env)
+{
+  if(missing(pkg))
+    pkg <- basename(tempfile(pattern=as.character(class(pkg))))
+  setPackageName(pkg, as.environment(env))
+}
+
+##
+## Function for getting the package name of an EnhancedEnvironment
+##
+getPackageName.EnhancedEnvironment <-
+    function (where, create = TRUE)
+{
+  getPackageName(where = as.environment(where), create = create)
 }
 
 
