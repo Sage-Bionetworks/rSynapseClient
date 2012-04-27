@@ -4,6 +4,20 @@
 ###############################################################################
 
 ##
+## Initialize the EnhancedEnvironment by creating a new environment
+##
+setMethod(
+  f = "initialize",
+  signature = "EnhancedEnvironment",
+  definition = function(.Object){
+    .Object@env = new.env()
+    setPackageName.EnhancedEnvironment(env = .Object)
+    .Object
+  }
+)
+
+
+##
 ## Allows caller to assign access elements in the environment using a bracket accessor.
 ## works for objects starting with a period as well.
 ##
@@ -96,19 +110,6 @@ setReplaceMethod("$",
     x[[name]] <- value
     x
   }
-)
-
-##
-## Initialize the EnhancedEnvironment by creating a new environment
-##
-setMethod(
-    f = "initialize",
-    signature = "EnhancedEnvironment",
-    definition = function(.Object){
-      .Object@env = new.env()
-      setPackageName.EnhancedEnvironment(env = .Object)
-      .Object
-    }
 )
 
 ##

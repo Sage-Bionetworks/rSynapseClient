@@ -34,7 +34,8 @@ export(as.environment.EnhancedEnvironment,as.environment.GlobalCache, as.list.Si
 as.list.SynapseAnnotations, as.list.TypedPropertyStore, as.environment.EnhancedEnvironment,
 length.EnhancedEnvironment, names.CachingObjectOwner, names.EnhancedEnvironment, names.SynapseLocationOwner,
 names.SynapseLocationOwnerWithObjects,
- getPackageName.EnhancedEnvironment, setPackageName.EnhancedEnvironment)
+ getPackageName.EnhancedEnvironment, setPackageName.EnhancedEnvironment, getPackageName.ArchiveOwner,
+  as.environment.ArchiveOwner, attach.ArchiveOwner)
 
 ## S4 convenience methods
 ##exportMethods(getDatasetLayers)

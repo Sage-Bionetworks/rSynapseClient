@@ -9,6 +9,7 @@ setMethod(
   definition = function(.Object){
     .Object@fileCache <- new("FileCache")
     .Object@objects <- new("EnhancedEnvironment")
+    setPackageName.ArchiveOwner(env = .Object)
     .Object
   }
 )
@@ -125,22 +126,29 @@ setMethod(
   }
 )
 
-#objects.ArchiveOwner <-
-#    function(name)
-#{
-#  names(name@objects)
-#}
+setPackageName.ArchiveOwner <-
+  function(pkg = basename(tempfile(pattern=as.character(class(env)))), env)
+{
+  setPackageName.EnhancedEnvironment(pkg = pkg, env = env@objects)
+}
 
 getPackageName.ArchiveOwner <-
-  function()
+  function(where)
 {
-  getPackageName(what@objects)
+  getPackageName(where@objects)
+}
+
+as.environment.ArchiveOwner <-
+  function(x)
+{
+  as.environment(x@objects)
 }
 
 attach.ArchiveOwner <-
-  function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE) 
+  function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE)
 {
-  attach(what@objects, pos = pos, name = name, warn.conflicts = warn.conflicts)
+  attach(as.environment(what), pos = pos, name = name, warn.conflicts = warn.conflicts)
 }
+
 
 
