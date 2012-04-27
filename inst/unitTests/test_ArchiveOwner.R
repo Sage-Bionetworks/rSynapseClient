@@ -14,6 +14,10 @@
     function()
 {
   options(warn = synapseClient:::.getCache("oldWarn"))
+  if(!is.null(name <- synapseClient:::.getCache("detachMe"))){
+    detach(name)
+    synapseClient:::.deleteCache('detachMe')
+  }
 }
 
 unitTestInitialize <-
@@ -109,10 +113,10 @@ unitTestGetPackageName <-
   function()
 {
   own <- new("ArchiveOwner")
-  checkTrue(grepl("ArchiveOwner", synapseClient:::getPackageName.ArchiveOwner(own)))
+  checkTrue(grepl("ArchiveOwner", getPackageName(own)))
   
-  synapseClient:::setPackageName.ArchiveOwner("foo", own)
-  checkEquals( "foo", synapseClient:::getPackageName.ArchiveOwner(own))
+  setPackageName("foo", own)
+  checkEquals( "foo", getPackageName(own))
 }
 
 
@@ -122,7 +126,8 @@ unitTestAttach <-
   own <- new("ArchiveOwner")
   
   own@objects$aNum <- 1L
-  synapseClient:::attach.ArchiveOwner(own)
+  synapseClient:::.setCache("detachMe", getPackageName(own))
+  attach(own)
   checkTrue(getPackageName(own) %in% search())
   checkTrue(objects(getPackageName(own)) == 'aNum')
 }
@@ -131,7 +136,15 @@ unitTestAttach <-
 unitTestDetach <-
   function()
 {
+  own <- new("ArchiveOwner")
   
+  own@objects$aNum <- 1L
+  synapseClient:::.setCache("detachMe", getPackageName(own))
+  attach(own)
+  checkTrue(getPackageName(own) %in% search())
+  checkTrue(objects(getPackageName(own)) == 'aNum')
+  detach(own)
+  checkTrue(!(getPackageName(own) %in% search()))
 }
 
 

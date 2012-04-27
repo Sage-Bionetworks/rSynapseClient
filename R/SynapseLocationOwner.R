@@ -8,6 +8,7 @@ setMethod(
   signature = "SynapseLocationOwner",
   definition = function(.Object){
     .Object@archOwn <- new("ArchiveOwner")
+    setPackageName(env=.Object)
     .Object
   }
 )
@@ -379,15 +380,39 @@ setMethod(
   }
 )
 
-#attach.SynapseLocationOwner <- 
-#    function (what, pos = 2, name = deparse(substitute(what)), warn.conflicts = TRUE) 
-#{
-#  if(missing(name))
-#    name = getPackageName(what@)
-#  what <- what@
-#  attach (what, pos = pos, name = name, warn.conflicts) 
-#}
+setMethod(
+  f = "attach",
+  signature = signature(what = "SynapseLocationOwner"),
+  definition = function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE){
+    attach(what@archOwn)
+  }
+)
 
+setMethod(
+  f = "detach",
+  signature = signature(name = "SynapseLocationOwner"),
+  definition = function (name)
+  {
+    detach(name@archOwn)
+  }
+)
 
+setMethod(
+  f = "setPackageName",
+  signature = signature(env = "SynapseLocationOwner"),
+  definition = function(pkg, env)
+  {
+    if(missing(pkg))
+      pkg <- basename(tempfile(pattern=as.character(class(env))))
+    setPackageName(pkg = pkg, env = env@archOwn)
+  }
+)
 
-
+setMethod(
+  f = "getPackageName",
+  signature = signature(where = "SynapseLocationOwner"),
+  definition = function (where, create = TRUE)
+  {
+    getPackageName(where = where@archOwn, create = create)
+  }
+)
