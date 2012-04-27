@@ -108,14 +108,23 @@ unitTestCacheDir <-
 unitTestGetPackageName <-
   function()
 {
+  own <- new("ArchiveOwner")
+  checkTrue(grepl("ArchiveOwner", synapseClient:::getPackageName.ArchiveOwner(own)))
   
+  synapseClient:::setPackageName.ArchiveOwner("foo", own)
+  checkEquals( "foo", synapseClient:::getPackageName.ArchiveOwner(own))
 }
 
 
 unitTestAttach <-
   function()
 {
+  own <- new("ArchiveOwner")
   
+  own@objects$aNum <- 1L
+  synapseClient:::attach.ArchiveOwner(own)
+  checkTrue(getPackageName(own) %in% search())
+  checkTrue(objects(getPackageName(own)) == 'aNum')
 }
 
 

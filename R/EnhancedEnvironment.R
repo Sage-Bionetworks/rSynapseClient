@@ -3,7 +3,24 @@
 # Author: furia
 ###############################################################################
 
+##
+## Initialize the EnhancedEnvironment by creating a new environment
+##
+setMethod(
+  f = "initialize",
+  signature = "EnhancedEnvironment",
+  definition = function(.Object){
+    .Object@env = new.env()
+    setPackageName.EnhancedEnvironment(env = .Object)
+    .Object
+  }
+)
 
+
+##
+## Allows caller to assign access elements in the environment using a bracket accessor.
+## works for objects starting with a period as well.
+##
 setMethod(
     f = "[",
     signature = "EnhancedEnvironment",
@@ -65,32 +82,31 @@ setReplaceMethod("[[",
     }
 )
 
+##
+## dollar sign accessor for retrieving a single named object
+##
 setMethod(
-    f = "initialize",
-    signature = "EnhancedEnvironment",
-    definition = function(.Object){
-      .Object@env = new.env()
-      setPackageName.EnhancedEnvironment(env = .Object)
-      .Object
-    }
+  f = "$",
+  signature = "EnhancedEnvironment",
+  definition = function(x, name){
+    x[[name]]
+  }
 )
 
-setMethod(
-    f = "$",
-    signature = "EnhancedEnvironment",
-    definition = function(x, name){
-      x[[name]]
-    }
-)
-
+##
+## dollar sign accessor's replacement method for adding a single named object
+##
 setReplaceMethod("$", 
-    signature = "EnhancedEnvironment",
-    function(x, name, value) {
-      x[[name]] <- value
-      x
-    }
+  signature = "EnhancedEnvironment",
+  function(x, name, value) {
+    x[[name]] <- value
+    x
+  }
 )
 
+##
+## coerce to environment by returning the enclosed environment class
+##
 setMethod(
     f = "as.environment",
     signature = "EnhancedEnvironment",
