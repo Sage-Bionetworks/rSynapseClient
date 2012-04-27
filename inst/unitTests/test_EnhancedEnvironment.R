@@ -13,6 +13,8 @@
     function()
 {
   options(warn=synapseClient:::.getCache("oldWarn"))
+  if('foobar' %in% search())
+    detach('foobar')
 }
 
 unitTestAssignment <-
@@ -509,6 +511,46 @@ unitTestAsEnvironment <-
   checkEquals("environment", class(env))
   checkEquals("aNum", objects(env))
 }
+
+unitTestAttach <-
+    function()
+{
+  
+  
+}
+
+unitTestAttach <-
+    function()
+{
+  ee <- new("EnhancedEnvironment")
+  
+  ee$aNum <- 1L
+  attach(ee, name='foobar')
+  checkTrue('foobar' %in% search())
+  checkTrue(objects('foobar') == 'aNum')
+}
+
+unitTestDetach <-
+    function()
+{
+  
+}
+
+
+unitTestSetPackageName <-
+    function()
+{
+  ee <- new("EnhancedEnvironment")
+}
+
+
+unitTestGetPackageName <-
+    function()
+{
+  
+}
+
+
 
 
 
