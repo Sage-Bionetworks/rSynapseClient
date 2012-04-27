@@ -291,24 +291,32 @@ length.EnhancedEnvironment <-
 ##
 ## Attach the enhanced environment to the search path
 ##
-attach.EnhancedEnvironment <-
-    function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE)
-{
-  attach(as.environment(what), pos = pos, name = name, warn.conflicts = warn.conflicts)
-}
+setMethod(
+    f = "attach",
+    signature = signature(what = "EnhancedEnvironment"),
+    definition = function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE)
+    {
+      attach(as.environment(what), pos = pos, name = name, warn.conflicts = warn.conflicts)
+    }
+)
 
 ##
 ## Detach the enhanced environment from the search path
 ##
-detach.EnhancedEnvironment <-
-  function (name)
-{
-  detach(name=getPackageName(name), character.only = TRUE)
-}
+setMethod(
+  f = "detach",
+  signature = signature(name = "EnhancedEnvironment"),
+  definition = function (name){
+    detach(name=getPackageName(name), character.only = TRUE)
+  }
+)
 
 ##
 ## Function for setting the package name of an EnhancedEnvironment
 ##
+setMethod(
+  f = "setPackageName"    
+)
 setPackageName.EnhancedEnvironment <-
     function(pkg = basename(tempfile(pattern=as.character(class(env)))), env)
 {

@@ -144,11 +144,23 @@ as.environment.ArchiveOwner <-
   as.environment(x@objects)
 }
 
-attach.ArchiveOwner <-
-  function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE)
-{
-  attach(as.environment(what), pos = pos, name = name, warn.conflicts = warn.conflicts)
-}
+setMethod(
+    f = "attach",
+    signature = signature(what = "ArchiveOwner"),
+    definition = function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE)
+    {
+      attach(as.environment(what), pos = pos, name = name, warn.conflicts = warn.conflicts)
+    }
+)
+
+setMethod(
+    f = "detach",
+    signature = signature(name = "ArchiveOwner"),
+    definition = function (name)
+    {
+      detach(name@objects)
+    }
+)
 
 
 
