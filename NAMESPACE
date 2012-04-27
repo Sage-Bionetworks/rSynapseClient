@@ -35,7 +35,7 @@ as.list.SynapseAnnotations, as.list.TypedPropertyStore, as.environment.EnhancedE
 length.EnhancedEnvironment, names.CachingObjectOwner, names.EnhancedEnvironment, names.SynapseLocationOwner,
 names.SynapseLocationOwnerWithObjects,
  getPackageName.EnhancedEnvironment, setPackageName.EnhancedEnvironment, getPackageName.ArchiveOwner,
-  as.environment.ArchiveOwner, attach.ArchiveOwner)
+  as.environment.ArchiveOwner)
 
 ## S4 convenience methods
 ##exportMethods(getDatasetLayers)
@@ -71,7 +71,9 @@ exportMethods(
   downloadEntity, 
   loadEntity, 
   getParentEntity,
-  files
+  files,
+  attach,
+  detach
   )
 
 ## methods for managing layer files
