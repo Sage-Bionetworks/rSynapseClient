@@ -22,7 +22,8 @@ export(
   synapseCacheDir,
   hmacSecretKey,
   edit,
-  setApiCredentials
+  setApiCredentials,
+  synapseQuery
 ##  .Last.lib,
 ##  signEula
 )
@@ -32,7 +33,8 @@ export(
 export(as.environment.EnhancedEnvironment,as.environment.GlobalCache, as.list.SimplePropertyOwner, 
 as.list.SynapseAnnotations, as.list.TypedPropertyStore, as.environment.EnhancedEnvironment,
 length.EnhancedEnvironment, names.CachingObjectOwner, names.EnhancedEnvironment, names.SynapseLocationOwner,
-names.SynapseLocationOwnerWithObjects, getPackageName.EnhancedEnvironment, setPackageName.EnhancedEnvironment)
+names.SynapseLocationOwnerWithObjects,
+ getPackageName.EnhancedEnvironment, setPackageName.EnhancedEnvironment)
 
 ## S4 convenience methods
 ##exportMethods(getDatasetLayers)
@@ -52,8 +54,7 @@ exportMethods(
   Code,
   Folder,
   Preview,
-  SynapseEntity,
-  synapseQuery
+  SynapseEntity
 )
 
 ## entity S4 methods
