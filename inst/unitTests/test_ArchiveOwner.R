@@ -105,6 +105,25 @@ unitTestCacheDir <-
   checkEquals(cacheDir(own), own@fileCache$getCacheDir())
 }
 
+unitTestGetPackageName <-
+  function()
+{
+  
+}
+
+
+unitTestAttach <-
+  function()
+{
+  
+}
+
+
+unitTestDetach <-
+  function()
+{
+  
+}
 
 
 
