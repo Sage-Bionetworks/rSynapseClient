@@ -106,7 +106,6 @@ setMethod(
 .cleanFilePath <- 
     function(filePath)
 {
-  filePath <- normalizePath(filePath, mustWork = FALSE)
   filePath <- gsub("[\\/]+", "/", filePath)
   
   ##determine if the filePath is a directory by checking for a trailing slash
