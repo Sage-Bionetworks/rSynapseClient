@@ -232,18 +232,21 @@ setMethod(
 names.EnhancedEnvironment <-
     function(x)
 {
-  objects(x, all.names=TRUE)
+  setdiff(objects(x, all.names=TRUE), ".packageName")
 }
 
 ##
 ## List the objects held in the environment. By default, this excluded objects
 ## starting with a period
 ##
-objects.EnhancedEnvironment <-
-  function(name, all.names = FALSE, pattern)
-{
-  objects(envir = as.environment(name), all.names = all.names, pattern = pattern) 
-} 
+setMethod(
+  f = "objects",
+  signature = signature(name="EnhancedEnvironment"),
+  definition = function(name, all.names = FALSE, pattern)
+  {
+      setdiff(objects(envir = as.environment(name), all.names = all.names, pattern = pattern), ".packageName")
+  }
+)
 
 ##
 ## Coerce EnhancedEnvironment to an "environment"

@@ -14,7 +14,13 @@
 {
   options(warn=synapseClient:::.getCache("oldWarn"))
   if('foobar' %in% search())
-    detach('foobar')
+    detach('foobar', character.only=T)
+  
+  if(!is.null(name <- synapseClient:::.getCache("detachMe"))){
+    detach(name, character.only = TRUE)
+    synapseClient:::.deleteCache("detachMe")
+  }
+  
 }
 
 unitTestAssignment <-
@@ -519,6 +525,7 @@ unitTestAttach <-
   
   ee$aNum <- 1L
   attach(ee)
+  synapseClient:::.setCache("detachMe", getPackageName(ee))
   checkTrue(getPackageName(ee) %in% search())
   checkTrue(objects(getPackageName(ee)) == 'aNum')
 }
@@ -530,8 +537,10 @@ unitTestDetach <-
   
   ee$aNum <- 1L
   attach(ee)
+  synapseClient:::.setCache("detachMe", getPackageName(ee))
   checkTrue(getPackageName(ee) %in% search())
   detach(ee)
+  synapseClient:::.deleteCache("detachMe")
   checkTrue(!(getPackageName(ee) %in% search()))
 }
 
