@@ -32,7 +32,7 @@ unitTestAddFile <-
     function()
 {
   own <- new("ArchiveOwner")
-  file <- tempfile()
+  file <- gsub("[\\/]+", "/", tempfile())
   cat("THIS IS A TEST %s", Sys.time(), file = file)
   
   copy <- addFile(own, file)
@@ -54,7 +54,7 @@ unitTestDeleteFile <-
   addFile(own, file)
   checkEquals(length(own@fileCache$files()), 1L)
   
-  copy <- deleteFile(own, gsub("^.+/", "", file))
+  copy <- deleteFile(own, gsub("^.+/", "", basename(file)))
   checkEquals(length(own@fileCache$files()), 0L)
   checkEquals(length(copy@fileCache$files()), 0L)
   
@@ -80,7 +80,7 @@ unitTestLoadObjectsFromFiles <-
 {
   own <- new("ArchiveOwner")
   aMatrix <- diag(10)
-  file <- tempfile()
+  file <- gsub("[\\/]+", "/", tempfile())
   save(aMatrix, file=file)
   
   addFile(own, file)

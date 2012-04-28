@@ -48,8 +48,8 @@ setMethod(
         unlink(object$getCacheRoot(), recursive = TRUE)
       
       ## set the member variables to reflect the new values
-      object$cacheDir <- normalizePath(cacheDir)
-      object$cacheRoot <- normalizePath(path)
+      object$cacheDir <- gsub("[\\/]+", "/", normalizePath(cacheDir))
+      object$cacheRoot <- gsub("[\\/]+", "/", normalizePath(path))
       
       invisible(object)
     }
@@ -70,7 +70,7 @@ setMethod(
         )
       if(is.na(file.info(cacheRoot)$isdir) || !file.info(cacheRoot)$isdir)
         stop("Cache root must be a directory")
-      cacheRoot <- gsub("/+$", "", gsub("/+", "/", normalizePath(cacheRoot)))
+      cacheRoot <- gsub("[\\/]+$", "", gsub("[\\/]+", "/", normalizePath(cacheRoot)))
       fc$cacheRoot <- cacheRoot
       fc$cacheDir <- file.path(fc$cacheRoot, sprintf("%s_unpacked", fc$archiveFile))
       fc$loadMetaDataFromFile()
@@ -93,11 +93,11 @@ setMethod(
       ## this constructor requires that the archive exists. Currently the archive must be a file
       ## that can be unpacked using R's unzip function, or it should be a single file. This constructor
       ## in the future should possibly return a read-only FileCache if the user doesn't have zip installed
-      archiveFile <- normalizePath(archiveFile, mustWork=TRUE)
+      archiveFile <- gsub("[\\/]+", "/", normalizePath(archiveFile, mustWork=TRUE))
       
       fc <- new("FileCache")
-      fc$archiveFile <- gsub("^.+/", "", archiveFile)
-      fc$cacheRoot <- gsub("/+$", "", gsub(fc$archiveFile, "", archiveFile, fixed = TRUE))
+      fc$archiveFile <- basename(archiveFile)
+      fc$cacheRoot <- gsub("[\\/]+$", "", gsub(fc$archiveFile, "", archiveFile, fixed = TRUE))
       fc$cacheDir <- file.path(fc$cacheRoot, sprintf("%s_unpacked", fc$archiveFile))
       fc
     }
@@ -152,13 +152,13 @@ setMethod(
       ## make sure the srcPath is not a directory either. a little defensive programming here.
       if(attr(destPath, "isDir") && !(!is.na(info$isdir) && info$isdir)){
         srcPathClean <- as.character(.cleanFilePath(srcPath))
-        srcFname <- gsub(".+/", "", srcPathClean)
+        srcFname <- gsub(".+[\\/]", "", srcPathClean)
         destPath <- normalizePath(file.path(as.character(destPath), srcFname), mustWork=FALSE)
       }
       
       ## add some file metadata. for now, just add the default info plus the relative file path and the file size
-      relPath <- gsub(normalizePath(object$cacheDir, mustWork=FALSE), "", as.character(destPath), fixed = TRUE)
-      relPath <- gsub("^/+", "", relPath)
+      relPath <- gsub(object$cacheDir, "", as.character(destPath), fixed = TRUE)
+      relPath <- gsub("^[\\/]+", "", relPath)
       info <- as.list(file.info(srcPath))
       
       ## convert all values to character for now
@@ -258,6 +258,8 @@ setMethod(
       
       if(!all(file.exists(file)))
         stop("One or more specified files does not exist")
+      file <- gsub("[\\/]+", "/", file)
+      path <- gsub("[\\/]+", "/", path)
       
       ## need to make sure the numbers of files and paths makes sense
       if(length(path) > 1 && length(path) != length(file))
@@ -268,11 +270,15 @@ setMethod(
       ans <- lapply(1:length(files$srcfiles), function(i){
             ## build up the dest path
             destPath <- file.path(files$path[i], files$destfile[i])
+            destPath <- gsub("[\\/]+", "/", destPath)
             
             ## create the destination directory if it doesn't exist
-            fname <- gsub("^.+/", "", destPath)
+            fname <- gsub(".+[\\/]+", "", destPath)
             pp <- gsub(fname, "", destPath, fixed = TRUE)
-            if(!file.exists(file.path(entity$cacheDir, pp)))
+            pp <- gsub("[\\/]+", "/", pp)
+            aDir <- file.path(entity$cacheDir, pp)
+            aDir <- gsub("[\\/]+$", "", aDir)
+            if(!file.exists(aDir))
               dir.create(file.path(entity$cacheDir, pp), recursive=TRUE)
             
             ## copy the file

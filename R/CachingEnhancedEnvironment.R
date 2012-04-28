@@ -234,7 +234,9 @@ setMethod(
     
     ## check that cachesubdir exists
     cacheDir <- owner@fileCache$getCacheDir()
-    if(grepl("/$", owner@cachePrefix) && !file.exists(file.path(cacheDir, owner@cachePrefix))){
+    aDir <- file.path(cacheDir, owner@cachePrefix)
+    aDir <- gsub("[\\/]+$", "", aDir)
+    if(grepl("/$", owner@cachePrefix) && !file.exists(aDir)){
       cacheDir <- file.path(owner@fileCache$getCacheDir(), owner@cachePrefix)
       dir.create(cacheDir, recursive=TRUE)
     }

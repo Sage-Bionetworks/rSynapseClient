@@ -11,13 +11,13 @@ unitTestTrailingForwardSlash <-
   ans <- synapseClient:::.cleanFilePath(path)
   checkTrue(attr(ans, "isDir"))
   
-  checkEquals(as.character(ans),  gsub("/+", "/", path))
+  checkEquals(as.character(ans),  gsub("[\\/]+", "/", path))
   
   path <- file.path(tmp, "foo///")
   ans <- synapseClient:::.cleanFilePath(path)
   checkTrue(attr(ans, "isDir"))
   
-  checkEquals(as.character(ans), gsub("/+", "/", file.path(tmp, "foo/")))
+  checkEquals(as.character(ans), gsub("[\\/]+", "/", file.path(tmp, "foo/")))
   
 }
 
@@ -30,14 +30,14 @@ unitTestTrailingBackSlash <-
   ans <- synapseClient:::.cleanFilePath(path)
   checkTrue(attr(ans, "isDir"))
   
-  checkEquals(as.character(ans), gsub("/+", "/", file.path(tmp, "foo/")))
+  checkEquals(as.character(ans), gsub("[\\/]+", "/", file.path(tmp, "foo/")))
   
   ## R syntax makes it so backslashes must come in pairs
   path <- file.path(tmp, "foo\\\\")
   ans <- synapseClient:::.cleanFilePath(path)
   checkTrue(attr(ans, "isDir"))
   
-  checkEquals(as.character(ans), gsub("/+", "/", file.path(tmp, "foo/")))
+  checkEquals(as.character(ans), gsub("[\\/]+", "/", file.path(tmp, "foo/")))
   
 }
 
@@ -58,7 +58,7 @@ unitTestNoTrailingDirExists <-
   
   ans <- synapseClient:::.cleanFilePath(path)
   checkTrue(attr(ans, "isDir"))
-  file.remove(path)
+  unlink(path)
 }
 
 

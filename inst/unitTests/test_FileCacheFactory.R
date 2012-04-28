@@ -38,9 +38,9 @@ unitTestExistingCacheZipNotInFactory <-
 {
   cacheRoot <- tempfile()
   dir.create(cacheRoot)
-  cacheRoot <- normalizePath(cacheRoot)
+  cacheRoot <- gsub("[\\/]+", "/", normalizePath(cacheRoot))
   archivefile <- tempfile(tmpdir=cacheRoot, fileext=".zip")
-  file <- tempfile()
+  file <- gsub("[\\/]+", "/", tempfile())
   file.create(file)
   suppressWarnings(
     zip(archivefile, files = file)
@@ -94,7 +94,7 @@ unitTestExistingSingleFileNotInFactory <-
 {
   cacheRoot <- tempfile()
   dir.create(cacheRoot)
-  cacheRoot <- gsub("/+", "/", normalizePath(cacheRoot))
+  cacheRoot <- gsub("[\\/]+", "/", normalizePath(cacheRoot))
   archivefile <- tempfile(tmpdir=cacheRoot, fileext=".zip")
   file <- tempfile()
   file.create(file)
@@ -113,8 +113,8 @@ unitTestSingleFileNotInFactory <-
 {
   cacheRoot <- tempfile()
   dir.create(cacheRoot)
-  cacheRoot <- normalizePath(cacheRoot)
-  file <- tempfile(tmpdir=cacheRoot)
+  cacheRoot <- gsub("[\\/]+", "/", normalizePath(cacheRoot))
+  file <- gsub("[\\/]+", "/", tempfile(tmpdir=cacheRoot))
   cat(sprintf("Testing...1 %s", Sys.time()), file = file)
   
   fc <- getFileCache(file)
@@ -126,7 +126,7 @@ unitTestExistingEmptyDir <-
 {
   root <- tempfile()
   dir.create(root)
-  root <- normalizePath(root)
+  root <- gsub("[\\/]+", "/", normalizePath(root))
   fc <- getFileCache(root)
   checkEquals(fc$archiveFile, "archive.zip")
   checkEquals(fc$cacheRoot, root)
@@ -154,13 +154,12 @@ unitTestExistingEmptyDir <-
 unitTestDirNotExist <-
   function()
 {
-  root <- tempfile()
-#  dir.create(root)
-#  root <- normalizePath(root)
+  root <- gsub("[\\/]+","/", tempfile())
   fc <- getFileCache(root)
+  root <- gsub("[\\/]+","/", normalizePath(root))
   checkEquals(fc$archiveFile, "archive.zip")
-  checkEquals(fc$cacheRoot, normalizePath(root))
-  checkEquals(fc$cacheDir, file.path(normalizePath(root), sprintf("%s_unpacked", fc$archiveFile)))
+  checkEquals(fc$cacheRoot, root)
+  checkEquals(fc$cacheDir, file.path(root, sprintf("%s_unpacked", fc$archiveFile)))
 }
 
 
@@ -169,10 +168,10 @@ unitTestSetCacheRootNewRootNotExist <-
 {
   root <- tempfile()
   dir.create(root)
-  root <- normalizePath(root)
+  root <- gsub("[\\/]+", "/", normalizePath(root))
   fc <- getFileCache(root)
 
-  file <- tempfile()
+  file <- gsub("[\\/]+", "/", tempfile())
   cat("Hello World\n", file=file)
   addFile(fc,file)
   checkTrue(file.exists(file.path(fc$cacheDir, basename(file))))
@@ -183,11 +182,12 @@ unitTestSetCacheRootNewRootNotExist <-
   
   newRoot <- tempfile()
   synapseClient:::setCacheRoot(fc,newRoot)
+  newRoot <- gsub("[\\/]+", "/", normalizePath(newRoot))
   checkEquals(fc$archiveFile, "archive.zip")
-  checkEquals(fc$cacheRoot, normalizePath(newRoot))
-  checkEquals(fc$cacheDir, file.path(normalizePath(newRoot), sprintf("%s_unpacked", fc$archiveFile)))
+  checkEquals(fc$cacheRoot, newRoot)
+  checkEquals(fc$cacheDir, file.path(newRoot, sprintf("%s_unpacked", fc$archiveFile)))
   checkTrue(file.exists(file.path(fc$cacheRoot, fc$archiveFile)))
-  checkTrue(file.exists(file.path(normalizePath(newRoot), sprintf("%s_unpacked", fc$archiveFile))))
+  checkTrue(file.exists(file.path(newRoot, sprintf("%s_unpacked", fc$archiveFile))))
   checkTrue(file.exists(file.path(fc$cacheDir, basename(file))))
 
 }
