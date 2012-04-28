@@ -223,8 +223,8 @@ unitTestAddFileInfoTwiceSameNameDifferentSlashes <-
   checkEquals(length(fc$metaData), 1L)
   synapseClient:::addFileMetaData(fc, s2, path1)
   checkEquals(length(fc$metaData), 2L)
-  checkTrue(file.remove(file.path(fc$cacheDir, "foo/bar")))
-  checkTrue(file.remove(file.path(fc$cacheDir, "foo")))
+  unlink(file.path(fc$cacheDir, "foo/bar"), recursive=T)
+  unlink(file.path(fc$cacheDir, "foo"), recursive=T)
 }
 
 
@@ -300,9 +300,10 @@ unitTestSameSourceAndDestFile <-
   
   fc <- new("FileCache")
   file.copy(file, fc$getCacheDir())
-  srcFile <- file.path(fc$getCacheDir(), gsub(".+/", "", file))
+  srcFile <- file.path(fc$getCacheDir(), basename(file))
+  srcFile <- gsub("[\\/]+", "/", srcFile)
   
-  relPath <- gsub(normalizePath(fc$cacheDir, mustWork=FALSE), "", as.character(srcFile), fixed = TRUE)
+  relPath <- gsub(gsub("[\\/]+", "/",normalizePath(fc$cacheDir, mustWork=FALSE)), "", as.character(srcFile), fixed = TRUE)
   relPath <- gsub("^/+", "", relPath)
   
   synapseClient:::addFileMetaData(fc, srcFile, relPath)
