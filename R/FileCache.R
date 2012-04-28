@@ -153,6 +153,7 @@ setMethod(
         srcPathClean <- as.character(.cleanFilePath(srcPath))
         srcFname <- gsub(".+[\\/]", "", srcPathClean)
         destPath <- normalizePath(file.path(as.character(destPath), srcFname), mustWork=FALSE)
+        destPath <- gsub("[\\/]+", "/", destPath)
       }
       
       ## add some file metadata. for now, just add the default info plus the relative file path and the file size
@@ -276,6 +277,7 @@ setMethod(
             pp <- gsub(fname, "", destPath, fixed = TRUE)
             pp <- gsub("[\\/]+", "/", pp)
             aDir <- file.path(entity$cacheDir, pp)
+	    aDir <- gsub("[\\/]+", "/", aDir)
             aDir <- gsub("[\\/]+$", "", aDir)
             if(!file.exists(aDir))
               dir.create(file.path(entity$cacheDir, pp), recursive=TRUE)
