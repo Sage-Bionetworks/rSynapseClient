@@ -164,7 +164,7 @@ unitTestAddDirAndFileTwoPaths <-
   checkEquals(length(fc$metaData), 3L)
   
   relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
-  expectedPaths <- gsub("/+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
+  expectedPaths <- gsub("[\\/]+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
   checkTrue(all(relPaths %in% expectedPaths))
   
   addFile(fc, c(adir,file), c("foo/", "bar/"))
@@ -172,7 +172,7 @@ unitTestAddDirAndFileTwoPaths <-
   checkEquals(length(fc$metaData), 3L)
   
   relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
-  expectedPaths <- gsub("/+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
+  expectedPaths <- gsub("[\\/]+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
   checkTrue(all(relPaths %in% expectedPaths))
 }
 
@@ -218,7 +218,7 @@ unitTestAddToSubDirKeepName <-
   
   relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
   checkEquals(length(relPaths), 1L)
-  checkEquals(relPaths, gsub("^/", "", gsub("/+","/", gsub(tempdir(), "", file.path(path, file), fixed = TRUE))))
+  checkEquals(relPaths, gsub("^/", "", gsub("[\\/]+","/", gsub(tempdir(), "", file.path(path, file), fixed = TRUE))))
   checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
   
 }

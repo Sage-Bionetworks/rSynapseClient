@@ -107,9 +107,9 @@ setRefClass(
           .self$cacheRoot <- normalizePath(root)
           .self$cacheDir <- normalizePath(cdir)
 
-          .self$cacheRoot <- gsub("/+$", "", gsub("/+", "/", normalizePath(root, mustWork=TRUE)))
+          .self$cacheRoot <- gsub("[\\/]+$", "", gsub("[\\/]+", "/", normalizePath(root, mustWork=TRUE)))
           cdir <- file.path(.self$cacheRoot, pattern=sprintf("%s_unpacked", .self$archiveFile))
-          .self$cacheDir <- gsub("/+", "/", normalizePath(cdir, mustWork=TRUE))
+          .self$cacheDir <- gsub("[\\/]+", "/", normalizePath(cdir, mustWork=TRUE))
         },
         addFileMetaData = function(srcPath, destPath, ...){
           destPath <- as.character(.cleanFilePath(destPath))
@@ -217,7 +217,7 @@ setRefClass(
           oldDir <- getwd()
           setwd(.self$cacheDir)
           suppressWarnings(
-              zipRetVal <- zip(file.path(.self$cacheRoot, .self$archiveFile), files=gsub("^/","",.self$files()))
+              zipRetVal <- zip(file.path(.self$cacheRoot, .self$archiveFile), files=gsub("^[\\/]","",.self$files()))
           )
           setwd(oldDir)
           
@@ -260,8 +260,8 @@ setRefClass(
                 for(name in names(info))
                   info[[name]] <- as.character(info[[name]])
                 
-                rPath <- gsub(gsub("/+", "/", .self$cacheDir), "", i, fixed = TRUE)
-                rPath <- gsub("^/", "", rPath)
+                rPath <- gsub(gsub("[\\/]+", "/", .self$cacheDir), "", i, fixed = TRUE)
+                rPath <- gsub("^[\\/]", "", rPath)
                 .self$metaData[[i]] <- list(srcPath=.self$archiveFile, relativePath = rPath, fileInfo=info)
               }
           )
