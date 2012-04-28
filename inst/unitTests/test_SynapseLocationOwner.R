@@ -4,24 +4,7 @@
 ###############################################################################
 .setUp <- 
   function()
-{
-#  env <- attach(NULL, name = "testEnv")
-#  tryCatch({
-#      setPackageName("testEnv", env)
-#      suppressWarnings(
-#        setClass(
-#          "LocOwn",
-#          contains = "SynapseLocationOwner",
-#          where = env
-#        ) 
-#      )
-#    },
-#    error = function(e){
-#      detach("testEnv")
-#      stop(e)
-#    }
-#  )
-  
+{ 
   synapseClient:::.setCache("oldWarn", options("warn")[[1]])
   options(warn=2L)
 }
@@ -31,6 +14,10 @@
 {
 #  detach("testEnv")
   options(warn = synapseClient:::.getCache("oldWarn"))
+  if(!is.null(name <- synapseClient:::.getCache("detachMe"))){
+    detach(name, character.only = TRUE)
+    synapseClient:::.deleteCache('detachMe')
+  }
 }
 
 
@@ -142,4 +129,39 @@ unitTestBracketAccessor <-
   checkEquals(own['cacheDir'][[1]],  own$cacheDir)
 }
   
+unitTestAttach <-
+  function()
+{
+  ee <- new("SynapseLocationOwner")
+  
+  ee@archOwn@objects$aNum <- 1L
+  attach(ee)
+  synapseClient:::.setCache("detachMe", getPackageName(ee@archOwn))
+  checkTrue(getPackageName(ee@archOwn) %in% search())
+  checkTrue(objects(getPackageName(ee@archOwn)) == 'aNum')
+}
+
+unitTestDetach <-
+  function()
+{
+  ee <- new("SynapseLocationOwner")
+  
+  ee@archOwn@objects$aNum <- 1L
+  attach(ee)
+  synapseClient:::.setCache("detachMe", getPackageName(ee@archOwn))
+  checkTrue(getPackageName(ee@archOwn) %in% search())
+  detach(ee)
+  synapseClient:::.deleteCache("detachMe")
+  checkTrue(!(getPackageName(ee@archOwn) %in% search()))
+}
+
+
+unitTestPackageName <-
+  function()
+{
+  ee <- new("SynapseLocationOwner")
+  checkTrue(grepl("^SynapseLocationOwner.+", getPackageName(ee@archOwn)))
+}
+
+
 
