@@ -4,10 +4,8 @@
 ###############################################################################
 
 .unpack <- 
-  function(filename, destdir=tempfile())
+  function(filename, destdir = tempfile())
 {
-  if(missing(destdir))
-    destdir <- dirname(filename)
   filename <- path.expand(filename)
   splits <- strsplit(basename(filename), "\\.")
   extension <- splits[[1]][length(splits[[1]])]

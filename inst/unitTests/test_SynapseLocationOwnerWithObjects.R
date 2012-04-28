@@ -238,8 +238,8 @@ unitTestAddFile <-
   file <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   copy <- addFile(own, file)
-  checkEquals(gsub("^.+/", "", file), own$files)
-  checkEquals(gsub("^.+/", "", file), copy$files)
+  checkEquals(basename(file), own$files)
+  checkEquals(basename(file), copy$files)
   
   ## make sure the cache re-initializes but running the exact same
   ## test again
@@ -249,12 +249,12 @@ unitTestAddFile <-
   file <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   addFile(own, file)
-  checkEquals(gsub("^.+/", "", file), own$files)
+  checkEquals(basename(file), own$files)
   
   addFile(own, file, "foo.bar")
   checkEquals(length(own$files), 2L)
-  checkTrue(all(c(gsub("^.+/", "", file), "foo.bar") %in% own$files))
-  checkTrue(all(own$files %in% c(gsub("^.+/", "", file), "foo.bar")))
+  checkTrue(all(c(basename(file), "foo.bar") %in% own$files))
+  checkTrue(all(own$files %in% c(basename(file), "foo.bar")))
 }
 
 unitTestMoveFile <-
@@ -267,7 +267,7 @@ unitTestMoveFile <-
   file <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   addFile(own, file)
-  checkEquals(gsub("^.+/", "", file), own$files)
+  checkEquals(basename(file), own$files)
   
   copy <- moveFile(own, own$files, "newName.txt")
   checkEquals("newName.txt", copy$files)
