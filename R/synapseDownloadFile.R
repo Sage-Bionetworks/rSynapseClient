@@ -4,7 +4,7 @@
 ###############################################################################
 
 legalFilePath<-function(filePath) {
-	gsub("[\\()`'<>:\"|?*]", "_", filePath)
+	gsub("[()`'<>\"|?*]", "_", filePath)
 }
 
 synapseDownloadToLegalFile<- function(url, destfile, opts = opts, curlHandle = curlHandle) {
