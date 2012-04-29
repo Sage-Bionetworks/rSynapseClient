@@ -3,12 +3,6 @@
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ##############################################################################
 
-setGeneric(
-  name = "onWeb",
-  def = function(entity){
-    standardGeneric("onWeb")
-  }
-)
 
 setMethod(
   f = "onWeb",
@@ -30,49 +24,10 @@ setMethod(
   f = "onWeb",
   signature = signature("SynapseEntity"),
   definition = function(entity){
-    stop(sprintf("%s Entities do not have a web representation"), class(entity))
-  }
-)
-
-setMethod(
-  f = "onWeb",
-  signature = signature("Dataset"),
-  definition = function(entity){
     .doOnWeb(entity)
   }
 )
 
-setMethod(
-  f = "onWeb",
-  signature = signature("Layer"),
-  definition = function(entity){
-    .doOnWeb(entity)
-  }
-)
-
-setMethod(
-  f = "onWeb",
-  signature = signature("Project"),
-  definition = function(entity){
-    .doOnWeb(entity)
-  }
-)
-
-setMethod(
-  f = "onWeb",
-  signature = signature("Analysis"),
-  definition = function(entity){
-    .doOnWeb(entity)
-  }
-)
-
-setMethod(
-  f = "onWeb",
-  signature = signature("Step"),
-  definition = function(entity){
-    .doOnWeb(entity)
-  }
-)
 .doOnWeb <- function(entity) {
   if(entity@synapseWebUrl == "")
     stop("This Entity has not been saved to Synapse yet. Use createEntity() to save it and then try again.")

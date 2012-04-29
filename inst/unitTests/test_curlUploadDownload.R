@@ -5,7 +5,7 @@
 
 .setUp <- function(){
   synapseClient:::.setCache("localSourceFile",tempfile())
-  synapseClient:::.setCache("cacheDir", file.path(tempdir(), ".synapseCache"))
+  synapseCacheDir(file.path(tempdir(), ".synapseCache"))
   synapseClient:::.setCache("localJpegFile", file.path(tempdir(), "plot.jpg"))
 }
 
@@ -18,9 +18,9 @@
     file.remove(synapseClient:::.getCache('localDestFile'))
   synapseClient:::.deleteCache("localDestFile")
   
-  if(file.exists(synapseClient:::.getCache("cacheDir")))
-    unlink(synapseClient:::.getCache("cacheDir"), recursive=TRUE)
-  synapseClient:::.deleteCache("cacheDir")
+  if(file.exists(synapseCacheDir()))
+    unlink(synapseCacheDir(), recursive=TRUE)
+  synapseCacheDir(NULL)
 }
 
 ## TODO: this test is broken: FIX ME!
@@ -39,6 +39,7 @@
 
 unitTestLocalFileDownload <- function(){
   d <- matrix(nrow=100, ncol=100, data=1)
+  checkTrue(!is.null(synapseClient:::.getCache("localSourceFile")))
   save(d,file = synapseClient:::.getCache("localSourceFile"))
   sourceChecksum <- as.character(tools::md5sum(synapseClient:::.getCache("localSourceFile")))
   synapseClient:::.setCache("destFile", synapseClient:::synapseDownloadFile(url= paste("file://", gsub("[A-Z]:","",synapseClient:::.getCache("localSourceFile")), sep="")))
@@ -75,7 +76,7 @@ unitTestMd5Sum <-
   srcChecksum <- as.character(tools::md5sum(synapseClient:::.getCache("localSourceFile")))
   
   url <- paste("file://", synapseClient:::.getCache("localSourceFile"), sep="")
-  destFile <- synapseClient:::synapseDownloadFile(url, cacheDir=synapseClient:::.getCache("cacheDir"))
+  destFile <- synapseClient:::synapseDownloadFile(url, cacheDir=synapseCacheDir())
   
   destFileChecksum <- as.character(tools::md5sum(destFile))
   checkEquals(srcChecksum, destFileChecksum)
@@ -87,7 +88,7 @@ unitTestMd5Sum <-
   ## make sure that the 10x10 matrix has a different checksum that the 20x20 matrix
   checkTrue(destFileChecksum != srcChecksum)
   
-  newDestFile <- synapseClient:::synapseDownloadFile(url, cacheDir=synapseClient:::.getCache("cacheDir"), checksum=srcChecksum)
+  newDestFile <- synapseClient:::synapseDownloadFile(url, cacheDir=synapseCacheDir(), checksum=srcChecksum)
   
   ## check that the new and old destfiles have the same name
   checkTrue(destFile == newDestFile)

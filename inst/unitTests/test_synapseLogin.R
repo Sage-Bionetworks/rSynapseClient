@@ -25,7 +25,7 @@
 unitTestNotLoggedInToken <- function(){
   synapseClient:::authMode('auth')
   gotException <- FALSE
-  tryCatch(createEntity(Dataset(list(name='foo'))), 
+  tryCatch(getEntity(Project(list(id='foo'))), 
     error = function(e) {
       gotException <- TRUE
       checkTrue(grepl("please log into Synapse", e))
@@ -35,7 +35,7 @@ unitTestNotLoggedInToken <- function(){
 unitTestNotLoggedInHmac <- function(){
   synapseClient:::authMode('hmac')
   gotException <- FALSE
-  tryCatch(createEntity(Dataset(list(name='foo'))),
+  tryCatch(getEntity(Project(list(id='bar'))),
     error = function(e) {
       gotException <- TRUE
       checkTrue(grepl("Please Authenticate", e))

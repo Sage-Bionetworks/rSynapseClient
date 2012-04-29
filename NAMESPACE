@@ -4,12 +4,11 @@ importFrom(RJSONIO, toJSON, fromJSON, emptyNamedList)
 importFrom(tools, md5sum)
 importFrom(digest, digest, hmac)
 importFrom(utils, edit)
-##importFrom(rJava, .jinit, .jcall, .jnew, .jcast)
 
 ## package has a dynamic library
 useDynLib(synapseClient)
 
-export(onWeb, attach, detach)
+export(onWeb) ##,attach, detach)
 
 ## S3 utility methods
 export(
@@ -19,28 +18,44 @@ export(
   synapsePortalEndpoint,
   synapseLogin, 
   synapseLogout, 
-  synapseQuery, 
+## synapseQuery, 
   synapseCacheDir,
   hmacSecretKey,
-  .Last.lib,
-  signEula
+  edit,
+  setApiCredentials,
+  synapseQuery
+##  .Last.lib,
+##  signEula
 )
 
 ## S3 convenience methods
-export(getDatasets)
+##export(getDatasets)
+export(as.environment.EnhancedEnvironment,as.environment.GlobalCache, as.list.SimplePropertyOwner, 
+as.list.SynapseAnnotations, as.list.TypedPropertyStore, as.environment.EnhancedEnvironment,
+length.EnhancedEnvironment, names.CachingObjectOwner, names.EnhancedEnvironment, names.SynapseLocationOwner,
+names.SynapseLocationOwnerWithObjects,
+ getPackageName.EnhancedEnvironment, getPackageName.ArchiveOwner,
+  as.environment.ArchiveOwner, edit.Code  )
 
 ## S4 convenience methods
-exportMethods(getDatasetLayers)
+##exportMethods(getDatasetLayers)
 
 ## S4 entity constructors
 exportMethods(
-  Dataset, 
-  Layer, 
+  Data, 
+  Study,
+  Link,
+  ExpressionData,
+  GenotypeData,
+  PhenotypeData,
+  RObject,
   Project,
   Analysis,
   Step,
   Code,
-  Media
+  Folder,
+  Preview,
+  SynapseEntity
 )
 
 ## entity S4 methods
@@ -48,15 +63,20 @@ exportMethods(
   storeEntityFiles,
   storeEntityObjects,
   storeEntity,
-  copyEntity, 
+##  copyEntity, 
   getEntity, 
   deleteEntity, 
   createEntity, 
   updateEntity, 
   downloadEntity, 
   loadEntity, 
-  getParentEntity
-)
+  getParentEntity,
+  files,
+  attach,
+  detach,
+  setPackageName,
+  objects
+  )
 
 ## methods for managing layer files
 exportMethods(
@@ -64,7 +84,8 @@ exportMethods(
   deleteFile,
   addGithubTag,
   moveFile,
-  edit
+  cacheDir,
+  getFileCache
 ) 
 
 exportMethods(
@@ -92,13 +113,13 @@ exportMethods(
   "propertyValue<-", 
   "propertyValues<-", 
   propertyValues, 
-  properties
+  properties,
+  propertyNames
 )
 
-# Provenance Methods
+## Provenance Methods
 exportMethods(
   startStep,
   getStep,
   stopStep
 )
-              

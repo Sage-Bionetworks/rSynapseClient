@@ -1,23 +1,19 @@
-# Test funtions for adding files to entities
-# 
-# Author: Matthew D. Furia <matt.furia@sagebase.org>
-###############################################################################
-
+### Test funtions for adding files to entities
+### 
+### Author: Matthew D. Furia <matt.furia@sagebase.org>
+#################################################################################
+#
 .setUp <- 
   function()
 {
   ## create a project
-  project <- new(Class="Project")
+  project <- Project()
   propertyValues(project) <- list(
     name = paste("myProject", gsub(':', '_', date()))
   )
   project <- createEntity(project)
   synapseClient:::.setCache("testProject", project)
   
-  ## create a dataset
-  dataset <- Dataset(list(name="MyDataSet", parentId=propertyValue(project, "id")))
-  dataset <- createEntity(dataset)
-  synapseClient:::.setCache("testDataset", dataset)
   synapseClient:::.setCache("oldCacheDir", synapseCacheDir())
   synapseCacheDir(tempfile(pattern="tempSynapseCache"))
 }
@@ -27,100 +23,99 @@
 {
   deleteEntity(synapseClient:::.getCache("testProject"))
   synapseClient:::.deleteCache("testProject")
-  synapseClient:::.deleteCache("testDataset")
   
   unlink(synapseCacheDir(), recursive=T)
   synapseCacheDir(synapseClient:::.getCache("oldCacheDir"))
 }
 
-integrationTestAddToNewLayer <-
+integrationTestAddToNewDataEntity <-
   function()
 {
-  dataset <- synapseClient:::.getCache("testDataset")
-  layer <- new(Class="Layer", properties=list(parentId=propertyValue(dataset, "id"), type="C"))
+  project <- synapseClient:::.getCache("testProject")
+  data <- Data(list(parentId=propertyValue(project, "id"), type="C"))
   
   file <- "file1.rbin"
-  path <- "/apath"
+  path <- "/apath/"
   d <- diag(nrow=10, ncol=10)
   save(d, file=file.path(tempdir(), file))
   ## add a file in a subdirectory
-  checkTrue(!file.exists(file.path(layer$cacheDir, path, file)))
-  checkTrue(!grepl(synapseClient:::synapseCacheDir(), layer$cacheDir, fixed=TRUE))
-  checkEquals(length(layer$files), 0L)
-  layer <- addFile(layer, file.path(tempdir(), file), path)
-  checkEquals(length(layer$files), 1L)
+  checkTrue(!file.exists(file.path(data$cacheDir, path, file)))
+  checkTrue(!grepl(synapseClient:::synapseCacheDir(), data$cacheDir, fixed=TRUE))
+  checkEquals(length(data$files), 0L)
+  data <- addFile(data, file.path(tempdir(), file), path)
+  checkEquals(length(data$files), 1L)
   
-  checkTrue(file.exists(file.path(layer$cacheDir, layer$files)))
-  checkEquals(layer$files, gsub(sprintf("^%s", .Platform$file.sep), "", file.path(path, file)))
+  checkTrue(file.exists(file.path(data$cacheDir, data$files)))
+  checkEquals(data$files, gsub("^/+", "", gsub("/+", "/", file.path(path, file))))
   
-  layer <- storeEntityFiles(layer)
-  checkTrue(grepl(synapseClient:::synapseCacheDir(), layer$cacheDir, fixed=TRUE))
-  checkEquals(length(layer$files), 1L)
-  checkTrue(file.exists(file.path(layer$cacheDir, layer$files)))
+  data <- storeEntity(data)
+  checkTrue(grepl(gsub("[\\/]+", "/", normalizePath(synapseClient:::synapseCacheDir())), data$cacheDir, fixed=TRUE))
+  checkEquals(length(data$files), 1L)
+  checkTrue(file.exists(file.path(data$cacheDir, data$files)))
   
-  ##update the layer
+  ##update the data
   file <- "file2.rbin"
-  path <- "/apath2"
+  path <- "/apath2/"
   d <- diag(x=2,nrow=10, ncol=10)
   save(d, file=file.path(tempdir(), file))
-  layer <- addFile(layer, file.path(tempdir(), file), path)
-  checkEquals(length(layer$files), 2L)
-  checkEquals(layer$files[2], gsub(sprintf("^%s", .Platform$file.sep), "", file.path(path, file)))
-  checkTrue(grepl(synapseClient:::synapseCacheDir(), layer$cacheDir, fixed=TRUE))
+  data <- addFile(data, file.path(tempdir(), file), path)
+  checkEquals(length(data$files), 2L)
+  checkEquals(data$files[2], gsub("/+","/",gsub(sprintf("^%s", .Platform$file.sep), "", file.path(path, file))))
+  checkTrue(grepl(gsub("[\\/]+", "/", normalizePath(synapseClient:::synapseCacheDir())), data$cacheDir, fixed=TRUE))
   
-  checkTrue(all(file.exists(file.path(layer$cacheDir, layer$files))))
+  checkTrue(all(file.exists(file.path(data$cacheDir, data$files))))
   
-  layer <- storeEntityFiles(layer)
-  checkTrue(all(file.remove(file.path(layer$cacheDir, layer$files))))
-  layer2 <- downloadEntity(propertyValue(layer,"id"))
-  checkEquals(layer$cacheDir, layer2$cacheDir)
-  checkEquals(propertyValue(layer,"id"), propertyValue(layer2, "id"))
-  checkTrue(all(file.exists(file.path(layer2$cacheDir, layer2$files))))
-  checkTrue(all(layer$files == layer2$files))
+  data <- storeEntity(data)
+  checkTrue(all(file.remove(file.path(data$cacheDir, data$files))))
+  data2 <- downloadEntity(propertyValue(data,"id"))
+  checkEquals(data$cacheDir, data2$cacheDir)
+  checkEquals(propertyValue(data,"id"), propertyValue(data2, "id"))
+  checkTrue(all(file.exists(file.path(data2$cacheDir, data2$files))))
+  checkTrue(all(data$files == data2$files))
   
   ## add a file to the rood direcotory
-  layer <- layer2
+  data <- data2
   file <- "file3.rbin"
   path <- "/"
   d <- diag(x=3,nrow=10, ncol=10)
   save(d, file=file.path(tempdir(), file))
-  layer <- addFile(layer, file.path(tempdir(), file), path)
-  checkEquals(length(layer$files), 3L)
-  checkEquals(layer$files[3], gsub(sprintf("^%s+", .Platform$file.sep), "", file.path(path, file)))
-  checkTrue(grepl(synapseClient:::synapseCacheDir(), layer$cacheDir, fixed=TRUE))
+  data <- addFile(data, file.path(tempdir(), file), path)
+  checkEquals(length(data$files), 3L)
+  checkEquals(data$files[3], gsub(sprintf("^%s+", .Platform$file.sep), "", file.path(path, file)))
+  checkTrue(grepl(gsub("[\\/]+", "/", normalizePath(synapseClient:::synapseCacheDir())), data$cacheDir, fixed=TRUE))
   
-  layer <- storeEntityFiles(layer)
-  checkEquals(length(layer$files), 3L)
-  checkTrue(all(file.exists(file.path(layer$cacheDir, layer$files))))
-  checkTrue(all(file.remove(file.path(layer$cacheDir, layer$files))))
+  data <- storeEntity(data)
+  checkEquals(length(data$files), 3L)
+  checkTrue(all(file.exists(file.path(data$cacheDir, data$files))))
+  checkTrue(all(file.remove(file.path(data$cacheDir, data$files))))
   
-  layer2 <- downloadEntity(propertyValue(layer,"id"))
-  checkEquals(layer$cacheDir, layer2$cacheDir)
-  checkEquals(propertyValue(layer,"id"), propertyValue(layer2, "id"))
-  checkTrue(all(file.exists(file.path(layer2$cacheDir, layer2$files))))
-  checkTrue(all(layer$files == layer2$files))
+  data2 <- downloadEntity(propertyValue(data,"id"))
+  checkEquals(data$cacheDir, data2$cacheDir)
+  checkEquals(propertyValue(data,"id"), propertyValue(data2, "id"))
+  checkTrue(all(file.exists(file.path(data2$cacheDir, data2$files))))
+  checkTrue(all(data$files == data2$files))
   
   ## add a file to the rood direcotory
-  layer <- layer2
+  data <- data2
   file <- "file4.rbin"
   path <- ""
   d <- diag(x=4,nrow=10, ncol=10)
   save(d, file=file.path(tempdir(), file))
-  layer <- addFile(layer, file.path(tempdir(), file), path)
-  checkEquals(length(layer$files), 4L)
-  checkEquals(layer$files[4], gsub(sprintf("^%s+", .Platform$file.sep), "", file.path(path, file)))
-  checkTrue(grepl(synapseClient:::synapseCacheDir(), layer$cacheDir, fixed=TRUE))
+  data <- addFile(data, file.path(tempdir(), file), path)
+  checkEquals(length(data$files), 4L)
+  checkEquals(data$files[4], gsub(sprintf("^%s+", .Platform$file.sep), "", file.path(path, file)))
+  checkTrue(grepl(gsub("[\\/]+", "/", normalizePath(synapseClient:::synapseCacheDir())), data$cacheDir, fixed=TRUE))
   
-  layer <- storeEntityFiles(layer)
-  checkEquals(length(layer$files), 4L)
-  checkTrue(all(file.exists(file.path(layer$cacheDir, layer$files))))
-  checkTrue(all(file.remove(file.path(layer$cacheDir, layer$files))))
+  data <- storeEntity(data)
+  checkEquals(length(data$files), 4L)
+  checkTrue(all(file.exists(file.path(data$cacheDir, data$files))))
+  checkTrue(all(file.remove(file.path(data$cacheDir, data$files))))
   
-  layer2 <- downloadEntity(propertyValue(layer,"id"))
-  checkEquals(layer$cacheDir, layer2$cacheDir)
-  checkEquals(propertyValue(layer,"id"), propertyValue(layer2, "id"))
-  checkTrue(all(file.exists(file.path(layer2$cacheDir, layer2$files))))
-  checkTrue(all(layer$files == layer2$files))
-  checkTrue(all(file.remove(file.path(layer$cacheDir, layer$files))))
+  data2 <- downloadEntity(propertyValue(data,"id"))
+  checkEquals(data$cacheDir, data2$cacheDir)
+  checkEquals(propertyValue(data,"id"), propertyValue(data2, "id"))
+  checkTrue(all(file.exists(file.path(data2$cacheDir, data2$files))))
+  checkTrue(all(data$files == data2$files))
+  checkTrue(all(file.remove(file.path(data$cacheDir, data$files))))
 }
 

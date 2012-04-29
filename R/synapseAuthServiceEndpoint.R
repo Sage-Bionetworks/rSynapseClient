@@ -11,9 +11,7 @@ synapseAuthServiceEndpoint <-
     url <- .ParsedUrl(url=endpoint)
     .setCache("authserviceEndpointLocation", paste(url@protocol, '://', url@authority, sep=''))
     .setCache("authserviceEndpointPrefix", url@path)
-    if(.getCache('useJavaClient')){
-      .jenv[["syn"]]$setAuthEndpoint(endpoint)
-    }
+    
     synapseClient:::.setCache("sessionToken", NULL)
     synapseClient:::.setCache("hmacSecretKey", NULL)
   }

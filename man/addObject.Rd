@@ -10,13 +10,13 @@ Manipulate Objects held by an Entity
 Functions for manipulating R objects held by an entity.
 }
 \usage{
-addObject(entity, object, name, unlist)
-deleteObject(entity, which)
-getObject(entity, which)
-renameObject(entity, which, name)
+addObject(owner, object, name, unlist)
+deleteObject(owner, which)
+getObject(owner, which)
+renameObject(owner, which, name)
 }
 \arguments{
-  \item{entity}{
+  \item{owner}{
 The entity to be modified
 }
   \item{object}{
@@ -41,7 +41,7 @@ Another implication of using environments is that it is not technically necessar
 may help the clarity of your code to do so.
 }
 \value{
-The modified object (invisibly)
+The modified owner (invisibly)
 }
 
 \author{

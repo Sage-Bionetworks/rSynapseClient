@@ -3,6 +3,13 @@
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
+setApiCredentials <-
+    function(username, secretKey)
+{
+  synapseClient:::userName(username)
+  synapseClient:::hmacSecretKey(secretKey)
+}
+
 synapseLogin <- 
   function(username = "", password = "", mode = "auth")
 {
@@ -24,7 +31,11 @@ synapseLogin <-
   .setCache("sessionTimestamp", Sys.time())
   
   # automatic provenance, don't return this object, but it is cached
-  currentStep = startStep()
+  # currentStep = startStep() TODO restore this once new Synapse objects are available
+  if(!is.null(pp <- .getCache("enableProvenance")) && .getCache("enableProvenance")){
+    cat("Starting provenance step\n")
+    startStep()
+  }
 }
 
 .doHmac <-
@@ -209,9 +220,6 @@ hmacSecretKey <-
     return(key)
   }
   .setCache("base64secretKey", secretKey)
-  if(.getCache("useJavaClient")){
-    .jenv[["syn"]]$setApiKey(secretKey)
-  }
   authMode(kAuthMode)
 }
 
@@ -241,9 +249,6 @@ userName <-
   if(missing(name))
     return(.getCache("username"))
   .setCache("username", name)
-  if(.getCache("useJavaClient")){
-    .jenv[["syn"]]$setUserName(name)
-  }
 }
 
 authMode <- 

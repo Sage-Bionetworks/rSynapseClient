@@ -6,6 +6,9 @@
   function()
 {
   synapseClient:::.setCache("testProjectName", paste('Provenance Integration Test Project', gsub(':', '_', date())))
+  synapseClient:::.setCache("oldProvPref", synapseClient:::.getCache('enableProvenance'))
+  if(is.null(getStep()))
+    ss <- startStep()
 }
 
 .tearDown <- 
@@ -14,7 +17,17 @@
   if(!is.null(synapseClient:::.getCache("testProject"))) {
     deleteEntity(synapseClient:::.getCache("testProject"))	
     synapseClient:::.deleteCache("testProject")
+    pp <- synapseClient:::.getCache("oldProvPref")
+    if(is.null(pp)){
+      synapseClient:::.deleteCache('enableProvenance')
+    }else{
+      synapseClient:::.setCache('enableProvenance', pp)
+    }
+    synapseClient:::.deleteCache('enableProvenance')
   }
+  
+  if(!is.null(getStep()))
+    stopStep()
 }
 
 integrationTestProvenance <- 
@@ -29,25 +42,24 @@ integrationTestProvenance <-
   synapseClient:::.setCache("testProject", project)
   checkEquals(propertyValue(project,"name"), synapseClient:::.getCache("testProjectName"))
   
-  ## Create Dataset
-  dataset <- createEntity(
-    Dataset(
+  ## Create Study
+  study <- createEntity(
+    Study(
       list(
-        name="testDatasetName",
+        name="testStudyName",
         parentId=propertyValue(project, "id")
       )))
-  checkEquals(propertyValue(dataset,"name"), "testDatasetName")
-  checkEquals(propertyValue(dataset,"parentId"), propertyValue(project, "id"))
+  checkEquals(propertyValue(study,"name"), "testStudyName")
+  checkEquals(propertyValue(study,"parentId"), propertyValue(project, "id"))
   
-  ## Create Layer
-  layer <- new(Class = "PhenotypeLayer")
-  propertyValue(layer, "name") <- "testPhenoLayerName"
-  propertyValue(layer, "parentId") <- propertyValue(dataset,"id")
-  checkEquals(propertyValue(layer,"type"), "C")
-  layer <- createEntity(layer)
-  checkEquals(propertyValue(layer,"name"), "testPhenoLayerName")
-  checkEquals(propertyValue(layer,"parentId"), propertyValue(dataset, "id"))
-  inputLayer <- layer
+  ## Create Data
+  data <- PhenotypeData()
+  propertyValue(data, "name") <- "testPhenoDataName"
+  propertyValue(data, "parentId") <- propertyValue(study,"id")
+  data <- createEntity(data)
+  checkEquals(propertyValue(data,"name"), "testPhenoDataName")
+  checkEquals(propertyValue(data,"parentId"), propertyValue(study, "id"))
+  inputData <- data
   
   ## Start a new step
   step <- startStep()
@@ -55,22 +67,21 @@ integrationTestProvenance <-
   ## The command line used to invoke this should be stored in the commandLine field
   checkEquals(paste(commandArgs(), collapse=" "), propertyValue(step, 'commandLine'))
   
-  ## Get a layer, it will be added as input
-  layer <- getEntity(inputLayer)
+  ## Get a data, it will be added as input
+  data <- getEntity(inputData)
   step <- getStep()
-  checkEquals(propertyValue(inputLayer, "id"), propertyValue(step, "input")[[1]]$targetId)
+  checkEquals(propertyValue(inputData, "id"), propertyValue(step, "input")[[1]]$targetId)
   
-  ## Create a layer, it will be added as output
-  layer <- new(Class = "ExpressionLayer")
-  propertyValue(layer, "name") <- "testExprLayerName"
-  propertyValue(layer, "parentId") <- propertyValue(dataset,"id")
-  checkEquals(propertyValue(layer,"type"), "E")
-  layer <- createEntity(layer)
-  checkEquals(propertyValue(layer,"name"), "testExprLayerName")
-  checkEquals(propertyValue(layer,"parentId"), propertyValue(dataset, "id"))
-  outputLayer <- layer
+  ## Create a data, it will be added as output
+  data <- Data()
+  propertyValue(data, "name") <- "testExprDataName"
+  propertyValue(data, "parentId") <- propertyValue(study,"id")
+  data <- createEntity(data)
+  checkEquals(propertyValue(data,"name"), "testExprDataName")
+  checkEquals(propertyValue(data,"parentId"), propertyValue(study, "id"))
+  outputData <- data
   step <- getStep()
-  checkEquals(propertyValue(outputLayer, "id"), propertyValue(step, "output")[[1]]$targetId)
+  checkEquals(propertyValue(outputData, "id"), propertyValue(step, "output")[[1]]$targetId)
   
   ## Create an Analysis, it will become the parent of the step
   analysis <- createEntity(Analysis(list(parentId=propertyValue(project, "id"),

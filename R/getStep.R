@@ -29,7 +29,7 @@ setMethod(
 setMethod(
   f = "getStep",
   signature = "missing",
-  definition = function(step) {
+  definition = function() {
     getStep(NA_character_)
   }
 )
@@ -41,12 +41,10 @@ setMethod(
     ## If we were not passed a step, get the current step
     if(missing(step) || is.na(step)) {
       step <-	.getCache("currentStep")
-      if(is.null(step)) {
-        get("There is no step to get")
-      }
     }
     
-    step <- getEntity(step)
+    if(!is.null(step))
+      step <- getEntity(step)
     step
   }
 )

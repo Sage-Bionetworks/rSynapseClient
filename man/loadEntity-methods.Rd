@@ -2,7 +2,7 @@
 \docType{methods}
 \alias{loadEntity-methods}
 \alias{loadEntity,character-method}
-\alias{loadEntity,Layer-method}
+\alias{loadEntity,SynapseLocationOwner-method}
 \alias{loadEntity,numeric-method}
 \title{ ~~ Methods for Function \code{loadEntity}  ~~}
 \description{
@@ -15,7 +15,7 @@
 Load the entity with the specified ID
 }
 
-\item{\code{signature(entity = "Layer")}}{
+\item{\code{signature(entity = "SynapseLocationOwner")}}{
 Load the specified entity
 }
 

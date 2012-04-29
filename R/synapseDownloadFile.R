@@ -3,9 +3,40 @@
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
+legalFilePath<-function(filePath) {
+	gsub("[()`'<>\"|?*]", "_", filePath)
+}
+
+synapseDownloadToLegalFile<- function(url, destfile, opts = opts, curlHandle = curlHandle) {
+	legalDestFile <- legalFilePath(destfile)
+
+	## download to temp file first so that the existing local file (if there is one) is left in place
+	## if the download fails
+	tmpFile <- tempfile()
+	tryCatch(
+			.curlWriterDownload(url=url, destfile=tmpFile, opts = opts, curlHandle = curlHandle),
+			error = function(ex){
+				file.remove(tmpFile)
+				stop(ex)
+			}
+	)
+	
+	## copy then delete. this avoids a cross-device error encountered
+	## on systems with multiple hard drives when using file.rename
+	if(!file.copy(tmpFile, legalDestFile, overwrite = TRUE)){
+		file.remove(tmpFile)
+		stop("COULD NOT COPY: ", tmpFile, " TO: ", legalDestFile)
+	}
+	file.remove(tmpFile)
+
+	legalDestFile
+}
+
 synapseDownloadFile  <- 
   function (url, checksum, curlHandle = getCurlHandle(), cacheDir = synapseCacheDir(), opts = .getCache("curlOpts"))
 {
+	if (is.null(cacheDir)) stop(paste("cacheDir is required. synapseCacheDir() returns ", synapseCacheDir()))
+	
   ## Download the file to the cache
   parsedUrl <- .ParsedUrl(url)
   destfile <- file.path(cacheDir, gsub("^/", "", parsedUrl@path))

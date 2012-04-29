@@ -41,7 +41,7 @@
   ## Prepare the header. If not an anonymous request, stuff the
   ## sessionToken into the header
   header <- .getCache("curlHeader")
-  if(!anonymous) {
+  if(is.null(anonymous) || !anonymous) {
     header <- switch(authMode(),
       auth = .stuffHeaderAuth(header),
       hmac = .stuffHeaderHmac(header, uri),
@@ -52,7 +52,7 @@
   ## Submit request and check response code
   d = debugGatherer()
   
-  if(.getCache("debug")) {
+  if(!is.null(.getCache("debug")) && .getCache("debug")) {
     message("----------------------------------")
     message("REQUEST: ", requestMethod, " ", uri)
   }
@@ -87,7 +87,7 @@
     )
   }
   
-  if(.getCache("debug")) {
+  if(!is.null(.getCache("debug")) && .getCache("debug")) {
     message("RESPONSE_BODY: ", response)
   }
   

@@ -5,7 +5,7 @@
 
 .synapsePostPut <- 
   function(uri, entity, requestMethod, host = .getRepoEndpointLocation(), curlHandle = getCurlHandle(), 
-    anonymous = FALSE, path = .getRepoEndpointPrefix, opts = .getCache("curlOpts"))
+    anonymous = FALSE, path = .getRepoEndpointPrefix(), opts = .getCache("curlOpts"))
 {
   ## constants
   kValidMethods <- c("POST", "PUT", "DELETE")
@@ -17,6 +17,10 @@
   
   if(!is.character(uri)){
     stop("a uri must be supplied of R type character")
+  }
+  
+  if (missing(entity) || is.null(entity)) {
+	  stop("no content for post/put")
   }
   
   if(!is.list(entity)) {
@@ -69,7 +73,7 @@
   ## Prepare the header. If not an anonymous request, stuff the
   ## sessionToken into the header
   header <- .getCache("curlHeader")
-  if(!anonymous) {
+  if(is.null(anonymous) || !anonymous) {
     header <- switch(authMode(),
       auth = .stuffHeaderAuth(header),
       hmac = .stuffHeaderHmac(header, uri),
@@ -88,7 +92,7 @@
   
   ##curlSetOpt(opts,curl=curlHandle)
   
-  if(.getCache("debug")) {
+  if(!is.null(.getCache("debug")) && .getCache("debug")) {
     message("----------------------------------")
     message("REQUEST: ", requestMethod, " ", uri)
     message("REQUEST_BODY: ", httpBody)
@@ -101,7 +105,7 @@
     debugfunction=d$update,
     .opts=opts
   )
-  if(.getCache("debug")) {
+  if(!is.null(.getCache("debug")) && .getCache("debug")) {
     message("RESPONSE_BODY:: ", response)
   }
   

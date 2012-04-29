@@ -4,29 +4,34 @@
 ###############################################################################
 
 .unpack <- 
-  function(filename)
+  function(filename, destdir = tempfile())
 {
   filename <- path.expand(filename)
-  splits <- strsplit(filename, "\\.")
+  splits <- strsplit(basename(filename), "\\.")
   extension <- splits[[1]][length(splits[[1]])]
-  destdir <- gsub(paste("[\\.]", extension, sep=""), paste("_", .getCache("downloadSuffix"), sep=""), filename)
   extension <- tolower(extension)
   
-  switch(extension,
+  ff <- switch(extension,
     zip = {unlink(destdir); unzip(filename, exdir = destdir)},
     gz = {unlink(destdir); untar(filename, exdir = destdir)},
     tar = {unlink(destdir); untar(filename, exdir = destdir)},
     { ## default
-      splits <- strsplit(filename, .Platform$file.sep)
-      destdir <- paste(splits[[1]][-length(splits[[1]])], collapse=.Platform$file.sep)
+#      splits <- strsplit(filename, .Platform$file.sep)
+#      destdir <- paste(splits[[1]][-length(splits[[1]])], collapse=.Platform$file.sep)
+#      attr(filename, "rootDir") <- destdir
+      if(file.info(filename)$isdir)
+        stop("directories are not supported by unpack")
+      if(file.exists(destdir))
+        unlink(destdir, recursive=T)
+      dir.create(destdir)
+      file.copy(filename, file.path(destdir, basename(filename)))
+      filename <- file.path(destdir,basename(filename))
       attr(filename, "rootDir") <- destdir
       return(filename)
     }
-  )	
-  files <- list.files(destdir, full.names = TRUE, recursive=TRUE, all.files = TRUE)
-  files <- setdiff(files, c(".",".."))
-  attr(files, "rootDir") <- destdir
-  files
+  ) 
+#  files <- list.files(destdir, full.names = TRUE, recursive=TRUE, all.files = TRUE)
+#  files <- setdiff(files, c(".",".."))
+  attr(ff, "rootDir") <- destdir
+  ff
 }
-
-
