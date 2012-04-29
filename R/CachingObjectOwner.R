@@ -77,9 +77,6 @@ setMethod(
     }
 )
 
-###
-# Methods for adding list objects
-###
 setMethod(
     f = "addObject",
     signature = signature("CachingObjectOwner", "ANY", "missing", "missing"),

@@ -11,7 +11,6 @@ SynapseAnnotations <-
   if(!is.list(entity))
     stop("entity must be a list.")
   if(any(names(entity) == "") && length(entity) > 0)
-	stop("all elements of the entity must be named")
 
     stop("all elements of the entity must be named")
   

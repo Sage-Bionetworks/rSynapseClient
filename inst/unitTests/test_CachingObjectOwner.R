@@ -40,7 +40,7 @@ unitTestNames <-
   checkTrue(all(names(own) == c("objects")))
 }
 
-unitTestBracketAccessor <-
+unitTestAddObject <-
   function()
 {
   own <- new("CachingObjectOwner")

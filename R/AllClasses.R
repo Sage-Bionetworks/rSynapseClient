@@ -4,7 +4,9 @@
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
+##
 ## the global cache is a singleton
+##
 setClass(
     Class = "GlobalCache",
     representation = representation(env = "environment"),
@@ -13,19 +15,22 @@ setClass(
     )
 )
 
+##
 ## a file cache factory makes sure that all in-memory copies
 ## of a file cache object hold a reference to the same copy
+##
 setClass(
     Class = "FileCacheFactory",
     representation = representation(env = "environment"),
     prototype = new.env(parent = emptyenv())
 )
 
-
+##
 ## class for storing typed properties. Right now this is only
 ## used for storing synapse annotations, but in the future it will also be
 ## used to store typed synapse properties once the JSON schema is integrated
 ## with the R Synapse client
+##
 setClass(
     Class = "TypedPropertyStore",
     representation = representation(
@@ -44,12 +49,14 @@ setClass(
     )
 )
 
+##
 ## this class may not seem necessary since it's just a wrapper on
 ## a list, but it will allow for an easier changeover to typed 
 ## properties once the R client integrates the Synapse JSON schema
 ## this class is intended to be used to keep track of properties
 ## for both the Synapse "Annotations" entity and the "Base" Synapse
 ## entity
+##
 setClass(
     Class = "SimplePropertyOwner",
     contains = "VIRTUAL",
@@ -61,7 +68,9 @@ setClass(
     )
 )
 
+##
 ## A class for representing the Synapse Annotations entity
+##
 setClass(
     Class = "SynapseAnnotations",
     contains = "SimplePropertyOwner",
@@ -75,8 +84,7 @@ setClass(
 
 ##
 ## this class definition is way too complicated. need to move some of the business logic elsewhere
-####
-
+##
 setRefClass(
     Class = "FileCache",
     fields = list(
@@ -323,7 +331,9 @@ setClass(
     )
 )
 
+##
 ## All non-locationable Synapse entities will be derived from this class
+##
 setClass(
     Class = "SynapseEntity",
     contains = "SimplePropertyOwner",
@@ -343,7 +353,13 @@ setClass(
 ## users to call the CRUD operations giving access to owned R objects. Note
 ## that the objects held in the "EnhancedEnvironment" are pass-by-reference.
 ## this should be highlighted prominently so user's don't get confused since
-## pass-by-reference is virtually never used in R
+## pass-by-reference is virtually never used in R.
+##
+## at first glance this class might seem unneccessary, but the reason for 
+## wrappying EnhancedEnvironment is that it allows for some flexibility
+## in the classes that inherit from (or are composed of) ObjectOwner. Specifically
+## this will allow the implemenation of read-only ObjectOwners.
+##
 setRefClass(
     Class = "CachingObjectOwner",
     fields = list(
@@ -366,11 +382,13 @@ setRefClass(
     )
 )
 
+##
 ## All locationable Synapse entities will be derived from this class
 ## If it is possible to determine that an entity with an unrecognized
 ## value of the "type" property is "Locationable", then change this from
 ## an abstract class to a concrete class by removing "VIRTUAL" from the 
 ## contains list
+##
 setClass(
     Class = "SynapseLocationOwner",
     contains = c("SynapseEntity"),

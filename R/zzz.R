@@ -47,7 +47,6 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   .setCache("debug", FALSE)
   
   synapseResetEndpoints()
-  synapseCacheDir("~/.synapseCache")
   
   # used in entityToFileCache.R
   .setCache("ENTITY_FILE_NAME", "entity.json")

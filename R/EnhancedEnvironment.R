@@ -46,6 +46,10 @@ setMethod(
     }
 )
 
+##
+## Use double brackets to access a single element in the enclosing environment.
+## works for objects starting with a period as well.
+##
 setMethod(
     f = "[[",
     signature = "EnhancedEnvironment",
@@ -70,6 +74,10 @@ setMethod(
     }
 )
 
+##
+## Allows caller to add a single object to the environment using the double bracket
+## accessor
+##
 setReplaceMethod("[[", 
     signature = signature(
         x = "EnhancedEnvironment",
@@ -115,6 +123,11 @@ setMethod(
     }
 )
 
+##
+## show method displays all the objects held by the EnhancedEnvironment as
+## well as their class type(s). Must support printing multiple values returned
+## by "class" function since R supports multiple inheritance
+##
 setMethod(
     f = "show",
     signature = "EnhancedEnvironment",
@@ -142,6 +155,17 @@ setMethod(
   }
 )
 
+##
+## Add an object to the environment
+##
+setMethod(
+  f = "addObject",
+  signature = signature("EnhancedEnvironment", "ANY", "character", "missing"),
+  definition = function(owner, object, name){
+    owner[[name]] <- object
+    invisible(owner)
+  }
+)
 
 setMethod(
   f = "addObject",

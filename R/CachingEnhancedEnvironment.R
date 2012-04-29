@@ -1,11 +1,16 @@
-# TODO: Add comment
-# 
-# Author: mfuria
+## An EnhancedEnvironment that automatically manages a disk cache containing
+## serialized versions of it's objects.
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
+##
+## initialize method for CachingEnhancedEnvironment class. By default, serialized
+## objects are stored in a subdirectory of the File cache named ".R_OBJECTS".
+##
 setMethod(
   f = "initialize",
-  signature = "CachingEnhancedEnvionment",
+  signature = "CachingEnhancedEnvironment",
   definition = function(.Object){
     ## By default, store the files in subdirectory of the FileCache
     .Object@env = new.env()
@@ -51,8 +56,6 @@ setMethod(
         class(owner) <- oldClass
         stop(e)
       }
-  )
-  owner
   }
 )
 
@@ -269,7 +272,9 @@ setMethod(
   }
 )
 
-## generate the temporaty cache file name
+##
+## Delete the cache file for the given object name
+##
 setMethod(
   f = ".deleteCacheFile",
   signature = signature("CachingEnhancedEnvironment", "character"),
@@ -280,8 +285,31 @@ setMethod(
   }
 )
 
+##
+## generate the full file path the the cached file for the give object
+##
+setMethod(
+  f = ".generateCacheFileName",
+  signature = signature("CachingEnhancedEnvironment", "character", "ANY"),
+  definition = function(owner, objectName, suffix){
+    
+    filePath <- file.path(owner@fileCache$getCacheDir(), .generateCacheFileRelativePath(owner, objectName, suffix))
+    
+    ## this is the cachedir where binary objects are cached on disk
+    cacheDir <- file.path(owner@fileCache$getCacheDir(), owner@cachePrefix)
+    
+    ## if the prefix isn't a directory, set the cache dir to the root
+    if(!grepl("/+$", owner@cachePrefix))
+      cacheDir <- owner@fileCache$getCacheDir()
+    
+    attr(filePath, "cacheDir") <- cacheDir
+    filePath
+  }
+)
 
-## cache the object to disk
+##
+## generate the relative path for an object
+##
 setMethod(
   f = ".generateCacheFileRelativePath",
   signature = signature("CachingEnhancedEnvironment", "character", "ANY"),
@@ -295,7 +323,9 @@ setMethod(
   }
 )
 
-## move the object's cache file to a temporary location
+##
+## generate the relative path for an object
+##
 setMethod(
   f = ".generateTmpCacheFileRelativePath",
   signature = signature("CachingEnhancedEnvironment", "character", "ANY"),
@@ -309,7 +339,9 @@ setMethod(
   }
 )
 
-## move the object's temporary file to it's new destination
+##
+## generate the temporaty cache file name for an object
+##
 setMethod(
   f = ".generateTmpCacheFileName",
   signature = signature("CachingEnhancedEnvironment", "character"),
@@ -319,6 +351,9 @@ setMethod(
   }
 )
 
+##
+## move the object's cache file to a temporary location
+##
 setMethod(
   f = ".tmpCacheObject",
   signature = signature("CachingEnhancedEnvironment", "character"),
@@ -333,6 +368,9 @@ setMethod(
   }
 )
 
+##
+## move the object's temporary file to it's new destination
+##
 setMethod(
   f = ".renameCacheObjectFromTmp",
   signature = signature("CachingEnhancedEnvironment", "character", "character"),
@@ -349,16 +387,17 @@ setMethod(
   }
 )
 
+##
+## delete the object's temporary file
+##
 setMethod(
-    f = ".loadCachedObjects",
-    signature = signature("CachingEnhancedEnvironment"),
-    definition = function(owner){
-      if(grepl("/+$", owner@cachePrefix)){
-        files <- list.files(file.path(owner@fileCache$getCacheDir(), owner@cachePrefix), full.names=TRUE, pattern = "rbin$")
-      }else{
-        pattern <- sprintf("%s.+rbin$", owner@cachePrefix)
-        files <- list.files(owner@fileCache$getCacheDir(), full.names=TRUE, pattern = pattern)
-      }
+  f = ".deleteTmpCacheFile",
+  signature = signature("CachingEnhancedEnvironment", "character"),
+  definition = function(owner, objectName){
+    owner@fileCache <- deleteFile(object@fileCache, .generateTmpCacheFileRelativePath(object, objectName))
+    invisible(owner)
+  }
+)
 
 ##
 ## load cached objects from disk
@@ -379,5 +418,13 @@ setMethod(
     files <- dir(file.path(owner@fileCache$cacheDir, owner@cachePrefix), full.names=T)
     if(length(files == 0L))
       invisible(owner)
-    }
+    
+    ## load the files into the environment
+    lapply(
+      files, FUN = function(filepath){
+        load(filepath, envir = as.environment(owner))
+      }
+    )
+    invisible(owner)
+  }
 )

@@ -128,13 +128,6 @@ setGeneric(
 )
 
 setGeneric(
-       name = "getChildEntities",
-       def = function(entity){
-           standardGeneric("getChildEntities")
-       }
-)
-
-setGeneric(
   name = "getParentEntity",
   def = function(entity){
     standardGeneric("getParentEntity")
