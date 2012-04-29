@@ -24,11 +24,10 @@ setMethod(
   f = "Step",
   signature = "list",
   definition = function(entity){
-    ## call the superClass constructor
-    s4Entity <- SynapseEntity(entity)
-    class(s4Entity) <- "Step"
-    synapseEntityKind(s4Entity) <- synapseEntityKind(new(Class="Step"))
-    return(s4Entity)
+    ee <- new("Step")
+    ee@properties <- entity
+    ee@properties$entityType <- getSynapseTypeFromClass(as.character(class(ee)))
+    ee
   }
 )
 

@@ -6,11 +6,12 @@
 .setUp <- 
   function()
 {
+  cacheRoot <- tempfile()
   synapseClient:::.setCache("localJpegFile", file.path(tempdir(), "plot.jpg"))
   synapseClient:::.setCache("localZipFile", file.path(tempdir(), "files.zip"))	
   synapseClient:::.setCache("localTxtFile", file.path(tempdir(), "data.txt"))
-  synapseClient:::.setCache("localCacheDir", file.path(tempdir(), ".synapseCache"))
-  synapseClient:::.setCache("localUnpackDir", file.path(tempdir(), "files_unpacked"))
+  synapseClient:::.setCache("localCacheDir", cacheRoot)
+  synapseClient:::.setCache("localUnpackDir", file.path(cacheRoot, "files.zip_unpacked"))
 }
 
 .tearDown <- 
@@ -42,13 +43,13 @@ unitTestNotCompressed <-
   file <- synapseClient:::.unpack(synapseClient:::.getCache("localJpegFile"))
   
   ## file path should be same as localJpegFile cache value
-  checkEquals(as.character(file), synapseClient:::.getCache("localJpegFile"))
+  checkEquals(basename(as.character(file)), basename(synapseClient:::.getCache("localJpegFile")))
   
   ## check the md5sums
-  checkEquals(tools::md5sum(as.character(file)), tools::md5sum(synapseClient:::.getCache("localJpegFile")))
+  checkEquals(as.character(tools::md5sum(as.character(file))), as.character(tools::md5sum(synapseClient:::.getCache("localJpegFile"))))
   
   ## check the rootDir attribute value
-  checkEquals(attr(file,"rootDir"), tempdir())
+c
   
 }
 
@@ -84,7 +85,7 @@ unitTestZipFile <-
   ## zip these two files
   suppressWarnings(zip(synapseClient:::.getCache("localZipFile"), files = c(synapseClient:::.getCache("localTxtFile"), synapseClient:::.getCache("localJpegFile"))))
   
-  files <- synapseClient:::.unpack(synapseClient:::.getCache("localZipFile"))
+  files <- synapseClient:::.unpack(synapseClient:::.getCache("localZipFile"), synapseClient:::.getCache("localUnpackDir"))
   
   ## make sure the unpack directory was named correctly
   checkEquals(attr(files, "rootDir"), synapseClient:::.getCache("localUnpackDir"))

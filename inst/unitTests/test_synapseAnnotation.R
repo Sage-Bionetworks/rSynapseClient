@@ -20,168 +20,29 @@
 unitTestConstructor <- 
   function()
 {
-  synapseClient:::SynapseAnnotation(entity = as.list(RJSONIO::fromJSON(synapseClient:::.getCache("datasetAnnotationJSON"))))
+  
+  annotations <- synapseClient:::SynapseAnnotations(entity = as.list(RJSONIO::fromJSON(synapseClient:::.getCache("datasetAnnotationJSON"))))
+  
+  stop("fill in some tests to verify that the constructor works")
 }
 
-unitTestStringAnnotation <- 
+unitTestPopulateFromJSON <-
   function()
 {
-  ann <- new(Class = "SynapseAnnotation")
-  annotValue(ann, "thisName") <- "thisIsAString"
-  checkEquals(ann@stringAnnotations$thisName, "thisIsAString")
+  ## test .populateSlotsFromEntity
+  stop("not yet implemented")
 }
 
-unitTestLongAnnotation <-
+unitTestPopulateFromList <-
   function()
 {
-  ann <- new(Class = "SynapseAnnotation")
-  annotValue(ann, "thisName") <- 1L
-  
-  ## all annotations are stored as strings
-  checkEquals(ann@longAnnotations$thisName, "1")
-  
-  ## getter should return them as the correct type (SYNR-38)
-  ## checkEquals(annotValue(ann,"thisName"), 1L)
+  ## test .populateSlotsFromEntity
+  stop("not yet implemented")
 }
 
-unitTestDoubleAnnotation <-
+unitTestExtractToJSON <-
   function()
 {
-  ann <- new(Class = "SynapseAnnotation")
-  annotValue(ann, "thisName") <- 1.0
-  ## all annotations are stored as strings
-  checkEquals(ann@doubleAnnotations$thisName, "1")
-  
-  ## getter should return them as the correct type (SYNR-38)
-  ## checkEquals(annotValue(ann,"thisName"), 1.0)
+  ## test .extractEntityFromSlots
+  stop("not yet implemented")
 }
-
-# TODO write these tests once SYNR-43 is resolved
-#unitTestDateAnnotation <-
-#		function()
-#{
-#	## test setting various non-date types with a name containing "date"
-#}
-#
-#unitTestDateProperty <-
-#		function()
-#{
-#	## date annotations should be stored internally as longs, but printed in a human readable form
-#	
-#
-#}
-
-unitTestAnnotationWithMultipleValues <-
-  function()
-{
-  val <- 1L:10L
-  ann <- new("SynapseAnnotation")
-  annotValue(ann, "multValues") <- val
-  
-  ## uncomment this once the getter returns typed values (SYNR-38)
-  ##checkTrue(all(annotValue(ann,"multValues") == val))
-  checkTrue(all(annotValue(ann,"multValues") == as.character(val)))
-  checkTrue(all(ann@longAnnotations$multValues == as.character(val)))
-}
-
-unitTestAnnotationWithMultipleTypes <-
-  function()
-{
-  ## this should be an exception condition. test in integration tests that an exception is thrown when
-  ## an annotation has more than one type
-  ann <- new("SynapseAnnotation")
-  ann@stringAnnotations$aDuplicateKey <- "aValue"
-  ann@longAnnotations$aDuplicateKey <- "1"
-  
-  ## this should warn and return a single value
-  checkEquals(annotValue(ann,"aDuplicateKey"), "1")
-}
-
-unitTestPropertyNamedProperties <-
-  function()
-{
-  kValue <- "thisIsAValue"
-  kNewValue <- "thisIsANewValue"
-  entity <- as.list(RJSONIO::fromJSON(synapseClient:::.getCache("datasetAnnotationJSON")))
-  entity$properties <- kValue
-  
-  s4Entity <- new("SynapseAnnotation")
-  s4Entity <- synapseClient:::.populateSlotsFromEntity(s4Entity, entity)
-  checkEquals(s4Entity@properties$properties, kValue)
-  
-  propertyValue(s4Entity, "properties") <- kNewValue
-  checkEquals(propertyValue(s4Entity, "properties"), kNewValue)
-}
-
-unitTestAnnotationNamedProperties <-
-  function()
-{
-  kValue <- "thisIsAValue"
-  kNewValue <- "thisIsANewValue"
-  entity <- as.list(RJSONIO::fromJSON(synapseClient:::.getCache("datasetAnnotationJSON")))
-  entity$properties <- kValue
-  
-  s4Entity <- new("SynapseAnnotation")
-  s4Entity <- synapseClient:::.populateSlotsFromEntity(s4Entity, entity)
-  checkEquals(s4Entity@properties$properties, kValue)
-}
-
-uniTestProperties <-
-  function()
-{
-  ## annotations object
-  ann <- new(Class="SynapseAnnotation")
-  
-  ## date valued property
-  dd <- Sys.Date()
-  propertyValue(ann,"date") <- dd
-  
-  ## all other property types
-  propertyValue(ann,"string") <- "string"
-  propertyValue(ann,"long") <- 1L
-  propertyValue(ann,"double") <- 2.0
-  
-  ## TODO: remove the type coersion one getters return properly typed values
-  checkEquals(propertyValue(ann,"date"), as.Date(dd))
-  checkEquals(propertyValue(ann,"string"), "string")
-  checkEquals(as.integer(propertyValue(ann,"long")), 1L)
-  checkEquals(as.double(propertyValue(ann,"double")), 2.0)
-  
-}
-
-# todo write these tests once SYNR-38 is resolved
-#unitTestDoubleValueToInteger <-
-#		function()
-#{
-#	## throw error if trying to set an integer annotation with a double value
-#	## this will only happen if the annotation name already exists and holds an int
-#}
-#
-#unitTestDateAnnotationWithNonDateType <-
-#		function()
-#{
-#	## similar to previous test, but with dates
-#}
-
-unitTestPropertyAnnotationWithSameName <-
-  function()
-{
-  ann <- new(Class= "SynapseAnnotation")
-  ## create annotation and property value with same name
-  propertyValue(ann, "dupName") <- "property"
-  annotValue(ann, "dupName") <- "annotation"
-  
-  ## make sure they wind up in the right place
-  checkEquals(propertyValue(ann, "dupName"), "property")
-  checkEquals(annotValue(ann, "dupName"),"annotation")
-  
-  ann <- new(Class= "SynapseAnnotation")
-  ## create annotation and property value with same name
-  annotValue(ann, "dupName") <- "annotation"
-  propertyValue(ann, "dupName") <- "property"
-  
-  ## make sure they wind up in the right place
-  checkEquals(propertyValue(ann, "dupName"), "property")
-  checkEquals(annotValue(ann, "dupName"),"annotation")
-}
-

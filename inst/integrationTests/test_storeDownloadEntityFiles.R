@@ -1,23 +1,23 @@
-# Test functiosn for downloading entity files
-# 
-# Author: Matthew D. Furia <matt.furia@sagebase.org>
-###############################################################################
+## Test functiosn for downloading entity files
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
+################################################################################
 
 .setUp <-
   function()
 {
   ## create a project
-  project <- new(Class="Project")
+  project <- Project()
   propertyValues(project) <- list(
     name = paste("myProject", gsub(':', '_', date()))
   )
   project <- createEntity(project)
   synapseClient:::.setCache("testProject", project)
   
-  ## create a dataset
-  dataset <- Dataset(list(name="MyDataSet", parentId=propertyValue(project, "id")))
-  dataset <- createEntity(dataset)
-  synapseClient:::.setCache("testDataset", dataset)
+  ## create a project
+  project <- Project(list(name="MyDataSet", parentId=propertyValue(project, "id")))
+  project <- createEntity(project)
+  synapseClient:::.setCache("testProject2", project)
 }
 
 .tearDown <-
@@ -25,29 +25,29 @@
 {
   deleteEntity(synapseClient:::.getCache("testProject"))
   synapseClient:::.deleteCache("testProject")
-  synapseClient:::.deleteCache("testDataset")
+  synapseClient:::.deleteCache("testProject2")
 }
 
 integrationTestStoreNoFiles <-
   function()
 {
-  dataset <- synapseClient:::.getCache("testDataset")
-  layer <- Layer(list(name='blah',type="C", parentId=propertyValue(dataset,'id')))
-  layer <- storeEntity(layer)
-  checkTrue(!is.null(layer))
-  checkTrue(!is.null(propertyValue(layer,"id")))
+  project <- synapseClient:::.getCache("testProject")
+  data <- Data(list(name='blah',type="C", parentId=propertyValue(project,'id')))
+  data <- storeEntity(data)
+  checkTrue(!is.null(data))
+  checkTrue(!is.null(propertyValue(data,"id")))
 }
 
 integrationTestDownloadNoFiles <-
   function()
 {
-  dataset <- synapseClient:::.getCache("testDataset")
-  layer <- Layer(list(name='blah',type="C", parentId=propertyValue(dataset,'id')))
-  layer <- storeEntity(layer)
-  checkTrue(!is.null(layer))
-  checkTrue(!is.null(propertyValue(layer,'id')))	
-  layer <- downloadEntity(propertyValue(layer,"id"))        
+  project <- synapseClient:::.getCache("testProject")
+  data <- Data(list(name='blah',type="C", parentId=propertyValue(project,'id')))
+  data <- storeEntity(data)
+  checkTrue(!is.null(data))
+  checkTrue(!is.null(propertyValue(data,'id')))	
+  data <- downloadEntity(propertyValue(data,"id"))        
   
-  layer <- loadEntity(propertyValue(layer,"id"))
+  data <- loadEntity(propertyValue(data,"id"))
 }
 

@@ -1,23 +1,23 @@
-## Tests for downloading entity objects added using addObject methods
-## 
-## Author: Matthew D. Furia <matt.furia@sagebase.org>
-################################################################################
+### Tests for downloading entity objects added using addObject methods
+### 
+### Author: Matthew D. Furia <matt.furia@sagebase.org>
+#################################################################################
 
 .setUp <- 
   function()
 {
   ### create a project
-  project <- new(Class="Project")
+  project <- Project()
   propertyValues(project) <- list(
-    name = paste("myProject", gsub(':', '_', date()))
+    name = paste("StoreDownloadEntityObjects-Project", gsub(':', '_', date()))
   )
   project <- createEntity(project)
   synapseClient:::.setCache("testProject", project)
   
-  ### create a dataset
-  dataset <- Dataset(list(name="MyDataSet", parentId=propertyValue(project, "id")))
-  dataset <- createEntity(dataset)
-  synapseClient:::.setCache("testDataset", dataset)
+  ### create a study
+  study <- Study(list(name="MyDataSet", parentId=propertyValue(project, "id")))
+  study <- createEntity(study)
+  synapseClient:::.setCache("testStudy", study)
 }
 
 .tearDown <-
@@ -25,87 +25,85 @@
 {
   deleteEntity(synapseClient:::.getCache("testProject"))
   synapseClient:::.deleteCache("testProject")
-  synapseClient:::.deleteCache("testDataset")
+  synapseClient:::.deleteCache("testStudy")
 }
 
 
 integrationTestStore <-
   function()
 {
-  dataset <- synapseClient:::.getCache("testDataset")
-  layer <- Layer(list(name="Test Layer", parentId = propertyValue(dataset, "id"), type="C"))
-  addObject(layer, list(foo="bar"))
-  checkEquals(length(layer$files), 0L)
+  study <- synapseClient:::.getCache("testStudy")
+  data <- Data(list(name="Test Data", parentId = propertyValue(study, "id"), type="C"))
+  addObject(data, "bar", "foo")
+  ##checkEquals(length(data$files), 0L)
   
-  storedLayer <- storeEntityObjects(layer)
-  checkEquals(length(storedLayer$files), 0L)
-  checkEquals(length(storedLayer$objects), 1L)
-  checkEquals(layer$objects$foo, storedLayer$objects$foo)
-  checkTrue(file.exists(file.path(layer$cacheDir, synapseClient:::.getCache("rObjCacheDir"), "foo.rbin")))
+  storedData <- storeEntityObjects(data)
+  ##checkEquals(length(storedData$files), 0L)
+  checkEquals(length(storedData$objects), 1L)
+  checkEquals(data$objects$foo, storedData$objects$foo)
+  checkTrue(file.exists(file.path(data$cacheDir, synapseClient:::.getCache("rObjCacheDir"), "foo.rbin")))
 }
 
 integrationTestDownload <-
   function()
 {
-  dataset <- synapseClient:::.getCache("testDataset")
-  layer <- Layer(list(name="Test Layer", parentId = propertyValue(dataset, "id"), type="C"))
-  addObject(layer, list(foo="bar"))
-  checkEquals(length(layer$files), 0L)
+  study <- synapseClient:::.getCache("testStudy")
+  data <- Data(list(name="Test Data", parentId = propertyValue(study, "id"), type="C"))
+  addObject(data,"bar","foo")
+  ##checkEquals(length(data$files), 0L)
   
-  storedLayer <- storeEntityObjects(layer)
+  storedData <- storeEntityObjects(data)
   
-  downloadedLayer <- downloadEntity(propertyValue(storedLayer, "id"))
-  checkEquals(length(downloadedLayer$files), 0L)
-  checkEquals(length(downloadedLayer$objects), 0L)
-  checkTrue(file.exists(file.path(layer$cacheDir, synapseClient:::.getCache("rObjCacheDir"), "foo.rbin")))
+  downloadedData <- downloadEntity(propertyValue(storedData, "id"))
+  ##checkEquals(length(downloadedData$files), 0L)
+  checkEquals(length(downloadedData$objects), 0L)
+  checkTrue(file.exists(file.path(data$cacheDir, synapseClient:::.getCache("rObjCacheDir"), "foo.rbin")))
 }
 
 integrationTestLoad <-
   function()
 {
-  dataset <- synapseClient:::.getCache("testDataset")
-  layer <- Layer(list(name="Test Layer", parentId = propertyValue(dataset, "id"), type="C"))
-  addObject(layer, list(foo="bar"))
-  checkEquals(length(layer$files), 0L)
+  study <- synapseClient:::.getCache("testStudy")
+  data <- Data(list(name="Test Data", parentId = propertyValue(study, "id"), type="C"))
+  addObject(data, "bar", "foo")
+  ##checkEquals(length(data$files), 0L)
   
-  storedLayer <- storeEntityObjects(layer)
-  downloadedLayer <- downloadEntity(propertyValue(storedLayer, "id"))
+  storedData <- storeEntityObjects(data)
+  downloadedData <- downloadEntity(propertyValue(storedData, "id"))
   
-  loadedLayer <- loadEntity(propertyValue(storedLayer, "id"))
-  checkTrue(file.exists(file.path(layer$cacheDir, synapseClient:::.getCache("rObjCacheDir"), "foo.rbin")))
-  checkEquals(length(loadedLayer$files), 0L)
-  checkEquals(length(loadedLayer$objects), 1L)
-  checkEquals(layer$objects$foo, loadedLayer$objects$foo)
+  loadedData <- loadEntity(propertyValue(storedData, "id"))
+  checkTrue(file.exists(file.path(data$cacheDir, synapseClient:::.getCache("rObjCacheDir"), "foo.rbin")))
+  ##checkEquals(length(loadedData$files), 0L)
+  checkEquals(length(loadedData$objects), 1L)
+  checkEquals(data$objects$foo, loadedData$objects$foo)
 }
 
 integrationTestDownloadFilesAndObjects <-
   function()
 {
-  dataset <- synapseClient:::.getCache("testDataset")
-  layer <- Layer(list(name="Test Layer", parentId = propertyValue(dataset, "id"), type="C"))
-  addObject(layer, list(foo="bar"))
-  checkEquals(length(layer$files), 0L)
+  study <- synapseClient:::.getCache("testStudy")
+  data <- Data(list(name="Test Data", parentId = propertyValue(study, "id"), type="C"))
+  addObject(data, "bar", "foo")
+##  checkEquals(length(data$files), 0L)
   
-  assign("diag", diag(nrow=10, ncol=10), envir = layer@location@objects)
-  checkEquals(length(layer$objects), 2L)
-  storedLayer <- storeEntityObjects(layer)
-  checkEquals(length(layer$files), 0L)
-  checkEquals(length(layer$objects), 2L)
+  addObject(data, diag(nrow=10, ncol=10), "diag")
+  checkEquals(length(data$objects), 2L)
+  storedData <- storeEntityObjects(data)
+##  checkEquals(length(data$files), 0L)
+  checkEquals(length(data$objects), 2L)
   
-  downloadedLayer <- downloadEntity(propertyValue(storedLayer, "id"))
-  checkEquals(length(downloadedLayer$files), 0L)
-  checkEquals(length(downloadedLayer$objects), 0L)
+  downloadedData <- downloadEntity(propertyValue(storedData, "id"))
+##  checkEquals(length(downloadedData$files), 0L)
+  checkEquals(length(downloadedData$objects), 0L)
   
-  loadedLayer <- loadEntity(downloadedLayer)
-  checkEquals(length(downloadedLayer$files), 0L)
-  checkEquals(length(downloadedLayer$objects), 1L)
+  loadedData <- loadEntity(downloadedData)
+##  checkEquals(length(loadedData$files), 0L)
+  checkEquals(length(loadedData$objects), 2L)
   
-  checkEquals(length(loadedLayer$files), 0L)
-  checkEquals(length(loadedLayer$objects), 1L)
   
-  loadedLayer <- loadEntity(propertyValue(storedLayer,"id"))
-  checkEquals(length(downloadedLayer$files), 0L)
-  checkEquals(length(downloadedLayer$objects), 1L)
+  loadedData <- loadEntity(propertyValue(storedData,"id"))
+ ## checkEquals(length(downloadedData$files), 0L)
+  checkEquals(length(downloadedData$objects), 2L)
 }
 
 

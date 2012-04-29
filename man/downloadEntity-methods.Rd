@@ -2,8 +2,7 @@
 \docType{methods}
 \alias{downloadEntity-methods}
 \alias{downloadEntity,character-method}
-\alias{downloadEntity,Layer-method}
-\alias{downloadEntity,list-method}
+\alias{downloadEntity,SynapseLocationOwner-method}
 \alias{downloadEntity,numeric-method}
 \alias{downloadEntity,SynapseEntity-method}
 \title{ ~~ Methods for Function \code{downloadEntity}  ~~}
@@ -17,8 +16,8 @@
 Download the entity with the specified ID
 }
 
-\item{\code{signature(entity = "Layer")}}{
-Download the Layer entity
+\item{\code{signature(entity = "SynapseLocationOwner")}}{
+Download the SynapseLocationOwner entity
 }
 
 \item{\code{signature(entity = "numeric")}}{

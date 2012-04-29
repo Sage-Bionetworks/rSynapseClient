@@ -64,18 +64,16 @@
   \code{\link{downloadEntity}}
 }
 \examples{
-  ## create a Media entity (LocationOwner sub-class).
-  entity <- Media()
+  ## create a Data entity (LocationOwner sub-class).
+  entity <- Data()
   
   ## create a plot that will be added to the Media entity
-  plotFile <- tempfile(fileext=".jpg")
-  jpeg(filename = plotFile)
-  plot(1:10, 1:10)
-  dev.off()
+  datFile <- tempfile(fileext=".txt")
+  write.table(data.frame(diag(10)), file=datFile, row.names=F, col.names=F)
 
   ## add the file to the root of the entity's cache
   ## BE SURE TO CAPTURE THE RETURN VALUE
-  entity <- addFile(entity, plotFile)
+  entity <- addFile(entity, datFile)
   
   ## move the file to a subdirectory named foo
   entity <- moveFile(entity, entity$files[1], "/foo/")

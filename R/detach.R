@@ -5,10 +5,10 @@
 
 setMethod(
   f = "detach",
-  signature = "LocationOwner",
+  signature = "SynapseLocationOwner",
   definition = function (name, pos = 2, unload = FALSE, character.only = FALSE, 
     force = FALSE) {
-    pkgName <- getPackageName(name@location@objects)
+    pkgName <- getPackageName(name)
     detach(name=pkgName, pos = pos, unload = unload, character.only = TRUE) 
   }
 )

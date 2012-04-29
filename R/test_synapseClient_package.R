@@ -15,44 +15,44 @@
   )
 }
 
-.doTestConfigureNamespace <- 
-  function()
-{
-  oldCache <- synapseClient:::.cache
-  synapseClient:::.setCache("oldCache", oldCache)
-  synapseClient:::.setCache("oldHooks", getHook(packageEvent('synapseClient','attach')))
-  
-  fcn <- list()
-  fcn[[1]] <- function(...){}
-  setHook(packageEvent('synapseClient','attach'), fcn, action='replace')
-  unloadNamespace('synapseClient')
-  assignInNamespace('.cache', oldCache, 'synapseClient')
-  require(synapseClient, quietly=TRUE)
-  
-}
-
-.undoTestConfigureNamespace <-
-  function()
-{
-  oldCache <- synapseClient:::.getCache('oldCache')
-  unloadNamespace("synapseClient")
-  assignInNamespace('.cache', oldCache, 'synapseClient')
-  require(synapseClient, quietly=TRUE)
-  setHook(packageEvent("synapseClient","attach"), synapseClient:::.getCache("oldHooks"), action="replace")
-}
+#.doTestConfigureNamespace <- 
+#  function()
+#{
+#  oldCache <- synapseClient:::.cache
+#  synapseClient:::.setCache("oldCache", oldCache)
+#  synapseClient:::.setCache("oldHooks", getHook(packageEvent('synapseClient','attach')))
+#  
+#  fcn <- list()
+#  fcn[[1]] <- function(...){}
+#  setHook(packageEvent('synapseClient','attach'), fcn, action='replace')
+#  unloadNamespace('synapseClient')
+#  assignInNamespace('.cache', oldCache, 'synapseClient')
+#  require(synapseClient, quietly=TRUE)
+#  
+#}
+#
+#.undoTestConfigureNamespace <-
+#  function()
+#{
+#  oldCache <- synapseClient:::.getCache('oldCache')
+#  unloadNamespace("synapseClient")
+#  assignInNamespace('.cache', oldCache, 'synapseClient')
+#  require(synapseClient, quietly=TRUE)
+#  setHook(packageEvent("synapseClient","attach"), synapseClient:::.getCache("oldHooks"), action="replace")
+#}
 
 .test <- function(dir=system.file("unitTests", package="synapseClient"), testFileRegexp = "^test_.*\\.R$") {
-  .doTestConfigureNamespace()
+ ## .doTestConfigureNamespace()
   .runTestSuite(dir=dir, testFileRegexp=testFileRegexp, testFuncRegexp="^unitTest.+", suiteName="unit tests") 
-  .undoTestConfigureNamespace()
+##  .undoTestConfigureNamespace()
 }
 
 .integrationTest <- 
   function(dir=system.file("integrationTests", package="synapseClient"), testFileRegexp="^test_.*\\.R$")
 {
-  .doTestConfigureNamespace()
+##  .doTestConfigureNamespace()
   .runTestSuite(dir=dir, testFileRegexp=testFileRegexp, testFuncRegexp="^integrationTest.+", suiteName="integration tests") 
-  .undoTestConfigureNamespace()
+##  .undoTestConfigureNamespace()
 }
 
 .runTestSuite <- 

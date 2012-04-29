@@ -37,7 +37,7 @@ unitTestCheckSingleValue <-
   val <- "A"
   checkTrue(!synapseClient:::checkInteger(val))
   
-  val <- Dataset(list(name="foo"))
+  val <- Code(list(name="foo"))
   checkTrue(!synapseClient:::checkInteger(val))
   
   val <- sum
@@ -57,7 +57,7 @@ unitTestFactors <-
 unitTestS4Class <-
   function()
 {
-  checkTrue(!synapseClient:::checkInteger(new("Dataset")))
+  checkTrue(!synapseClient:::checkInteger(new("SynapseEntity")))
 }
 
 unitTestMultipleValues <-
@@ -72,7 +72,7 @@ unitTestMultipleValues <-
 unitTestMultipleValuesMixedTypes <-
   function()
 {
-  val <- c(1, 3.001, "a", 6, 7, sum, Dataset(list(name="foo")))
+  val <- c(1, 3.001, "a", 6, 7, sum, Code(list(name="foo")))
   res <- c(TRUE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE)
   checkTrue(all(synapseClient:::checkInteger(val) == res))
 }
