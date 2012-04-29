@@ -56,6 +56,7 @@ setMethod(
         class(owner) <- oldClass
         stop(e)
       }
+    )
   }
 )
 
