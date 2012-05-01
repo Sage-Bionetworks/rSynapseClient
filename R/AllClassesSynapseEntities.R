@@ -1,10 +1,12 @@
-# objects that users will interact with. can the generation of these class
-# definitions be automated?
-# 
-# Author: furia
+## objects that users will interact with. can the generation of these class
+## definitions be automated?
+## 
+## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
-
+##
+## Step entity to be used for tracking provenance
+##
 setClass(
   "Step",
   contains = "SynapseEntity",
@@ -13,6 +15,10 @@ setClass(
   )
 )
 
+
+##
+## Analysis entity to be used for tracking provenance
+##
 setClass(
   "Analysis",
   contains = "SynapseEntity",
@@ -21,7 +27,9 @@ setClass(
   )
 )
 
-
+##
+## Project entity
+##
 setClass(
   "Project",
   contains = "SynapseEntity",
@@ -30,6 +38,9 @@ setClass(
   )
 )
 
+##
+## Link entity points to other Synapse entities
+##
 setClass(
   "Link",
   contains = "SynapseEntity",
@@ -38,6 +49,9 @@ setClass(
   )
 )
 
+##
+## Entity for storing code
+##
 setClass(
   "Code",
   contains="SynapseLocationOwner",
@@ -46,6 +60,9 @@ setClass(
   )
 )
 
+##
+## Generic Data entity
+##
 setClass(
   "Data",
   contains = "SynapseLocationOwnerWithObjects",
@@ -55,6 +72,9 @@ setClass(
   )
 )
 
+##
+## Study entity
+##
 setClass(
   "Study",
   contains = "SynapseLocationOwnerWithObjects",
@@ -63,6 +83,9 @@ setClass(
   )
 )
 
+##
+## Entity for storing Expression Data
+##
 setClass(
   Class = "ExpressionData",
   contains = "SynapseLocationOwnerWithObjects",
