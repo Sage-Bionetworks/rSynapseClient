@@ -398,6 +398,9 @@ setClass(
     )
 )
 
+##
+## These entities can own R objects that are added via addObject.
+##
 setClass(
     Class = "SynapseLocationOwnerWithObjects",
     contains = c("SynapseLocationOwner"),
@@ -406,49 +409,4 @@ setClass(
     )
 )
 
-####
-## All classes below this line are subject to change/removal
-####
-
-setRefClass(
-    "ReadOnlyFileOwner",
-    contains = "VIRTUAL",
-    fields = list(
-        cacheDir = "character",
-        files = "character"
-    ),
-    methods = list(
-        initialize = function(){
-          .self$initFields(
-              objects = new("EnhancedEnvironment"),
-              cacheDir = tempfile(),
-              files = character()
-          )
-        }
-    )
-)
-
-setRefClass(
-    "ReadOnlyObjectOwner",
-    contains = c("ReadOnlyFileOwner", "VIRTUAL"),
-    fields = list(
-        objects = "EnhancedEnvironment"
-    ),
-    methods = list(
-        getObject = function(which){
-          getObject(.self, which)
-        }
-    ) 
-)
-
-setRefClass(
-    "WritableFileOwner",
-    contains = c("ReadOnlyFileOwner", "VIRTUAL"),
-    methods = list(
-        initialize = function(){
-          .self$initFields(cacheDir=tempfile())
-          dir.create(.self$cacheDir)
-        }
-    )
-)
 
