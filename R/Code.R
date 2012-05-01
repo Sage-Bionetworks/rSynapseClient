@@ -67,11 +67,6 @@ setMethod(
       entity <- downloadEntity(entity)
     }
     indx <- grep("\\.r$", tolower(entity$files))
-    if(!is.null(propertyValue(entity, "id"))){
-      setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = as.environment(entity@archOwn@objects))
-    }else{
-      setPackageName(tempfile(), env = as.environment(as.environment(entity@archOwn@objects)))
-    }
     tryCatch(
       lapply(entity$files[indx],
         function(f){
