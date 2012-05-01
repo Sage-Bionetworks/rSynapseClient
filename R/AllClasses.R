@@ -377,7 +377,10 @@ setRefClass(
           .self@objects
         },
         initialize = function(){
-          .self$objects <- new("CachingEnhancedEnvironment")
+          .self$initFields(
+            objects = new("CachingEnhancedEnvironment")
+          )
+          setPackageName(env=.self)
         }
     )
 )

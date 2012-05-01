@@ -384,7 +384,7 @@ setMethod(
   f = "attach",
   signature = signature(what = "SynapseLocationOwner"),
   definition = function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE){
-    attach(what@archOwn)
+    attach(what@archOwn, pos= pos, name = name, warn.conflicts = warn.conflicts)
   }
 )
 

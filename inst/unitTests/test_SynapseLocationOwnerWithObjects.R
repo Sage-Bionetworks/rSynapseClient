@@ -32,6 +32,10 @@
 {
 #  detach("testEnv")
   options(warn = synapseClient:::.getCache("oldWarn"))
+  if(!is.null(name <- synapseClient:::.getCache("detachMe"))){
+    detach(name)
+    synapseClient:::.deleteCache('detachMe')
+  }
 }
 
 unitTestAddObject <-
@@ -300,4 +304,34 @@ uniTestDeleteFile <-
   checkEquals(character(), own$files)
   checkEquals(character(), copy$files)
 }
+
+unitTestAttach <-
+  function()
+{
+  ee <- new("SynapseLocationOwnerWithObjects")
+  
+  ee@archOwn@objects$aNum <- 1L
+  attach(ee)
+  synapseClient:::.setCache("detachMe", ee)
+  checkEquals(getPackageName(ee@archOwn), search()[2])
+  checkEquals(getPackageName(ee@objOwn), search()[3])
+  checkTrue(objects(getPackageName(ee@archOwn)) == 'aNum')
+}
+
+unitTestDetach <-
+  function()
+{
+  ee <- new("SynapseLocationOwnerWithObjects")
+  
+  ee@archOwn@objects$aNum <- 1L
+  attach(ee)
+  synapseClient:::.setCache("detachMe", ee)
+  checkEquals(getPackageName(ee@archOwn), search()[2])
+  checkEquals(getPackageName(ee@objOwn), search()[3])
+  detach(ee)
+  synapseClient:::.deleteCache("detachMe")
+  checkTrue(!(getPackageName(ee@archOwn) %in% search()))
+  checkTrue(!(getPackageName(ee@objOwn) %in% search()))
+}
+
 

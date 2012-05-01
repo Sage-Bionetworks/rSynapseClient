@@ -14,6 +14,28 @@ setMethod(
 )
 
 setMethod(
+  f = "attach",
+  signature = signature(what = "SynapseLocationOwnerWithObjects"),
+  definition = function (what, pos = 2, name = getPackageName(what@objOwn), warn.conflicts = TRUE){
+    attach(what@objOwn, pos = pos, name = name, warn.conflicts = warn.conflicts)
+    
+    afun <- getMethod('attach', 'SynapseLocationOwner')
+    afun(what, pos = pos, warn.conflicts = warn.conflicts)
+  }
+)
+
+setMethod(
+  f = "detach",
+  signature = signature(name = "SynapseLocationOwnerWithObjects"),
+  definition = function (name)
+  {
+    detach(name@objOwn)
+    detach(name@archOwn)
+  }
+)
+
+
+setMethod(
 		f = "loadEntity",
 		signature = "SynapseLocationOwnerWithObjects",
 		definition = function(entity){

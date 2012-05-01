@@ -23,6 +23,44 @@
 #)
 
 setMethod(
+  f = "attach",
+  signature = signature(what = "CachingObjectOwner"),
+  definition = function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE)
+  {
+    attach(what$objects, pos = pos, name = name, warn.conflicts = warn.conflicts)
+  }
+)
+
+setMethod(
+  f = "detach",
+  signature = signature(name = "CachingObjectOwner"),
+  definition = function (name)
+  {
+    detach(name$objects)
+  }
+)
+
+setMethod(
+  f = "setPackageName",
+  signature = signature(env = "CachingObjectOwner"),
+  definition = function(pkg, env)
+  {
+    if(missing(pkg))
+      pkg <- basename(tempfile(pattern=as.character(class(env))))
+    setPackageName(pkg = pkg, env = env$objects)
+  }
+)
+
+setMethod(
+  f = "getPackageName",
+  signature = "CachingObjectOwner",
+  definition = function (where, create = TRUE)
+  {
+      getPackageName(where = where$objects, create = create)
+  }
+)
+
+setMethod(
   f = "setFileCache",
   signature = signature("CachingObjectOwner", "FileCache"),
   definition = function(owner, fileCache){

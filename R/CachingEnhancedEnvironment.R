@@ -18,6 +18,7 @@ setMethod(
     .Object@fileCache <- FileCache()
     .Object@cacheSuffix <- "rbin"
     .Object@cacheTmpSuffix <- "rbin.tmp"
+    setPackageName(env = .Object)
     .Object 
   }
 )

@@ -75,6 +75,7 @@ exportMethods(
   attach,
   detach,
   setPackageName,
+  getPackageName,
   objects
   )
 
