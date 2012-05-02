@@ -14,14 +14,21 @@ Entity Constructors
 Constructors for Synapse Entities
 }
 \usage{
-SynapseEntity(entity)
 Study(entity)
 Data(entity)
 Project(entity)
+Preview(entity)
+Link(entity)
+Folder(entity)
+ExpressionData(entity)
+GenotypeData(entity)
+PhenotypeData(entity)
+RObject(entity)
 }
 \arguments{
   \item{entity}{
-(optional) a named list whose elements will be set as the properties of the entity
+(optional) a named list whose elements will be set as the properties of the entity. The list of
+valid properties is controlled by Synapse and currently no client-side verification is perfomed.
 }
 }
 
@@ -29,5 +36,5 @@ Project(entity)
 The entity
 }
 \author{
-Matt Furia
+Matthew D. Furia
 }

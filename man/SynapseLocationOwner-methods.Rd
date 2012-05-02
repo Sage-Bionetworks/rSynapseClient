@@ -12,7 +12,7 @@
 \describe{
 
 \item{\code{signature(entity = "list")}}{
-Construct a SynapseLocationOwner entity from a list of properties
+    Construct a SynapseLocationOwner entity from a list of properties
 }
 
 }}
