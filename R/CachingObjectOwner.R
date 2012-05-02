@@ -23,6 +23,14 @@
 #)
 
 setMethod(
+  f = "files",
+  signature = "CachingObjectOwner",
+  definition = function(entity){
+    entity$files()
+  }
+)
+
+setMethod(
   f = "attach",
   signature = signature(what = "CachingObjectOwner"),
   definition = function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE)

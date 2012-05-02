@@ -276,7 +276,7 @@ setMethod(
             }else if(i == "cacheDir"){
               retVal <- cacheDir(x@archOwn)
             }else if(i == "files"){
-              retVal <- files(x@archOwn)
+              retVal <- files(x)
             }else{
               retVal <- NULL
             }
@@ -286,6 +286,15 @@ setMethod(
       retVal
     }
 )
+
+setMethod(
+  f = "files",
+  signature = "SynapseLocationOwner",
+  definition = function(object){
+    files(object@archOwn)
+  }
+)
+
 
 setMethod(
     f = "[[",

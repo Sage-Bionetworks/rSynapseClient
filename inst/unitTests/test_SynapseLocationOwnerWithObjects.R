@@ -65,6 +65,8 @@ unitTestAddObject <-
   checkTrue(all(names(own$objects) == c("foo", "goo")))
   checkEquals(2L, length(names(copy$objects)))
   checkTrue(all(names(copy$objects) == c("foo", "goo")))
+  checkEquals(1L, length(own$files))
+  checkEquals(1L, length(copy$files))
   
 }
 
@@ -193,6 +195,42 @@ unitTestGetObject <-
   addObject(own, foo)
   checkEquals(getObject(own, "foo"), "boo")
 }
+
+unitTestAddFile <- 
+  function()
+{
+  own <- new("SynapseLocationOwnerWithObjects")
+  
+  checkTrue(grepl("_unpacked$", own$cacheDir))
+  checkEquals(character(), own$files)
+  file <- tempfile()
+  cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
+  copy <- addFile(own, file)
+  checkEquals(basename(file), own$files)
+  checkEquals(basename(file), copy$files)
+  
+  ## add an object and make sure the object file doesn't show up
+  addObject(own, "foo", "bar")
+  checkEquals(1L, length(own$files))
+  checkEquals(1L, length(files(own)))
+  checkEquals(basename(file), own$files)
+  
+  ## make sure the cache re-initializes but running the exact same
+  ## test again
+  own <- new("SynapseLocationOwner")
+  checkTrue(grepl("_unpacked$", own$cacheDir))
+  checkEquals(character(), own$files)
+  file <- tempfile()
+  cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
+  addFile(own, file)
+  checkEquals(basename(file), own$files)
+  
+  addFile(own, file, "foo.bar")
+  checkEquals(length(own$files), 2L)
+  checkTrue(all(c(basename(file), "foo.bar") %in% own$files))
+  checkTrue(all(own$files %in% c(basename(file), "foo.bar")))
+}
+
 
 unitTestLoadObjectsFromDisk <-
     function()

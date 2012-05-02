@@ -237,7 +237,7 @@ setMethod(
     f = "files",
     signature = "SynapseLocationOwnerWithObjects",
     definition = function(object){
-      files(object@objOwn)
+      setdiff(files(object@archOwn), files(object@objOwn))
     }
 )
 
@@ -275,7 +275,7 @@ setMethod(
             switch(i,
                 objects = .doGetObjects(x),
                 cacheDir = cacheDir(x@archOwn),
-                files = files(x@archOwn),
+                files = files(x),
                 fileObjects = x@archOwn@objects,
                 binObjects = x@objOwn$objects[],
                 NULL
@@ -340,7 +340,6 @@ objects.SynapseLocationOwnerWithObjects <-
   union(objects(name@archOwn@objects, all.names=T), objects(name@objOwn$objects, all.names=T))
 }
 
-
 setMethod(
   f = "loadObjectsFromFiles",
   signature = "SynapseLocationOwnerWithObjects",
@@ -352,6 +351,4 @@ setMethod(
     invisible(owner)
   }
 )
-
-
 

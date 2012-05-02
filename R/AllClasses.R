@@ -381,6 +381,10 @@ setRefClass(
             objects = new("CachingEnhancedEnvironment")
           )
           setPackageName(env=.self)
+        },
+        files = function(){
+          ffun <- getMethod("files", "CachingEnhancedEnvironment")
+          ffun(.self$objects)[grep(sprintf("^%s", .self$objects@cachePrefix), ffun(.self$objects))]
         }
     )
 )
