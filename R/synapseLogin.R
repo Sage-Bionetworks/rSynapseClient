@@ -93,7 +93,9 @@ synapseLogin <-
   function()
 {
   ## if this is a unix terminal, do a terminal login
-  if(tolower(.Platform$OS.type) == "unix"){
+  if(tolower(.Platform$GUI) == "rstudio"){
+    useTk <- FALSE
+  }else if(tolower(.Platform$OS.type) == "unix"){
     if(tolower(.Platform$GUI) %in% c("aqua", "x11")){
       ## don't use tk for terminal or for CRAN R GUI
       ## the CRAN R GUI locks up when tk is initialized
