@@ -32,5 +32,15 @@ integrationTestBinFiles <-
     checkEquals(length(copy$files), 1L)
     copy <- loadEntity(propertyValue(copy, "id"))
     checkEquals(length(copy$files), 1L)
+    
+    ## add an annotation value
+    annotValue(ee, "testAnnotName") <- "testAnnotValue"
+    ee <- storeEntity(ee)
+    checkEquals(length(ee$files), 1L)
+    checkEquals(annotValue(ee, "testAnnotName"), "testAnnotValue")
+    
+    copy <- loadEntity(propertyValue(ee, "id"))
+    checkEquals(length(copy$files), 1L)
+    checkEquals(annotValue(copy, "testAnnotName"), "testAnnotValue")
   }
 }
