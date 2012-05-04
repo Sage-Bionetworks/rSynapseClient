@@ -42,7 +42,7 @@ setMethod(
       
       lfun <- getMethod("loadEntity", "SynapseLocationOwner")
       entity <- lfun(entity)
-			
+      entity@objOwn$objects@fileCache <- entity@archOwn@fileCache
 			entity@objOwn <- loadObjectsFromFiles(entity@objOwn)
 
 			
