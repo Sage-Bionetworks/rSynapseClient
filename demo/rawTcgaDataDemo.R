@@ -1,21 +1,21 @@
 library(synapseClient)
 
-# There are many more datasets in there than just the TCGA ones, but we are only interested in TCGA data
-datasets <- synapseQuery(paste('select * from dataset where dataset.Institution == "TCGA"', sep=""))
-dim(datasets)
-datasets[, 'dataset.name']
+# There are many more studies in there than just the TCGA ones, but we are only interested in TCGA data
+studies <- synapseQuery(paste('select * from study where study.repository == "TCGA"', sep=""))
+dim(studies)
+studies[, 'study.name']
 
 # We want to work with Glioblastoma data
-glioblastomaDatasetId <- datasets$dataset.id[grepl('Glioblastoma TCGA', datasets$dataset.name )]
-onWeb(glioblastomaDatasetId)
+glioblastomaStudyId <- studies$study.id[grepl('TCGA Glioblastoma', studies$study.name )][1]
+onWeb(glioblastomaStudyId)
 
-# Query for the the Level_3 layers for dataset "Glioblastoma TCGA"
-layers <- synapseQuery(paste('select * from layer where layer.tcgaLevel == "Level_3" and layer.parentId == "', glioblastomaDatasetId, '"', sep=''))
-dim(layers)
-names(layers)
-head(layers$layer.name)
+# Query for the the level_3 data for study "Glioblastoma TCGA"
+data <- synapseQuery(paste('select * from expressiondata where tcgaLevel == "level_3" and parentId == "', glioblastomaStudyId, '"', sep=''))
+dim(data)
+names(data)
+head(data$expressiondata.name)
 
-agilentDataId <- layers$layer.id[grepl("unc.edu_GBM.AgilentG4502A_07_2.Level_3.4.0.0", layers$layer.name)]
+agilentDataId <- data$expressiondata.id[grepl("unc.edu_GBM.AgilentG4502A_07_2.Level_3.4.0.0", data$expressiondata.name)]
 onWeb(agilentDataId)
 
 agilentData <- loadEntity(agilentDataId)
@@ -23,11 +23,11 @@ agilentData
 agilentData$cacheDir
 agilentData$files
 
-# Get the clinical layers for dataset "Glioblastoma TCGA"
-clinicalLayers <- synapseQuery(paste('select * from layer where layer.type == "C" and layer.parentId == "', glioblastomaDatasetId, '"', sep=''))
+# Get the clinical phenotypedata for study "Glioblastoma TCGA"
+clinicalLayers <- synapseQuery(paste('select * from phenotypedata where phenotypedata.parentId == "', glioblastomaStudyId, '"', sep=''))
 dim(clinicalLayers)
-clinicalLayers$layer.name
-clinicalData <- loadEntity(clinicalLayers[2, 'layer.id'])
+clinicalLayers$phenotypedata.name
+clinicalData <- loadEntity(clinicalLayers[2, 'phenotypedata.id'])
 clinicalData
 clinicalData$cacheDir
 clinicalData$files
