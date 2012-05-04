@@ -25,8 +25,8 @@
 setMethod(
   f = "files",
   signature = "CachingObjectOwner",
-  definition = function(entity){
-    entity$files()
+  definition = function(object){
+    object$files()
   }
 )
 

@@ -73,6 +73,18 @@ setClass(
 )
 
 ##
+## Generic Data entity
+##
+setClass(
+  "GenotypeData",
+  contains = "SynapseLocationOwnerWithObjects",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.GenotypeData"
+  
+  )
+)
+
+##
 ## Study entity
 ##
 setClass(
