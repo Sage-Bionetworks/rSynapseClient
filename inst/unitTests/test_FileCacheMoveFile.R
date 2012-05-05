@@ -2,6 +2,23 @@
 ## 
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
+.setUp <-
+  function()
+{
+  dd <- tempfile()
+  dir.create(dd)
+  synapseClient:::.setCache("aDir", dd)
+}
+
+.tearDown <-
+  function()
+{
+  if(!is.null(aDir <- synapseClient:::.getCache("aDir"))){
+    unlink(aDir, recursive = TRUE)
+    synapseClient:::.deleteCache("aDir")
+  }
+}
+
 
 unitTestSimpleMove <-
   function()
@@ -272,19 +289,51 @@ unitTestMoveFileRenameIntoNewSubDir <-
   checkEquals(fc$files(), "subdir2/newName2.rbin")
 }
 
-unitTestMoveDirectoryToRoot <-
+unitTestAddDirectoryToRoot <-
   function()
 {
-  stop("not yet implemented")
+  aDir <- synapseClient:::.getCache("aDir")
+  file1 <- tempfile(tmpdir=aDir)
+  cat(sprintf("Test one %s", Sys.time()), file = file1)
+  file2 <- tempfile(tmpdir=aDir)
+  cat(sprintf("Test two %s", Sys.time()), file = file2)
+  
+  fc <- new("FileCache")
+  addFile(fc, aDir)
+  checkEquals(length(fc$files()), 2L)
+  checkTrue(all(file.path(basename(aDir), c(basename(file1), basename(file2))) %in% fc$files()))
 }
 
-unitTestMoveDirectoryToNewSubdir <-
+unitTestAddDirectoryToNewSubdir <-
   function()
 {
-  stop("not yet implemented")
+  aDir <- synapseClient:::.getCache("aDir")
+  file1 <- tempfile(tmpdir=aDir)
+  cat(sprintf("Test one %s", Sys.time()), file = file1)
+  file2 <- tempfile(tmpdir=aDir)
+  cat(sprintf("Test two %s", Sys.time()), file = file2)
+  
+  fc <- new("FileCache")
+  addFile(fc, aDir, "subdir/")
+  checkEquals(length(fc$files()), 2L)
+  checkTrue(all(file.path( "subdir", file.path(basename(aDir)), c(basename(file1), basename(file2))) %in% fc$files()))
+  
 }
 
-
+unitTestAddDirectoryToNewSubdirNoTrailingSlash <-
+  function()
+{
+  aDir <- synapseClient:::.getCache("aDir")
+  file1 <- tempfile(tmpdir=aDir)
+  cat(sprintf("Test one %s", Sys.time()), file = file1)
+  file2 <- tempfile(tmpdir=aDir)
+  cat(sprintf("Test two %s", Sys.time()), file = file2)
+  
+  fc <- new("FileCache")
+  addFile(fc, aDir, "subdir")
+  checkEquals(length(fc$files()), 2L)
+  checkTrue(all(file.path( "subdir", file.path(basename(aDir)), c(basename(file1), basename(file2))) %in% fc$files()))
+}
 
 
 
