@@ -372,9 +372,9 @@ setMethod(
 setReplaceMethod("$", 
   signature = "SynapseEntity",
   definition = function(x, name, value) {
-    show(x)
-    print(name)
-    print(value)
+    if(!(name %in% names(x)))
+      stop("invalid element")
+    slot(x, name) <- value
     x
   }
 )

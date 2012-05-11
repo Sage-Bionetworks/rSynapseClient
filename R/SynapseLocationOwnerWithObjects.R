@@ -316,7 +316,7 @@ setMethod(
 names.SynapseLocationOwnerWithObjects <-
     function(x)
 {
-  c("objects", "cacheDir","files", "fileObjects", "binObjects")
+  c("objects", "cacheDir","files", "fileObjects", "binObjects", names.SynapseEntity(x))
 }
 
 setMethod(
@@ -349,6 +349,20 @@ setMethod(
     owner <- lfun(owner)
     owner@objOwn <- loadObjectsFromFiles(owner@objOwn)
     invisible(owner)
+  }
+)
+
+setReplaceMethod("$", 
+  signature = "SynapseLocationOwner",
+  definition = function(x, name, value) {
+    if(name %in% names.SynapseLocationOwner(x)){
+      slot(x, name) <- value
+    }else if(name == "objects"){
+      x@objOwn[[name]] <- value
+    }else{
+      stop("invalid element")
+    }
+    x
   }
 )
 

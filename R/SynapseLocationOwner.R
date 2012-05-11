@@ -250,7 +250,7 @@ setMethod(
 names.SynapseLocationOwner <-
     function(x)
 {
-  c("objects", "cacheDir", "files")
+  c("objects", "cacheDir", "files", names.SynapseEntity(x))
 }
 
 
@@ -277,6 +277,9 @@ setMethod(
               retVal <- cacheDir(x@archOwn)
             }else if(i == "files"){
               retVal <- files(x)
+            }else if(i %in% names.SynapseEntity(x)){
+              fun <- getMethod("[", "SynapseEntity")
+              retVal <- fun(x, i)
             }else{
               retVal <- NULL
             }
@@ -425,3 +428,15 @@ setMethod(
     getPackageName(where = where@archOwn, create = create)
   }
 )
+
+
+setReplaceMethod("$", 
+  signature = "SynapseLocationOwner",
+  definition = function(x, name, value) {
+     if(!(name %in% names.SynapseEntity(x)))
+      stop("invalid element")
+    fun <- getMethod("$<-", "SynapseEntity")
+    fun(x, name, value)
+  }
+)
+
