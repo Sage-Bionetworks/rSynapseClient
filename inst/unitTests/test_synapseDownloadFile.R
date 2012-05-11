@@ -60,8 +60,8 @@ unitTestChecksumMatches <-
 
 unitTestLegalFileName <-
     function() {
-  checkEquals("im_a soemthing _lam_ scientist _ and I use _.zip", synapseClient:::legalFilePath("im'a soemthing (lam) scientist \\ and I use *.zip"))
-  checkEquals("____________", synapseClient:::legalFilePath("\\()`'<>:\"|?*"))
+  checkEquals("im_a soemthing _lam_ scientist :\\ and I use _.zip", synapseClient:::legalFilePath("im'a soemthing (lam) scientist :\\ and I use *.zip"))
+  checkEquals("__________", synapseClient:::legalFilePath("()`'<>\"|?*"))
 }
 
 unitTestSynapseDownloadToLegalFile <- function() {

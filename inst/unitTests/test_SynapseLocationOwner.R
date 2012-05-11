@@ -4,24 +4,7 @@
 ###############################################################################
 .setUp <- 
   function()
-{
-#  env <- attach(NULL, name = "testEnv")
-#  tryCatch({
-#      setPackageName("testEnv", env)
-#      suppressWarnings(
-#        setClass(
-#          "LocOwn",
-#          contains = "SynapseLocationOwner",
-#          where = env
-#        ) 
-#      )
-#    },
-#    error = function(e){
-#      detach("testEnv")
-#      stop(e)
-#    }
-#  )
-  
+{ 
   synapseClient:::.setCache("oldWarn", options("warn")[[1]])
   options(warn=2L)
 }
@@ -31,6 +14,10 @@
 {
 #  detach("testEnv")
   options(warn = synapseClient:::.getCache("oldWarn"))
+  if(!is.null(name <- synapseClient:::.getCache("detachMe"))){
+    detach(name, character.only = TRUE)
+    synapseClient:::.deleteCache('detachMe')
+  }
 }
 
 
@@ -56,8 +43,8 @@ unitTestAddFile <-
   file <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   copy <- addFile(own, file)
-  checkEquals(gsub("^.+/", "", file), own$files)
-  checkEquals(gsub("^.+/", "", file), copy$files)
+  checkEquals(basename(file), own$files)
+  checkEquals(basename(file), copy$files)
   
   ## make sure the cache re-initializes but running the exact same
   ## test again
@@ -67,12 +54,12 @@ unitTestAddFile <-
   file <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   addFile(own, file)
-  checkEquals(gsub("^.+/", "", file), own$files)
+  checkEquals(basename(file), own$files)
   
   addFile(own, file, "foo.bar")
   checkEquals(length(own$files), 2L)
-  checkTrue(all(c(gsub("^.+/", "", file), "foo.bar") %in% own$files))
-  checkTrue(all(own$files %in% c(gsub("^.+/", "", file), "foo.bar")))
+  checkTrue(all(c(basename(file), "foo.bar") %in% own$files))
+  checkTrue(all(own$files %in% c(basename(file), "foo.bar")))
 }
 
 unitTestMoveFile <-
@@ -85,7 +72,7 @@ unitTestMoveFile <-
   file <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   addFile(own, file)
-  checkEquals(gsub("^.+/", "", file), own$files)
+  checkEquals(basename(file), own$files)
   
   copy <- moveFile(own, own$files, "newName.txt")
   checkEquals("newName.txt", copy$files)
@@ -142,4 +129,37 @@ unitTestBracketAccessor <-
   checkEquals(own['cacheDir'][[1]],  own$cacheDir)
 }
   
+unitTestAttach <-
+  function()
+{
+  ee <- new("SynapseLocationOwner")
+  
+  ee@archOwn@objects$aNum <- 1L
+  attach(ee)
+  synapseClient:::.setCache("detachMe", getPackageName(ee@archOwn))
+  checkTrue(getPackageName(ee@archOwn) %in% search())
+  checkTrue(objects(getPackageName(ee@archOwn)) == 'aNum')
+}
+
+unitTestDetach <-
+  function()
+{
+  ee <- new("SynapseLocationOwner")
+  
+  ee@archOwn@objects$aNum <- 1L
+  attach(ee)
+  synapseClient:::.setCache("detachMe", getPackageName(ee@archOwn))
+  checkTrue(getPackageName(ee@archOwn) %in% search())
+  detach(ee)
+  synapseClient:::.deleteCache("detachMe")
+  checkTrue(!(getPackageName(ee@archOwn) %in% search()))
+}
+
+
+unitTestPackageName <-
+  function()
+{
+  ee <- new("SynapseLocationOwner")
+  checkTrue(grepl("^SynapseLocationOwner.+", getPackageName(ee@archOwn)))
+}
 

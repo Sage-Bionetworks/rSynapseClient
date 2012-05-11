@@ -1,19 +1,18 @@
-\name{SynapseLocationOwner-methods}
+\name{Study-methods}
 \docType{methods}
-\alias{SynapseLocationOwner-methods}
-\alias{SynapseLocationOwner,character-method}
-\alias{SynapseLocationOwner,list-method}
-\alias{SynapseLocationOwner,numeric-method}
-\title{ Methods for Function \code{SynapseLocationOwner} }
+\alias{Study-methods}
+\alias{Study,character-method}
+\alias{Study,list-method}
+\alias{Study,numeric-method}
+\title{ ~~ Methods for Function \code{Study}  ~~}
 \description{
- ~~ Methods for function \code{SynapseLocationOwner}  ~~
+ ~~ Methods for function \code{Study}  ~~
 }
 \section{Methods}{
 \describe{
 
 \item{\code{signature(entity = "list")}}{
-Construct a SynapseLocationOwner entity from a list of properties
+Construct a Study entity from a list of properties
 }
-
 }}
 \keyword{methods}

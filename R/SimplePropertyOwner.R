@@ -93,11 +93,8 @@ setMethod(
     if(length(indx) > 0L)
       props <- props[-indx]
     val <- list()
-    if(which == 'environmentDescriptors'){
-      val[[which]] <- value
-    }else{
-    val[[which]] <- list(value)
-  }
+    val[[which]] <- value
+
     props <- c(props, val)
     object@properties <- props
     object

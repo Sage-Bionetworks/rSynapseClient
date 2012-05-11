@@ -43,13 +43,13 @@ unitTestNotCompressed <-
   file <- synapseClient:::.unpack(synapseClient:::.getCache("localJpegFile"))
   
   ## file path should be same as localJpegFile cache value
-  checkEquals(as.character(file), synapseClient:::.getCache("localJpegFile"))
+  checkEquals(basename(as.character(file)), basename(synapseClient:::.getCache("localJpegFile")))
   
   ## check the md5sums
-  checkEquals(tools::md5sum(as.character(file)), tools::md5sum(synapseClient:::.getCache("localJpegFile")))
+  checkEquals(as.character(tools::md5sum(as.character(file))), as.character(tools::md5sum(synapseClient:::.getCache("localJpegFile"))))
   
   ## check the rootDir attribute value
-  checkEquals(attr(file,"rootDir"), tempdir())
+c
   
 }
 

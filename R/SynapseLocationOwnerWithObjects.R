@@ -14,13 +14,35 @@ setMethod(
 )
 
 setMethod(
+  f = "attach",
+  signature = signature(what = "SynapseLocationOwnerWithObjects"),
+  definition = function (what, pos = 2, name = getPackageName(what@objOwn), warn.conflicts = TRUE){
+    attach(what@objOwn, pos = pos, name = name, warn.conflicts = warn.conflicts)
+    
+    afun <- getMethod('attach', 'SynapseLocationOwner')
+    afun(what, pos = pos, warn.conflicts = warn.conflicts)
+  }
+)
+
+setMethod(
+  f = "detach",
+  signature = signature(name = "SynapseLocationOwnerWithObjects"),
+  definition = function (name)
+  {
+    detach(name@objOwn)
+    detach(name@archOwn)
+  }
+)
+
+
+setMethod(
 		f = "loadEntity",
 		signature = "SynapseLocationOwnerWithObjects",
 		definition = function(entity){
       
       lfun <- getMethod("loadEntity", "SynapseLocationOwner")
       entity <- lfun(entity)
-			
+      entity@objOwn$objects@fileCache <- entity@archOwn@fileCache
 			entity@objOwn <- loadObjectsFromFiles(entity@objOwn)
 
 			
@@ -215,7 +237,7 @@ setMethod(
     f = "files",
     signature = "SynapseLocationOwnerWithObjects",
     definition = function(object){
-      files(object@objOwn)
+      setdiff(files(object@archOwn), files(object@objOwn))
     }
 )
 
@@ -253,7 +275,7 @@ setMethod(
             switch(i,
                 objects = .doGetObjects(x),
                 cacheDir = cacheDir(x@archOwn),
-                files = files(x@archOwn),
+                files = files(x),
                 fileObjects = x@archOwn@objects,
                 binObjects = x@objOwn$objects[],
                 NULL
@@ -318,7 +340,6 @@ objects.SynapseLocationOwnerWithObjects <-
   union(objects(name@archOwn@objects, all.names=T), objects(name@objOwn$objects, all.names=T))
 }
 
-
 setMethod(
   f = "loadObjectsFromFiles",
   signature = "SynapseLocationOwnerWithObjects",
@@ -330,6 +351,4 @@ setMethod(
     invisible(owner)
   }
 )
-
-
 

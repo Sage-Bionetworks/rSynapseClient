@@ -12,6 +12,13 @@
   function()
 {
   options(warn=synapseClient:::.getCache("oldWarn"))
+  if('foobar' %in% search())
+    detach('foobar', character.only=T)
+  
+  if(!is.null(name <- synapseClient:::.getCache("detachMe"))){
+    detach(name, character.only = TRUE)
+    synapseClient:::.deleteCache("detachMe")
+  }
 }
 
 unitTestCachingAddObject <-
@@ -715,6 +722,43 @@ unitTestAddListUnlist <-
   checkEquals(2L, length(getObject(copy, "aList")))
   checkTrue(all(names(getObject(copy, "aList")) == c("foo", "boo")))
   checkTrue(all(as.character(getObject(copy, "aList")) == c("bar", "blah")))
+}
+
+
+unitTestAttach <-
+  function()
+{
+  ee <- new("CachingEnhancedEnvironment")
+  
+  ee$aNum <- 1L
+  attach(ee)
+  synapseClient:::.setCache("detachMe", getPackageName(ee))
+  checkTrue(getPackageName(ee) %in% search())
+  checkTrue(objects(getPackageName(ee)) == 'aNum')
+}
+
+unitTestDetach <-
+  function()
+{
+  ee <- new("CachingEnhancedEnvironment")
+  
+  ee$aNum <- 1L
+  attach(ee)
+  synapseClient:::.setCache("detachMe", getPackageName(ee))
+  checkTrue(getPackageName(ee) %in% search())
+  detach(ee)
+  synapseClient:::.deleteCache("detachMe")
+  checkTrue(!(getPackageName(ee) %in% search()))
+}
+
+
+unitTestPackageName <-
+  function()
+{
+  ee <- new("CachingEnhancedEnvironment")
+  checkTrue(grepl("^CachingEnhancedEnvironment.+", getPackageName(ee)))
+  setPackageName("foobar", ee)
+  checkEquals(getPackageName(ee), "foobar")
 }
 
 unitTestNoZip <-

@@ -126,7 +126,7 @@ setMethod(
     switch(type,
       doubleAnnotations = as.numeric(val),
       longAnnotations = as.integer(val),
-      dateAnnotations =  as.POSIXct(as.integer(val), tz="UTC", origin=ISOdatetime(1970,1,1,0,0,0)),
+      dateAnnotations =  as.POSIXct(as.POSIXlt(as.numeric(val), origin=ISOdatetime(1970,1,1,0,0,0, tz="UTC"), tz= Sys.timezone())),
       val
     )
   }
@@ -218,8 +218,27 @@ setMethod(
   f = "setProperty",
   signature = signature("TypedPropertyStore", "character", "POSIXct"),
   definition = function(object, which, value){
+    
+    ## set the origin
+    value <- as.POSIXlt(value, tz = "UTC")
+    
     ## convert the value to a string
-    value <- as.character(as.integer(value))
+    value <- as.character(as.numeric(value))
+    
+    setUpdatePropValue(object, which, value, type = "dateAnnotations")
+  }
+)
+
+setMethod(
+  f = "setProperty",
+  signature = signature("TypedPropertyStore", "character", "POSIXlt"),
+  definition = function(object, which, value){
+    
+    ## set the origin
+    value <- as.POSIXlt(value, tz = "UTC")
+    
+    ## convert the value to a string
+    value <- as.character(as.numeric(value))
     
     setUpdatePropValue(object, which, value, type = "dateAnnotations")
   }

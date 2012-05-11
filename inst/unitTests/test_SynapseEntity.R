@@ -94,18 +94,36 @@ unitTestAnnotations <-
   
   ## date valued property
   dd <- Sys.Date()
-  ##annotValue(entity,"date") <- dd
+  annotValue(entity,"date") <- dd
+  
+  ## POSIXct date valued property
+  dd2 <- Sys.time()
+  annotValue(entity, "date2") <- dd2
+  
+  ## POSIXlt date valued property
+  dd3 <- as.POSIXlt(Sys.time())
+  annotValue(entity, "date3") <- dd3
   
   ## all other property types
   annotValue(entity,"string") <- "string"
   annotValue(entity,"long") <- 1L
   annotValue(entity,"double") <- 2.0
   
-  ## TODO: remove the type coersion once getters return properly typed values
-  ##checkEquals(as.Date(as.numeric(annotValue(entity,"date"))), dd)
+  ## check that annotValue returns the proper types and values
+  checkTrue(difftime(annotValue(entity,"date"), dd, units="secs") < 1)
+  checkTrue("POSIXct" %in% as.character(class(annotValue(entity, "date"))))
+  checkTrue(difftime(annotValue(entity,"date2"), dd2, units="secs") < 1)
+  checkTrue("POSIXct" %in% as.character(class(annotValue(entity, "date2"))))
+  checkTrue(difftime(annotValue(entity,"date3"), dd3, units="secs") < 1)
+  checkTrue("POSIXct" %in% as.character(class(annotValue(entity, "date3"))))
+  
+  
   checkEquals(annotValue(entity,"string"), "string")
+  checkEquals(as.character(class(annotValue(entity, "string"))), "character")
   checkEquals(annotValue(entity,"long"), 1L)
+  checkEquals(as.character(class(annotValue(entity, "long"))), "integer")
   checkEquals(annotValue(entity,"double"), 2.0)
+  checkEquals(as.character(class(annotValue(entity, "double"))), "numeric")
 }
 
 unitTestListSetters <-
@@ -126,6 +144,19 @@ unitTestListSetters <-
   checkEquals(annotValue(entity,"string"), "string")
   checkEquals(annotValue(entity,"long"), 1L)
   checkEquals(annotValue(entity,"double"), 2.0)
+}
+
+
+unitTestSetPropertiesDollarSignAccessor <-
+  function()
+{
+  
+}
+
+unitTestSetAnnotationsDollarSignAccessor <-
+  function()
+{
+  
 }
 
 

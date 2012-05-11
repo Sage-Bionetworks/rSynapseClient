@@ -107,9 +107,9 @@ setRefClass(
           .self$cacheRoot <- normalizePath(root)
           .self$cacheDir <- normalizePath(cdir)
 
-          .self$cacheRoot <- gsub("/+$", "", gsub("/+", "/", normalizePath(root, mustWork=TRUE)))
+          .self$cacheRoot <- gsub("[\\/]+$", "", gsub("[\\/]+", "/", normalizePath(root, mustWork=TRUE)))
           cdir <- file.path(.self$cacheRoot, pattern=sprintf("%s_unpacked", .self$archiveFile))
-          .self$cacheDir <- gsub("/+", "/", normalizePath(cdir, mustWork=TRUE))
+          .self$cacheDir <- gsub("[\\/]+", "/", normalizePath(cdir, mustWork=TRUE))
         },
         addFileMetaData = function(srcPath, destPath, ...){
           destPath <- as.character(.cleanFilePath(destPath))
@@ -217,7 +217,7 @@ setRefClass(
           oldDir <- getwd()
           setwd(.self$cacheDir)
           suppressWarnings(
-              zipRetVal <- zip(file.path(.self$cacheRoot, .self$archiveFile), files=gsub("^/","",.self$files()))
+              zipRetVal <- zip(file.path(.self$cacheRoot, .self$archiveFile), files=gsub("^[\\/]","",.self$files()))
           )
           setwd(oldDir)
           
@@ -260,8 +260,8 @@ setRefClass(
                 for(name in names(info))
                   info[[name]] <- as.character(info[[name]])
                 
-                rPath <- gsub(gsub("/+", "/", .self$cacheDir), "", i, fixed = TRUE)
-                rPath <- gsub("^/", "", rPath)
+                rPath <- gsub(gsub("[\\/]+", "/", .self$cacheDir), "", i, fixed = TRUE)
+                rPath <- gsub("^[\\/]", "", rPath)
                 .self$metaData[[i]] <- list(srcPath=.self$archiveFile, relativePath = rPath, fileInfo=info)
               }
           )
@@ -323,7 +323,6 @@ setClass(
 ## the $ operator since archive owner is an S4 class. we couldn't
 ## do this with FileCache since it's R5. This is neccessary to maintain
 ## backward compatibility of the user interface
-##
 setClass(
     Class = "ArchiveOwner",
     representation = representation(
@@ -378,7 +377,14 @@ setRefClass(
           .self@objects
         },
         initialize = function(){
-          .self$objects <- new("CachingEnhancedEnvironment")
+          .self$initFields(
+            objects = new("CachingEnhancedEnvironment")
+          )
+          setPackageName(env=.self)
+        },
+        files = function(){
+          ffun <- getMethod("files", "CachingEnhancedEnvironment")
+          ffun(.self$objects)[grep(sprintf("^%s", .self$objects@cachePrefix), ffun(.self$objects))]
         }
     )
 )
@@ -398,6 +404,9 @@ setClass(
     )
 )
 
+##
+## These entities can own R objects that are added via addObject.
+##
 setClass(
     Class = "SynapseLocationOwnerWithObjects",
     contains = c("SynapseLocationOwner"),
@@ -406,49 +415,4 @@ setClass(
     )
 )
 
-####
-## All classes below this line are subject to change/removal
-####
-
-setRefClass(
-    "ReadOnlyFileOwner",
-    contains = "VIRTUAL",
-    fields = list(
-        cacheDir = "character",
-        files = "character"
-    ),
-    methods = list(
-        initialize = function(){
-          .self$initFields(
-              objects = new("EnhancedEnvironment"),
-              cacheDir = tempfile(),
-              files = character()
-          )
-        }
-    )
-)
-
-setRefClass(
-    "ReadOnlyObjectOwner",
-    contains = c("ReadOnlyFileOwner", "VIRTUAL"),
-    fields = list(
-        objects = "EnhancedEnvironment"
-    ),
-    methods = list(
-        getObject = function(which){
-          getObject(.self, which)
-        }
-    ) 
-)
-
-setRefClass(
-    "WritableFileOwner",
-    contains = c("ReadOnlyFileOwner", "VIRTUAL"),
-    methods = list(
-        initialize = function(){
-          .self$initFields(cacheDir=tempfile())
-          dir.create(.self$cacheDir)
-        }
-    )
-)
 

@@ -13,6 +13,14 @@
     function()
 {
   options(warn=synapseClient:::.getCache("oldWarn"))
+  if('foobar' %in% search())
+    detach('foobar', character.only=T)
+  
+  if(!is.null(name <- synapseClient:::.getCache("detachMe"))){
+    detach(name, character.only = TRUE)
+    synapseClient:::.deleteCache("detachMe")
+  }
+  
 }
 
 unitTestAssignment <-
@@ -510,10 +518,40 @@ unitTestAsEnvironment <-
   checkEquals("aNum", objects(env))
 }
 
+unitTestAttach <-
+    function()
+{
+  ee <- new("EnhancedEnvironment")
+  
+  ee$aNum <- 1L
+  attach(ee)
+  synapseClient:::.setCache("detachMe", getPackageName(ee))
+  checkTrue(getPackageName(ee) %in% search())
+  checkTrue(objects(getPackageName(ee)) == 'aNum')
+}
+
+unitTestDetach <-
+    function()
+{
+  ee <- new("EnhancedEnvironment")
+  
+  ee$aNum <- 1L
+  attach(ee)
+  synapseClient:::.setCache("detachMe", getPackageName(ee))
+  checkTrue(getPackageName(ee) %in% search())
+  detach(ee)
+  synapseClient:::.deleteCache("detachMe")
+  checkTrue(!(getPackageName(ee) %in% search()))
+}
 
 
-
-
-
+unitTestPackageName <-
+    function()
+{
+  ee <- new("EnhancedEnvironment")
+  checkTrue(grepl("^EnhancedEnvironment.+", getPackageName(ee)))
+  setPackageName("foobar", ee)
+  checkEquals(getPackageName(ee), "foobar")
+}
 
 

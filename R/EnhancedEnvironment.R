@@ -4,6 +4,20 @@
 ###############################################################################
 
 ##
+## Initialize the EnhancedEnvironment by creating a new environment
+##
+setMethod(
+  f = "initialize",
+  signature = "EnhancedEnvironment",
+  definition = function(.Object){
+    .Object@env = new.env()
+    setPackageName(env = .Object)
+    .Object
+  }
+)
+
+
+##
 ## Allows caller to assign access elements in the environment using a bracket accessor.
 ## works for objects starting with a period as well.
 ##
@@ -96,18 +110,6 @@ setReplaceMethod("$",
     x[[name]] <- value
     x
   }
-)
-
-##
-## Initialize the EnhancedEnvironment by creating a new environment
-##
-setMethod(
-    f = "initialize",
-    signature = "EnhancedEnvironment",
-    definition = function(.Object){
-      .Object@env = new.env()
-      .Object
-    }
 )
 
 ##
@@ -254,18 +256,21 @@ setMethod(
 names.EnhancedEnvironment <-
     function(x)
 {
-  objects(x, all.names=TRUE)
+  setdiff(objects(x, all.names=TRUE), ".packageName")
 }
 
 ##
 ## List the objects held in the environment. By default, this excluded objects
 ## starting with a period
 ##
-objects.EnhancedEnvironment <-
-  function(name, all.names = FALSE, pattern)
-{
-  objects(envir = as.environment(name), all.names = all.names, pattern = pattern) 
-} 
+setMethod(
+  f = "objects",
+  signature = signature(name="EnhancedEnvironment"),
+  definition = function(name, all.names = FALSE, pattern)
+  {
+      setdiff(objects(envir = as.environment(name), all.names = all.names, pattern = pattern), ".packageName")
+  }
+)
 
 ##
 ## Coerce EnhancedEnvironment to an "environment"
@@ -284,6 +289,52 @@ length.EnhancedEnvironment <-
   function(x)
 {
   length(names(x))
+}
+
+##
+## Attach the enhanced environment to the search path
+##
+setMethod(
+    f = "attach",
+    signature = signature(what = "EnhancedEnvironment"),
+    definition = function (what, pos = 2, name = getPackageName(what), warn.conflicts = TRUE)
+    {
+      attach(as.environment(what), pos = pos, name = name, warn.conflicts = warn.conflicts)
+    }
+)
+
+##
+## Detach the enhanced environment from the search path
+##
+setMethod(
+  f = "detach",
+  signature = signature(name = "EnhancedEnvironment"),
+  definition = function (name){
+    detach(name=getPackageName(name), character.only = TRUE)
+  }
+)
+
+##
+## Function for setting the package name of an EnhancedEnvironment
+##
+setMethod(
+  f = "setPackageName",
+  signature = signature(env = "EnhancedEnvironment"),
+  definition = function(pkg, env)
+  {
+    if(missing(pkg))
+      pkg <- basename(tempfile(pattern=as.character(class(env))))
+    setPackageName(pkg=pkg, env=as.environment(env))
+  }
+)
+
+##
+## Function for getting the package name of an EnhancedEnvironment
+##
+getPackageName.EnhancedEnvironment <-
+    function (where, create = TRUE)
+{
+  getPackageName(where = as.environment(where), create = create)
 }
 
 

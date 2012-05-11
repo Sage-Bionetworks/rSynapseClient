@@ -132,8 +132,6 @@ as_list_SynapseAnnotations <-
 }
 
 
-
-
 as.list.SynapseAnnotations<-function(x) {
   annotations <- as.list(x@annotations)
     
@@ -154,7 +152,6 @@ as.list.SynapseAnnotations<-function(x) {
 }
 
 # move content from 'entity' (a list) to 'object' ( a SynapseAnnotations)
-
 setMethod(
   f = ".populateSlotsFromEntity",
   signature = signature("TypedPropertyStore", "list", "missing"),
@@ -197,6 +194,65 @@ setMethod(
   definition = function(object){
     cat(class(object),"\n")
     show(object@annotations)
+  }
+)
+
+setMethod(
+  f = "[",
+  signature = "SynapseAnnotations",
+  definition = function(x, i, j, ...){
+    if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
+      stop("incorrect number of subscripts")
+    if(is.numeric(i)){
+      if(any(i > length(annotationNames(x))))
+        stop("subscript out of bounds")
+      i <- names(x)[i]
+    }
+    retVal <- lapply(i, function(i){
+        annotValue(x, i)
+      }
+    )
+    names(retVal) <- i
+    retVal
+  }
+)
+
+setMethod(
+  f = "[[",
+  signature = "SynapseAnnotations",
+  definition = function(x, i, j, ...){
+    if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
+      stop("incorrect number of subscripts")
+    if(length(i) > 1)
+      stop("subscript out of bounds")
+    x[i][[1]]
+  }
+)
+
+setMethod(
+  f = "$",
+  signature = "SynapseAnnotations",
+  definition = function(x, name){
+    x[[name]]
+  }
+)
+
+setReplaceMethod("[[", 
+  signature = signature(
+    x = "SynapseAnnotations",
+    i = "character"
+  ),
+  definition = function(x, i, value) {
+    annotValue(x, i) <- value
+    x
+  }
+)
+
+setReplaceMethod("$", 
+  signature = "SynapseAnnotations",
+  definition = function(x, name, value) {
+    x[[name]] <- value
+    x
   }
 )
 

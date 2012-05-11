@@ -32,6 +32,10 @@
 {
 #  detach("testEnv")
   options(warn = synapseClient:::.getCache("oldWarn"))
+  if(!is.null(name <- synapseClient:::.getCache("detachMe"))){
+    detach(name)
+    synapseClient:::.deleteCache('detachMe')
+  }
 }
 
 unitTestAddObject <-
@@ -61,6 +65,8 @@ unitTestAddObject <-
   checkTrue(all(names(own$objects) == c("foo", "goo")))
   checkEquals(2L, length(names(copy$objects)))
   checkTrue(all(names(copy$objects) == c("foo", "goo")))
+  checkEquals(1L, length(own$files))
+  checkEquals(1L, length(copy$files))
   
 }
 
@@ -190,6 +196,42 @@ unitTestGetObject <-
   checkEquals(getObject(own, "foo"), "boo")
 }
 
+unitTestAddFile <- 
+  function()
+{
+  own <- new("SynapseLocationOwnerWithObjects")
+  
+  checkTrue(grepl("_unpacked$", own$cacheDir))
+  checkEquals(character(), own$files)
+  file <- tempfile()
+  cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
+  copy <- addFile(own, file)
+  checkEquals(basename(file), own$files)
+  checkEquals(basename(file), copy$files)
+  
+  ## add an object and make sure the object file doesn't show up
+  addObject(own, "foo", "bar")
+  checkEquals(1L, length(own$files))
+  checkEquals(1L, length(files(own)))
+  checkEquals(basename(file), own$files)
+  
+  ## make sure the cache re-initializes but running the exact same
+  ## test again
+  own <- new("SynapseLocationOwner")
+  checkTrue(grepl("_unpacked$", own$cacheDir))
+  checkEquals(character(), own$files)
+  file <- tempfile()
+  cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
+  addFile(own, file)
+  checkEquals(basename(file), own$files)
+  
+  addFile(own, file, "foo.bar")
+  checkEquals(length(own$files), 2L)
+  checkTrue(all(c(basename(file), "foo.bar") %in% own$files))
+  checkTrue(all(own$files %in% c(basename(file), "foo.bar")))
+}
+
+
 unitTestLoadObjectsFromDisk <-
     function()
 {
@@ -238,8 +280,8 @@ unitTestAddFile <-
   file <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   copy <- addFile(own, file)
-  checkEquals(gsub("^.+/", "", file), own$files)
-  checkEquals(gsub("^.+/", "", file), copy$files)
+  checkEquals(basename(file), own$files)
+  checkEquals(basename(file), copy$files)
   
   ## make sure the cache re-initializes but running the exact same
   ## test again
@@ -249,12 +291,12 @@ unitTestAddFile <-
   file <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   addFile(own, file)
-  checkEquals(gsub("^.+/", "", file), own$files)
+  checkEquals(basename(file), own$files)
   
   addFile(own, file, "foo.bar")
   checkEquals(length(own$files), 2L)
-  checkTrue(all(c(gsub("^.+/", "", file), "foo.bar") %in% own$files))
-  checkTrue(all(own$files %in% c(gsub("^.+/", "", file), "foo.bar")))
+  checkTrue(all(c(basename(file), "foo.bar") %in% own$files))
+  checkTrue(all(own$files %in% c(basename(file), "foo.bar")))
 }
 
 unitTestMoveFile <-
@@ -267,7 +309,7 @@ unitTestMoveFile <-
   file <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   addFile(own, file)
-  checkEquals(gsub("^.+/", "", file), own$files)
+  checkEquals(basename(file), own$files)
   
   copy <- moveFile(own, own$files, "newName.txt")
   checkEquals("newName.txt", copy$files)
@@ -300,4 +342,34 @@ uniTestDeleteFile <-
   checkEquals(character(), own$files)
   checkEquals(character(), copy$files)
 }
+
+unitTestAttach <-
+  function()
+{
+  ee <- new("SynapseLocationOwnerWithObjects")
+  
+  ee@archOwn@objects$aNum <- 1L
+  attach(ee)
+  synapseClient:::.setCache("detachMe", ee)
+  checkEquals(getPackageName(ee@archOwn), search()[2])
+  checkEquals(getPackageName(ee@objOwn), search()[3])
+  checkTrue(objects(getPackageName(ee@archOwn)) == 'aNum')
+}
+
+unitTestDetach <-
+  function()
+{
+  ee <- new("SynapseLocationOwnerWithObjects")
+  
+  ee@archOwn@objects$aNum <- 1L
+  attach(ee)
+  synapseClient:::.setCache("detachMe", ee)
+  checkEquals(getPackageName(ee@archOwn), search()[2])
+  checkEquals(getPackageName(ee@objOwn), search()[3])
+  detach(ee)
+  synapseClient:::.deleteCache("detachMe")
+  checkTrue(!(getPackageName(ee@archOwn) %in% search()))
+  checkTrue(!(getPackageName(ee@objOwn) %in% search()))
+}
+
 

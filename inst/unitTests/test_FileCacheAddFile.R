@@ -164,7 +164,7 @@ unitTestAddDirAndFileTwoPaths <-
   checkEquals(length(fc$metaData), 3L)
   
   relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
-  expectedPaths <- gsub("/+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
+  expectedPaths <- gsub("[\\/]+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
   checkTrue(all(relPaths %in% expectedPaths))
   
   addFile(fc, c(adir,file), c("foo/", "bar/"))
@@ -172,7 +172,7 @@ unitTestAddDirAndFileTwoPaths <-
   checkEquals(length(fc$metaData), 3L)
   
   relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
-  expectedPaths <- gsub("/+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
+  expectedPaths <- gsub("[\\/]+", "/", file.path(c("bar", "foo", "foo"), gsub(tempdir(), "", c(file, list.files(adir, recursive=T, full.names=T)), fixed = TRUE)))
   checkTrue(all(relPaths %in% expectedPaths))
 }
 
@@ -191,8 +191,27 @@ unitTestTwoFilesOnePath <-
   addFile(fc, c(file1, file2), path)
   checkEquals(length(names(fc$getFileMetaData())), 2L)
   relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
-  checkTrue(all(gsub("/+", "/", file.path(path, gsub("^.+[\\\\/]+", "", c(file1, file2)))) %in% relPaths))
+  checkTrue(all(gsub("/+", "/",file.path(path, c(basename(file1), basename(file2)))) %in% relPaths))
 }
+
+unitTestTwoFilesOnePathNoTrailingSlash <-
+  function()
+{
+  fc <- new(Class="FileCache")
+  file1 <- tempfile()
+  d <- diag(nrow=10,ncol=10)
+  save(d, file=file1)
+  
+  file2 <- tempfile()
+  d <- diag(x=2,nrow=10,ncol=10)
+  save(d, file=file2)
+  path <- "aPath"
+  addFile(fc, c(file1, file2), path)
+  checkEquals(length(names(fc$getFileMetaData())), 2L)
+  relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
+  checkTrue(all(file.path(path, c(basename(file1), basename(file2))) %in% relPaths))
+}
+
 
 unitTestTwoFilesThreePaths <-
   function()
@@ -218,7 +237,7 @@ unitTestAddToSubDirKeepName <-
   
   relPaths <- as.character(unlist(lapply(fc$metaData, function(m) m$relativePath)))
   checkEquals(length(relPaths), 1L)
-  checkEquals(relPaths, gsub("^/", "", gsub("/+","/", gsub(tempdir(), "", file.path(path, file), fixed = TRUE))))
+  checkEquals(relPaths, gsub("^/", "", gsub("[\\/]+","/", gsub(tempdir(), "", file.path(path, file), fixed = TRUE))))
   checkEquals(checksum, as.character(tools::md5sum(names(fc$getFileMetaData())[1])))
   
 }
