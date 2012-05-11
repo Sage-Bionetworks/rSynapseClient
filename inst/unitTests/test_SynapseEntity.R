@@ -140,6 +140,7 @@ unitTestListSetters <-
   )
   ## need to fix the timezone
   ##checkEquals(annotValue(entity,"date"), dd)
+  checkTrue(difftime(entity$annotations$date, dd, units = "sec") < 1L)
   checkTrue("POSIXct" %in% class(annotValue(entity, "date")))
   checkEquals(annotValue(entity,"string"), "string")
   checkEquals(annotValue(entity,"long"), 1L)
@@ -150,23 +151,58 @@ unitTestListSetters <-
 unitTestSetPropertiesDollarSignAccessor <-
   function()
 {
+  entity <- new(Class = "SynapseEntity")
+  dd <- Sys.time()
+  entity$properties$date <- dd
+  entity$properties$string <- "string"
+  entity$properties$long <- 1L
+  entity$properties$double <- 2.1
   
+  checkTrue(difftime(entity$properties$date, dd, units = "sec") < 1L)
+  checkTrue("POSIXct" %in% class(entity$properties$date))
+  checkEquals(entity$properties$string, "string")
+  checkEquals(entity$properties$long, 1L)
+  checkEquals(entity$properties$double, 2.1)
 }
 
 unitTestSetAnnotationsDollarSignAccessor <-
   function()
 {
-  
+ entity <- new(Class = "SynapseEntity")
+ dd <- Sys.time()
+ annotationValues(entity) <- list(
+   date = dd,
+   string = "string",
+   long = 1L,
+   double = 2.0
+ )
+ 
+ checkTrue(difftime(entity$annotations$date, dd, units = "sec") < 1L)
+ checkTrue("POSIXct" %in% class(annotValue(entity, "date")))
+ checkEquals(entity$annotations$string, "string")
+ checkEquals(entity$annotations$long, 1L)
+ checkEquals(entity$annotations$double, 2.0)
+ 
 }
 
+unitTestSetAnnotationsDollarSignAccessorReplace <-
+  function()
+{
+   entity <- new(Class = "SynapseEntity")
+   dd <- Sys.time()
+   entity$annotations$date <- dd
+   entity$annotations$string <- "string"
+   entity$annotations$long <- 1L
+   entity$annotations$double <- 2.0
 
-## Date unit tests will be written once the date formating is implemented (SYNR-43)
-#uniTestDateAnnotations <-
-#		function()
-#{
-#	## test setting and getting date annotations
-#}
-#
+   checkTrue(difftime(entity$annotations$date, dd, units = "sec") < 1L)
+   checkTrue("POSIXct" %in% class(annotValue(entity, "date")))
+   checkEquals(entity$annotations$string, "string")
+   checkEquals(entity$annotations$long, 1L)
+   checkEquals(entity$annotations$double, 2.0)
+   
+}
+
 #unitTestDateProperty <-
 #		function()
 #{

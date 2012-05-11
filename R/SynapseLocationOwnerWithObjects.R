@@ -36,16 +36,16 @@ setMethod(
 
 
 setMethod(
-		f = "loadEntity",
-		signature = "SynapseLocationOwnerWithObjects",
-		definition = function(entity){
-      
-      lfun <- getMethod("loadEntity", "SynapseLocationOwner")
-      entity <- lfun(entity)
-      entity@objOwn$objects@fileCache <- entity@archOwn@fileCache
-			entity@objOwn <- loadObjectsFromFiles(entity@objOwn)
-
-			
+	f = "loadEntity",
+	signature = "SynapseLocationOwnerWithObjects",
+	definition = function(entity){
+    
+    lfun <- getMethod("loadEntity", "SynapseLocationOwner")
+    entity <- lfun(entity)
+    entity@objOwn$objects@fileCache <- entity@archOwn@fileCache
+		entity@objOwn <- loadObjectsFromFiles(entity@objOwn)
+    
+		
 #    if(is.null(annotValue(entity, "format"))){
 #      ##setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
 #      return(entity)
@@ -56,8 +56,8 @@ setMethod(
 #      entity@location@objects
 #    )
 #    setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
-			entity
-		}
+		entity
+	}
 )
 
 #setMethod(
@@ -107,7 +107,7 @@ setMethod(
       
       ## upload the archive  file (storeFile also updates the entity)
       entity <- storeFile(entity ,file.path(entity@archOwn@fileCache$getCacheRoot(), entity@archOwn@fileCache$getArchiveFile()))
-
+      
     }else{
       if(is.null(propertyValue(entity, "id")))
       {
@@ -131,14 +131,14 @@ setMethod(
 
 
 setMethod(
-    f = "updateEntity",
-    signature = "SynapseLocationOwnerWithObjects",
-    definition = function(entity){
-      ufun <- getMethod("updateEntity", "SynapseLocationOwner")
-      updatedEntity <- ufun(entity)
-      updatedEntity@objOwn <- entity@objOwn
-      updatedEntity
-    }
+  f = "updateEntity",
+  signature = "SynapseLocationOwnerWithObjects",
+  definition = function(entity){
+    ufun <- getMethod("updateEntity", "SynapseLocationOwner")
+    updatedEntity <- ufun(entity)
+    updatedEntity@objOwn <- entity@objOwn
+    updatedEntity
+  }
 )
 setMethod(
   f = "createEntity",
@@ -172,119 +172,124 @@ setMethod(
 
 
 setMethod(
-    f = "addObject",
-    signature = signature("SynapseLocationOwnerWithObjects", "ANY", "character", "missing"),
-    definition = function(owner, object, name){
-      owner@objOwn <- addObject(owner@objOwn, object, name)
-      invisible(owner)
-    }
+  f = "addObject",
+  signature = signature("SynapseLocationOwnerWithObjects", "ANY", "character", "missing"),
+  definition = function(owner, object, name){
+    owner@objOwn <- addObject(owner@objOwn, object, name)
+    invisible(owner)
+  }
 )
 
 setMethod(
-    f = "addObject",
-    signature = signature("SynapseLocationOwnerWithObjects", "ANY", "missing", "missing"),
-    definition = function(owner, object){
-      name = deparse(substitute(object, env=parent.frame()))
-      name <- gsub("\\\"", "", name)
-      addObject(owner, object, name)
-    }
+  f = "addObject",
+  signature = signature("SynapseLocationOwnerWithObjects", "ANY", "missing", "missing"),
+  definition = function(owner, object){
+    name = deparse(substitute(object, env=parent.frame()))
+    name <- gsub("\\\"", "", name)
+    addObject(owner, object, name)
+  }
 )
 
 setMethod(
-    f = "addObject",
-    signature = signature("SynapseLocationOwnerWithObjects", "list", "missing", "logical"),
-    definition = function(owner, object, unlist){
-      if(unlist){
-        if(any(names(object) == ""))
-          stop("All list elements must be named when unlisting")
-        lapply(names(object), function(n){
+  f = "addObject",
+  signature = signature("SynapseLocationOwnerWithObjects", "list", "missing", "logical"),
+  definition = function(owner, object, unlist){
+    if(unlist){
+      if(any(names(object) == ""))
+        stop("All list elements must be named when unlisting")
+      lapply(names(object), function(n){
           owner <<- addObject(owner, object[[n]], n)
         })
-      }else{
-        owner <- addObject(owner, object)
-      }
-      invisible(owner)
+    }else{
+      owner <- addObject(owner, object)
     }
+    invisible(owner)
+  }
 )
 
 setMethod(
-    f = "deleteObject",
-    signature = signature("SynapseLocationOwnerWithObjects", "character"),
-    definition = function(owner, which){
-      owner@objOwn <- deleteObject(owner@objOwn, which)
-      invisible(owner)
-    }
+  f = "deleteObject",
+  signature = signature("SynapseLocationOwnerWithObjects", "character"),
+  definition = function(owner, which){
+    owner@objOwn <- deleteObject(owner@objOwn, which)
+    invisible(owner)
+  }
 )
 
 setMethod(
-    f = "renameObject",
-    signature = signature("SynapseLocationOwnerWithObjects", "character", "character"),
-    definition = function(owner, which, name){
-      owner@objOwn <- renameObject(owner@objOwn, which, name)
-      invisible(owner)
-    }
+  f = "renameObject",
+  signature = signature("SynapseLocationOwnerWithObjects", "character", "character"),
+  definition = function(owner, which, name){
+    owner@objOwn <- renameObject(owner@objOwn, which, name)
+    invisible(owner)
+  }
 )
 
 setMethod(
-    f = "getObject",
-    signature = signature("SynapseLocationOwnerWithObjects", "character"),
-    definition = function(owner, which){
-      getObject(owner@objOwn, which)
-    }
+  f = "getObject",
+  signature = signature("SynapseLocationOwnerWithObjects", "character"),
+  definition = function(owner, which){
+    getObject(owner@objOwn, which)
+  }
 )
 
 setMethod(
-    f = "files",
-    signature = "SynapseLocationOwnerWithObjects",
-    definition = function(object){
-      setdiff(files(object@archOwn), files(object@objOwn))
-    }
+  f = "files",
+  signature = "SynapseLocationOwnerWithObjects",
+  definition = function(object){
+    setdiff(files(object@archOwn), files(object@objOwn))
+  }
 )
 
 setMethod(
-    f = "cacheDir",
-    signature = "SynapseLocationOwnerWithObjects",
-    definition = function(object){
-      cacheDir(object@objOwn)
-    }
+  f = "cacheDir",
+  signature = "SynapseLocationOwnerWithObjects",
+  definition = function(object){
+    cacheDir(object@objOwn)
+  }
 )
 
 objects.SynapseLocationOwnerWithObjects <-
-    function(x)
+  function(x)
 {
   objects(x@objOwn)
 }
 
 setMethod(
-    f = "[",
-    signature = "SynapseLocationOwnerWithObjects",
-    definition = function(x, i, j, ...){
-      if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
-        stop("incorrect number of subscripts")
-      if(is.numeric(i)){
-        if(any(i > length(names(x))))
-          stop("subscript out of bounds")
-        i <- names(x)[i]
-      }else if(is.character(i)){
-        if(!all(i %in% names(x)))
-          stop("undefined objects selected")
-      }else{
-        stop(sprintf("invalid subscript type '%s'", class(i)))
-      }
-      retVal <- lapply(i, function(i){
-            switch(i,
-                objects = .doGetObjects(x),
-                cacheDir = cacheDir(x@archOwn),
-                files = files(x),
-                fileObjects = x@archOwn@objects,
-                binObjects = x@objOwn$objects[],
-                NULL
-            )
-          }
-      )
-      names(retVal) <- i
-      retVal
+  f = "[",
+  signature = "SynapseLocationOwnerWithObjects",
+  definition = function(x, i, j, ...){
+    if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
+      stop("incorrect number of subscripts")
+    if(is.numeric(i)){
+      if(any(i > length(names(x))))
+        stop("subscript out of bounds")
+      i <- names(x)[i]
+    }else if(is.character(i)){
+      if(!all(i %in% names(x)))
+        stop("undefined objects selected")
+    }else{
+      stop(sprintf("invalid subscript type '%s'", class(i)))
     }
+    retVal <- lapply(i, function(i){
+        switch(i,
+          objects = .doGetObjects(x),
+          cacheDir = cacheDir(x@archOwn),
+          files = files(x),
+          fileObjects = x@archOwn@objects,
+          binObjects = x@objOwn$objects[],
+          if(i %in% names.SynapseEntity(x)){
+              class(x) <- "SynapseEntity"
+              return(x[[i]])
+            }else{
+              return(NULL)
+            }
+        )
+      }
+    )
+    names(retVal) <- i
+    retVal
+  }
 )
 
 setMethod(
@@ -314,7 +319,7 @@ setMethod(
 )
 
 names.SynapseLocationOwnerWithObjects <-
-    function(x)
+  function(x)
 {
   c("objects", "cacheDir","files", "fileObjects", "binObjects", names.SynapseEntity(x))
 }
@@ -355,10 +360,10 @@ setMethod(
 setReplaceMethod("$", 
   signature = "SynapseLocationOwner",
   definition = function(x, name, value) {
-    if(name %in% names.SynapseLocationOwner(x)){
+     if(name == "objects"){
+       stop("not yet supported, use the addObject method for adding objects", call.=FALSE)
+    }else if(name %in% names.SynapseLocationOwner(x)){
       slot(x, name) <- value
-    }else if(name == "objects"){
-      x@objOwn[[name]] <- value
     }else{
       stop("invalid element")
     }

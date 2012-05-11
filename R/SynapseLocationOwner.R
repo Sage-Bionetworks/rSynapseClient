@@ -278,8 +278,8 @@ setMethod(
             }else if(i == "files"){
               retVal <- files(x)
             }else if(i %in% names.SynapseEntity(x)){
-              fun <- getMethod("[", "SynapseEntity")
-              retVal <- fun(x, i)
+              class(x) <- "SynapseEntity"
+              x[[i]]
             }else{
               retVal <- NULL
             }

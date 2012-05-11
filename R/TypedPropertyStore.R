@@ -68,7 +68,7 @@ setMethod(
   definition = function(object){
     vals <- lapply(propertyNames(object), function(n) getProperty(object,n))
     if(length(vals) == 1L && as.character(class(vals)) %in% c("data.frame","list"))
-      return(vals)
+      return(vals[[1]])
     unlist(vals)
   }
 )

@@ -49,8 +49,13 @@ setMethod(
   f = "show",
   signature = "SynapseAnnotations",
   definition = function(object){
-    cat('An object of class "', class(object), '"\n', sep="")
-    lapply(annotationNames(object),FUN=function(n){cat(n,"=",paste(annotValue(object,n),collapse=","),"\n",sep="")})
+    tmp <- annotationValues(object)
+    if(length(tmp) > 0L){
+    names(tmp) <- annotationNames(object)
+    show(as.list(tmp))
+  }else{
+      show(list())
+    }
   } 
 )
 
@@ -184,16 +189,6 @@ setMethod(
   definition = function(object, json){
     data <- fromJSON(json)
     .populateSlotsFromEntity(object, list=data)
-  }
-)
-
-
-setMethod(
-  f = "show",
-  signature = "SynapseAnnotations",
-  definition = function(object){
-    cat(class(object),"\n")
-    show(object@annotations)
   }
 )
 
