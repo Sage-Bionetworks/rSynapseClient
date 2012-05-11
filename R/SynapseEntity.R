@@ -314,4 +314,68 @@ setMethod(
   }
 )
 
+names.SynapseEntity <-
+  function(x)
+{
+  c("properties", "annotations")
+}
+
+setMethod(
+  f = "[",
+  signature = "SynapseEntity",
+  definition = function(x, i, j, ...){
+    if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
+      stop("incorrect number of subscripts")
+    if(is.numeric(i)){
+      if(any(i > length(names(x))))
+        stop("subscript out of bounds")
+      i <- names(x)[i]
+    }else if(is.character(i)){
+      if(!all(i %in% names(x)))
+        stop("undefined objects selected")
+    }else{
+      stop(sprintf("invalid subscript type '%s'", class(i)))
+    }
+    retVal <- lapply(i, function(i){
+        if(i %in% names(x)){
+          retVal <- slot(x, i)
+        }else{
+          retVal <- NULL
+        }
+      }
+    )
+    names(retVal) <- i
+    retVal
+  }
+)
+
+setMethod(
+  f = "[[",
+  signature = "SynapseEntity",
+  definition = function(x, i, j, ...){
+    if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
+      stop("incorrect number of subscripts")
+    if(length(i) > 1)
+      stop("subscript out of bounds")
+    x[i][[1]]
+  }
+)
+
+setMethod(
+  f = "$",
+  signature = "SynapseEntity",
+  definition = function(x, name){
+    x[[name]]
+  }
+)
+
+setReplaceMethod("$", 
+  signature = "SynapseEntity",
+  definition = function(x, name, value) {
+    show(x)
+    print(name)
+    print(value)
+    x
+  }
+)
 
