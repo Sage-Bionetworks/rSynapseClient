@@ -203,6 +203,26 @@ unitTestSetAnnotationsDollarSignAccessorReplace <-
    
 }
 
+unitTestDeleteAnnotation <-
+  function()
+{
+  entity <- new(Class = "SynapseEntity")
+
+  entity$annotations$foo <- "bar"
+  entity$annotations$boo <- "blah"
+
+  checkEquals(length(annotationNames(entity)), 2L)
+  
+  entity <- deleteAnnotation(entity, "foo")
+  checkEquals(length(annotationNames(entity)), 1L)
+  checkEquals(annotationNames(entity), "boo")
+  checkEquals(entity$annotations$boo, "blah")
+  
+  entity$annotations$boo <- NULL
+  
+  checkEquals(length(annotationNames(entity)), 0L)
+}
+
 #unitTestDateProperty <-
 #		function()
 #{

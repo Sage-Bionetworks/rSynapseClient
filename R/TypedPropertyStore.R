@@ -253,6 +253,31 @@ setMethod(
   }
 )
 
+setMethod(
+  f = "setProperty",
+  signature = signature("TypedPropertyStore", "character", "NULL"),
+  definition = function(object, which, value){
+    deleteProperty(object, which)
+  }
+)
+
+setMethod(
+  f = "deleteProperty",
+  signature = signature("TypedPropertyStore", "character"),
+  definition = function(object, which){
+    if(which %in% propertyNames(object)){
+      type <- propertyType(object, which)
+      for(i in 1:length(which)){
+        t <- type[i]
+        slot(object, t) <- slot(object, t)[setdiff(propertyNames(object), which[i])]
+        if(length(slot(object, t)) == 0L)
+          slot(object, t) <- emptyNamedList
+      }
+    }
+    object
+  }
+)
+
 as.list.TypedPropertyStore <- function(x, ...){
   ret <- list(
     stringAnnotations = emptyNamedList,

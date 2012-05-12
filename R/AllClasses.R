@@ -1,4 +1,4 @@
-## Class Definitions. Class definitions for the specific Synapse entity typse
+## Class Definitions. Class definitions for the specific Synapse entity types
 ## are located in SynapseEntityDefinitions.R
 ##
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>

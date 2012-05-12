@@ -232,7 +232,8 @@ setMethod(
   }
 )
 
-setReplaceMethod("[[", 
+setReplaceMethod(
+  f = "[[", 
   signature = signature(
     x = "SynapseAnnotations",
     i = "character"
@@ -243,11 +244,21 @@ setReplaceMethod("[[",
   }
 )
 
-setReplaceMethod("$", 
+setReplaceMethod(
+  f = "$", 
   signature = "SynapseAnnotations",
   definition = function(x, name, value) {
     x[[name]] <- value
     x
+  }
+)
+
+setMethod(
+  f = "deleteAnnotation",
+  signature = signature("SynapseAnnotations", "character"),
+  definition = function(object, which){
+    object@annotations <- deleteProperty(object@annotations, which)
+    object
   }
 )
 
