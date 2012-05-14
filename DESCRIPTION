@@ -12,8 +12,8 @@ Author@R: c(
 	)
 Author: Matthew Furia <matt.furia@sagebase.org>, Nicole Deflaux <nicole.deflaux@sagebase.org>
 Maintainer: Matthew Furia <matt.furia@sagebase.org>
-Depends: R (>= 2.14.1)
-Imports: RJSONIO,RCurl,Biobase,tools,methods,digest,affy
+Depends: methods, R (>= 2.14.1)
+Imports: RJSONIO,RCurl,Biobase,tools,digest,affy
 Suggests: RUnit
 SystemRequirements: zip
 Description: Contains a set of functions for interacting with the Synapse REST services.
