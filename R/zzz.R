@@ -18,9 +18,9 @@ kSupportedDataLocationTypes <- c("external", "awss3")
 {
   tou <- "\nTERMS OF USE NOTICE:
 When using Synapse, remember that the terms and conditions of use require that you:
-  1) Attribute data contributors when discussing this data or results from this data.
+  1) Attribute data contributors when discussing these data or results from these data.
   2) Not discriminate, identify, or recontact individuals or groups represented by the data.
-  3) Use and contribute only data de-identified to HIPPA standards.
+  3) Use and contribute only data de-identified to HIPPAA standards.
   4) Redistribute data only under these same terms of use.\n"
   
   
