@@ -269,7 +269,7 @@ setMethod(
       type <- propertyType(object, which)
       for(i in 1:length(which)){
         t <- type[i]
-        slot(object, t) <- slot(object, t)[setdiff(propertyNames(object), which[i])]
+        slot(object, t) <- slot(object, t)[setdiff(names(slot(object, t)), which[i])]
         if(length(slot(object, t)) == 0L)
           slot(object, t) <- emptyNamedList
       }
