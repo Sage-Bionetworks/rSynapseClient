@@ -165,6 +165,10 @@ setRefClass(
           ## although this is not needed now, but will be when we wait to aggregate added files in the cache
           ## directory until archive creation time
           
+          ## delete the existing archive file
+          if(file.exists(file.path(.self$cacheRoot, .self$archiveFile)))
+            unlink(file.path(.self$cacheRoot, .self$archiveFile))
+          
           ## if the FileCache has no files, throw and exception
           if(length(.self$files()) == 0L)
             stop("There are not files to archive, add files using addFile then try again")

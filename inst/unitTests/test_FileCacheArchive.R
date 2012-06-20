@@ -50,4 +50,36 @@ unitTestUnpackArchive <-
   checkEquals(names(fc$getFileMetaData()) , gsub("/+", "/", file.path(fc$cacheDir, fc$files())))
 }
 
+unitTestReCreateArchiveDeleteFile <-
+    function()
+{
+  fc <- synapseClient:::FileCache()
+  file1 <- tempfile()
+  file2 <- tempfile()
+  cat(sprintf("THIS IS A TEST: %s", Sys.time()), file = file1)
+  cat(sprintf("THIS IS A TEST: %s", Sys.time()), file = file2)
+  addFile(fc, file1)
+  addFile(fc, file2)
+  ans <- fc$createArchive()
+  checkEquals(ans, fc$archiveFile)
+  checkTrue(file.exists(file.path(fc$cacheRoot, fc$archiveFile)))
+  
+  deleteFile(fc, basename(file2))
+  checkEquals(length(fc$files()), 1L)
+  checkEquals(fc$files(), basename(file1))
+  checkTrue(!file.exists(file.path(fc$cacheDir, basename(file2))))
+  checkTrue(file.exists(file.path(fc$cacheDir, fc$files())))
+  
+  ans <- fc$createArchive()
+  checkEquals(ans, fc$archiveFile)
+  checkTrue(file.exists(file.path(fc$cacheRoot, fc$archiveFile)))
+  
+  fc$unpackArchive()
+  checkEquals(length(fc$files()), 1L)
+  checkEquals(fc$files(), basename(file1))
+  checkTrue(!file.exists(file.path(fc$cacheDir, basename(file2))))
+  checkTrue(file.exists(file.path(fc$cacheDir, fc$files())))
+  
+}
+
 
