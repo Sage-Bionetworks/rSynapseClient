@@ -24,7 +24,6 @@
     ),
     error = function(e){
       warning(sprintf("failed to upload data file, please try again: %s", e))
-      setwd(oldDir)
       return(entity)
     }
   )
