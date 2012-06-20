@@ -35,10 +35,10 @@ setMethod(
     }
     
     ## check to see if the FileCache is already in the factory
-    if(fileCache$cacheRoot %in% objects(factory@env))
-      return(get(fileCache$cacheRoot, envir = factory@env))
+    if(file.path(fileCache$cacheRoot, fileCache$archiveFile) %in% objects(factory@env))
+      return(get(file.path(fileCache$cacheRoot, fileCache$archiveFile), envir = factory@env))
     
-    assign(fileCache$cacheRoot, fileCache, envir=factory@env)
+    assign(file.path(fileCache$cacheRoot, fileCache$archiveFile), fileCache, envir=factory@env)
     fileCache
   }
 )
