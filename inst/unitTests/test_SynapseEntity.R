@@ -210,15 +210,18 @@ unitTestDeleteAnnotation <-
 
   entity$annotations$foo <- "bar"
   entity$annotations$boo <- "blah"
+  entity$annotations$blue <- 1L
 
-  checkEquals(length(annotationNames(entity)), 2L)
+  checkEquals(length(annotationNames(entity)), 3L)
   
   entity <- deleteAnnotation(entity, "foo")
-  checkEquals(length(annotationNames(entity)), 1L)
-  checkEquals(annotationNames(entity), "boo")
+  checkEquals(length(annotationNames(entity)), 2L)
+  checkTrue(all(c("boo", "blue") %in% annotationNames(entity)))
   checkEquals(entity$annotations$boo, "blah")
+  checkEquals(entity$annotations$blue, 1L)
   
   entity$annotations$boo <- NULL
+  entity$annotations$blue <- NULL
   
   checkEquals(length(annotationNames(entity)), 0L)
 }
