@@ -16,12 +16,13 @@
   javaS3Token <- rJava:::.jnew("org/sagebionetworks/repo/model/S3Token")
   
   rJava::.jcall(javaS3Token, "V", 'setMd5', s3Token$md5)
-  rJava::.jcall(javaS3Token, "V", 'setContentType', s3Token$contentType)
   rJava::.jcall(javaS3Token, "V", 'setPath', s3Token$path)
+  rJava::.jcall(javaS3Token, "V", 'setContentType', s3Token$contentType)
   rJava::.jcall(javaS3Token, "V", 'setAccessKeyId', s3Token$accessKeyId)
   rJava::.jcall(javaS3Token, "V", 'setSecretAccessKey', s3Token$secretAccessKey)
   rJava::.jcall(javaS3Token, "V", "setBucket", s3Token$bucket)
-  rJava::.jcall(javaS3Token, "V", "setSessionToken", sessionToken())
+  rJava::.jcall(javaS3Token, "V", "setSessionToken", s3Token$sessionToken)
+  rJava::.jcall(javaS3Token, "V", "setPresignedUrl", s3Token$presignedUrl)
   
   jfile <- rJava::.jnew("java/io/File", filePath)
   uploader <- .getCache("mpUploader")
