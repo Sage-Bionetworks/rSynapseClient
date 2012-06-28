@@ -53,7 +53,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     javaInitReturn <- tryCatch(
       rJava::.jinit(classpath), 
       error = function(e){
-        print(e)
+
         .setCache("useJava", FALSE)
         -1L
       }
@@ -69,7 +69,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
           .setCache("useJava", TRUE)
           packageStartupMessage("OK")
         }, error = function(e) {
-          print(e)
+          warning(e)
           .setCache("useJava", FALSE)
         }
       )
