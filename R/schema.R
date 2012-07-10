@@ -24,7 +24,7 @@ entitiesToLoad <-
 
 
 readEntityDef <-
-    function(name, path = system.file("resources/schema",package="synapseClient"))
+    function(name, path = system.file("resources/schema",package="synapseClient"), fixTypes = TRUE)
 {
   file <- sprintf("%s.json", gsub("[\\.]", "/", name))
   
@@ -33,19 +33,54 @@ readEntityDef <-
   if(!file.exists(fullPath))
     stop(sprintf("Could not find file: %s for entity: %s", fullPath, name))
 
-  fromJSON(fullPath, simplifyWithNames = FALSE)
+  schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
+  if(fixTypes)
+    schema <- fixTypes(schema)
+  
+  schema
 }
 
 defineEntityClass <- 
-    function(name, entityDef)
+    function(entityDef, name = entityDef$title)
 {
+  if(is.null(name))
+    stop("name must not be null")
+  contains <- switch(
+      entityDef$implements[[1]][[1]],
+      org.sagebionetworks.repo.model.GenericData = "SynapseLocationOwner",
+      "SynapseEntity"
+  )
+  
+  properties <- lapply(
+      X = names(entityDef$properties), 
+      FUN = function(prop){
+        entityDef$properties[[prop]][["type"]]
+      }
+  )
+  names(properties) <- names(entityDef$properties)
+  
   setClass(
-      entityDef$title,
-      contains = "SynapseEntity",
+      Class = name,
+      contains = contains,
+      representation = representation(properties),
       prototype = prototype(
           synapseEntityKind = name,
           description = entityDef$description
       )
   )
 }
+
+
+fixTypes <- 
+    function(entityDef)
+{
+  TYPEMAP <- list(
+      string = "character",
+      integer = "long",
+      float = "numeric"
+  )
+  
+  entityDef
+}
+
 
