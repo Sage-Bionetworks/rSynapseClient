@@ -420,3 +420,24 @@ setClass(
 )
 
 
+
+##
+## Class for holding the definition of an entity property
+##
+#setClass(
+#    Class = "PropertyDefinition",
+#    representation = representation(
+#        type = "character",
+#        description = "character",
+#        name = "character",
+#        id = "character"
+#    )
+#)
+#
+#setClass(
+#    Class = "EnumPropertyDefinition",
+#    contains = "PropertyDefinition",
+#    representation = representation(
+#        enum = "character"
+#    )
+#)
