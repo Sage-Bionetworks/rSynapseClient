@@ -3,10 +3,10 @@
 # Author: mfuria
 ###############################################################################
 
-setMethod(
-    f = "PropertyDefinition",
-    signature = signature("list"),
-    definition = function(listDef){
-      
-    }
- )
+#setMethod(
+#    f = "PropertyDefinition",
+#    signature = signature("list"),
+#    definition = function(listDef){
+#      
+#    }
+# )
