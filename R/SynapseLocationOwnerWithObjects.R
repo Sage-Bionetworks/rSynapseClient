@@ -1,5 +1,5 @@
 # TODO: Add comment
-# 
+#
 # Author: mfuria
 ###############################################################################
 
@@ -18,7 +18,7 @@ setMethod(
   signature = signature(what = "SynapseLocationOwnerWithObjects"),
   definition = function (what, pos = 2, name = getPackageName(what@objOwn), warn.conflicts = TRUE){
     attach(what@objOwn, pos = pos, name = name, warn.conflicts = warn.conflicts)
-    
+
     afun <- getMethod('attach', 'SynapseLocationOwner')
     afun(what, pos = pos, warn.conflicts = warn.conflicts)
   }
@@ -39,13 +39,13 @@ setMethod(
 	f = "loadEntity",
 	signature = "SynapseLocationOwnerWithObjects",
 	definition = function(entity){
-    
+
     lfun <- getMethod("loadEntity", "SynapseLocationOwner")
     entity <- lfun(entity)
     entity@objOwn$objects@fileCache <- entity@archOwn@fileCache
 		entity@objOwn <- loadObjectsFromFiles(entity@objOwn)
-    
-		
+
+
 #    if(is.null(annotValue(entity, "format"))){
 #      ##setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
 #      return(entity)
@@ -73,14 +73,14 @@ setMethod(
 ##        stop("You must sign the EULA to download this dataset. Visit http://synapse.sagebase.org for more information.")
 ##      .signEula(entity)
 ##    }
-#    
+#
 #    ## download the archive from S3
 #    ## Note that we just use the first location, to future-proof this we would use the location preferred
 #    ## by the user, but we're gonna redo this in java so no point in implementing that here right now
 #    dfun <- getMethod("downloadEntity", "SynapseLocationOwner")
 #    ee <- dfun(entity)
 #    ee@objOwn <- entity@objOwn
-#    
+#
 #    entity
 #  }
 #)
@@ -101,14 +101,14 @@ setMethod(
   f = "storeEntity",
   signature = "SynapseLocationOwnerWithObjects",
   definition = function(entity){
-    if((length(entity$files) + length(entity$objects)) > 0L){
-      ## create the archive on disk (which will persist file metaData to disk)
-      createArchive(entity@archOwn)
-      
+    file <- createArchive(entity@archOwn)
+    if(!is.null(file)){
       ## upload the archive  file (storeFile also updates the entity)
-      entity <- storeFile(entity ,file.path(entity@archOwn@fileCache$getCacheRoot(), entity@archOwn@fileCache$getArchiveFile()))
-      
+      file <- file.path(entity@archOwn@fileCache$getCacheRoot(), file)
+      entity <- storeFile(entity, file)
+
     }else{
+      entity <- deleteProperty(entity, "locations")
       if(is.null(propertyValue(entity, "id")))
       {
         entity <- createEntity(entity)
@@ -159,13 +159,13 @@ setMethod(
     dlfun <- getMethod("downloadEntity", signature="SynapseLocationOwner")
     ee <- dlfun(entity)
     ee@objOwn <- entity@objOwn
-    
+
     ## now set the archive for the caching object owner to be the same
     ## as the one for the archive owner
     oo <- entity@objOwn
     setFileCache(oo, entity@archOwn@fileCache)
     ee@objOwn <- oo
-    
+
     ee
   }
 )
@@ -357,7 +357,7 @@ setMethod(
   }
 )
 
-setReplaceMethod("$", 
+setReplaceMethod("$",
   signature = "SynapseLocationOwner",
   definition = function(x, name, value) {
      if(name == "objects"){
@@ -370,4 +370,3 @@ setReplaceMethod("$",
     x
   }
 )
-

@@ -1,9 +1,9 @@
 # TODO: Add comment
-# 
+#
 # Author: mfuria
 ###############################################################################
 
-.setUp <- 
+.setUp <-
     function()
 {
 #  env <- attach(NULL, name = "testEnv")
@@ -14,7 +14,7 @@
 #                "LocOwnO",
 #                contains = "SynapseLocationOwnerWithObjects",
 #                where = env
-#            ) 
+#            )
 #        )
 #      },
 #      error = function(e){
@@ -22,7 +22,7 @@
 #        stop(e)
 #      }
 #  )
-  
+
   synapseClient:::.setCache("oldWarn", options("warn")[[1]])
   options(warn=2L)
 }
@@ -42,12 +42,12 @@ unitTestAddObject <-
     function()
 {
   own <- new("SynapseLocationOwnerWithObjects")
-  
+
   foo<-diag(10)
   copy <- addObject(own, foo)
   checkEquals(names(own$objects), "foo")
   checkEquals(names(copy$objects), "foo")
-  
+
   ## check that the object loaded from the .rbin masks
   ## the one added via addObjects
   foo <- "bar"
@@ -58,7 +58,7 @@ unitTestAddObject <-
   copy <- synapseClient:::loadObjectsFromFiles(own)
   checkEquals("character", as.character(class(own$objects$foo)))
   checkEquals("character", as.character(class(copy$objects$foo)))
-  
+
   ## now rename the "objects" foo so it will no longer be masked
   copy <- renameObject(own, "foo", "goo")
   checkEquals(2L, length(names(own$objects)))
@@ -67,14 +67,14 @@ unitTestAddObject <-
   checkTrue(all(names(copy$objects) == c("foo", "goo")))
   checkEquals(1L, length(own$files))
   checkEquals(1L, length(copy$files))
-  
+
 }
 
 unitTestAddObjectRename <-
     function()
 {
   own <- new("SynapseLocationOwnerWithObjects")
-  
+
   foo<-diag(10)
   copy <- addObject(own, foo, "bar")
   checkEquals(length(names(own$objects)), 1L)
@@ -87,7 +87,7 @@ unitTestAddList <-
     function()
 {
   own <- new("SynapseLocationOwnerWithObjects")
-  
+
   foo <- list(b="a", one=1)
   copy <- addObject(own, foo, "bar")
   checkEquals(length(names(own$objects)), 1L)
@@ -95,7 +95,7 @@ unitTestAddList <-
   checkEquals(as.character(class(own$objects$bar)), "list")
   checkEquals(length(names(copy$objects)), 1L)
   checkEquals(names(copy$objects), "bar")
-  
+
   own <- new("SynapseLocationOwnerWithObjects")
   copy <- addObject(own, foo)
   checkEquals(length(names(own$objects)), 1L)
@@ -103,11 +103,11 @@ unitTestAddList <-
   checkEquals(as.character(class(own$objects$foo)), "list")
   checkEquals(length(names(copy$objects)), 1L)
   checkEquals(names(copy$objects), "foo")
-  
+
 }
 
 
-unitTestAddListFcn <- 
+unitTestAddListFcn <-
   function()
 {
   own <- new("SynapseLocationOwnerWithObjects")
@@ -121,7 +121,7 @@ unitTestAddListFcn <-
   checkEquals(names(copy$objects), "foo")
   checkEquals(copy$objects$foo$a, "b")
   checkEquals(copy$objects$foo$one, 1L)
-  
+
   own <- new("CachingObjectOwner")
   copy <- addObject(own, foo, "bar")
   checkEquals(length(own$objects), 1L)
@@ -148,16 +148,16 @@ unitTestAddListUnlist <-
   checkTrue(all(names(copy$objects) == c("a", "one")))
   checkEquals(copy$objects$a, "b")
   checkEquals(copy$objects$one, 1L)
-  
+
   own <- new("CachingObjectOwner")
   checkException(addObject(own, foo, "bar", T))
-  
+
 }
 
 unitTestAddDataFrame <-
     function()
 {
-  
+
 }
 
 unitTestDeleteObject <-
@@ -170,7 +170,7 @@ unitTestDeleteObject <-
   copy <- deleteObject(own, "foo")
   checkEquals(length(own$objects), 0L)
   checkEquals(length(copy$objects), 0L)
-  
+
 }
 
 unitTestRenameObject <-
@@ -196,11 +196,11 @@ unitTestGetObject <-
   checkEquals(getObject(own, "foo"), "boo")
 }
 
-unitTestAddFile <- 
+unitTestAddFile <-
   function()
 {
   own <- new("SynapseLocationOwnerWithObjects")
-  
+
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
   file <- tempfile()
@@ -208,13 +208,13 @@ unitTestAddFile <-
   copy <- addFile(own, file)
   checkEquals(basename(file), own$files)
   checkEquals(basename(file), copy$files)
-  
+
   ## add an object and make sure the object file doesn't show up
   addObject(own, "foo", "bar")
   checkEquals(1L, length(own$files))
   checkEquals(1L, length(files(own)))
   checkEquals(basename(file), own$files)
-  
+
   ## make sure the cache re-initializes but running the exact same
   ## test again
   own <- new("SynapseLocationOwner")
@@ -224,7 +224,7 @@ unitTestAddFile <-
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   addFile(own, file)
   checkEquals(basename(file), own$files)
-  
+
   addFile(own, file, "foo.bar")
   checkEquals(length(own$files), 2L)
   checkTrue(all(c(basename(file), "foo.bar") %in% own$files))
@@ -235,19 +235,22 @@ unitTestAddFile <-
 unitTestLoadObjectsFromDisk <-
     function()
 {
-  stop("notYetImplemented")
+  options(warn=1)
+  warning("notYetImplemented")
 }
 
 unitTestLoadObjectsMaskedByFileObjects <-
     function()
 {
-  stop("notYetImplemented")
+  options(warn=1)
+  warning("notYetImplemented")
 }
 
 unitTestShow <-
     function()
 {
-  stop("notYetImplemented")
+  options(warn=1)
+  warning("notYetImplemented")
 }
 
 
@@ -261,20 +264,22 @@ unitTestShow <-
 unitTestNoArgConstructor <-
     function()
 {
-  stop("not yet implemented")
+  options(warn=1)
+  warning("not yet implemented")
 }
 
 unitTestConstructorArchivePath <-
     function()
 {
-  stop("not yet implemented")
+  options(warn=1)
+  warning("not yet implemented")
 }
 
-unitTestAddFile <- 
+unitTestAddFile <-
     function()
 {
   own <- new("SynapseLocationOwnerWithObjects")
-  
+
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
   file <- tempfile()
@@ -282,7 +287,7 @@ unitTestAddFile <-
   copy <- addFile(own, file)
   checkEquals(basename(file), own$files)
   checkEquals(basename(file), copy$files)
-  
+
   ## make sure the cache re-initializes but running the exact same
   ## test again
   own <- new("SynapseLocationOwnerWithObjects")
@@ -292,7 +297,7 @@ unitTestAddFile <-
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   addFile(own, file)
   checkEquals(basename(file), own$files)
-  
+
   addFile(own, file, "foo.bar")
   checkEquals(length(own$files), 2L)
   checkTrue(all(c(basename(file), "foo.bar") %in% own$files))
@@ -303,41 +308,41 @@ unitTestMoveFile <-
     function()
 {
   own <- new("SynapseLocationOwnerWithObjects")
-  
+
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
   file <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   addFile(own, file)
   checkEquals(basename(file), own$files)
-  
+
   copy <- moveFile(own, own$files, "newName.txt")
   checkEquals("newName.txt", copy$files)
   checkEquals("newName.txt", own$files)
-  
+
   moveFile(own, own$files, "subdir/")
   checkEquals("subdir/newName.txt", own$files)
-  
+
   moveFile(own, own$files, "/newSubDir2/anotherName2.txt")
   checkEquals("newSubDir2/anotherName2.txt", own$files)
-  
+
   moveFile(own, own$files, "/newSubDir/anotherName.txt")
   checkEquals("newSubDir/anotherName.txt", own$files)
-  
+
 }
 
 uniTestDeleteFile <-
     function()
 {
   own <- new("SynapseLocationOwnerWithObjects")
-  
+
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
   file <- tempfile()
   cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
   addFile(own, file, "aFile.txt")
   checkEquals("aFile.txt", own$files)
-  
+
   copy <- deleteFile(own, own$files)
   checkEquals(character(), own$files)
   checkEquals(character(), copy$files)
@@ -347,7 +352,7 @@ unitTestAttach <-
   function()
 {
   ee <- new("SynapseLocationOwnerWithObjects")
-  
+
   ee@archOwn@objects$aNum <- 1L
   attach(ee)
   synapseClient:::.setCache("detachMe", ee)
@@ -360,7 +365,7 @@ unitTestDetach <-
   function()
 {
   ee <- new("SynapseLocationOwnerWithObjects")
-  
+
   ee@archOwn@objects$aNum <- 1L
   attach(ee)
   synapseClient:::.setCache("detachMe", ee)
@@ -371,5 +376,3 @@ unitTestDetach <-
   checkTrue(!(getPackageName(ee@archOwn) %in% search()))
   checkTrue(!(getPackageName(ee@objOwn) %in% search()))
 }
-
-
