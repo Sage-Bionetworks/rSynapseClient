@@ -4,29 +4,36 @@
 ###############################################################################
 
 setGeneric(
+  name = "Constructor",
+  def = function(classType, entity, ...){
+    standardGeneric("Constructor")
+  }
+)
+
+setGeneric(
   name = "Folder",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Folder")
   }
 )
 
 setGeneric(
   name = "RObject",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("RObject")
   }
 )
 
 setGeneric(
   name = "PhenotypeData",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("PhenotypeData")
   }
 )
 
 setGeneric(
   name = "GenotypeData",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("GenotypeData")
   }
 )
@@ -40,7 +47,7 @@ setGeneric(
 
 setGeneric(
   name = "ExpressionData",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("ExpressionData")
   }
 )
@@ -215,14 +222,14 @@ setGeneric(
 
 setGeneric(
   name = "Code",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Code")
   }
 )
 
 setGeneric(
   name = "Project",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Project")
   }
 )
@@ -230,7 +237,7 @@ setGeneric(
 
 setGeneric(
   name = "Data",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Data")
   }
 )
@@ -238,7 +245,7 @@ setGeneric(
 
 setGeneric(
   name = "Analysis",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Analysis")
   }
 )
@@ -246,14 +253,14 @@ setGeneric(
 
 setGeneric(
   name = "Step",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Step")
   }
 )
 
 setGeneric(
   name = "Study",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Study")
   }
 )
