@@ -6,18 +6,15 @@
 setMethod(
   f = "Data",
   signature = "list",
-  definition = function(entity){
-    ee <- new("Data")
-    ee@properties <- entity
-    ee@properties$entityType <- getSynapseTypeFromClass(as.character(class(ee)))
-    ee
+  definition = function(entity, ...){
+    Constructor("Data", entity, ...)
   }
 )
 
 setMethod(
-    f = "Data",
-    signature = "missing",
-    definition = function(){
-      Data(list())
-    }
+  f = "Data",
+  signature = "missing",
+  definition = function(entity, ...){
+    Constructor("Data", ...)
+  }
 )
