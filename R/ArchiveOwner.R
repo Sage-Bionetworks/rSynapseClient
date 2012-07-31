@@ -1,5 +1,5 @@
 # TODO: Add comment
-# 
+#
 # Author: furia
 ###############################################################################
 
@@ -25,13 +25,23 @@ setMethod(
   }
 )
 
+setMethod(
+  f = "setFileCache",
+  signature = signature("ArchiveOwner", "FileCache"),
+  definition = function(owner, fileCache){
+    owner@fileCache <- fileCache
+    owner
+  }
+)
+
+
 
 setMethod(
   f = "setCacheRoot",
   signature = signature("ArchiveOwner", "character", "logical", "missing"),
   definition = function(object, path, clean){
-    object@fileCache <- setCacheRoot(object@fileCache, path, clean)
-    object
+    setCacheRoot(object@fileCache, path, clean)
+    invisible(object)
   }
 )
 
@@ -108,7 +118,7 @@ setMethod(
     owner@fileCache$unpackArchive()
     owner
   }
-) 
+)
 
 setMethod(
   f = "createArchive",
@@ -122,7 +132,7 @@ setMethod(
   f = "getArchiveFilePath",
   signature = "ArchiveOwner",
   definition = function(owner){
-    owner
+    file.path(owner@fileCache$getCacheRoot(), owner@fileCache$getCacheFile())
   }
 )
 
@@ -161,10 +171,29 @@ setMethod(
     }
 )
 
+setMethod(
+  f = "ArchiveOwner",
+  signature = "character",
+  definition = function(path){
+    own <- new("ArchiveOwner")
+    own@fileCache <- getFileCache(path)
+    own
+  }
+)
+
+setMethod(
+  f = "ArchiveOwner",
+  signature = "missing",
+  definition = function(){
+    own <- new("ArchiveOwner")
+    own@fileCache <- getFileCache(tempfile())
+    own
+  }
+)
+
+
 getPackageName.ArchiveOwner <-
   function (where, create = TRUE)
 {
   getPackageName(where = where@objects, create = create)
 }
-
-

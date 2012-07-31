@@ -1,5 +1,5 @@
 ## TODO: add description
-## 
+##
 ## Author: Bruce Hoff <bruce.hoff@sagebase.org
 ###############################################################################
 
@@ -18,7 +18,7 @@ createSynapseEntity<- function(synapseEntity) {
   # now persist to file cache and to Synapse
   updateAnnotationsInFileCache(annots)
   updateAnnotationsInSynapse(id)
-  
+
   # at this point the entity and its annotations are created
   # it remains to ensure the file cache is up-to-date
   # (in particular the 'update' will increment the etag) and
@@ -29,7 +29,7 @@ createSynapseEntity<- function(synapseEntity) {
 
 
 # This function downloads a Synapse entity into the local file cache:
-# - downloads entity itself, as JSON, and creates a local file, 
+# - downloads entity itself, as JSON, and creates a local file,
 #   <cache>/entity/<id>/entity.json, or <cache>/entity/<id>/<version>/entity.json
 #
 getEntityFromSynapse <- function(id, version=NULL)
@@ -51,20 +51,16 @@ getAnnotationsFromSynapse <- function(id, version=NULL)
 }
 
 #
-# Returns a SynapseEntity for the given entity ID (and optional version), 
+# Returns a SynapseEntity for the given entity ID (and optional version),
 # retrieved from the local file cache
 #
 getEntityFromFileCache<- function(id, version=NULL) {
-	entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
-
-	#SynapseEntity(as.list(fromJSON(paste(entityCachePath, .getCache("ENTITY_FILE_NAME"), sep="/"))))
-
-    getEntityInstance(as.list(fromJSON(paste(entityCachePath, .getCache("ENTITY_FILE_NAME"), sep="/"), simplifyWithNames=FALSE)))
-
+  entityCachePath <- .getAbsoluteFileCachePath(.entityFileCachePath(id, version))
+  getEntityInstance(as.list(fromJSON(paste(entityCachePath, .getCache("ENTITY_FILE_NAME"), sep="/"), simplifyWithNames=FALSE)))
 }
 
 #
-# Returns a SynapseAnnotations object for the annotations of a given entity ID (and optional version), 
+# Returns a SynapseAnnotations object for the annotations of a given entity ID (and optional version),
 # retrieved from the local file cache
 #
 getAnnotationsFromFileCache<- function(id, version=NULL) {
@@ -83,7 +79,7 @@ getAnnotationsFromFileCache<- function(id, version=NULL) {
 # note 'filePath' omits the cache root, which is prepended by this function
 .writeToFile<-function(content, filePath, fileName) {
 	folder <- .getAbsoluteFileCachePath(filePath)
-	
+
 	if (!file.exists(file=folder)) dir.create(folder, recursive=TRUE)
 	targetFileName<-paste(folder, fileName, sep="/")
 	targetFile<-file(targetFileName)
@@ -142,7 +138,7 @@ updateEntityInFileCache<-function(entity) {
 
 updateEntityInSynapse<-function(id, version=NULL) {
 	uri <- .getEntityUri(id, version)
-	filePath <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
+	filePath <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)),
       .getCache("ENTITY_FILE_NAME"), sep="/")
 	content <- as.list(fromJSON(readLines(filePath), simplifyWithNames=FALSE))
 	getEntityInstance(.synapsePostPut(uri, content, "PUT"))
@@ -153,27 +149,27 @@ deleteEntityFromSynapse<-function(id, version=NULL) {
 }
 
 deleteEntityFromFileCache<-function(id, version=NULL) {
-	file <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
+	file <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)),
       .getCache("ENTITY_FILE_NAME"), sep="/")
 	if (file.exists(file)) unlink(file)
 }
-		
+
 # Note: 'annots' must be a SynapseAnnotations
 # TODO support updating a specific version of an Annot
 updateAnnotationsInFileCache<-function(annots) {
 	entityId <- propertyValue(annots, "id")
 	if (is.null(entityId)) stop("Missing entity id")
-	
+
 	content <- toJSON(as.list(annots))
 	entityCachePath <- .entityFileCachePath(entityId, NULL)
 	.writeToFile(gsub("[\r\n]", "", content), entityCachePath, .getCache("ANNOTATIONS_FILE_NAME"))
 }
 
 updateAnnotationsInSynapse<-function(id, version=NULL) {
-  annotations <- as.list(fromJSON(readLines(paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
+  annotations <- as.list(fromJSON(readLines(paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)),
           .getCache("ANNOTATIONS_FILE_NAME"), sep="/")), simplifyWithNames=FALSE))
 
-  ## make sure all scalars are converted to lists since the service expects all 
+  ## make sure all scalars are converted to lists since the service expects all
   ## annotation values to be arrays instead of scalars
   for(key in names(annotations)){
     ## This is one of our annotation buckets
@@ -185,19 +181,19 @@ updateAnnotationsInSynapse<-function(id, version=NULL) {
       }
     }
   }
-  
-  SynapseAnnotations(.synapsePostPut(.getAnnotationsUri(id, version), 
+
+  SynapseAnnotations(.synapsePostPut(.getAnnotationsUri(id, version),
 			annotations, "PUT"))
 }
 
 
 deleteAnnotationsFromFileCache<-function(id, version=NULL) {
-	file <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)), 
+	file <- paste(.getAbsoluteFileCachePath(.entityFileCachePath(id, version)),
       .getCache("ANNOTATIONS_FILE_NAME"), sep="/")
 	if (file.exists(file)) unlink(file)
 }
 
-# takes a new SynapseEntity, not yet persisted, and sends it to Synapse 
+# takes a new SynapseEntity, not yet persisted, and sends it to Synapse
 # along with its annotations.  Then retreives the entity along with its
 # annotations to the local cache and finally returns the complete SynapseEntity
 # object with id and annotations
@@ -215,7 +211,7 @@ createSynapseEntity<- function(synapseEntity) {
 	# now persist to file cache and to Synapse
 	updateAnnotationsInFileCache(annots)
 	updateAnnotationsInSynapse(id)
-	
+
 	# at this point the entity and its annotations are created
 	# it remains to ensure the file cache is up-to-date
 	# (in particular the 'update' will increment the etag) and
@@ -230,9 +226,9 @@ getSynapseEntity<- function(id) {
 	entity<-getEntityFromFileCache(id)
 	getAnnotationsFromSynapse(id)
 	annots<-getAnnotationsFromFileCache(id)
-	
+
 	entity@annotations<-annots
-	
+
 	entity
 }
 
@@ -242,10 +238,10 @@ getSynapseEntity<- function(id) {
 # The steps for updating an entity and its annotations are as follows:
 # 1. We start with a local copy of, which has an etag
 # 2. Push the Entity part (the properties) to Synapse.
-#	 This will either return an updated entity with a new ('intermediate') 
+#	 This will either return an updated entity with a new ('intermediate')
 #	 etag or throw a ConcurrentUpdateException.
 #	 If no error we know that NEITHER the entity NOR its annotations have
-#	 been updated since we originally fetched them.  Now:  
+#	 been updated since we originally fetched them.  Now:
 # 3. Put the new etag in the local copy of the annotations and update in Synapse
 #    This will either return an exception or a new annotations object with new etag
 # 4. Combine the properties returned in 2, the annotations and etag returned in 3,
@@ -260,7 +256,7 @@ updateSynapseEntity<-function(synapseEntity) {
 
 	updateEntityInFileCache(synapseEntity)
 	newEntity <- updateEntityInSynapse(id) # note, this omits annotations and has the 'intermediate' etag
-	
+
 	annots <- synapseEntity@annotations
 	propertyValue(annots, "etag")<-propertyValue(newEntity, "etag")
 	propertyValue(annots, "id")<-propertyValue(newEntity, "id")
@@ -268,25 +264,25 @@ updateSynapseEntity<-function(synapseEntity) {
 	newAnnots <- updateAnnotationsInSynapse(id)
 	propertyValue(newAnnots, "id")<-propertyValue(newEntity, "id")
 	updateAnnotationsInFileCache(newAnnots)
-	
+
 	propertyValue(newEntity, "etag") <- propertyValue(newAnnots, "etag")
 	newEntity@annotations <- newAnnots
 	updateEntityInFileCache(newEntity)
-	
+
 	newEntity
-		
+
 #	# now download the annotations to the local cache
 #	getAnnotationsFromSynapse(id)
 #	# read annotations from local cache into memory
 #	annots <- getAnnotationsFromFileCache(id)
-#    
+#
 #    # merge annotations from input variable into 'annots'
 #    # TODO this logic *merges* only.  Need to allow local copy to *delete* annotations
 #    for (n in annotationNames(synapseEntity)) {
 #      annotValue(annots, n)<-annotValue(synapseEntity, n)
 #    }
-#    
-#    ## make sure all scalars are converted to lists since the service expects all 
+#
+#    ## make sure all scalars are converted to lists since the service expects all
 #    ## annotation values to be arrays instead of scalars
 #    for(key in names(annots)){
 #      ## This is one of our annotation buckets
@@ -298,11 +294,11 @@ updateSynapseEntity<-function(synapseEntity) {
 #        }
 #      }
 #    }
-#  
+#
 #	# now persist to file cache and to Synapse
 #	updateAnnotationsInFileCache(annots)
 #	updateAnnotationsInSynapse(id)
-#	
+#
 #	getSynapseEntity(id)
 }
 

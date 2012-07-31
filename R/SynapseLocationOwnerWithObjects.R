@@ -312,6 +312,7 @@ setMethod(
   signature = "SynapseLocationOwnerWithObjects",
   definition = function(.Object){
     .Object@archOwn <- new("ArchiveOwner")
+    .Object@archOwn@fileCache <- getFileCache(.Object@archOwn@fileCache$getCacheRoot())
     .Object@objOwn <- new("CachingObjectOwner")
     .Object@objOwn$objects@fileCache <- .Object@archOwn@fileCache
     .Object
