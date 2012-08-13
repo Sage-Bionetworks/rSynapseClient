@@ -83,3 +83,34 @@ unitTestReCreateArchiveDeleteFile <-
 }
 
 
+## when there are no files, creating the archive should delete the archive file, if it exists
+unitTestCreateArchiveDeleteLastFile <-
+  function()
+{
+  fc <- synapseClient:::FileCache()
+  file1 <- tempfile()
+  cat(sprintf("THIS IS A TEST: %s", Sys.time()), file = file1)
+  addFile(fc, file1)
+  ans <- fc$createArchive()
+  checkEquals(ans, fc$archiveFile)
+  checkTrue(file.exists(file.path(fc$cacheRoot, fc$archiveFile)))
+  
+  deleteFile(fc, fc$files()[1L])
+  checkTrue(length(fc$files()) == 0L)
+  checkEquals(length(dir(fc$cacheDir)), 0L)
+  
+  ans <- fc$createArchive()
+  checkTrue(is.null(ans))
+  checkTrue(!file.exists(file.path(fc$cacheRoot, fc$archiveFile)))
+  
+}
+
+unitTestCreateArchiveNoFiles <-
+  function()
+{
+  fc <- synapseClient:::FileCache()
+  ans <- fc$createArchive()
+  checkTrue(is.null(ans))
+  checkTrue(!file.exists(file.path(fc$cacheRoot, fc$archiveFile)))
+}
+

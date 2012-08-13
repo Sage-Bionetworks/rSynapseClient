@@ -1,5 +1,5 @@
 # TODO: Add comment
-# 
+#
 # Author: mfuria
 ###############################################################################
 
@@ -20,10 +20,10 @@ setMethod(
     definition = function(entity){
       ##if(length(entity$files) == 0)
       entity <- downloadEntity(entity)
-      
+
       entity@archOwn <- loadObjectsFromFiles(entity@archOwn)
-      
-      
+
+
 #    if(is.null(annotValue(entity, "format"))){
 #      ##setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
 #      return(entity)
@@ -48,12 +48,16 @@ setMethod(
     }else{
       entity <- updateEntity(entity)
     }
-    if(length(entity$files) > 0L){
-      ## create the archive on disk (which will persist file metaData to disk)
-      createArchive(entity@archOwn)
-      
+
+    ## create the archive on disk (which will persist file metaData to disk)
+    file <- createArchive(entity@archOwn)
+
+    if(!is.null(file)){
       ## upload the archive  file (storeFile also updates the entity)
-      entity <- storeFile(entity ,file.path(entity@archOwn@fileCache$getCacheRoot(), entity@archOwn@fileCache$getArchiveFile()))
+      file <- file.path(entity@archOwn@fileCache$getCacheRoot(), file)
+      entity <- storeFile(entity, file)
+    }else{
+      entity <- deleteProperty(entity, "locations")
     }
     entity
   }
@@ -84,10 +88,10 @@ setMethod(
   f = "storeFile",
   signature = signature("SynapseLocationOwner", "character"),
   definition = function(entity, filePath) {
-    
+
     if(!file.exists(filePath))
       stop('archive file does not exist')
-    
+
     ## make sure that the entity is up to date
     if(is.null(propertyValue(entity, "id"))){
       ## Create the LocationOwner in Synapse
@@ -96,8 +100,8 @@ setMethod(
       ## Update the LocationOwner in Synapse just in case any other fields were changed
       ## TODO is this needed?
       entity <- updateEntity(entity)
-    } 
-    
+    }
+
     entity <- tryCatch(
       if(synapseClient:::.getCache("useJava")){
         .performMultipartUpload(entity, filePath)
@@ -109,19 +113,19 @@ setMethod(
         return(entity)
       }
     )
-    
+
     ## move the data file from where it is to the local cache directory
     if(is.null(propertyValue(entity, 'locations')[[1]]['path']))
       stop("NULL URL")
     parsedUrl <- synapseClient:::.ParsedUrl(propertyValue(entity, 'locations')[[1]]['path'])
     destdir <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@pathPrefix))
     destdir <- path.expand(destdir)
-    
-    ## set the cachRoot to the new location this method should do the right 
+
+    ## set the cachRoot to the new location this method should do the right
     ## thing. don't move if src and dest are the same. make sure there are
     ## no straggler files left behind, clean up temp directories, etc.
     entity@archOwn <- setCacheRoot(entity@archOwn, destdir, clean = TRUE)
-  
+
     ## unpack the archive into it's new root directory.
     entity@archOwn <- unpackArchive(entity@archOwn)
     invisible(entity)
@@ -163,27 +167,27 @@ setMethod(
 #        stop("You must sign the EULA to download this dataset. Visit http://synapse.sagebase.org for more information.")
 #      .signEula(entity)
 #    }
-    
+
     ## download the archive from S3
     ## Note that we just use the first location, to future-proof this we would use the location preferred
     ## by the user, but we're gonna redo this in java so no point in implementing that here right now
 #    dfun <- getMethod("downloadEntity", "SynapseEntity")
 #    ee <- dfun(entity)
 #    ee@archOwn <- entity@archOwn
-  
+
     if(is.null(propertyValue(entity, "locations")[[1]][['path']]))
       return(entity)
-    
+
     ## download the file
     url <- propertyValue(entity, "locations")[[1]][['path']]
-    
+
     parsedUrl <- synapseClient:::.ParsedUrl(url)
     destfile <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@path))
     destfile <- path.expand(destfile)
     cacheRoot <- gsub(basename(destfile), "", destfile, fixed=TRUE)
     entity@archOwn <- setCacheRoot(entity@archOwn, cacheRoot, clean=TRUE)
 
-    
+
     ## passing the md5 sum causes this funciton to only download the file
     ## if the cached copy does not match that md5 sum
     if(file.exists(destfile)){
@@ -192,13 +196,13 @@ setMethod(
       archiveFile = synapseDownloadFile(url)
     }
     archiveFile <- normalizePath(archiveFile)
-    
-    
+
+
     fc <- getFileCache(archiveFile)
     entity@archOwn@fileCache <- fc
     ## unpack the archive
     entity@archOwn <- unpackArchive(entity@archOwn)
-    
+
     entity
   }
 )
@@ -210,7 +214,7 @@ setMethod(
       entity@archOwn@fileCache$delete()
       dfun <- getMethod("deleteEntity", "SynapseEntity")
       entity <- dfun(entity)
-      invisible(entity) 
+      invisible(entity)
     }
 )
 
@@ -328,10 +332,10 @@ setMethod(
   signature = "SynapseLocationOwner",
   definition = function(object){
     cat('An object of class "', class(object), '"\n', sep="")
-    
+
     cat("Synapse Entity Name : ", properties(object)$name, "\n", sep="")
     cat("Synapse Entity Id   : ", properties(object)$id, "\n", sep="")
-    
+
     if (!is.null(properties(object)$parentId))
       cat("Parent Id           : ", properties(object)$parentId, "\n", sep="")
     if (!is.null(properties(object)$type))
@@ -340,13 +344,13 @@ setMethod(
       cat("Version Number      : ", properties(object)$versionNumber, "\n", sep="")
       cat("Version Label       : ", properties(object)$versionLabel, "\n", sep="")
     }
-    
+
     obj.msg <- summarizeObjects(object)
     if(!is.null(obj.msg)){
       cat("\n", obj.msg$count,":\n", sep="")
       cat(obj.msg$objects, sep="\n")
     }
-    
+
     files.msg <- summarizeCacheFiles(object)
     if(!is.null(files.msg))
       cat("\n", files.msg$count, "\n", sep="")
@@ -434,7 +438,7 @@ setMethod(
 )
 
 
-setReplaceMethod("$", 
+setReplaceMethod("$",
   signature = "SynapseLocationOwner",
   definition = function(x, name, value) {
      if(!(name %in% names.SynapseEntity(x)))
@@ -443,4 +447,3 @@ setReplaceMethod("$",
     fun(x, name, value)
   }
 )
-
