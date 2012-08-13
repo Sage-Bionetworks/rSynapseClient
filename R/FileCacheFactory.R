@@ -42,6 +42,7 @@ setMethod(
       return(get(fileCache$cacheRoot, envir = factory@env))
 
     assign(fileCache$cacheRoot, fileCache, envir=factory@env)
+
     fileCache
   }
 )

@@ -63,9 +63,11 @@ unitTestExistingCacheZipNotInFactory <-
   fc <- getFileCache(archivefile)
   checkEquals(fc$cacheRoot, cacheRoot)
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
+
   checkEquals(synapseClient:::availFileCaches(), cacheRoot)
 
   fc.copy <- getFileCache(fc$cacheRoot)
+
   checkEquals(fc.copy$cacheRoot, fc$cacheRoot)
   checkEquals(fc.copy$files(), fc$files())
   checkEquals(fc.copy$archiveFile, fc.copy$archiveFile)
@@ -120,7 +122,7 @@ unitTestExistingSingleFileNotInFactory <-
   fc <- getFileCache(archivefile)
   checkEquals(fc$cacheRoot, cacheRoot)
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
-  checkEquals(synapseClient:::availFileCaches(), cacheRoot)
+  checkEquals(synapseClient:::availFileCaches(), archivefile)
 }
 
 unitTestSingleFileNotInFactory <-
@@ -225,21 +227,25 @@ unitTestSingleNonCompressedFileArchive <-
   checkTrue(file.exists(file.path(fc$cacheRoot, fc$archiveFile)))
 }
 
-unitTestRemoveFileCache <-
-  function()
+unitTestMultipleArchivesSameRoot <-
+    function()
 {
   root <- tempfile()
   dir.create(root)
-  file <- tempfile(tmpdir=root)
-  cat("Hello World\n", file=file)
-
-  fc <- synapseClient:::getFileCache(file)
-  checkEquals(length(synapseClient:::availFileCaches()), 1L)
-  checkEquals(synapseClient:::availFileCaches(), normalizePath(root))
-
-  synapseClient:::removeFileCache(root)
-  checkEquals(length(synapseClient:::availFileCaches()), 0L)
+  file1 <- tempfile(tmpdir = root)
+  file2 <- tempfile(tmpdir = root)
+  
+  cat("Hello World\n", file=file1)
+  cat("Hello Universe\n", file=file2)
+  
+  fc1 <- getFileCache(file1)
+  fc2 <- getFileCache(file2)
+  
+  checkEquals(normalizePath(file1), file.path(fc1$cacheRoot, fc1$archiveFile))
+  checkEquals(normalizePath(file2), file.path(fc2$cacheRoot, fc2$archiveFile))
+  
 }
+
 
 unitTestGetFileCache <-
   function()

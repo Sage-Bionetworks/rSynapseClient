@@ -17,15 +17,15 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   function(libname, pkgname)
 {
   tou <- "\nTERMS OF USE NOTICE:
-When using Synapse, remember that the terms and conditions of use require that you:
-  1) Attribute data contributors when discussing this data or results from this data.
-  2) Not discriminate, identify, or recontact individuals or groups represented by the data.
-  3) Use and contribute only data de-identified to HIPPA standards.
-  4) Redistribute data only under these same terms of use.\n"
+    When using Synapse, remember that the terms and conditions of use require that you:
+    1) Attribute data contributors when discussing these data or results from these data.
+    2) Not discriminate, identify, or recontact individuals or groups represented by the data.
+    3) Use and contribute only data de-identified to HIPAA standards.
+    4) Redistribute data only under these same terms of use.\n"
   
   
   ##set the R_OBJECT cache directory. check for a funcitonal zip first
-  packageStartupMessage("Verifying zip installation")
+  packageStartupMessage("Verifying zip installation...")
   ff <- tempfile()
   file.create(ff)
   zipfile <- tempfile()
@@ -43,6 +43,30 @@ When using Synapse, remember that the terms and conditions of use require that y
     .setCache("rObjCacheDir", ".R_OBJECTS")
     .setCache("hasZip", TRUE)
   }
+  classpath <- c(list.files(file.path(find.package("synapseClient"), "java"), full.names=TRUE, pattern='jar$', recursive=FALSE))
+  packageStartupMessage("\nChecking rJava installation...")
+  
+  .setCache("useJava", FALSE)
+  options(java.parameters="-Xrs")
+  if(("rJava" %in% installed.packages()) && rJava::.jinit(classpath) >= 0L){
+    tryCatch({
+        # use the non-default text-based progress listener for uploads
+        progress <- rJava::.jnew("org/sagebionetworks/client/TextProgressListener")
+        uploader <- rJava::.jnew("org/sagebionetworks/client/DataUploaderMultipartImpl")
+        uploader$setProgressListener(progress)
+
+        .setCache("mpUploader", uploader)
+        .setCache("useJava", TRUE)
+        packageStartupMessage("OK")
+      }, error = function(e) {
+        warning(e)
+        .setCache("useJava", FALSE)
+      }
+    )
+  }
+  if(!.getCache("useJava"))
+    packageStartupMessage("NOTE: rJava and/or the Synapse Java client are not installed on your system and so file upload/download performance \nwill be reduced and file uploads will be limited to 5GB. Consider installing \nrJava by typing install.packages(rJava) at the command prompt")
+  
   packageStartupMessage(tou)
   
   .setCache("curlOpts", list(low.speed.time=60, low.speed.limit=1, connecttimeout=300, followlocation=TRUE, ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))

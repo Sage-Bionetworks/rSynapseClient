@@ -102,7 +102,11 @@ setMethod(
     #}
 
     entity <- tryCatch(
-      synapseClient:::.performRUpload(entity, filePath),
+      if(synapseClient:::.getCache("useJava")){
+        .performMultipartUpload(entity, filePath)
+      }else{
+        .performRUpload(entity, filePath)
+      },
       error = function(e){
         warning(sprintf("failed to upload data file, please try again: %s", e))
         return(entity)

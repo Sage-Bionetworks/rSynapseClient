@@ -52,6 +52,30 @@ unitTestGetSetProperty <-
   checkTrue("POSIXct" %in% class(synapseClient:::getProperty(ps, "aProp")))
 }
 
+unitTestDeleteProperty <-
+    function()
+{
+  ps <- synapseClient:::TypedPropertyStore()
+  ps <- synapseClient:::setProperty(ps, "aProp", "aVal")
+  
+  checkEquals(propertyNames(ps), "aProp")
+  ps <- synapseClient:::deleteProperty(ps, "aProp")
+  checkEquals(propertyNames(ps), character())
+  
+  ps <- synapseClient:::TypedPropertyStore()
+  ps <- synapseClient:::setProperty(ps, "aProp", "aVal")
+  ps <- synapseClient:::setProperty(ps, "aProp2", "aVal2")
+  ps <- synapseClient:::setProperty(ps, "anInt", 1L)
+  
+  checkEquals(length(synapseClient:::propertyNames(ps)), 3L)
+  checkTrue(all(c("aProp", "aProp2", "anInt") %in% synapseClient:::propertyNames(ps)))
+  
+  ps <- synapseClient:::deleteProperty(ps, "anInt")
+  checkEquals(length(synapseClient:::propertyNames(ps)), 2L)
+  checkTrue(all(c("aProp", "aProp2") %in% synapseClient:::propertyNames(ps)))
+  
+}
+
 unitTestConstructors <-
   function()
 {
