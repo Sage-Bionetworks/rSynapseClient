@@ -215,6 +215,11 @@ setRefClass(
           if(!file.exists(.self$cacheRoot))
             dir.create(.self$cacheRoot, recursive = TRUE)
 
+          ## remove the archive file if it exists
+          archFile <- file.path(.self$getCacheRoot(), .self$archiveFile)
+          if(file.exists(archFile))
+            unlink(archFile)
+
           ## OK, now let's zip. fingers crossed ;)
           ## change directory to the cache directory
           oldDir <- getwd()
