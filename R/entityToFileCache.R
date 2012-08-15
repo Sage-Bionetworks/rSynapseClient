@@ -221,7 +221,7 @@ createSynapseEntity<- function(synapseEntity) {
 
 # given an entity id, retreives the entity and its annotations into
 # the local file cache, then returns the object as a SynapseEntity
-getSynapseEntity<- function(id) {
+getSynapseEntity <- function(id) {
 	getEntityFromSynapse(id)
 	entity<-getEntityFromFileCache(id)
 	getAnnotationsFromSynapse(id)

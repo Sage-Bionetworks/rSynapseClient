@@ -213,7 +213,7 @@ setMethod(
 		definition = function(entity){
 			ee <- new("SynapseEntity")
 			ee@properties <- entity
-            ee
+      ee
 		}
 )
 
@@ -235,9 +235,9 @@ setMethod(
 		f = "SynapseEntity",
 		signature = signature("character"),
 		definition = function(entity){
-            ee<-fromJSON(entity)
-            ee@properties <- entity
-            ee
+      ee<-fromJSON(entity)
+      ee@properties <- entity
+      ee
 		}
 )
 

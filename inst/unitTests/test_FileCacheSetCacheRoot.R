@@ -121,3 +121,29 @@ unitTestChangeRootExistingFile <-
 
   checkTrue(all(grepl(sprintf("^%s",fc$getCacheDir()), names(fc$getFileMetaData()))))
 }
+
+unitTestChangeRootExistingArchive <-
+  function()
+{
+  fc <- new("FileCache")
+  file <- tempfile()
+  cat("THISISATEST", file=file)
+  addFile(fc,file)
+
+  archFile <- fc$createArchive()
+  checkTrue(file.exists(file.path(fc$getCacheRoot(), archFile)))
+
+  oldroot <- fc$getCacheRoot()
+  newroot <- tempfile()
+
+  synapseClient:::setCacheRoot(fc, newroot, TRUE)
+  checkTrue(!file.exists(oldroot))
+  checkTrue(file.exists(newroot))
+  checkTrue(file.exists(file.path(newroot, fc$archiveFile)))
+  checkEquals(normalizePath(newroot), fc$getCacheRoot())
+  checkTrue(file.exists(fc$getCacheDir()))
+  checkTrue(file.exists(file.path(fc$getCacheDir(), basename(file))))
+}
+
+
+

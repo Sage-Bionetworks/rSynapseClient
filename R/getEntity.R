@@ -15,8 +15,6 @@ setMethod(
     ## instantiate the entity
     ee <- getEntityFromFileCache(entity)
 
-    fc <- synapseClient:::getFileCache(dirname(ee$cacheDir))
-
     ## load annotations from disk
     ee@annotations <- getAnnotationsFromFileCache(entity)
 
