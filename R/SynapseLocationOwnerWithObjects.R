@@ -97,10 +97,12 @@ setMethod(
     ee
   }
 )
+
 setMethod(
   f = "storeEntity",
   signature = "SynapseLocationOwnerWithObjects",
   definition = function(entity){
+
     file <- createArchive(entity@archOwn)
     if(!is.null(file)){
       ## upload the archive  file (storeFile also updates the entity)
@@ -108,7 +110,8 @@ setMethod(
       entity <- storeFile(entity, file)
 
     }else{
-      entity <- deleteProperty(entity, "locations")
+      if(!is.null(entity$properties$locations))
+        entity <- deleteProperty(entity, "locations")
       if(is.null(propertyValue(entity, "id")))
       {
         entity <- createEntity(entity)

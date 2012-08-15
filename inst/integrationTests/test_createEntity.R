@@ -52,3 +52,26 @@ integrationTestCreateCreateFileCacheFactory <-
   checkEquals(length(data$files), 0L)
 
 }
+
+integrationTestCreateEntityAddFileFirst <-
+  function()
+{
+  project <- synapseClient:::.getCache("testProject")
+  file <- tempfile()
+  cat("THISISATEST", file=file)
+  data <- Data(list(parentId = project$properties$id))
+  fc <- synapseClient:::getFileCache(dirname(data$cacheDir))
+  addFile(data, file)
+  data <- createEntity(data)
+
+  checkEquals(length(fc$files()), 1L)
+  checkEquals(length(data$files), 1L)
+  checkEquals(data$files, fc$files())
+
+  deleteFile(fc, fc$files())
+  checkEquals(length(fc$files()), 0L)
+  checkEquals(length(data$files), 0L)
+}
+
+
+

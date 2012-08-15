@@ -76,8 +76,11 @@ setMethod(
   f = "createEntity",
   signature = "SynapseLocationOwner",
   definition = function(entity){
+    archOwn <- entity@archOwn
     cfun <- getMethod("createEntity", "SynapseEntity")
-    cfun(entity)
+    entity <- cfun(entity)
+    entity@archOwn <- setCacheRoot(archOwn, entity@archOwn@fileCache$getCacheRoot(), TRUE )
+    entity
   }
 )
 
@@ -94,12 +97,8 @@ setMethod(
     if(is.null(propertyValue(entity, "id"))){
       ## Create the LocationOwner in Synapse
       entity <- createEntity(entity)
+      filePath <- file.path(entity@archOwn@fileCache$getCacheRoot(), basename(filePath))
     }
-    #else {
-      ## Update the LocationOwner in Synapse just in case any other fields were changed
-      ## TODO is this needed?
-    #  entity <- updateEntity(entity)
-    #}
 
     entity <- tryCatch(
       if(synapseClient:::.getCache("useJava")){
@@ -124,6 +123,9 @@ setMethod(
     ## thing. don't move if src and dest are the same. make sure there are
     ## no straggler files left behind, clean up temp directories, etc.
     entity@archOwn <- setCacheRoot(entity@archOwn, destdir, clean = TRUE)
+    file.copy(filePath, dirname(entity$cacheDir))
+    if(file.exists(filePath))
+      file.remove(filePath)
 
     ## make sure the fileCache gets added to the FileCacheFactory
     ##entity@archOwn <- ArchiveOwner(destdir)
