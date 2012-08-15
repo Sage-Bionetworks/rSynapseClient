@@ -179,6 +179,7 @@ setRefClass(
             file.copy(file.path(.self$cacheDir, .self$files()), .self$cacheRoot)
             ## re-cache the metaData to disk
             .self$cacheFileMetaData()
+            return(invisible(.self$archiveFile))
           }
 
           ## this check should be done elsewhere, but for now let's leave it here.
@@ -214,6 +215,11 @@ setRefClass(
           ## if the cacheRoot doesn't exists, create it. this should never happen
           if(!file.exists(.self$cacheRoot))
             dir.create(.self$cacheRoot, recursive = TRUE)
+
+          ## remove the archive file if it exists
+          archFile <- file.path(.self$getCacheRoot(), .self$archiveFile)
+          if(file.exists(archFile))
+            unlink(archFile)
 
           ## OK, now let's zip. fingers crossed ;)
           ## change directory to the cache directory
