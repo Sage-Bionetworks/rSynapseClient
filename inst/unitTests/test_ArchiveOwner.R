@@ -152,12 +152,28 @@ unitTestSetCacheRoot <-
   function()
 {
   own <- synapseClient:::ArchiveOwner()
+  copy <- own
   file <- tempfile()
   cat("TESTFILE1", file = file)
 
   addFile(own, file)
   checkEquals(length(files(own)), 1L)
   checkEquals(files(own), basename(file))
+  checkEquals(length(files(copy)), 1L)
+
+  newroot <- tempfile()
+  synapseClient:::setCacheRoot(own, newroot, TRUE)
+  checkEquals(length(files(own)), 1L)
+  checkEquals(files(own), files(copy))
+
+  deleteFile(own, files(own))
+  checkEquals(length(files(own)), 0L)
+  checkEquals(length(files(copy)), 0L)
+
+  addFile(own, file)
+  checkEquals(length(files(own)), 1L)
+  checkEquals(files(own), basename(file))
+  checkEquals(length(files(copy)), 1L)
 
   own2 <- synapseClient:::ArchiveOwner()
 

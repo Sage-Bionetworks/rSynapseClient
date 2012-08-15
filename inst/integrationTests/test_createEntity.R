@@ -73,5 +73,35 @@ integrationTestCreateEntityAddFileFirst <-
   checkEquals(length(data$files), 0L)
 }
 
+integrationTestCreateEntityAddFileFirstMultipleCopies <-
+  function()
+{
+  project <- synapseClient:::.getCache("testProject")
+  file <- tempfile()
+  cat("THISISATEST", file=file)
+  data <- Data(list(parentId = project$properties$id))
+  copy <- data
+  fc <- synapseClient:::getFileCache(dirname(data$cacheDir))
+  addFile(data, file)
+  data <- createEntity(data)
+
+  checkEquals(length(fc$files()), 1L)
+  checkEquals(length(data$files), 1L)
+  checkEquals(length(copy$files), 1L)
+  checkEquals(data$files, fc$files())
+
+  deleteFile(fc, fc$files())
+  checkEquals(length(fc$files()), 0L)
+  checkEquals(length(data$files), 0L)
+  checkEquals(length(copy$files), 0L)
+
+  copy2 <- getEntity(data$properties$id)
+  checkEquals(length(copy2$files), 0L)
+  addFile(copy2, file)
+  checkEquals(length(copy2$files), 1L)
+  checkEquals(length(fc$files()), 1L)
+  checkEquals(length(data$files), 1L)
+  checkEquals(length(copy$files), 1L)
+}
 
 

@@ -39,7 +39,19 @@ setMethod(
         ## use a temp dir
         cacheRoot <- tempdir()
       }
-      setCacheRoot(ee@archOwn, cacheRoot, clean = TRUE)
+
+      ## TODO: remove this block after fixing setCacheRoot
+      if(!file.exists(cacheRoot))
+        dir.create(cacheRoot, recursive=TRUE)
+
+      cacheRoot <- normalizePath(cacheRoot)
+
+      if(cacheRoot %in% synapseClient:::availFileCaches()){
+          ee@archOwn@fileCache <- getFileCache(cacheRoot)
+        }else{
+          ## TODO: fix this
+          setCacheRoot(ee@archOwn, cacheRoot, clean = TRUE)
+        }
     }
     ee
   }

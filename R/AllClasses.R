@@ -179,6 +179,7 @@ setRefClass(
             file.copy(file.path(.self$cacheDir, .self$files()), .self$cacheRoot)
             ## re-cache the metaData to disk
             .self$cacheFileMetaData()
+            return(invisible(.self$archiveFile))
           }
 
           ## this check should be done elsewhere, but for now let's leave it here.
