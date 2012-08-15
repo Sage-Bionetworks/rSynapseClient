@@ -1,7 +1,28 @@
 # TODO: Add comment
-# 
+#
 # Author: furia
 ###############################################################################
+setGeneric(
+ name = "moveFileCache",
+ def = function(from, to){
+   standadGeneric("moveFileCache")
+ }
+)
+
+setGeneric(
+  name = "ArchiveOwner",
+  def = function(path){
+    standardGeneric("ArchiveOwner")
+  }
+)
+
+
+setGeneric(
+  name = "removeFileCache",
+  def = function(path){
+    standardGeneric("removeFileCache")
+  }
+)
 
 setGeneric(
   name = "Folder",
@@ -112,7 +133,7 @@ setGeneric(
   }
 )
 
-setGeneric(  
+setGeneric(
   name = "updateEntity",
     def = function(entity){
       standardGeneric("updateEntity")
@@ -200,7 +221,7 @@ setGeneric(
 
 
 setGeneric(
-  name = "loadEntity", 
+  name = "loadEntity",
   def=function(entity){
     standardGeneric("loadEntity")
   }

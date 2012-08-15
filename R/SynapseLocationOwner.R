@@ -76,10 +76,11 @@ setMethod(
   f = "createEntity",
   signature = "SynapseLocationOwner",
   definition = function(entity){
+    archOwn <- entity@archOwn
     cfun <- getMethod("createEntity", "SynapseEntity")
-    ee <- cfun(entity)
-    ee@archOwn <- entity@archOwn
-    ee
+    entity <- cfun(entity)
+    entity@archOwn <- setCacheRoot(archOwn, entity@archOwn@fileCache$getCacheRoot(), TRUE )
+    entity
   }
 )
 
@@ -96,10 +97,7 @@ setMethod(
     if(is.null(propertyValue(entity, "id"))){
       ## Create the LocationOwner in Synapse
       entity <- createEntity(entity)
-    } else {
-      ## Update the LocationOwner in Synapse just in case any other fields were changed
-      ## TODO is this needed?
-      entity <- updateEntity(entity)
+      filePath <- file.path(entity@archOwn@fileCache$getCacheRoot(), basename(filePath))
     }
 
     entity <- tryCatch(
@@ -121,6 +119,14 @@ setMethod(
     ## thing. don't move if src and dest are the same. make sure there are
     ## no straggler files left behind, clean up temp directories, etc.
     entity@archOwn <- setCacheRoot(entity@archOwn, destdir, clean = TRUE)
+    file.copy(filePath, dirname(entity$cacheDir))
+    if(file.exists(filePath))
+      file.remove(filePath)
+
+    ## make sure the fileCache gets added to the FileCacheFactory
+    ##entity@archOwn <- ArchiveOwner(destdir)
+    if(inherits(entity, "SynapseLocationOwnerWithObjects"))
+      setFileCache(entity@objOwn, entity@archOwn@fileCache)
 
     ## unpack the archive into it's new root directory.
     entity@archOwn <- unpackArchive(entity@archOwn)
@@ -180,22 +186,19 @@ setMethod(
     parsedUrl <- synapseClient:::.ParsedUrl(url)
     destfile <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@path))
     destfile <- path.expand(destfile)
-    cacheRoot <- gsub(basename(destfile), "", destfile, fixed=TRUE)
-    entity@archOwn <- setCacheRoot(entity@archOwn, cacheRoot, clean=TRUE)
+    cacheRoot <- dirname(destfile)
+    entity@archOwn <- ArchiveOwner(cacheRoot)
 
 
     ## passing the md5 sum causes this funciton to only download the file
     ## if the cached copy does not match that md5 sum
     if(file.exists(destfile)){
-      archiveFile = synapseDownloadFile(url, propertyValue(entity, "md5"))
+      archiveFile = synapseClient:::synapseDownloadFile(url, propertyValue(entity, "md5"))
     }else{
       archiveFile = synapseDownloadFile(url)
     }
     archiveFile <- normalizePath(archiveFile)
-
-
-    fc <- getFileCache(archiveFile)
-    entity@archOwn@fileCache <- fc
+    entity@archOwn <- ArchiveOwner(dirname(archiveFile))
     ## unpack the archive
     entity@archOwn <- unpackArchive(entity@archOwn)
 
