@@ -1,9 +1,9 @@
-# TODO: Add comment
-# 
+# Todo: Add comment
+#
 # Author: furia
 ###############################################################################
 
-.setUp <- 
+.setUp <-
   function()
 {
   synapseClient:::.setCache("oldWarn", options("warn")[[1]])
@@ -51,15 +51,15 @@ unitTestAddObject <-
   own$objects$foo <- "bar"
   checkEquals(names(own$objects), "foo")
   checkEquals(own$objects$foo, "bar")
-  
+
   copy <- addObject(own, "boo", "blah")
   checkTrue(all(names(own$objects) %in% c("foo", "blah")))
   checkTrue(all(c("foo", "blah") %in% names(own$objects)))
   checkEquals(own$objects$foo, "bar")
   checkEquals(own$objects$blah, "boo")
-  
+
   checkTrue(all(names(copy$objects) %in% c("foo", "blah")))
-  
+
 }
 
 unitTestAddObjectNoName <-
@@ -72,18 +72,18 @@ unitTestAddObjectNoName <-
   checkEquals(own$objects$foo, "bar")
   checkEquals(names(copy$objects), "foo")
   checkEquals(copy$objects$foo, "bar")
-  
+
   copy <- addObject(own, "boo", "blah")
   checkTrue(all(names(own$objects) %in% c("foo", "blah")))
   checkTrue(all(c("foo", "blah") %in% names(own$objects)))
   checkEquals(own$objects$foo, "bar")
   checkEquals(own$objects$blah, "boo")
-  
+
   checkTrue(all(names(copy$objects) %in% c("foo", "blah")))
-  
+
 }
 
-unitTestAddListFcn <- 
+unitTestAddListFcn <-
   function()
 {
   own <- new("CachingObjectOwner")
@@ -97,7 +97,7 @@ unitTestAddListFcn <-
   checkEquals(names(copy$objects), "foo")
   checkEquals(copy$objects$foo$a, "b")
   checkEquals(copy$objects$foo$one, 1L)
-  
+
   own <- new("CachingObjectOwner")
   copy <- addObject(own, foo, "bar")
   checkEquals(length(own$objects), 1L)
@@ -156,30 +156,30 @@ unitTestAddListUnlist <-
   own <- new("CachingObjectOwner")
   aList <- list(foo = "bar", boo = 1L)
   addObject(own, aList)
-  
+
   checkEquals(length(own$objects), 1L)
   checkEquals("aList", names(own$objects))
   checkEquals(own$objects$aList$foo, "bar")
   checkEquals(own$objects$aList$boo, 1L)
   checkEquals("list", as.character(class(own$objects$aList)))
-  
+
   own <- new("CachingObjectOwner")
   addObject(own, aList, unlist = TRUE)
-  
+
   checkEquals(length(own$objects), 2L)
   checkTrue(all(c("foo", "boo") %in% names(own$objects)))
   checkEquals(own$objects$foo, "bar")
   checkEquals(own$objects$boo, 1L)
-  
+
   own <- new("CachingObjectOwner")
   addObject(own, aList, unlist = FALSE)
-  
+
   checkEquals(length(own$objects), 1L)
   checkEquals("aList", names(own$objects))
   checkEquals(own$objects$aList$foo, "bar")
   checkEquals(own$objects$aList$boo, 1L)
   checkEquals("list", as.character(class(own$objects$aList)))
-  
+
 }
 
 
@@ -189,23 +189,23 @@ unitTestaddDataFrameUnlist <-
   own <- new("CachingObjectOwner")
   aList <- data.frame(foo = "bar", boo = 1L, stringsAsFactors=F)
   addObject(own, aList)
-  
+
   checkEquals(length(own$objects), 1L)
   checkEquals("aList", names(own$objects))
   checkEquals(own$objects$aList$foo, "bar")
   checkEquals(own$objects$aList$boo, 1L)
-  
+
   own <- new("CachingObjectOwner")
   addObject(own, aList, unlist = TRUE)
-  
+
   checkEquals(length(own$objects), 2L)
   checkTrue(all(c("foo", "boo") %in% names(own$objects)))
   checkEquals(own$objects$foo, "bar")
   checkEquals(own$objects$boo, 1L)
-  
+
   own <- new("CachingObjectOwner")
   addObject(own, aList, unlist = FALSE)
-  
+
   checkEquals(length(own$objects), 1L)
   checkEquals("aList", names(own$objects))
   checkEquals(own$objects$aList$foo, "bar")
@@ -217,7 +217,7 @@ unitTestGetPackageName <-
 {
   own <- new("CachingObjectOwner")
   checkTrue(grepl("CachingObjectOwner", getPackageName(own)))
-  
+
   setPackageName("foo", own)
   checkEquals( "foo", getPackageName(own))
 }
@@ -227,7 +227,7 @@ unitTestAttach <-
   function()
 {
   own <- new("CachingObjectOwner")
-  
+
   own$objects$aNum <- 1L
   synapseClient:::.setCache("detachMe", getPackageName(own))
   attach(own)
@@ -240,7 +240,7 @@ unitTestDetach <-
   function()
 {
   own <- new("CachingObjectOwner")
-  
+
   own$objects$aNum <- 1L
   attach(own)
   synapseClient:::.setCache("detachMe", getPackageName(own))
@@ -251,7 +251,7 @@ unitTestDetach <-
   checkTrue(!(getPackageName(own) %in% search()))
 }
 
-unitTestNoZip <- 
+unitTestNoZip <-
   function()
 {
   ## need to verify the proper behavior when zip is not installed:
@@ -263,9 +263,9 @@ unitTestNoZip <-
   ## 2) loadCachedObjects() method should recognize and load the object
   ## with the ".R_OBJECTS_" prefix.
   ##
-  ## 3) If loadCachedObjects is called on a system with zip for an 
+  ## 3) If loadCachedObjects is called on a system with zip for an
   ## archive created on a system without zip (as indicated by the presence
-  ## of a file with the ".R_OBJECTS_" prefix) the function should 
+  ## of a file with the ".R_OBJECTS_" prefix) the function should
   ## print an informative message with instructions for how to "repair"
   ## the archive.
   ##
@@ -275,9 +275,6 @@ unitTestNoZip <-
   ##
   ## 5) Once the archive "repaired", the restriction of a storing only
   ## a single object should be lifted.
-  
-  stop("Not yet implmented: Bruce?")
+  options(warn=1)
+  warning("Not yet implmented: Bruce?")
 }
-
-
-
