@@ -49,6 +49,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   .setCache("useJava", FALSE)
 
   if(("rJava" %in% utils::installed.packages())){
+    options(java.parameters="-Xrs")
     javaInitReturn <- tryCatch(
       rJava::.jinit(classpath), 
       error = function(e){
@@ -58,7 +59,6 @@ kSupportedDataLocationTypes <- c("external", "awss3")
       }
     )
     if(javaInitReturn >= 0L){
-      options(java.parameters="-Xrs")
       tryCatch({
           # use the non-default text-based progress listener for uploads
           progress <- rJava::.jnew("org/sagebionetworks/client/TextProgressListener")
