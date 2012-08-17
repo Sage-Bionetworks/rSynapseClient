@@ -120,7 +120,7 @@ unitTestExistingSingleFileNotInFactory <-
   fc <- getFileCache(archivefile)
   checkEquals(fc$cacheRoot, cacheRoot)
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
-  checkEquals(synapseClient:::availFileCaches(), archivefile)
+  checkEquals(synapseClient:::availFileCaches(), cacheRoot)
 }
 
 unitTestSingleFileNotInFactory <-
