@@ -174,9 +174,12 @@ setMethod(
 setMethod(
   f = "ArchiveOwner",
   signature = "character",
-  definition = function(path){
+  definition = function(path, archiveFileName){
     own <- new("ArchiveOwner")
     own@fileCache <- getFileCache(path)
+    if(!missing(archiveFileName)){
+      own@fileCache$setArchiveFileName(archiveFileName)
+    }
     own
   }
 )

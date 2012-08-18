@@ -11,7 +11,7 @@ setGeneric(
 
 setGeneric(
   name = "ArchiveOwner",
-  def = function(path){
+  def = function(path, ...){
     standardGeneric("ArchiveOwner")
   }
 )

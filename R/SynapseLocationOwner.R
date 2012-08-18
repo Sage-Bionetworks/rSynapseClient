@@ -164,22 +164,6 @@ setMethod(
   f = "downloadEntity",
   signature = "SynapseLocationOwner",
   definition = function(entity){
-    ## check whether user has signed agreement
-    ## euals are broken. ignore for now
-#    if(!hasSignedEula(entity)){
-#      if(!.promptSignEula())
-#        stop(sprintf("Visit https://synapse.sagebase.org to sign the EULA for entity %s", propertyValue(entity, "id")))
-#      if(!.promptEulaAgreement(entity))
-#        stop("You must sign the EULA to download this dataset. Visit http://synapse.sagebase.org for more information.")
-#      .signEula(entity)
-#    }
-
-    ## download the archive from S3
-    ## Note that we just use the first location, to future-proof this we would use the location preferred
-    ## by the user, but we're gonna redo this in java so no point in implementing that here right now
-#    dfun <- getMethod("downloadEntity", "SynapseEntity")
-#    ee <- dfun(entity)
-#    ee@archOwn <- entity@archOwn
 
     if(is.null(propertyValue(entity, "locations")[[1]][['path']]))
       return(entity)
@@ -191,7 +175,11 @@ setMethod(
     destfile <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@path))
     destfile <- path.expand(destfile)
     cacheRoot <- dirname(destfile)
-    entity@archOwn <- ArchiveOwner(cacheRoot)
+    if(entity@archOwn@fileCache$archiveFile != basename(destfile)){
+      entity@archOwn <- ArchiveOwner(cacheRoot, basename(destfile))
+    } else {
+      entity@archOwn <- ArchiveOwner(cacheRoot)
+    }
 
 
     ## passing the md5 sum causes this funciton to only download the file
@@ -202,7 +190,11 @@ setMethod(
       archiveFile = synapseDownloadFile(url)
     }
     archiveFile <- normalizePath(archiveFile)
-    entity@archOwn <- ArchiveOwner(dirname(archiveFile))
+    if(entity@archOwn@fileCache$archiveFile != basename(destfile)){
+      entity@archOwn <- ArchiveOwner(cacheRoot, basename(destfile))
+    } else {
+      entity@archOwn <- ArchiveOwner(cacheRoot)
+    }
     ## unpack the archive
     entity@archOwn <- unpackArchive(entity@archOwn)
 

@@ -291,6 +291,29 @@ setRefClass(
         delete = function(){
           .self$deleteFileMetaData()
           unlink(.self$getCacheDir(), recursive=TRUE, force=TRUE)
+        },
+        setArchiveFileName = function(fileName){
+          oldFile <- file.path(.self$getCacheRoot(), .self$archiveFile)
+          newFile <- file.path(.self$getCacheRoot(), fileName)
+          archFile <- .self$createArchive()
+
+          if(!is.null(archFile)){
+            if(file.exists(newFile))
+              unlink(newFile, recursive = TRUE, force = TRUE)
+
+            if(file.exists(oldFile)){
+              success <- file.copy(oldFile, newFile, overwrite=TRUE)
+              if(!success)
+                stop("unable to move archive file")
+              unlink(oldFile)
+            }
+          }
+          .self$archiveFile <- fileName
+          if(file.exists(.self$cacheDir))
+            unlink(.self$cacheDir, recursive=TRUE)
+          .self$cacheDir <- sprintf("%s_unpacked", newFile)
+          if(file.exists(newFile))
+            .self$unpackArchive()
         }
     )
 )
