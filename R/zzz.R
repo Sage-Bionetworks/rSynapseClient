@@ -47,25 +47,36 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   packageStartupMessage("\nChecking rJava installation...")
   
   .setCache("useJava", FALSE)
-  options(java.parameters="-Xrs")
-  if(("rJava" %in% installed.packages()) && rJava::.jinit(classpath) >= 0L){
-    tryCatch({
-        # use the non-default text-based progress listener for uploads
-        progress <- rJava::.jnew("org/sagebionetworks/client/TextProgressListener")
-        uploader <- rJava::.jnew("org/sagebionetworks/client/DataUploaderMultipartImpl")
-        uploader$setProgressListener(progress)
 
-        .setCache("mpUploader", uploader)
-        .setCache("useJava", TRUE)
-        packageStartupMessage("OK")
-      }, error = function(e) {
-        warning(e)
+  if(("rJava" %in% utils::installed.packages())){
+    options(java.parameters="-Xrs")
+    javaInitReturn <- tryCatch(
+      rJava::.jinit(classpath), 
+      error = function(e){
+        ##warning(e)
         .setCache("useJava", FALSE)
+        -1L
       }
     )
+    if(javaInitReturn >= 0L){
+      tryCatch({
+          # use the non-default text-based progress listener for uploads
+          progress <- rJava::.jnew("org/sagebionetworks/client/TextProgressListener")
+          uploader <- rJava::.jnew("org/sagebionetworks/client/DataUploaderMultipartImpl")
+          uploader$setProgressListener(progress)
+
+          .setCache("mpUploader", uploader)
+          .setCache("useJava", TRUE)
+          packageStartupMessage("OK")
+        }, error = function(e) {
+          warning(e)
+          .setCache("useJava", FALSE)
+        }
+      )
+    }
   }
   if(!.getCache("useJava"))
-    packageStartupMessage("NOTE: rJava and/or the Synapse Java client are not installed on your system and so file upload/download performance \nwill be reduced and file uploads will be limited to 5GB. Consider installing \nrJava by typing install.packages(rJava) at the command prompt")
+    packageStartupMessage("NOTE: rJava and/or the Synapse Java client are not installed on your system and so file \nupload/download performance will be reduced and file uploads will be limited to 5GB. \nConsider installing rJava by typing install.packages(rJava) at the command prompt")
   
   packageStartupMessage(tou)
   
