@@ -123,9 +123,6 @@ setMethod(
     ## thing. don't move if src and dest are the same. make sure there are
     ## no straggler files left behind, clean up temp directories, etc.
     entity@archOwn <- setCacheRoot(entity@archOwn, destdir, clean = TRUE)
-    file.copy(filePath, dirname(entity$cacheDir))
-    if(file.exists(filePath))
-      file.remove(filePath)
 
     ## make sure the fileCache gets added to the FileCacheFactory
     ##entity@archOwn <- ArchiveOwner(destdir)
