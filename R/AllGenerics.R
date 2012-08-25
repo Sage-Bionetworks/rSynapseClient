@@ -5,7 +5,7 @@
 setGeneric(
  name = "moveFileCache",
  def = function(from, to){
-   standadGeneric("moveFileCache")
+   standardGeneric("moveFileCache")
  }
 )
 
