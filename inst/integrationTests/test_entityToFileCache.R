@@ -60,9 +60,8 @@ integrationTestGetAnnotations <- function()
 
 integrationTestCreateUpdateDeleteEntity <- function() {
 	# create a new Entity
-	entityName<-paste("testName_", gsub(':', '_', date()))
 	entityType<-"org.sagebionetworks.repo.model.Project"
-	s <- SynapseEntity(list(name=entityName, entityType=entityType))
+	s <- SynapseEntity(list(entityType=entityType))
 	s <- synapseClient:::doCreateEntity(s)
 	id <- s@properties[["id"]]
 	checkTrue(!is.null(id))
@@ -80,10 +79,9 @@ integrationTestCreateUpdateDeleteEntity <- function() {
 	eTag <- entity@properties[["etag"]]
 	checkTrue(!is.null(eTag))
 	checkEquals(id, entity@properties[["id"]])
-	checkEquals(entityName, entity@properties[["name"]])
 	checkEquals(entityType, entity@properties[["entityType"]])
 	# update the entity in the file cache
-	newName <- paste(entityName, "modified")
+	newName <- paste(entity$properties$name, "modified")
 	entity@properties[["name"]]<-newName
     synapseClient:::updateEntityInFileCache(entity)
 	# make sure the file has been updated
@@ -111,9 +109,8 @@ integrationTestCreateUpdateDeleteEntity <- function() {
 
 integrationTestCreateUpdateDeleteAnnotations <- function() {
 	# create a new Entity
-	entityName<-paste("annotTestName_", gsub(':', '_', date()))
 	entityType<-"org.sagebionetworks.repo.model.Project"
-	s <- SynapseEntity(list(name=entityName, entityType=entityType))
+	s <- SynapseEntity(list(entityType=entityType))
 	s <- synapseClient:::doCreateEntity(s)
 	id <- s@properties[["id"]]
 	checkTrue(!is.null(id))
@@ -173,9 +170,8 @@ integrationTestCreateUpdateDeleteAnnotations <- function() {
 
 integrationTestCRUDConvenienceMethods <- function() {
 	# create a new SynapseEntity in memory
-	entityName<-paste("convenienceTestName_", gsub(':', '_', date()))
 	entityType<-"org.sagebionetworks.repo.model.Project"
-	s <- SynapseEntity(list(name=entityName, entityType=entityType))
+	s <- SynapseEntity(list(entityType=entityType))
 	fooList<-c("bar", "bas")
 	annotValue(s, "foo")<-fooList
 	
@@ -192,12 +188,11 @@ integrationTestCRUDConvenienceMethods <- function() {
 	# check the contents
 	eTag <- propertyValue(s, "etag")
 	checkTrue(!is.null(eTag))
-	checkEquals(entityName, propertyValue(s, "name"))
 	checkEquals(entityType, propertyValue(s, "entityType"))
 	checkEquals(fooList, annotValue(s, "foo"))
 	
 	# update the entity in the file cache
-	newName <- paste(entityName, "modified")
+	newName <- paste(s$properties$name, "modified")
 	propertyValue(s, "name")<-newName
 	newFooList<-c("incan", "monkey-god")
 	annotValue(s, "foo")<-newFooList
