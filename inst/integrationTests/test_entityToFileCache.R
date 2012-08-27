@@ -13,7 +13,7 @@
 
 	# now create a Project
 	entityList <- list(
-			name = paste("myProject", gsub(':', '_', date())),
+			name = sprintf("myProject_%s_%s", basename(tempfile(pattern="")), gsub('[: ]', '_', date())),
 			entityType = "org.sagebionetworks.repo.model.Project"
 	)
 	entityList <- synapseClient:::.synapsePostPut("/entity", entityList, "POST")
