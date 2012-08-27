@@ -7,11 +7,7 @@
   function()
 {
   ### create a project
-  project <- Project()
-  propertyValues(project) <- list(
-    name = paste("LocationOwnerWithObjects-Project", gsub(':', '_', date()))
-  )
-  project <- createEntity(project)
+  project <- createEntity(Project())
   synapseClient:::.setCache("testProject", project)
 
   ### create a study

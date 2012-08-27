@@ -10,11 +10,7 @@
   options(warn=2)
 
   ## create a project
-  project <- Project()
-  propertyValues(project) <- list(
-    name = paste("myProject", gsub(':', '_', date()))
-  )
-  project <- createEntity(project)
+  project <- createEntity(Project())
   synapseClient:::.setCache("testProject", project)
 
   synapseClient:::.setCache("oldCacheDir", synapseCacheDir())
