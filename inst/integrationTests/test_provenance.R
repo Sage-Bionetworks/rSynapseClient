@@ -5,7 +5,7 @@
 .setUp <- 
   function()
 {
-  synapseClient:::.setCache("testProjectName", paste('Provenance Integration Test Project', gsub(':', '_', date())))
+  synapseClient:::.setCache("testProject", createEntity(Project()))
   synapseClient:::.setCache("oldProvPref", synapseClient:::.getCache('enableProvenance'))
   if(is.null(getStep()))
     ss <- startStep()
@@ -34,14 +34,8 @@ integrationTestProvenance <-
   function() 
 {
   ## Create Project
-  project <- createEntity(
-    Project(
-      list(
-        name=synapseClient:::.getCache("testProjectName")
-      )))
-  synapseClient:::.setCache("testProject", project)
-  checkEquals(propertyValue(project,"name"), synapseClient:::.getCache("testProjectName"))
-  
+  project <- synapseClient:::.getCache("testProject")
+   
   ## Create Study
   study <- createEntity(
     Study(
