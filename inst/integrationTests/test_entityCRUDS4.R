@@ -3,11 +3,6 @@
 ### Author: Matthew D. Furia <matt.furia@sagebase.org>
 ################################################################################ 
 
-.setUp <- 
-  function()
-{
-  synapseClient:::.setCache("testProjectName", paste('R Entity S4 CRUD Integration Test Project', gsub(':', '_', date())))
-}
 
 .tearDown <- 
   function()
@@ -22,9 +17,7 @@ integrationTestCreateS4Entities <-
   function()
 {
   ## Create Project
-  project <- Project()
-  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
-  createdProject <- createEntity(project)
+  project <- createEntity(Project())
   synapseClient:::.setCache("testProject", createdProject)
   checkEquals(propertyValue(createdProject,"name"), synapseClient:::.getCache("testProjectName"))
   

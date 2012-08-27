@@ -2,11 +2,7 @@
   function()
 {
   ### create a project
-  project <- Project()
-  propertyValues(project) <- list(
-    name = paste("FileCacheFactory-Project", gsub(':', '_', date()))
-  )
-  project <- createEntity(project)
+  project <- createEntity(Project())
   synapseClient:::.setCache("testProject", project)
 
   synapseClient:::.setCache("oldWarn", options("warn")[[1]])
