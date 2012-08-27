@@ -3,11 +3,6 @@
 ### Author: Matthew D. Furia <matt.furia@sagebase.org>
 ################################################################################ 
 
-.setUp <- 
-  function()
-{
-  synapseClient:::.setCache("testProjectName", paste('R Entity S4 CRUD Integration Test Project', gsub(':', '_', date())))
-}
 
 .tearDown <- 
   function()
@@ -23,10 +18,8 @@ integrationTestCreateS4Entities <-
 {
   ## Create Project
   project <- Project()
-  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
-  checkEquals(propertyValue(createdProject,"name"), synapseClient:::.getCache("testProjectName"))
   
   ## Create Study
   study <- Study()
@@ -52,7 +45,6 @@ integrationTestCreateEntityWithAnnotations <-
 {
   ## Create Project
   project <- Project()
-  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   annotValue(project, "annotationKey") <- "projectAnnotationValue"
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
@@ -75,7 +67,6 @@ integrationTestCreateEntityWithNAAnnotations <-
 {
   ## Create Project
   project <- Project()
-  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   annotValue(project, "annotationKey") <- "projectAnnotationValue"
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
@@ -111,10 +102,8 @@ integrationTestUpdateS4Entity <-
 {
   ## Create Project
   project <- Project()
-  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
-  checkEquals(propertyValue(createdProject,"name"), propertyValue(project,"name"))
   
   ## set an annotation value and update. 
   annotValue(createdProject, "newKey") <- "newValue"
@@ -160,7 +149,6 @@ integrationTestDeleteEntity <-
   function()
 {
   project <- Project()
-  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
   
@@ -184,7 +172,6 @@ integrationTestDeleteEntity <-
   ## need to fix this
   ##checkTrue(!any(grepl('createdProject', ls())))
   createdProject <- synapseClient:::.getCache("testProject")
-  checkEquals(propertyValue(createdProject, "name"), propertyValue(deletedProject, "name"))
   checkEquals(propertyValue(deletedProject,"id"), NULL)
   
   checkException(getEntity(createdStudy))
@@ -197,26 +184,20 @@ integrationTestGetEntity <-
 {
   ## Create Project
   project <- Project()
-  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
-  checkEquals(propertyValue(createdProject,"name"), synapseClient:::.getCache("testProjectName"))
   
   fetchedProject <- getEntity(propertyValue(createdProject, "id"))
   checkEquals(propertyValue(fetchedProject, "id"), propertyValue(createdProject, "id"))
-  checkEquals(propertyValue(fetchedProject,"name"), synapseClient:::.getCache("testProjectName"))
   
   fetchedProject <- getEntity(as.character(propertyValue(createdProject, "id")))
   checkEquals(propertyValue(fetchedProject, "id"), propertyValue(createdProject, "id"))
-  checkEquals(propertyValue(fetchedProject,"name"), synapseClient:::.getCache("testProjectName"))
   
   fetchedProject <- getEntity(synapseClient:::.extractEntityFromSlots(createdProject))
   checkEquals(propertyValue(fetchedProject, "id"), propertyValue(createdProject, "id"))
-  checkEquals(propertyValue(fetchedProject,"name"), synapseClient:::.getCache("testProjectName"))
   
   fetchedProject <- getEntity(createdProject)
   checkEquals(propertyValue(fetchedProject, "id"), propertyValue(createdProject, "id"))
-  checkEquals(propertyValue(fetchedProject,"name"), synapseClient:::.getCache("testProjectName"))
 }
 
 integrationTestReplaceAnnotations <- 
@@ -225,7 +206,6 @@ integrationTestReplaceAnnotations <-
   # fix this test
   ## Create Project
   project <- Project()
-  propertyValue(project,"name") <- synapseClient:::.getCache("testProjectName")
   annotations(project) <- list(annotation1="value1", annotation2="value2")
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)

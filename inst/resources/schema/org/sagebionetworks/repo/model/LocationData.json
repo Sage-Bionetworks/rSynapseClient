@@ -1,0 +1,13 @@
+{
+    "description":"JSON schema for Location Data POJO",
+    "properties":{
+        "type":{
+            "$ref":"org.sagebionetworks.repo.model.LocationTypeNames"
+        },
+        "path":{
+            "description":"The path of this location",
+            "type":"string"
+            
+        }
+    }
+}

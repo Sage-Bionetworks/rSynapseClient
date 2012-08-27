@@ -1,0 +1,10 @@
+{
+	"title": "GenericData",
+	"type": "interface",
+    "implements":[
+        {
+            "$ref":"org.sagebionetworks.repo.model.Locationable"
+        }
+    ]
+
+}
