@@ -112,7 +112,7 @@ unitTestChangeRootExistingFile <-
   newroot <- tempfile()
   synapseClient:::setCacheRoot(fc, newroot, TRUE)
 
-  checkEquals(normalizePath(newroot), fc$getCacheRoot())
+  checkEquals(gsub("[\\/]+", "/", normalizePath(newroot)), fc$getCacheRoot())
 
   cacheDir <- file.path(fc$getCacheRoot(), "archive.zip_unpacked")
   checkEquals(cacheDir, fc$getCacheDir())
@@ -140,7 +140,7 @@ unitTestChangeRootExistingArchive <-
   checkTrue(!file.exists(oldroot))
   checkTrue(file.exists(newroot))
   checkTrue(file.exists(file.path(newroot, fc$archiveFile)))
-  checkEquals(normalizePath(newroot), fc$getCacheRoot())
+  checkEquals(gsub("[\\/]+", "/", normalizePath(newroot)), fc$getCacheRoot())
   checkTrue(file.exists(fc$getCacheDir()))
   checkTrue(file.exists(file.path(fc$getCacheDir(), basename(file))))
 }
