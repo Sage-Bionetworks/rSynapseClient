@@ -28,7 +28,7 @@ setMethod(
       return(fileCache)
     }
     archivePath <- normalizePath(archivePath, mustWork=TRUE)
-    archivePath <- gsub("/+", "/", archivePath)
+    archivePath <- gsub("[\\/]+", "/", archivePath)
     archivePath <- gsub("/+$", "", archivePath)
 
     if(file.info(archivePath)$isdir){
