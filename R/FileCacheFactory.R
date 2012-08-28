@@ -28,7 +28,7 @@ setMethod(
       return(fileCache)
     }
     archivePath <- normalizePath(archivePath, mustWork=TRUE)
-    archivePath <- gsub("/+", "/", archivePath)
+    archivePath <- gsub("[\\/]+", "/", archivePath)
     archivePath <- gsub("/+$", "", archivePath)
 
     if(file.info(archivePath)$isdir){
@@ -59,8 +59,8 @@ setMethod(
   signature = signature("character", "character"),
   definition = function(from, to){
     factory <- new("FileCacheFactory")
-    from <- normalizePath(from, mustWork=FALSE)
-    to <- normalizePath(to, mustWork=FALSE)
+    from <- gsub("[\\/]+", "/", normalizePath(from, mustWork=FALSE))
+    to <- gsub("[\\/]+", "/", normalizePath(to, mustWork=FALSE))
     assign(to, get(from, envir=factory@env) ,envir=factory@env)
     rm(list=from, envir=factory@env)
   }
@@ -97,6 +97,6 @@ setMethod(
   signature = "character",
   definition = function(path){
     factory <- new("FileCacheFactory")
-    rm(list=normalizePath(path), envir=factory@env)
+    rm(list=gsub("[\\/]+", "/", normalizePath(path)), envir=factory@env)
   }
 )
