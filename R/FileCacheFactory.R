@@ -59,8 +59,8 @@ setMethod(
   signature = signature("character", "character"),
   definition = function(from, to){
     factory <- new("FileCacheFactory")
-    from <- normalizePath(from, mustWork=FALSE)
-    to <- normalizePath(to, mustWork=FALSE)
+    from <- gsub("[\\/]+", "/", normalizePath(from, mustWork=FALSE))
+    to <- gsub("[\\/]+", "/", normalizePath(to, mustWork=FALSE))
     assign(to, get(from, envir=factory@env) ,envir=factory@env)
     rm(list=from, envir=factory@env)
   }

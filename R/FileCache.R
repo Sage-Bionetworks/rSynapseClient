@@ -15,6 +15,7 @@ setMethod(
   signature = signature("FileCache", "character", "logical", "missing"),
   definition = function(object, path, clean){
 
+    path <- gsub("[\\/]+", "/", path)
     ## compute the cachedir <cacheroot>/<cachedir>
     cacheDir <- file.path(path, sprintf("%s_unpacked", object$archiveFile))
 
@@ -31,8 +32,8 @@ setMethod(
     }
 
     dir.create(cacheDir, recursive=TRUE)
-    cacheDir <- normalizePath(cacheDir, mustWork=TRUE)
-    path <- normalizePath(path, mustWork=TRUE)
+    cacheDir <- gsub("[\\/]+", "/", normalizePath(cacheDir, mustWork=TRUE))
+    path <- gsub("[\\/]+", "/", normalizePath(path, mustWork=TRUE))
 
     ## copy over the existing archive. by default we copy everyting
     ## TODO: implement different copy modes: all, none, files, archive
@@ -47,7 +48,7 @@ setMethod(
     names(object$metaData) <- gsub(object$cacheDir, cacheDir, names(object$metaData), fixed = TRUE)
 
     ## move the FileCache in the Factory
-    if(normalizePath(object$cacheRoot, mustWork=FALSE) %in% availFileCaches())
+    if(gsub("[\\/]+", "/", normalizePath(object$cacheRoot, mustWork=FALSE)) %in% availFileCaches())
       moveFileCache(object$cacheRoot, path)
 
     ## set the member variables to reflect the new values
