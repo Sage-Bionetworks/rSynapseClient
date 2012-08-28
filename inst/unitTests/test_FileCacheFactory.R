@@ -235,7 +235,7 @@ unitTestRemoveFileCache <-
 
   fc <- synapseClient:::getFileCache(file)
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
-  checkEquals(synapseClient:::availFileCaches(), normalizePath(root))
+  checkEquals(synapseClient:::availFileCaches(), gsub("[\\/]", "/", normalizePath(root)))
 
   synapseClient:::removeFileCache(root)
   checkEquals(length(synapseClient:::availFileCaches()), 0L)
