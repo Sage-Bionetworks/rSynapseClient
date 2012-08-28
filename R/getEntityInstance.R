@@ -44,7 +44,7 @@ setMethod(
       if(!file.exists(cacheRoot))
         dir.create(cacheRoot, recursive=TRUE)
 
-      cacheRoot <- normalizePath(cacheRoot)
+      cacheRoot <- gsub("[\\/]+", "/", normalizePath(cacheRoot))
 
       if(cacheRoot %in% synapseClient:::availFileCaches()){
           ee@archOwn@fileCache <- getFileCache(cacheRoot)
