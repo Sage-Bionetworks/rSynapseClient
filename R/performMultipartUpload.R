@@ -9,7 +9,7 @@
   ## Get credentials needed to upload to S3
   s3Token <- list()
   s3Token$md5 <- as.character(tools::md5sum(filePath))
-  s3Token$path <- filePath
+  s3Token$path <- basename(filePath)
   s3Token <- synapseClient:::synapsePost(propertyValue(entity, "s3Token"), s3Token)
   
   ## instantiate a java S3Token class and populate the fields
@@ -25,7 +25,7 @@
   rJava::.jcall(javaS3Token, "V", "setPresignedUrl", s3Token$presignedUrl)
   
   jfile <- rJava::.jnew("java/io/File", filePath)
-  uploader <- .getCache("mpUploader")
+  uploader <- synapseClient:::.getCache("mpUploader")
   rJava::.jcall(uploader, "V", "uploadDataMultiPart", javaS3Token, jfile)
   
   
