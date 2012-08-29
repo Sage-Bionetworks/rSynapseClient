@@ -234,8 +234,8 @@ unitTestRemoveFileCache <-
   cat("Hello World\n", file=file)
 
   fc <- synapseClient:::getFileCache(file)
-  checkEquals(length(synapseClient:::availFileCaches()), 1L)  
-  checkEquals(normalizePath(synapseClient:::availFileCaches()), normalizePath(root))
+  checkEquals(length(synapseClient:::availFileCaches()), 1L)
+  checkEquals(synapseClient:::availFileCaches(), gsub("[\\/]", "/", normalizePath(root)))
 
   synapseClient:::removeFileCache(root)
   checkEquals(length(synapseClient:::availFileCaches()), 0L)
@@ -281,7 +281,7 @@ unitTestChangeRoot <-
 
   newRoot <- tempfile()
   synapseClient:::setCacheRoot(fc2, newRoot)
-  checkEquals(normalizePath(fc2$getCacheRoot()),  normalizePath(newRoot))
+  checkEquals(fc2$getCacheRoot(), gsub("[\\/]+", "/", normalizePath(newRoot)))
   checkTrue(file.exists(newRoot))
   checkTrue(file.exists(file.path(fc$getCacheDir(), fc$files())))
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
