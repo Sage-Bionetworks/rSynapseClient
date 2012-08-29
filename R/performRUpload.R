@@ -7,7 +7,7 @@
 
 .performRUpload <- function(entity, filePath) {
   ## parse out the filename
-  filename <- gsub(sprintf("%s%s%s", "^.+",.Platform$file.sep, "+"), "",filePath)
+  filename <- basename(filePath)
   
   ## Get credentials needed to upload to S3
   s3Token <- list()
