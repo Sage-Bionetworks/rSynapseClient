@@ -172,7 +172,17 @@ synapseLogin <-
       }
     )
   }
-  sprintf("Welcome %s!", response$displayName)
+
+  ## try to fetch user's display name from profile for a proper greeting
+  tryCatch({
+      profile <- synapseGet(uri="/userProfile")
+      greetingName <- profile$displayName
+    },
+    error = function(e) {
+      greetingName <- credentials$username
+    })
+
+  sprintf("Welcome %s!", greetingName)
 }
 
 synapseLogout <-
