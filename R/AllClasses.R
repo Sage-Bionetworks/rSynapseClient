@@ -168,6 +168,13 @@ setRefClass(
           ## delete the existing archive file
           if(file.exists(file.path(.self$cacheRoot, .self$archiveFile)))
             unlink(file.path(.self$cacheRoot, .self$archiveFile))
+
+          ## if the FileCache has no files, delete the archive file, if it exists and return NULL
+          if(length(.self$files()) == 0L){
+             unlink(file.path(.self$cacheRoot, .self$archiveFile))
+          
+            return(NULL)
+          }
           
           ## if the FileCache has no files, throw and exception
           if(length(.self$files()) == 0L)

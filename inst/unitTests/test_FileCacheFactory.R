@@ -63,15 +63,10 @@ unitTestExistingCacheZipNotInFactory <-
   fc <- getFileCache(archivefile)
   checkEquals(fc$cacheRoot, cacheRoot)
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
-<<<<<<< HEAD
-  checkEquals(synapseClient:::availFileCaches(), cacheRoot)
 
-  fc.copy <- getFileCache(fc$cacheRoot)
-=======
-  checkEquals(synapseClient:::availFileCaches(), archivefile)
+  checkEquals(synapseClient:::availFileCaches(), cacheRoot)
   
   fc.copy <- getFileCache(file.path(fc$cacheRoot, fc$archiveFile))
->>>>>>> ae97a52... Fixed bug in FileCacheFactory (SYNR-220)
   checkEquals(fc.copy$cacheRoot, fc$cacheRoot)
   checkEquals(fc.copy$files(), fc$files())
   checkEquals(fc.copy$archiveFile, fc.copy$archiveFile)
@@ -248,27 +243,6 @@ unitTestRemoveFileCache <-
   checkEquals(length(synapseClient:::availFileCaches()), 0L)
 }
 
-unitTestMultipleArchivesSameRoot <-
-    function()
-{
-  root <- tempfile()
-  dir.create(root)
-  file1 <- tempfile(tmpdir = root)
-  file2 <- tempfile(tmpdir = root)
-  
-  cat("Hello World\n", file=file1)
-  cat("Hello Universe\n", file=file2)
-  
-  fc1 <- getFileCache(file1)
-  fc2 <- getFileCache(file2)
-  
-  checkEquals(normalizePath(file1), file.path(fc1$cacheRoot, fc1$archiveFile))
-  checkEquals(normalizePath(file2), file.path(fc2$cacheRoot, fc2$archiveFile))
-  
-}
-
-
-
 unitTestGetFileCache <-
   function()
 {
@@ -309,11 +283,9 @@ unitTestChangeRoot <-
 
   newRoot <- tempfile()
   synapseClient:::setCacheRoot(fc2, newRoot)
-<<<<<<< HEAD
-  checkEquals(normalizePath(fc2$getCacheRoot()),  normalizePath(newRoot))
-=======
+
   checkEquals(fc2$getCacheRoot(), gsub("[\\/]+", "/", normalizePath(newRoot)))
->>>>>>> da4780e... Manually merging pull request
+
   checkTrue(file.exists(newRoot))
   checkTrue(file.exists(file.path(fc$getCacheDir(), fc$files())))
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
