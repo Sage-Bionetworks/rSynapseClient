@@ -1,4 +1,4 @@
-## Promt the user for login credentials
+## Prompt the user for login credentials
 ## 
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
