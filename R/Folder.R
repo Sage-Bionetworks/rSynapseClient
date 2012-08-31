@@ -7,19 +7,16 @@
 setMethod(
   f = "Folder",
   signature = "list",
-  definition = function(entity){
-    ee <- new("Folder")
-    ee@properties <- entity
-    ee@properties$entityType <- getSynapseTypeFromClass(as.character(class(ee)))
-    ee
+  definition = function(entity, ...){
+    Constructor("Folder", entity, ...)
   }
 )
 
 setMethod(
   f = "Folder",
   signature = "missing",
-  definition = function(){
-    Folder(list())
+  definition = function(entity, ...){
+    Constructor("Folder", ...)
   }
 )
 

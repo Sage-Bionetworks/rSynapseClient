@@ -6,7 +6,7 @@
 setMethod(
   f = "Analysis",
   signature = "numeric",
-  definition = function(entity){
+  definition = function(entity, ...){
     Analysis(as.character(entity))
   }
 )
@@ -14,7 +14,7 @@ setMethod(
 setMethod(
   f = "Analysis",
   signature = "character",
-  definition = function(entity){
+  definition = function(entity, ...){
     entity <- getAnalysis(entity = entity)
     Analysis(entity)
   }
@@ -23,18 +23,15 @@ setMethod(
 setMethod(
   f = "Analysis",
   signature = "list",
-  definition = function(entity){
-    ee <- new("Analysis")
-    ee@properties <- entity
-    ee@properties$entityType <- getSynapseTypeFromClass(as.character(class(ee)))
-    ee
+  definition = function(entity, ...){
+    Constructor("Analysis", entity, ...)
   }
 )
 
 setMethod(
   f = "Analysis",
   signature = "missing",
-  definition = function(entity){
-    Analysis(list())
+  definition = function(entity, ...){
+    Constructor("Analysis", ...)
   }
 )
