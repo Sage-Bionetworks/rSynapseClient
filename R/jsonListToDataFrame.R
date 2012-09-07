@@ -4,8 +4,8 @@
 ###############################################################################
 
 .jsonListToDataFrame <- function(jsonList){
-  returnVal <- NULL
-  for(i in 1:length(jsonList)){
+  returnVal <- data.frame()
+  for(i in seq(along=jsonList)){
     thisRow <- .parseSingleRow(jsonList[[i]])
     if(is.null(returnVal)){
       returnVal <- thisRow
