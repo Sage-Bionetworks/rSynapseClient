@@ -67,6 +67,34 @@
 #  checkTrue(6 <= nrow(layersOrderBy))
 #}
 
+integrationTestSynapseQuery_QueryResult <- function() {
+  qr <- synapseQuery("select id, name, parentId from dataset", blockSize=10)
+  checkEquals(as.character(class(qr)), "QueryResult")
+
+  df <- qr$fetch()
+  checkEquals(nrow(df), 10)
+  checkEquals(ncol(df), 3)
+
+  df <- qr$fetch()
+  checkEquals(nrow(df), 10)
+  checkEquals(ncol(df), 3)
+}
+
+integrationTestSynapseQuery_fetch_with_limits <- function() {
+	df <- synapseQuery("select id, name from dataset limit 75")
+	checkEquals(nrow(df), 75)
+
+	qr <- synapseQuery("select * from dataset limit 75", blockSize=50)
+	df1 <- qr$fetch()
+	checkEquals(nrow(df1), 50)
+
+	df2 <- qr$fetch()
+	checkEquals(nrow(df2), 25)
+
+	checkEquals(df$dataset.id[1:nrow(df1)], df1$dataset.id)
+	checkEquals(df$dataset.id[-(1:nrow(df1))], df2$dataset.id)
+}
+
 integrationTestWarnMe <-
   function(){
   warning("need to fix tests for test_synapseQuery.R")

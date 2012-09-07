@@ -1,4 +1,4 @@
-## Test functiosn for downloading entity files
+## Test functions for downloading entity files
 ## 
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ################################################################################
