@@ -81,7 +81,7 @@ integrationTestCreateUpdateDeleteEntity <- function() {
 	checkEquals(id, entity@properties[["id"]])
 	checkEquals(entityType, entity@properties[["entityType"]])
 	# update the entity in the file cache
-	newName <- paste(entity$properties$name, "modified")
+	newName <- paste(entityName, "modified")
 	entity@properties[["name"]]<-newName
     synapseClient:::updateEntityInFileCache(entity)
 	# make sure the file has been updated
@@ -192,7 +192,7 @@ integrationTestCRUDConvenienceMethods <- function() {
 	checkEquals(fooList, annotValue(s, "foo"))
 	
 	# update the entity in the file cache
-	newName <- paste(s$properties$name, "modified")
+	newName <- paste(entityName, "modified")
 	propertyValue(s, "name")<-newName
 	newFooList<-c("incan", "monkey-god")
 	annotValue(s, "foo")<-newFooList

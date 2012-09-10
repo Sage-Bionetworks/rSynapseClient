@@ -265,9 +265,9 @@ unitTestChangeRoot <-
   function()
 {
   fc <- synapseClient:::getFileCache()
-  checkEquals(fc$cacheRoot, synapseClient:::availFileCaches())
+  checkEquals(normalizePath(fc$cacheRoot), normalizePath(synapseClient:::availFileCaches()))
   fc2 <- synapseClient:::getFileCache(fc$getCacheRoot())
-  checkEquals(fc$cacheRoot, synapseClient:::availFileCaches())
+  checkEquals(normalizePath(fc$cacheRoot), normalizePath(synapseClient:::availFileCaches()))
 
   checkEquals(fc$cacheRoot, fc2$cacheRoot)
 
@@ -285,7 +285,7 @@ unitTestChangeRoot <-
   checkTrue(file.exists(newRoot))
   checkTrue(file.exists(file.path(fc$getCacheDir(), fc$files())))
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
-  checkEquals(fc$getCacheRoot(), synapseClient:::availFileCaches())
+  checkEquals(normalizePath(fc$getCacheRoot()), normalizePath(synapseClient:::availFileCaches()))
 
   checkEquals(fc$cacheRoot, fc2$cacheRoot)
   checkEquals(length(fc$files()), 1L)

@@ -6,26 +6,23 @@
 
 setGeneric(
   name = "ExpressionData",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("ExpressionData")
   }
 )
 
 setMethod(
-    f = "ExpressionData",
-    signature = "missing",
-  definition = function(entity){
-    ExpressionData(list())
+  f = "ExpressionData",
+  signature = "missing",
+  definition = function(entity, ...){
+    Constructor("ExpressionData", ...)
   }
 )
 
 setMethod(
   f = "ExpressionData",
   signature = "list",
-  definition = function(entity){
-    ee <- new("ExpressionData")
-    ee@properties <- entity
-    ee@properties$entityType <- getSynapseTypeFromClass(as.character(class(ee)))
-    ee
+  definition = function(entity, ...){
+    Constructor("ExpressionData", entity, ...)
   }
 )
