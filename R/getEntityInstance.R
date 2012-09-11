@@ -40,7 +40,6 @@ setMethod(
         cacheRoot <- tempdir()
       }
 
-      ## TODO: remove this block after fixing setCacheRoot
       if(!file.exists(cacheRoot))
         dir.create(cacheRoot, recursive=TRUE)
 
@@ -48,10 +47,10 @@ setMethod(
 
       if(cacheRoot %in% synapseClient:::availFileCaches()){
           ee@archOwn@fileCache <- getFileCache(cacheRoot)
-        }else{
-          ## TODO: fix this
-          setCacheRoot(ee@archOwn, cacheRoot, clean = TRUE)
-        }
+      } else{
+          setCacheRoot(ee@archOwn, cacheRoot, clean = FALSE)
+          lapply(dir(ee$cacheDir), function(f){addFile(ee, file.path(ee$cacheDir,f))})
+      }
     }
     ee
   }
