@@ -52,6 +52,46 @@ unitTestGetSetProperty <-
   checkTrue("POSIXct" %in% class(synapseClient:::getProperty(ps, "aProp")))
 }
 
+unitTestGetSetVectorProperties <-
+  function()
+{
+  ps <- synapseClient:::TypedPropertyStore()
+  ps <- synapseClient:::setProperty(ps, "nums", c(1.0, 2.2, 3.14159, 4.2, 5.0))
+  ps <- synapseClient:::setProperty(ps, "stooges", c("Larry", "Moe", "Curly"))
+  ps <- synapseClient:::setProperty(ps, "foo", "bar")
+  checkEquals(synapseClient:::propertyType(ps, "nums"), "doubleAnnotations")
+  checkEquals(synapseClient:::propertyType(ps, "stooges"), "stringAnnotations")
+  checkEquals(synapseClient:::propertyType(ps, "foo"), "stringAnnotations")
+  checkEquals(synapseClient:::getProperty(ps, "nums"), c(1.0, 2.2, 3.14159, 4.2, 5.0))
+  checkEquals(synapseClient:::getProperty(ps, "stooges"), c("Larry", "Moe", "Curly"))
+  checkEquals(synapseClient:::getProperty(ps, "foo"), "bar")
+}
+
+unitTestPropertyValues <-
+  function()
+{
+  ps <- synapseClient:::TypedPropertyStore()
+  ps <- synapseClient:::setProperty(ps, "foo", "bar")
+  ps <- synapseClient:::setProperty(ps, "wazoo", 123)
+  
+  ps <- synapseClient:::setProperty(ps, "nums", c(1.0, 2.2, 3.14159, 4.2, 5.0))
+  ps <- synapseClient:::setProperty(ps, "stooges", c("Larry", "Moe", "Curly"))
+  
+  expected <- list(
+    nums=c(1.0, 2.2, 3.14159, 4.2, 5.0),
+    stooges=c("Larry", "Moe", "Curly"),
+    foo="bar",
+    wazoo=123
+  )
+
+  vals <- synapseClient:::propertyValues(ps)
+  checkTrue(all(c("nums", "stooges", "foo", "wazoo") %in% names(vals)))
+  checkEquals(vals$nums, c(1.0, 2.2, 3.14159, 4.2, 5.0))
+  checkEquals(vals$stooges, c("Larry", "Moe", "Curly"))
+  checkEquals(vals$foo, "bar")
+  checkEquals(vals$wazoo, 123)
+}
+
 unitTestDeleteProperty <-
     function()
 {
