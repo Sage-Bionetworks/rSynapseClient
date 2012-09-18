@@ -126,6 +126,30 @@ unitTestAnnotations <-
   checkEquals(as.character(class(annotValue(entity, "double"))), "numeric")
 }
 
+unitTestSingleVectorAnnotation <-
+  function()
+{
+  entity <- new(Class="SynapseEntity")
+  annotValue(entity, "specialNums") <- c(2.71828, 3.14159, 1.618034)
+
+  vals <- annotations(entity)
+  checkEquals(vals$specialNums, c(2.71828, 3.14159, 1.618034))
+}
+
+unitTestVectorAnnotations <-
+  function()
+{
+  entity <- new(Class="SynapseEntity")
+  annotValue(entity, "ponies") <- c("Alice", "Sunflower Hot-air-balloon", "Star Butterfly", "Jewel")
+  annotValue(entity, "bottlesOfBeerOnTheWall") <- 99L
+  annotValue(entity, "specialNums") <- c(2.71828, 3.14159, 1.618034)
+
+  vals <- annotations(entity)
+  checkEquals(vals$ponies, c("Alice", "Sunflower Hot-air-balloon", "Star Butterfly", "Jewel"))
+  checkEquals(vals$bottlesOfBeerOnTheWall, 99)
+  checkEquals(vals$specialNums, c(2.71828, 3.14159, 1.618034))
+}
+
 unitTestListSetters <-
   function()
 {
