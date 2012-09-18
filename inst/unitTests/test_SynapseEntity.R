@@ -126,6 +126,16 @@ unitTestAnnotations <-
   checkEquals(as.character(class(annotValue(entity, "double"))), "numeric")
 }
 
+unitTestSingleVectorAnnotation <-
+  function()
+{
+  entity <- new(Class="SynapseEntity")
+  annotValue(entity, "specialNums") <- c(2.71828, 3.14159, 1.618034)
+
+  vals <- annotations(entity)
+  checkEquals(vals$specialNums, c(2.71828, 3.14159, 1.618034))
+}
+
 unitTestVectorAnnotations <-
   function()
 {
