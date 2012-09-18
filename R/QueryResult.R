@@ -32,10 +32,10 @@ QueryResult$methods(
       blockSize <<- as.integer(blockSize)
       totalNumberOfResults <<- as.integer(NA)
       results <<- data.frame()
-      .fetchedRows <<- 0L
+      .fetchedRows <<- as.integer(NA)
     },
 
-  nextBlock =
+  fetch =
     function(n=blockSize) {
       'Retrieve the next block of results or an empty data.frame if there are no more results.'
 
@@ -62,22 +62,28 @@ QueryResult$methods(
       return(result)
     },
   
-  fetch =
+  collect =
     function(n=blockSize) {
       'Fetch and accumulate another block of rows. Repeated calls to fetch will return larger and larger data.frames'
-      results <<- .mergeDataFrames(results, nextBlock(n))
+      results <<- .mergeDataFrames(results, fetch(n))
       return(results)
     },
   
-  fetchAll =
+  collectAll =
     function() {
       'Retrieve all remaining results (up to the limit, if one was set in the original query).'
 
       repeat {
-        fetch()
-        if (.fetchedRows==0L) break
+        collect()
+        if (is.na(.fetchedRows) || .fetchedRows==0L) break
       }
       return(results)
+    },
+
+  reset =
+    function(offset=1) {
+      'Move the offset back to 1 or some other offset. Restart iterating through results.'
+      offset <<- offset
     },
 
   show =

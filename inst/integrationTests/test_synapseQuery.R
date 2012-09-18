@@ -70,33 +70,11 @@
 integrationTestSynapseQuery_QueryResult <- function() {
   qr <- synapseQuery("select id, name, parentId from dataset", blockSize=10)
   checkEquals(as.character(class(qr)), "QueryResult")
-
-  df <- qr$nextBlock()
-  checkEquals(nrow(df), 10)
-  checkEquals(ncol(df), 3)
-
-  df <- qr$nextBlock()
-  checkEquals(nrow(df), 10)
-  checkEquals(ncol(df), 3)
 }
 
-integrationTestSynapseQuery_fetch_with_limits <- function() {
-	df <- synapseQuery("select id, name from dataset limit 75")
-	checkEquals(nrow(df), 75)
-
-	qr <- synapseQuery("select * from dataset limit 75", blockSize=50)
-	df1 <- qr$nextBlock()
-	checkEquals(nrow(df1), 50)
-
-	df2 <- qr$nextBlock()
-	checkEquals(nrow(df2), 25)
-
-	checkEquals(df$dataset.id[1:nrow(df1)], df1$dataset.id)
-	checkEquals(df$dataset.id[-(1:nrow(df1))], df2$dataset.id)
-
-  qr <- synapseQuery("select * from dataset limit 75", blockSize=25)
-  df3 <- qr$fetchAll()
-  checkEquals(df$dataset.id, df3$dataset.id)
+integrationTestSynapseQuery_df <- function() {
+	df <- synapseQuery("select id, name from dataset limit 10")
+  checkEquals(as.character(class(df)), "data.frame")
 }
 
 integrationTestWarnMe <-
