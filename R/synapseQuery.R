@@ -32,7 +32,7 @@ synapseQuery <-
   else {
 
     if (!is.numeric(blockSize)) {
-      stop("chuckSize must be an integer")
+      stop("blockSize must be an integer")
     }
 
     return(QueryResult$new(queryStatement, blockSize=blockSize))

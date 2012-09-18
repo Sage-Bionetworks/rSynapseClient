@@ -12,7 +12,9 @@ QueryResult <-
       blockSize="integer",
       limit="integer",
       offset="integer",
-      totalNumberOfResults="integer"
+      totalNumberOfResults="integer",
+      results="data.frame",
+      .fetchedRows = "integer"
     )
   )
 
@@ -24,14 +26,16 @@ QueryResult$methods(
       # try to extract limit and offset from the query statement
       processed.query <- .queryLimitAndOffset(queryStatement)
       
-      .self$queryStatement <<- processed.query$query
-      .self$limit <<- as.integer(processed.query$limit)
-      .self$offset <<- as.integer(processed.query$offset)
-      .self$blockSize <<- as.integer(blockSize)
-      .self$totalNumberOfResults <<- as.integer(NA)
+      queryStatement <<- processed.query$query
+      limit <<- as.integer(processed.query$limit)
+      offset <<- as.integer(processed.query$offset)
+      blockSize <<- as.integer(blockSize)
+      totalNumberOfResults <<- as.integer(NA)
+      results <<- data.frame()
+      .fetchedRows <<- 0L
     },
-  
-  fetch =
+
+  nextBlock =
     function(n=blockSize) {
       'Retrieve the next block of results or an empty data.frame if there are no more results.'
 
@@ -41,49 +45,45 @@ QueryResult$methods(
 
       if (n<=0) {
         result <- data.frame()
-        if (!is.na(limit))
-          attr(result, "limit") <- limit
-        attr(result, "offset") <- offset
         attr(result, "totalNumberOfResults") <- totalNumberOfResults
       }
       else {
         query <- paste(queryStatement, "limit", n, "offset", offset)
         result <- synapseQuery(query)
-        if (!is.na(limit))
-          attr(result, "limit") <- limit
-        attr(result, "offset") <- offset
         offset <<- as.integer(offset + nrow(result))
         totalNumberOfResults <<- as.integer(attr(result, "totalNumberOfResults"))
       }
 
+      if (!is.na(limit))
+        attr(result, "limit") <- limit
+      attr(result, "offset") <- offset
+      .fetchedRows <<- nrow(result)
+
       return(result)
+    },
+  
+  fetch =
+    function(n=blockSize) {
+      'Fetch and accumulate another block of rows. Repeated calls to fetch will return larger and larger data.frames'
+      results <<- .mergeDataFrames(results, nextBlock(n))
+      return(results)
     },
   
   fetchAll =
     function() {
       'Retrieve all remaining results (up to the limit, if one was set in the original query).'
 
-      results <- .self$fetch()
-      if (nrow(results)==0) return(results)
       repeat {
-        nextResult <- .self$fetch()
-        if (nrow(nextResult)==0) break
-
-        # There is no guarantee of getting the same schema in each
-        # block, so we make sure to add any missing columns, before
-        # we do rbind.
-
-        # Note: This might be a duplication of what's in rowMerge, so we
-        #       might want to remove one or the other.
-
-        # add new columns to existing results
-        results <- .mergeColumns(results, names(nextResult))
-
-        # add missing columns to new results
-        nextResult <- .mergeColumns(nextResult, names(results))
-
-        results <- rbind(results, nextResult)
+        fetch()
+        if (.fetchedRows==0L) break
       }
       return(results)
+    },
+
+  show =
+    function() {
+      cat("QueryResults object:\n")
+      cat("  query: ", queryStatement, "\n")
+      cat("  blockSize: ", blockSize, "\n")
     }
 )
