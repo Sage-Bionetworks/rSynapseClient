@@ -132,7 +132,7 @@ setMethod(
   f = "getArchiveFilePath",
   signature = "ArchiveOwner",
   definition = function(owner){
-    file.path(owner@fileCache$getCacheRoot(), owner@fileCache$getCacheFile())
+    file.path(owner@fileCache$getCacheRoot(), owner@fileCache$getArchiveFile())
   }
 )
 
