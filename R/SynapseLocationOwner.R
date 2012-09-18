@@ -182,9 +182,9 @@ setMethod(
     ## passing the md5 sum causes this funciton to only download the file
     ## if the cached copy does not match that md5 sum
     if(file.exists(destfile)){
-      archiveFile = synapseClient:::synapseDownloadFile(url, propertyValue(entity, "md5"))
+      archiveFile <- synapseClient:::synapseDownloadFile(url, propertyValue(entity, "md5"))
     }else{
-      archiveFile = synapseDownloadFile(url)
+      archiveFile <- synapseDownloadFile(url)
     }
     archiveFile <- normalizePath(archiveFile)
     if(entity@archOwn@fileCache$archiveFile != basename(destfile)){
