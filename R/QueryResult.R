@@ -36,8 +36,11 @@ QueryResult$methods(
     },
 
   fetch =
-    function(n=blockSize) {
-      'Retrieve the next block of results or an empty data.frame if there are no more results.'
+    function(n=blockSize, accumulate=FALSE) {
+      'Retrieve the next block of results, replacing any accumulated results
+      with the current block or accumulating more results if accumulate is set
+      to TRUE. Returns the block of results as a data.frame or an empty
+      data.frame if there are no results'
 
       # dunno if it makes sense to enforce the limit specified in the query statement
       if (!is.na(limit))
@@ -59,37 +62,69 @@ QueryResult$methods(
       attr(result, "offset") <- offset
       .fetchedRows <<- nrow(result)
 
-      return(result)
+      if (accumulate) {
+        # accumulate cached results
+        results <<- .mergeDataFrames(results, result)
+      }
+      else {
+        # replace cached results
+        results <<- result
+      }
+
+      return(invisible(result))
     },
   
   collect =
     function(n=blockSize) {
-      'Fetch and accumulate another block of rows. Repeated calls to fetch will return larger and larger data.frames'
-      results <<- .mergeDataFrames(results, fetch(n))
-      return(results)
+      'Fetch and accumulate another block of rows. Repeated calls to collect will store query results
+      in the results field of the QueryResults object, which can later be obtained by a call to
+      as.data.frame(qr). Invisibly returns the currently fetched block of results.'
+
+      return(invisible(fetch(n, accumulate=TRUE)))
     },
   
   collectAll =
     function() {
-      'Retrieve all remaining results (up to the limit, if one was set in the original query).'
+      'Retrieve and accumulate all remaining results (up to the limit, if one was set in the original query)
+      invisibly returning them as a data.frame.'
 
       repeat {
         collect()
         if (is.na(.fetchedRows) || .fetchedRows==0L) break
       }
-      return(results)
+      return(invisible(results))
     },
 
   reset =
     function(offset=1) {
-      'Move the offset back to 1 or some other offset. Restart iterating through results.'
+      'Start iterating through results from a new offset. Move the offset back to 1 (by default) or to some other offset.'
       offset <<- offset
+    },
+
+  as.data.frame =
+    function() {
+      return(results)
+    },
+
+  names =
+    function() {
+      'Column names of the accumulated query results'
+      colnames(results)
+    },
+
+  length =
+    function() {
+      'Number of accumulated results'
+      nrow(results)
     },
 
   show =
     function() {
       cat("QueryResults object:\n")
-      cat("  query: ", queryStatement, "\n")
+      cat("      query: ", queryStatement, "\n")
       cat("  blockSize: ", blockSize, "\n")
+      cat("     offset: ", offset, "\n")
+      cat("      limit: ", limit, "\n")
+      cat("  totalNumberOfResults: ", totalNumberOfResults, "\n")
     }
 )

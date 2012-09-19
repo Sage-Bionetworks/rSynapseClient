@@ -14,23 +14,27 @@ integrationTestQueryResult_Fetch <- function() {
 }
 
 integrationTestQueryResult_Collect <- function() {
-  qr <- synapseClient:::QueryResult$new('select id, name, parentId from dataset', blockSize=25)
+  qr <- synapseClient:::QueryResult$new('select id, name, parentId from dataset limit 100', blockSize=25)
   df <- qr$collect()
   checkEquals(nrow(df),25)
   checkEquals(ncol(df),3)
   df <- qr$collect()
-  checkEquals(nrow(df),50)
+  checkEquals(nrow(df),25)
   checkEquals(ncol(df),3)
   df <- qr$collect()
+  checkEquals(nrow(df),25)
+  checkEquals(ncol(df),3)
+
+  df <- qr$as.data.frame()
   checkEquals(nrow(df),75)
   checkEquals(ncol(df),3)
 }
 
 integrationTestQueryResult_CollectAll <- function() {
   qr <- synapseClient:::QueryResult$new('select id, name from dataset limit 40', blockSize=15)
-  df2 <- qr$collect()
-  df3 <- qr$collectAll()
-  checkEquals(nrow(df3), 40)
+  qr$collect()
+  df <- qr$collectAll()
+  checkEquals(nrow(df), 40)
 }
 
 
