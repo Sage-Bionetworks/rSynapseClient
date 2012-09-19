@@ -11,6 +11,11 @@ integrationTestQueryResult_Fetch <- function() {
   df <- qr$fetch()
   checkEquals(nrow(df),25)
   checkEquals(ncol(df),3)
+
+  # test length and names functions
+  checkEquals(length(qr), 25)
+  checkEquals(class(names(qr)), "character")
+  checkEquals(length(names(qr)), 3)
 }
 
 integrationTestQueryResult_Collect <- function() {

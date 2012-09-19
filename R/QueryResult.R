@@ -18,6 +18,7 @@ QueryResult <-
     )
   )
 
+
 QueryResult$methods(
   initialize =
     function(queryStatement, blockSize=100L) {
@@ -128,3 +129,22 @@ QueryResult$methods(
       cat("  totalNumberOfResults: ", totalNumberOfResults, "\n")
     }
 )
+
+# convenience S3 methods
+names.QueryResult <- function(qr) {
+  qr$names()
+}
+
+as.data.frame.QueryResult <- function(qr) {
+  qr$as.data.frame()
+}
+
+length.QueryResult <- function(qr) {
+  qr$length()
+}
+
+dim.QueryResult <- function(qr) {
+  dim(qr$results)
+}
+
+

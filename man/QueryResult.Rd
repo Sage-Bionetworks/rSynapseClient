@@ -18,7 +18,7 @@
   The difference is that with \code{collect()}, the results are accumulated. For example, after 3 calls to \code{collect()},
   with a \code{blockSize} of 10 we would expect a data.frame with 30 rows.
 
-  The \code{collectAll()} method repeatedly fetches \code{blocksize} query results until there are no more or the
+  The \code{collectAll()} method repeatedly requests blocks of \code{blocksize} query results until there are no more or the
   limit is reached. This can be slow, so use with caution. It's usually safer to set a limit.
 }
 \author{
@@ -39,9 +39,17 @@
   df <- qr$collect()
   df <- qr$collect()
 
+  # get number of rows accumulated
+  # should be 400 with initial fetch plus 3 calls to collect
+  length(qr)
+
+  # return the selected column names
+  names(qr)
+
   ## accumulate the remaining results.
-  ## df will be a data.frame with 900 accumulated rows
+  ## df will be a data.frame with all 1000 accumulated rows
   df <- qr$collectAll()
+
 }
 \keyword{query}
 \keyword{results}
