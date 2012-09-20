@@ -73,6 +73,18 @@ setMethod(
   }
 )
 
+setMethod(
+  f = "storeEntity",
+  signature= "SynapseEntity",
+  definition = function(entity) {
+    if (is.null(propertyValue(entity, "id"))) {
+      entity <- createEntity(entity)
+    }
+    else {
+      entity <- updateEntity(entity)
+    }
+  }
+)
 
 #####
 ## as.list function. Coerce SynapseEntity to list by returning annotations
