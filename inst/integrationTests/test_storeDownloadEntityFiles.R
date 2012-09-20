@@ -11,7 +11,7 @@
   synapseClient:::.setCache("testProject", project)
   
   ## create a project
-  project <- Project(list(name="MyDataSet", parentId=propertyValue(project, "id")))
+  project <- Project()
   project <- createEntity(project)
   synapseClient:::.setCache("testProject2", project)
 }
