@@ -282,8 +282,8 @@ setMethod(
 setMethod(
   f = "length",
   signature = signature("TypedPropertyStore"),
-  definition = function(object) {
-    length(propertyNames(object))
+  definition = function(x) {
+    length(propertyNames(x))
   }
 )
 
