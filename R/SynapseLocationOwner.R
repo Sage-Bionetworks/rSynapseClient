@@ -71,7 +71,8 @@ setMethod(
 setMethod(
   f = "createEntity",
   signature = "SynapseLocationOwner",
-  definition = function(entity){
+  definition = function(entity){ 
+    entity@archOwn@fileCache <- getFileCache(getFileCacheName(entity@archOwn@fileCache))
     archOwn <- entity@archOwn
     cfun <- getMethod("createEntity", "SynapseEntity")
     entity <- cfun(entity)

@@ -92,3 +92,23 @@ integrationTestLoadHoldTwoCopies <-
   checkEquals(length(d$files), 0L)
   checkEquals(length(d2$files), 0L)
 }
+
+integrationTestCode <-
+  function()
+{
+  project <- synapseClient:::.getCache("testProject")
+  code <- Code(parentId=project$properties$id)
+  ff <- tempfile()
+  cat("hello <- function(){print('hello')}", file=ff)
+  checksum <- tools::md5sum(ff)
+  addFile(code, ff, "code.R")
+
+  code <- createEntity(code)
+  checkEquals(length(code$files), 1L)
+  checkEquals(code$files, "code.R")
+
+  code.copy <- getEntity(code$properties$id)
+
+}
+
+
