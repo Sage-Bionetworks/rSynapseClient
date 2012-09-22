@@ -50,6 +50,7 @@ setMethod(
       } else{
           setCacheRoot(ee@archOwn, cacheRoot, clean = FALSE)
           lapply(dir(ee$cacheDir), function(f){addFile(ee, file.path(ee$cacheDir,f))})
+          setFetchMethod(ee, "get")
       }
     }
     ee
