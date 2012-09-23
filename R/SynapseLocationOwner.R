@@ -8,6 +8,7 @@ setMethod(
   signature = "SynapseLocationOwner",
   definition = function(.Object){
     .Object@archOwn <- new("ArchiveOwner")
+    .Object@archOwn@fileCache <- getFileCache(.Object@archOwn@fileCache$getCacheRoot())
     setPackageName(env=.Object)
     .Object
   }
