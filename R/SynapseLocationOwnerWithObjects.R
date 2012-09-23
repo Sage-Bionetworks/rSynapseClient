@@ -34,7 +34,6 @@ setMethod(
   }
 )
 
-
 setMethod(
 	f = "loadEntity",
 	signature = "SynapseLocationOwnerWithObjects",
@@ -45,47 +44,9 @@ setMethod(
     entity@objOwn$objects@fileCache <- entity@archOwn@fileCache
 		entity@objOwn <- loadObjectsFromFiles(entity@objOwn)
 
-
-#    if(is.null(annotValue(entity, "format"))){
-#      ##setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
-#      return(entity)
-#    }
-#    entity@location@objects <- switch(annotValue(entity, "format"),
-#      rbin = .loadRbinaryFiles(file.path(entity@location@cacheDir,entity@location@files)),
-#      sageBioCurated = .loadSageBioPacket(entity),
-#      entity@location@objects
-#    )
-#    setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
 		entity
 	}
 )
-
-#setMethod(
-#  f = "downloadEntity",
-#  signature = "SynapseLocationOwnerWithObjects",
-#  definition = function(entity){
-#    ## check whether user has signed agreement
-#    ## euals are broken. ignore for now
-##    if(!hasSignedEula(entity)){
-##      if(!.promptSignEula())
-##        stop(sprintf("Visit https://synapse.sagebase.org to sign the EULA for entity %s", propertyValue(entity, "id")))
-##      if(!.promptEulaAgreement(entity))
-##        stop("You must sign the EULA to download this dataset. Visit http://synapse.sagebase.org for more information.")
-##      .signEula(entity)
-##    }
-#
-#    ## download the archive from S3
-#    ## Note that we just use the first location, to future-proof this we would use the location preferred
-#    ## by the user, but we're gonna redo this in java so no point in implementing that here right now
-#    dfun <- getMethod("downloadEntity", "SynapseLocationOwner")
-#    ee <- dfun(entity)
-#    ee@objOwn <- entity@objOwn
-#
-#    entity
-#  }
-#)
-
-
 
 setMethod(
   f = "getEntity",
@@ -95,31 +56,6 @@ setMethod(
     ee <- gfun(entity)
     ee@objOwn <- entity@objOwn
     ee
-  }
-)
-
-setMethod(
-  f = "storeEntity",
-  signature = "SynapseLocationOwnerWithObjects",
-  definition = function(entity){
-
-    file <- createArchive(entity@archOwn)
-    if(!is.null(file)){
-      ## upload the archive  file (storeFile also updates the entity)
-      file <- file.path(entity@archOwn@fileCache$getCacheRoot(), file)
-      entity <- storeFile(entity, file)
-
-    }else{
-      if(!is.null(entity$properties$locations))
-        entity <- deleteProperty(entity, "locations")
-      if(is.null(propertyValue(entity, "id")))
-      {
-        entity <- createEntity(entity)
-      }else{
-        entity <- updateEntity(entity)
-      }
-    }
-    entity
   }
 )
 
