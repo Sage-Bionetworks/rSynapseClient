@@ -90,3 +90,52 @@ integrationTestGetAndStoreExistingEntityWithData <-
   checkEquals(length(ddd$objects), 1L)
 }
 
+integrationTestGetAndStoreExistingEntityWithCode<-
+  function()
+{
+  project <- synapseClient:::.getCache("testProject")
+  d <- Code(list(parentId = project$properties$id))
+  d$properties$name <- "myCode"
+  fname <- tempfile()
+  cat("print('hello')", file=fname)
+  addFile(d, fname)
+  d <- storeEntity(d)
+
+  synapseClient:::resetFactory(new("FileCacheFactory"))
+
+  dd <- getEntity(d$properties$id)
+  checkEquals(synapseClient:::getFetchMethod(dd), "get")
+  ##checkEquals(length(dd$files), 0L)
+  dd$properties$name <- "aNewOne"
+  dd <- storeEntity(dd)
+
+  ddd <- loadEntity(d$properties$id)
+  checkEquals(ddd$properties$name, "aNewOne")
+  checkEquals(length(ddd$files), 1L)
+}
+
+integrationTestGetAndStoreExistingEntityWithFile<-
+  function()
+{
+  project <- synapseClient:::.getCache("testProject")
+  d <- Data(list(parentId = project$properties$id))
+  d$properties$name <- "myData"
+  fname <- tempfile()
+  cat("print('hello')", file=fname)
+  addFile(d, fname)
+  d <- storeEntity(d)
+
+  synapseClient:::resetFactory(new("FileCacheFactory"))
+
+  dd <- getEntity(d$properties$id)
+  checkEquals(synapseClient:::getFetchMethod(dd), "get")
+  ##checkEquals(length(dd$files), 0L)
+  dd$properties$name <- "aNewOne"
+  dd <- storeEntity(dd)
+
+  ddd <- loadEntity(d$properties$id)
+  checkEquals(ddd$properties$name, "aNewOne")
+  checkEquals(length(ddd$files), 1L)
+}
+
+
