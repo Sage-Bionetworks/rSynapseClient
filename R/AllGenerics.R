@@ -3,8 +3,29 @@
 # Author: furia
 ###############################################################################
 setGeneric(
+  name = "getFileCacheName",
+  def = function(object){
+    standardGeneric("getFileCacheName")
+  }
+)
+
+setGeneric(
+  name = "getFetchMethod",
+  def = function(object, factory){
+    standardGeneric("getFetchMethod")
+  }
+)
+
+setGeneric(
+  name = "setFetchMethod",
+  def = function(object, method, factory){
+    standardGeneric("setFetchMethod")
+  }
+)
+
+setGeneric(
  name = "moveFileCache",
- def = function(from, to){
+ def = function(from, to, factory){
    standardGeneric("moveFileCache")
  }
 )
@@ -19,7 +40,7 @@ setGeneric(
 
 setGeneric(
   name = "removeFileCache",
-  def = function(path){
+  def = function(object, method, factory){
     standardGeneric("removeFileCache")
   }
 )
@@ -186,7 +207,7 @@ setGeneric(
 
 setGeneric(
   name = "setFileCache",
-  def = function(owner, fileCache){
+  def = function(owner, fileCache, factory){
     standardGeneric("setFileCache")
   }
 )
@@ -597,14 +618,14 @@ setGeneric(
 
 setGeneric(
   name = "getFileCache",
-  def = function(archivePath){
+  def = function(archivePath, method, factory){
     standardGeneric("getFileCache")
   }
 )
 
 setGeneric(
   name = "availFileCaches",
-  def = function(factory){
+  def = function(method, factory){
     standardGeneric("availFileCaches")
   }
 )
