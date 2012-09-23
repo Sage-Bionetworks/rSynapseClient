@@ -8,6 +8,7 @@ setMethod(
   signature = "SynapseLocationOwner",
   definition = function(.Object){
     .Object@archOwn <- new("ArchiveOwner")
+    .Object@archOwn@fileCache <- getFileCache(.Object@archOwn@fileCache$getCacheRoot())
     setPackageName(env=.Object)
     .Object
   }
@@ -20,20 +21,8 @@ setMethod(
     definition = function(entity){
       ##if(length(entity$files) == 0)
       entity <- downloadEntity(entity)
-
       entity@archOwn <- loadObjectsFromFiles(entity@archOwn)
-
-
-#    if(is.null(annotValue(entity, "format"))){
-#      ##setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
-#      return(entity)
-#    }
-#    entity@location@objects <- switch(annotValue(entity, "format"),
-#      rbin = .loadRbinaryFiles(file.path(entity@location@cacheDir,entity@location@files)),
-#      sageBioCurated = .loadSageBioPacket(entity),
-#      entity@location@objects
-#    )
-#    setPackageName(sprintf("entity%s", propertyValue(entity, "id")), env = entity@location@objects)
+      setFetchMethod(entity, "load")
       entity
     }
 )
@@ -46,18 +35,26 @@ setMethod(
     if(is.null(propertyValue(entity, "id"))){
       entity <- createEntity(entity)
     }else{
+      method <- synapseClient:::getFetchMethod(entity)
       entity <- updateEntity(entity)
+      if(!is.null(method))
+        synapseClient:::setFetchMethod(entity, method)
     }
 
-    ## create the archive on disk (which will persist file metaData to disk)
-    file <- createArchive(entity@archOwn)
+    if(!is.null(getFetchMethod(entity)) && getFetchMethod(entity) == "load"){
+      ## create the archive on disk (which will persist file metaData to disk)
+      file <- createArchive(entity@archOwn)
 
-    if(!is.null(file)){
-      ## upload the archive  file (storeFile also updates the entity)
-      file <- file.path(entity@archOwn@fileCache$getCacheRoot(), file)
-      entity <- storeFile(entity, file)
-    }else{
-      entity <- deleteProperty(entity, "locations")
+      if(!is.null(file)){
+        ## upload the archive  file (storeFile also updates the entity)
+        file <- file.path(entity@archOwn@fileCache$getCacheRoot(), file)
+        entity <- storeFile(entity, file)
+      }else{
+        if(!is.null(entity$properties$locations)){
+          entity <- deleteProperty(entity, "locations")
+          entity <- updateEntity(entity)
+        }
+      }
     }
     entity
   }
@@ -75,7 +72,8 @@ setMethod(
 setMethod(
   f = "createEntity",
   signature = "SynapseLocationOwner",
-  definition = function(entity){
+  definition = function(entity){ 
+    entity@archOwn@fileCache <- getFileCache(getFileCacheName(entity@archOwn@fileCache))
     archOwn <- entity@archOwn
     cfun <- getMethod("createEntity", "SynapseEntity")
     entity <- cfun(entity)
@@ -182,9 +180,9 @@ setMethod(
     ## passing the md5 sum causes this funciton to only download the file
     ## if the cached copy does not match that md5 sum
     if(file.exists(destfile)){
-      archiveFile = synapseClient:::synapseDownloadFile(url, propertyValue(entity, "md5"))
+      archiveFile <- synapseClient:::synapseDownloadFile(url, propertyValue(entity, "md5"))
     }else{
-      archiveFile = synapseDownloadFile(url)
+      archiveFile <- synapseDownloadFile(url)
     }
     archiveFile <- normalizePath(archiveFile)
     if(entity@archOwn@fileCache$archiveFile != basename(destfile)){
@@ -439,3 +437,37 @@ setReplaceMethod("$",
     fun(x, name, value)
   }
 )
+
+setMethod(
+  f = "setFetchMethod",
+  signature = signature("SynapseLocationOwner", "character", "FileCacheFactory"),
+  definition = function(object, method, factory){
+    setFetchMethod(object@archOwn, method, factory)
+  }
+)
+
+
+setMethod(
+  f = "setFetchMethod",
+  signature = signature("SynapseLocationOwner", "character", "missing"),
+  definition = function(object, method){
+    setFetchMethod(object@archOwn, method)
+  }
+)
+
+setMethod(
+  f = "getFetchMethod",
+  signature = signature("SynapseLocationOwner", "FileCacheFactory"),
+  definition = function(object, factory){
+    getFetchMethod(object@archOwn, factory)
+  }
+)
+
+setMethod(
+  f = "getFetchMethod",
+  signature = signature("SynapseLocationOwner", "missing"),
+  definition = function(object){
+    getFetchMethod(object@archOwn)
+  }
+)
+

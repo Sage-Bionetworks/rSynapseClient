@@ -46,6 +46,22 @@ integrationTestCheckFileCache <-
 
 }
 
+integrationTestStoreEntity <-
+  function()
+{
+  project <- synapseClient:::.getCache('testProject')
+  a <- Folder(name="Test Star Wars Entity", parentId=project$properties$id)
+  a$annotations$jedi <- c("Obi-wan", "Yoda", "Qui-Gon Jinn")
+  a <- storeEntity(a)
+
+  checkTrue("id" %in% names(properties(a)))
+  b <- getEntity(a$properties$id)
+  b$properties$parent
+
+
+  deleteEntity(a)
+}
+
 #integrationTestStoreDataRbin <-
 #  function()
 #{

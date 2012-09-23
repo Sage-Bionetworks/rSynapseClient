@@ -51,26 +51,26 @@ unitTestResetPathClean <-
 }
 
 
-unitTestDirExistsNoClean <-
-  function()
-{
-  fc <- new("FileCache")
+# unitTestDirExistsNoClean <-
+#   function()
+# {
+#   fc <- new("FileCache")
 
-  croot <- fc$getCacheRoot()
-  cdir <- fc$getCacheDir()
-  checkTrue(file.exists(croot))
-  checkTrue(file.exists(cdir))
+#   croot <- fc$getCacheRoot()
+#   cdir <- fc$getCacheDir()
+#   checkTrue(file.exists(croot))
+#   checkTrue(file.exists(cdir))
 
 
-  newdir <- tempfile()
-  synapseClient:::setCacheRoot(fc, newdir, FALSE)
-  checkTrue(file.exists(fc$getCacheRoot()))
-  checkTrue(file.exists(fc$getCacheDir()))
-  checkTrue(file.exists(croot))
-  checkTrue(file.exists(cdir))
+#   newdir <- tempfile()
+#   synapseClient:::setCacheRoot(fc, newdir, FALSE)
+#   checkTrue(file.exists(fc$getCacheRoot()))
+#   checkTrue(file.exists(fc$getCacheDir()))
+#   checkTrue(file.exists(croot))
+#   checkTrue(file.exists(cdir))
 
-  checkException(synapseClient:::setCacheRoot(fc, croot))
-}
+#   checkException(synapseClient:::setCacheRoot(fc, croot))
+# }
 
 unitTestDirExistsClean <-
   function()
@@ -141,7 +141,6 @@ unitTestChangeRootExistingArchive <-
   checkTrue(file.exists(newroot))
   checkTrue(file.exists(file.path(newroot, fc$archiveFile)))
   checkEquals(gsub("[\\/]+", "/", normalizePath(newroot)), fc$getCacheRoot())
-
   checkTrue(file.exists(fc$getCacheDir()))
   checkTrue(file.exists(file.path(fc$getCacheDir(), basename(file))))
 }

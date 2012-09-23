@@ -1,4 +1,4 @@
-## Test functiosn for downloading entity files
+## Test functions for downloading entity files
 ## 
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ################################################################################
@@ -11,7 +11,7 @@
   synapseClient:::.setCache("testProject", project)
   
   ## create a project
-  project <- Project(list(name="MyDataSet", parentId=propertyValue(project, "id")))
+  project <- Project()
   project <- createEntity(project)
   synapseClient:::.setCache("testProject2", project)
 }

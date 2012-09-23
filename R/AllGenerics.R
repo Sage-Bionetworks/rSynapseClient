@@ -3,8 +3,29 @@
 # Author: furia
 ###############################################################################
 setGeneric(
+  name = "getFileCacheName",
+  def = function(object){
+    standardGeneric("getFileCacheName")
+  }
+)
+
+setGeneric(
+  name = "getFetchMethod",
+  def = function(object, factory){
+    standardGeneric("getFetchMethod")
+  }
+)
+
+setGeneric(
+  name = "setFetchMethod",
+  def = function(object, method, factory){
+    standardGeneric("setFetchMethod")
+  }
+)
+
+setGeneric(
  name = "moveFileCache",
- def = function(from, to){
+ def = function(from, to, factory){
    standardGeneric("moveFileCache")
  }
 )
@@ -19,35 +40,42 @@ setGeneric(
 
 setGeneric(
   name = "removeFileCache",
-  def = function(path){
+  def = function(object, method, factory){
     standardGeneric("removeFileCache")
   }
 )
 
 setGeneric(
+  name = "Constructor",
+  def = function(classType, entity, ...){
+    standardGeneric("Constructor")
+  }
+)
+
+setGeneric(
   name = "Folder",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Folder")
   }
 )
 
 setGeneric(
   name = "RObject",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("RObject")
   }
 )
 
 setGeneric(
   name = "PhenotypeData",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("PhenotypeData")
   }
 )
 
 setGeneric(
   name = "GenotypeData",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("GenotypeData")
   }
 )
@@ -61,7 +89,7 @@ setGeneric(
 
 setGeneric(
   name = "ExpressionData",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("ExpressionData")
   }
 )
@@ -179,7 +207,7 @@ setGeneric(
 
 setGeneric(
   name = "setFileCache",
-  def = function(owner, fileCache){
+  def = function(owner, fileCache, factory){
     standardGeneric("setFileCache")
   }
 )
@@ -236,14 +264,14 @@ setGeneric(
 
 setGeneric(
   name = "Code",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Code")
   }
 )
 
 setGeneric(
   name = "Project",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Project")
   }
 )
@@ -251,7 +279,7 @@ setGeneric(
 
 setGeneric(
   name = "Data",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Data")
   }
 )
@@ -259,7 +287,7 @@ setGeneric(
 
 setGeneric(
   name = "Analysis",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Analysis")
   }
 )
@@ -267,14 +295,14 @@ setGeneric(
 
 setGeneric(
   name = "Step",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Step")
   }
 )
 
 setGeneric(
   name = "Study",
-  def = function(entity){
+  def = function(entity, ...){
     standardGeneric("Study")
   }
 )
@@ -590,14 +618,14 @@ setGeneric(
 
 setGeneric(
   name = "getFileCache",
-  def = function(archivePath){
+  def = function(archivePath, method, factory){
     standardGeneric("getFileCache")
   }
 )
 
 setGeneric(
   name = "availFileCaches",
-  def = function(factory){
+  def = function(method, factory){
     standardGeneric("availFileCaches")
   }
 )

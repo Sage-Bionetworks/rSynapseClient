@@ -67,9 +67,10 @@ setMethod(
   signature = "TypedPropertyStore",
   definition = function(object){
     vals <- lapply(propertyNames(object), function(n) getProperty(object,n))
-    if(length(vals) == 1L && as.character(class(vals)) %in% c("data.frame","list"))
-      return(vals[[1]])
-    unlist(vals)
+    # if(length(vals) == 1L && as.character(class(vals)) %in% c("data.frame","list"))
+    #   return(vals[[1]])
+    names(vals) <- propertyNames(object)
+    return(vals)
   }
 )
 
@@ -275,6 +276,14 @@ setMethod(
       }
     }
     object
+  }
+)
+
+setMethod(
+  f = "length",
+  signature = signature("TypedPropertyStore"),
+  definition = function(x) {
+    length(propertyNames(x))
   }
 )
 

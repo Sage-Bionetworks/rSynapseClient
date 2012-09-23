@@ -132,7 +132,7 @@ setMethod(
   f = "getArchiveFilePath",
   signature = "ArchiveOwner",
   definition = function(owner){
-    file.path(owner@fileCache$getCacheRoot(), owner@fileCache$getCacheFile())
+    file.path(owner@fileCache$getCacheRoot(), owner@fileCache$getArchiveFile())
   }
 )
 
@@ -200,3 +200,23 @@ getPackageName.ArchiveOwner <-
 {
   getPackageName(where = where@objects, create = create)
 }
+
+setMethod(
+  f = "setFetchMethod",
+  signature = signature("ArchiveOwner", "character"),
+  definition = function(object, method){
+    setFetchMethod(object@fileCache, method)
+  }
+)
+
+setMethod(
+  f = "getFetchMethod",
+  signature = signature("ArchiveOwner"),
+  definition = function(object){
+    getFetchMethod(object@fileCache)
+  }
+)
+
+
+
+

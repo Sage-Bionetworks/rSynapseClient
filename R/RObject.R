@@ -7,19 +7,16 @@
 setMethod(
   f = "RObject",
   signature = "list",
-  definition = function(entity){
-    ee <- new("Data")
-    ee@properties <- entity
-    ee@properties$entityType <- getSynapseTypeFromClass(as.character(class(ee)))
-    ee
+  definition = function(entity, ...){
+    Constructor("RObject", entity, ...)
   }
 )
 
 setMethod(
   f = "RObject",
   signature = "missing",
-  definition = function(){
-    Data(list())
+  definition = function(entity, ...){
+    Constructor("RObject", ...)
   }
 )
 

@@ -283,9 +283,7 @@ unitTestChangeRoot <-
 
   newRoot <- tempfile()
   synapseClient:::setCacheRoot(fc2, newRoot)
-
   checkEquals(fc2$getCacheRoot(), gsub("[\\/]+", "/", normalizePath(newRoot)))
-
   checkTrue(file.exists(newRoot))
   checkTrue(file.exists(file.path(fc$getCacheDir(), fc$files())))
   checkEquals(length(synapseClient:::availFileCaches()), 1L)

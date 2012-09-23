@@ -41,12 +41,12 @@ the value stored for the annotation specified by "which"
 annotValue is used to get or set a single annotation value. annotationValues is used to get all
 annotations as a list or to assign the elements of the list as annotations.
 
-the annotations() functinon should generally not be called but the end-user and may be deprecated
+the annotations() function should generally not be called by the end-user and may be deprecated
 in the future.
 }
 \note{
 when using \code{annotationValues<-}, if the object already has an annotation with the same name
-as an element in the list, it's value wilt be overwritten.
+as an element in the list, it's value will be overwritten.
 }
 
 \author{

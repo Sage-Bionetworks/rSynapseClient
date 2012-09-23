@@ -21,8 +21,8 @@ setClass(
 ##
 setClass(
     Class = "FileCacheFactory",
-    representation = representation(env = "environment"),
-    prototype = new.env(parent = emptyenv())
+    representation = representation(load = "environment", get="environment"),
+    prototype = prototype(load=new.env(parent = emptyenv()), get= new.env(parent=emptyenv()))
 )
 
 ##

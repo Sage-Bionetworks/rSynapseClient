@@ -67,6 +67,16 @@
 #  checkTrue(6 <= nrow(layersOrderBy))
 #}
 
+integrationTestSynapseQuery_QueryResult <- function() {
+  qr <- synapseQuery("select id, name, parentId from dataset", blockSize=10)
+  checkEquals(as.character(class(qr)), "QueryResult")
+}
+
+integrationTestSynapseQuery_df <- function() {
+	df <- synapseQuery("select id, name from dataset limit 10")
+  checkEquals(as.character(class(df)), "data.frame")
+}
+
 integrationTestWarnMe <-
   function(){
   warning("need to fix tests for test_synapseQuery.R")

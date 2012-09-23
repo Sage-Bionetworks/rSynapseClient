@@ -20,20 +20,23 @@ setMethod(
     cacheDir <- file.path(path, sprintf("%s_unpacked", object$archiveFile))
 
     if(file.exists(path)){
-      if(!clean)
-        stop("destination already exists, please remove or set forceClean to TRUE")
+      ##if(!clean)
+      ##  stop("destination already exists, please remove or set forceClean to TRUE")
 
       ## if the new cacheroot is the same as the old one, do nothing
       if(path == normalizePath(object$getCacheRoot(), mustWork=FALSE))
         return(object)
 
       ## remove the new cacheroot
-      unlink(path, recursive=TRUE)
+      if(clean)
+        unlink(path, recursive=TRUE)
     }
 
-    dir.create(cacheDir, recursive=TRUE)
-    cacheDir <- gsub("[\\/]+", "/", normalizePath(cacheDir, mustWork=TRUE))
-    path <- gsub("[\\/]+", "/", normalizePath(path, mustWork=TRUE))
+    if(!file.exists(cacheDir))
+      dir.create(cacheDir, recursive=TRUE)
+      
+    cacheDir <- fixFilePath(cacheDir, mustWork=TRUE)
+    path <- fixFilePath(path, mustWork=TRUE)
 
     ## copy over the existing archive. by default we copy everyting
     ## TODO: implement different copy modes: all, none, files, archive
@@ -48,12 +51,15 @@ setMethod(
     names(object$metaData) <- gsub(object$cacheDir, cacheDir, names(object$metaData), fixed = TRUE)
 
     ## move the FileCache in the Factory
-    if(gsub("[\\/]+", "/", normalizePath(object$cacheRoot, mustWork=FALSE)) %in% availFileCaches())
+    if(fixFilePath(object$cacheRoot, mustWork=FALSE) %in% availFileCaches()){
+      if(path %in% availFileCaches() && clean)
+        removeFileCache(path)
       moveFileCache(object$cacheRoot, path)
+    }
 
     ## set the member variables to reflect the new values
-    object$cacheDir <- gsub("[\\/]+", "/", normalizePath(cacheDir))
-    object$cacheRoot <- gsub("[\\/]+", "/", normalizePath(path))
+    object$cacheDir <- fixFilePath(cacheDir)
+    object$cacheRoot <- fixFilePath(path)
 
     invisible(object)
   }
@@ -358,7 +364,6 @@ setMethod(
   }
 )
 
-
 ## move file methods
 setMethod(
   f = "moveFile",
@@ -401,3 +406,45 @@ setMethod(
     deleteFile(entity, src)
   }
 )
+
+setMethod(
+  f = "setFetchMethod",
+  signature = signature("FileCache", "character", "missing"),
+  definition = function(object, method){
+    setFetchMethod(getFileCacheName(object), method)
+  }
+)
+setMethod(
+  f = "setFetchMethod",
+  signature = signature("FileCache", "character", "FileCacheFactory"),
+  definition = function(object, method, factory){
+    setFetchMethod(getFileCacheName(object), method, factory)
+  }
+)
+
+setMethod(
+  f = "getFetchMethod",
+  signature = signature("FileCache", "missing"),
+  definition = function(object){
+    getFetchMethod(getFileCacheName(object))
+  }
+)
+
+setMethod(
+  f = "getFetchMethod",
+  signature = signature("FileCache", "FileCacheFactory"),
+  definition = function(object, factory){
+    getFetchMethod(getFileCacheName(object), factory)
+  }
+)
+
+setMethod(
+  f = "getFileCacheName",
+  signature = "FileCache",
+  definition = function(object){
+    object$cacheRoot
+  }
+)
+
+
+
