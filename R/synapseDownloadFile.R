@@ -33,16 +33,15 @@ synapseDownloadToLegalFile<- function(url, destfile, opts = opts, curlHandle = c
 }
 
 synapseDownloadFile  <- 
-  function (url, checksum, curlHandle = getCurlHandle(), cacheDir = synapseCacheDir(), opts = .getCache("curlOpts"))
+  function (url, checksum, curlHandle = getCurlHandle(), cacheDir = synapseCacheDir(), opts = .getCache("curlOpts"), versionId = NULL)
 {
 	if (is.null(cacheDir)) stop(paste("cacheDir is required. synapseCacheDir() returns ", synapseCacheDir()))
 	
   ## Download the file to the cache
-  parsedUrl <- .ParsedUrl(url)
-  destfile <- file.path(cacheDir, gsub("^/", "", parsedUrl@path))
-  destfile <- path.expand(destfile)
+  destfile <- .generateCacheDestFile(url, versionId)
   
   ## temporary hack for github url that does not contain file extension
+  parsedUrl <- .ParsedUrl(url)
   if( parsedUrl@host=="github.com" ){
     splits <- strsplit(parsedUrl@pathPrefix, "/")
     if( splits[[1]][length(splits[[1]])] == "zipball" )

@@ -14,7 +14,7 @@ setMethod(
   definition = function(.Object){
     ## By default, store the files in subdirectory of the FileCache
     .Object@env = new.env()
-    .Object@cachePrefix <- ".R_OBJECTS/"
+    .Object@cachePrefix <- synapseObjectCache()
     .Object@fileCache <- FileCache()
     .Object@cacheSuffix <- "rbin"
     .Object@cacheTmpSuffix <- "rbin.tmp"

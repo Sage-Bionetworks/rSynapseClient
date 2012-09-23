@@ -138,4 +138,19 @@ integrationTestGetAndStoreExistingEntityWithFile<-
   checkEquals(length(ddd$files), 1L)
 }
 
+integrationTestGetLocationOwnerVersionedCache <-
+  function()
+{
+  project <- synapseClient:::.getCache("testProject")
+  dd <- Data(parentId=project$properties$id)
+  addObject(dd, diag(10), "data")
+  dd <- storeEntity(dd)
+
+  dd <- getEntity(dd$properties$id)
+  checkEquals(as.character(dd$properties$versionNumber), basename(dirname(dd$cacheDir)))
+
+  dd <- getEntity(dd)
+  checkEquals(as.character(dd$properties$versionNumber), basename(dirname(dd$cacheDir)))
+}
+
 

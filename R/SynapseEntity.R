@@ -2,6 +2,115 @@
 # 
 # Author: furia
 ###############################################################################
+setMethod(
+  f = "available.versions",
+  signature = signature("SynapseEntity"),
+  definition = function(object){
+    if(is.null(object$properties$id))
+      return(NULL)
+    .jsonListToDataFrame(synapseGet(sprintf("/entity/%s/version", object$properties$id))$results)
+  }
+)
+
+setMethod(
+  f = "storeAttachment",
+  signature = signature("SynapseEntity", "missing"),
+  definition = function(object){
+    storeAttachment(object, object$attachments)
+  }
+)
+
+setMethod(
+  f = "storeAttachment",
+  signature = signature("SynapseEntity", "character"),
+  definition = function(object, which){
+    files = file.path(object$attachDir, which)
+    for(f in files){
+      synapseAttach(object, f)
+    }
+    object
+  }
+)
+
+setMethod(
+  f = "downloadAttachment",
+  signature = signature("SynapseEntity", "missing"),
+  definition = function(object){
+    stop("not implemented")
+  }
+)
+
+
+setMethod(
+  f = "attachDir",
+  signature = signature('SynapseEntity'),
+  definition = function(object){
+    cacheDir(object@attachOwn)
+  }
+)
+
+setMethod(
+  f = "attachments",
+  signature = "SynapseEntity",
+  definition = function(object){
+    files(object@attachOwn)
+  }
+)
+
+setMethod(
+  f = "addAttachment",
+  signature = signature("SynapseEntity", "character"),
+  definition = function(object, file){
+    if(length(file) != 1L)
+      stop("can only attach a single file")
+    if(!file.exists(file))
+      stop(sprintf("file %s does not exists."), file)
+    if(file.info(file)$isdir)
+      stop("file must be a regular file.")
+
+    addFile(object@attachOwn, file)
+    invisible(object)
+  }
+)
+
+setMethod(
+  f = "deleteAttachment",
+  signature = signature("SynapseEntity", "missing"),
+  definition = function(object){
+    if(length(object$attachments) == 0L)
+      return(object)
+    deleteAttachment(object, object$attachements)
+  }
+)
+
+setMethod(
+  f = "deleteAttachment",
+  signature = signature("SynapseEntity", "character"),
+  definition = function(object, file){
+    if(any(!(file %in% object$attachments)))
+      stop("could not find one or more of the specified attachments")
+
+    for(f in file)
+      deleteFile(object@attachOwn, f)
+
+    invisible(object)
+  }
+)
+
+
+##
+## Initialize the attachment owner
+##
+setMethod(
+  f = "initialize",
+  signature = "SynapseEntity",
+  definition = function(.Object){
+    .Object@attachOwn <- new("AttachmentOwner")
+    .Object@attachOwn@fileCache <- getFileCache(.Object@attachOwn@fileCache$getCacheRoot())
+    .Object
+  }
+)
+
 
 #####
 ## SynapseEntity "show" method
@@ -21,7 +130,7 @@ setMethod(
       cat("Type                : ", properties(object)$type, "\n", sep="")
     if (!is.null(properties(object)$versionNumber)) {
       cat("Version Number      : ", properties(object)$versionNumber, "\n", sep="")
-      cat("Version Label       : ", properties(object)$versionLabel, "\n", sep="")
+      cat("Version ID       : ", properties(object)$versionId, "\n", sep="")
     }
     
     cat("\nFor complete list of annotations, please use the annotations() function.\n")
@@ -33,7 +142,30 @@ setMethod(
   f = "createEntity",
   signature = "SynapseEntity",
   definition = function(entity){
-    createSynapseEntity(entity)
+    oldAnnots <- entity@annotations
+    entity <- as.list.SimplePropertyOwner(entity)
+    entity <- getEntityInstance(synapsePost("/entity", entity))
+    # create the entity in Synapse and get back the id
+    annots <- getAnnotations(entity$properties$id)
+
+    # merge annotations from input variable into 'annots'
+    for (n in annotationNames(oldAnnots)) {
+      annotValue(annots, n) <- annotValue(oldAnnots, n)
+    }
+
+    if(length(annotationNames(annots)) > 0L){
+      annots <- updateEntity(annots)
+      propertyValue(annots, "id") <- entity$properties$id
+    }
+    entity$properties$etag <- propertyValue(annots, "etag")
+
+    ## store the annotations
+    entity@annotations <- annots
+
+    ## store the updated entity to the file cache
+    cacheEntity(entity)
+
+    entity
   }
 )
 
@@ -44,9 +176,20 @@ setMethod(
       envir <- parent.frame(2)
       inherits <- FALSE
       name <- deparse(substitute(entity, env=parent.frame()))
-      deleteSynapseEntity(propertyValue(entity,"id"))
+
+      ## delete the entity in synapse
+      if(!is.null(entity$properties$id))
+        synapseDelete(.generateEntityUri(entity$properties$id))
+
+      ## remove entity from the cache
+      purgeCache(entity)
+
+      ## remove the enity from the parent environment
       if(any(grepl(name,ls(envir=envir))))
         remove(list = name, envir=envir, inherits=inherits)
+
+      ## strip out the system controlled properties and invisibly
+      ## return the entity
       entity <- deleteProperty(entity, "id")
       entity <- deleteProperty(entity, "accessControlList")
       entity <- deleteProperty(entity, "uri")
@@ -57,19 +200,103 @@ setMethod(
 )
 
 setMethod(
+  f = "getEntity",
+  signature = signature("SynapseEntity", "missing"),
+  definition = function(entity){
+    id <- propertyValue(entity, "id")
+    if(is.null(id))
+      stop("entity id cannot be null")
+
+    getEntity(as.character(id))
+  }
+)
+
+setMethod(
+  f = "getEntity",
+  signature = signature("SynapseEntity", "character"),
+  definition = function(entity, versionId){
+    getEntity(entity$properties$id, versionId)
+  }
+)
+
+setMethod(
+  f = "getEntity",
+  signature = signature("SynapseEntity", "numeric"),
+  definition = function(entity, versionId){
+    getEntity(entity$properties$id, as.character(versionId))
+  }
+)
+
+setMethod(
   f = "updateEntity",
   signature = "SynapseEntity",
   definition = function(entity)
   {
-    updateSynapseEntity(entity)
+    if(is.null(entity$properties$id))
+      stop("entity ID was null so could not update. use createEntity instead.")
+
+    annots <- entity@annotations
+    ee <- getEntityInstance(synapsePut(entity$properties$uri, as.list.SimplePropertyOwner(entity)))
+
+    propertyValue(annots, "etag") <- ee$properties$etag
+    propertyValue(annots, "id") <- ee$properties$id
+    propertyValue(annots, "uri") <- ee$properties$annotations
+    annots <- updateEntity(annots)
+    propertyValue(annots, "id") <- ee$properties$id
+
+    ee$properties$etag <- propertyValue(annots, "etag")
+    ee@annotations <- annots
+    cacheEntity(ee)
+
+    ee
   }
 )
 
 setMethod(
   f = "downloadEntity",
-  signature = "SynapseEntity",
+  signature = signature("SynapseEntity","missing"),
   definition = function(entity){
     getEntity(entity)
+  }
+)
+
+setMethod(
+  f = "downloadEntity",
+  signature = signature("SynapseEntity","character"),
+  definition = function(entity, versionId){
+    getEntity(entity, versionId)
+  }
+)
+
+setMethod(
+  f = "downloadEntity",
+  signature = signature("SynapseEntity","numeric"),
+  definition = function(entity, versionId){
+    getEntity(entity, as.character(versionId))
+  }
+)
+
+setMethod(
+  f = "loadEntity",
+  signature = signature("SynapseEntity","missing"),
+  definition = function(entity){
+    getEntity(entity)
+  }
+)
+
+setMethod(
+  f = "loadEntity",
+  signature = signature("SynapseEntity","character"),
+  definition = function(entity, versionId){
+    getEntity(entity, versionId)
+  }
+)
+
+setMethod(
+  f = "loadEntity",
+  signature = signature("SynapseEntity","numeric"),
+  definition = function(entity, versionId){
+    getEntity(entity, as.character(versionId))
   }
 )
 
@@ -317,7 +544,6 @@ setMethod(
   }     
 )
 
-
 setMethod(
   f = "getAnnotations",
   signature = "SynapseEntity",
@@ -329,7 +555,7 @@ setMethod(
 names.SynapseEntity <-
   function(x)
 {
-  c("properties", "annotations")
+  c("properties", "annotations", "attachments", "attachDir", "available.versions")
 }
 
 setMethod(
@@ -349,7 +575,17 @@ setMethod(
       stop(sprintf("invalid subscript type '%s'", class(i)))
     }
     retVal <- lapply(i, function(i){
-        if(i %in% names(x)){
+        if(i == "attachDir"){
+          retVal <- attachDir(x)
+        }else if(i == "attachments"){
+          attachments(x)
+        } else if(i == "available.versions"){
+          if(is.null(x$properties$id)){
+            retVal <- NULL
+          }else{
+            retVal <- available.versions(x$properties$id)
+          }
+        } else if(i %in% names(x)){
           retVal <- slot(x, i)
         }else{
           retVal <- NULL
@@ -390,4 +626,32 @@ setReplaceMethod("$",
     x
   }
 )
+
+setMethod(
+  f = "getAnnotations",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    id <- entity$properties$id
+    if(is.null(id))
+      stop("entity id cannot be null")
+    getAnnotations(id)
+  }
+)
+
+setMethod(
+  f = "cacheEntity",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    ##warning('not implemented')
+  }
+)
+
+setMethod(
+  f = "purgeCache",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    ##warning('not implemented')
+  }
+)
+
 

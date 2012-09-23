@@ -29,13 +29,6 @@ synapseLogin <-
   credentials <- list(username = username, password = password, mode=mode)
   .doAuth(credentials)
   .setCache("sessionTimestamp", Sys.time())
-  
-  # automatic provenance, don't return this object, but it is cached
-  # currentStep = startStep() TODO restore this once new Synapse objects are available
-  if(!is.null(pp <- .getCache("enableProvenance")) && .getCache("enableProvenance")){
-    cat("Starting provenance step\n")
-    startStep()
-  }
 }
 
 .doHmac <-
