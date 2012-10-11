@@ -22,6 +22,10 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     2) Not discriminate, identify, or recontact individuals or groups represented by the data.
     3) Use and contribute only data de-identified to HIPAA standards.
     4) Redistribute data only under these same terms of use.\n"
+
+  ## check RJSONIO version
+  if(installed.packages()['RJSONIO', 'Version'] == "1.0-0")
+    stop("An unsupported version of RJSONIO is installed on your system. For instructions on how to resolve this issue visit this web page: https://sagebionetworks.jira.com/wiki/display/SYNR/I%27m+unable+to+download+or+upload+entity+data")
   
   
   ##set the R_OBJECT cache directory. check for a funcitonal zip first
