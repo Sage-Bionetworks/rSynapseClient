@@ -370,6 +370,10 @@ setClass(
   )
 )
 
+
+##
+## Maintain local cache of attachments
+##
 setClass(
   Class = "AttachmentOwner",
   contains = "FileCacheOwner"
@@ -379,17 +383,18 @@ setClass(
 ## All non-locationable Synapse entities will be derived from this class
 ##
 setClass(
-    Class = "SynapseEntity",
-    contains = "SimplePropertyOwner",
-    representation = representation(
-        annotations = "SynapseAnnotations",
-        synapseEntityKind = "character",
-        synapseWebUrl = "character"
-    ),
-    prototype = prototype(
-        annotations = new("SynapseAnnotations"),
-        synapseWebUrl = ""
-    )
+  Class = "SynapseEntity",
+  contains = "SimplePropertyOwner",
+  representation = representation(
+    attachOwn = "AttachmentOwner",
+    annotations = "SynapseAnnotations",
+    synapseEntityKind = "character",
+    synapseWebUrl = "character"
+  ),
+  prototype = prototype(
+    annotations = new("SynapseAnnotations"),
+    SynapseWebUrl = ""
+  )
 )
 
 ##

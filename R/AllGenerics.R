@@ -4,6 +4,42 @@
 ###############################################################################
 
 setGeneric(
+  name = "attachments",
+  def = function(object){
+    standardGeneric("attachments")
+  }
+)
+
+setGeneric(
+  name = "attachDir",
+  def = function(object){
+    standardGeneric("attachDir")
+  }
+)
+
+setGeneric(
+  name = "addAttachment",
+  def = function(object, file){
+    standardGeneric("addAttachment")
+  }
+)
+
+setGeneric(
+  name = "deleteAttachment",
+  def = function(object, file){
+    standardGeneric("deleteAttachment")
+  }
+)
+
+setGeneric(
+  name = "storeAttachment",
+  def = function(object, which){
+    standardGeneric("storeAttachment")
+  }
+)
+
+
+setGeneric(
   name = "getFileCacheName",
   def = function(object){
     standardGeneric("getFileCacheName")
@@ -35,6 +71,13 @@ setGeneric(
   name = "ArchiveOwner",
   def = function(path, ...){
     standardGeneric("ArchiveOwner")
+  }
+)
+
+setGeneric(
+  name = "AttachmentOwner",
+  def = function(path, ...){
+    standardGeneric("AttachmentOwner")
   }
 )
 

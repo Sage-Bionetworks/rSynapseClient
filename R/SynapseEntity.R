@@ -3,6 +3,77 @@
 # Author: furia
 ###############################################################################
 
+setMethod(
+  f = "attachDir",
+  signature = signature('SynapseEntity'),
+  definition = function(object){
+    cacheDir(object@attachOwn)
+  }
+)
+
+setMethod(
+  f = "attachments",
+  signature = "SynapseEntity",
+  definition = function(object){
+    files(object@attachOwn)
+  }
+)
+
+setMethod(
+  f = "addAttachment",
+  signature = signature("SynapseEntity", "character"),
+  definition = function(object, file){
+    if(length(file) != 1L)
+      stop("can only attach a single file")
+    if(!file.exists(file))
+      stop(sprintf("file %s does not exists."), file)
+    if(file.info(file)$isdir)
+      stop("file must be a regular file.")
+
+    addFile(object@attachOwn, file)
+    invisible(object)
+  }
+)
+
+setMethod(
+  f = "deleteAttachment",
+  signature = signature("SynapseEntity", "missing"),
+  definition = function(object){
+    if(length(object$attachments) == 0L)
+      return(object)
+    deleteAttachment(object, object$attachements)
+  }
+)
+
+setMethod(
+  f = "deleteAttachment",
+  signature = signature("SynapseEntity", "character"),
+  definition = function(object, file){
+    if(any(!(file %in% object$attachments)))
+      stop("could not find one or more of the specified attachments")
+
+    for(f in file)
+      deleteFile(object@attachOwn, f)
+
+    invisible(object)
+  }
+)
+
+
+##
+## Initialize the attachment owner
+##
+setMethod(
+  f = "initialize",
+  signature = "SynapseEntity",
+  definition = function(.Object){
+    .Object@attachOwn <- new("AttachmentOwner")
+    .Object@attachOwn@fileCache <- getFileCache(.Object@attachOwn@fileCache$getCacheRoot())
+    .Object
+  }
+)
+
+
 #####
 ## SynapseEntity "show" method
 #####
@@ -317,7 +388,6 @@ setMethod(
   }     
 )
 
-
 setMethod(
   f = "getAnnotations",
   signature = "SynapseEntity",
@@ -329,7 +399,7 @@ setMethod(
 names.SynapseEntity <-
   function(x)
 {
-  c("properties", "annotations")
+  c("properties", "annotations", "attachments", "attachDir")
 }
 
 setMethod(
@@ -349,7 +419,11 @@ setMethod(
       stop(sprintf("invalid subscript type '%s'", class(i)))
     }
     retVal <- lapply(i, function(i){
-        if(i %in% names(x)){
+        if(i == "attachDir"){
+          retVal <- attachDir(x)
+        }else if(i == "attachments"){
+          attachments(x)
+        } else if(i %in% names(x)){
           retVal <- slot(x, i)
         }else{
           retVal <- NULL
