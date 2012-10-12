@@ -345,6 +345,14 @@ setClass(
     )
 )
 
+setClass(
+  Class = "FileCacheOwner",
+  contains = "VIRTUAL",
+  representation = representation(
+    fileCache = "FileCache"
+  )
+)
+
 ##
 ## wrapping FileCache in ArchiveOwner will allow for seamless
 ## switching between read-only and write-only mode in the future
@@ -355,11 +363,16 @@ setClass(
 ## do this with FileCache since it's R5. This is neccessary to maintain
 ## backward compatibility of the user interface
 setClass(
-    Class = "ArchiveOwner",
-    representation = representation(
-        fileCache = "FileCache",
-        objects = "EnhancedEnvironment"
-    )
+  Class = "ArchiveOwner",
+  contains = "FileCacheOwner",
+  representation = representation(
+    objects = "EnhancedEnvironment"
+  )
+)
+
+setClass(
+  Class = "AttachmentOwner",
+  contains = "FileCacheOwner"
 )
 
 ##

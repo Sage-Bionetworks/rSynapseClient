@@ -2,6 +2,7 @@
 #
 # Author: furia
 ###############################################################################
+
 setGeneric(
   name = "getFileCacheName",
   def = function(object){
