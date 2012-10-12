@@ -2,6 +2,34 @@
 # 
 # Author: furia
 ###############################################################################
+setMethod(
+  f = "storeAttachment",
+  signature = signature("SynapseEntity", "missing"),
+  definition = function(object){
+    storeAttachment(object, object$attachments)
+  }
+)
+
+setMethod(
+  f = "storeAttachment",
+  signature = signature("SynapseEntity", "character"),
+  definition = function(object, which){
+    files = file.path(object$attachDir, object$attachments)
+    for(f in files){
+      doStoreAttachment(object$properties$id, f)
+    }
+    object
+  }
+)
+
+setMethod(
+  f = "downloadAttachment",
+  signature = signature("synapseEntity", "missing"),
+  definition = function(object){
+    stop("not implemented")
+  }
+)
+
 
 setMethod(
   f = "attachDir",

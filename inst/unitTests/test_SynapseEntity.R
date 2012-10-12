@@ -314,11 +314,6 @@ testDeleteAttachment <-
   checkTrue(!file.exists(file.path(copy$attachDir, basename(file))))
 }
 
-#unitTestDateProperty <-
-#		function()
-#{
-#	## test setting and getting date properties
-#}
 
 
 

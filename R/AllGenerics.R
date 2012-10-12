@@ -2,6 +2,19 @@
 #
 # Author: furia
 ###############################################################################
+setGeneric(
+  name = "downloadAttachment",
+  def = function(object, which){
+    standardGeneric("downloadAttachment")
+  }
+)
+
+setGeneric(
+  name = "storeAttachment",
+  def = function(object, which){
+    standardGeneric("storeAttachment")
+  }
+)
 
 setGeneric(
   name = "attachments",
