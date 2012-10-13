@@ -6,7 +6,7 @@
 
 setMethod(
   f = "getEntity",
-  signature = signature("character"),
+  signature = signature("character", "missing"),
   definition = function(entity){
     ## download entity and annotations to disk
     synapseClient:::getAnnotationsFromSynapse(entity)
@@ -22,10 +22,37 @@ setMethod(
   }
 )
 
+setMethod(
+  f = "getEntity",
+  signature = signature("character", "numeric"),
+  definition = function(entity, versionId){
+    getEntity(entity, as.character(versionId))
+  }
+)
 
 setMethod(
   f = "getEntity",
-  signature = signature("numeric"),
+  signature = signature("character", "character"),
+  definition = function(entity, versionId){
+    ## download entity and annotations to disk
+    synapseClient:::getAnnotationsFromSynapse(entity, versionId)
+    synapseClient:::getEntityFromSynapse(entity, versionId)
+
+    ## instantiate the entity
+    ee <- getEntityFromFileCache(entity, versionId)
+
+    ## load annotations from disk
+    ee@annotations <- getAnnotationsFromFileCache(entity, versionId)
+
+    ee
+  }
+)
+
+
+
+setMethod(
+  f = "getEntity",
+  signature = signature("numeric", "missing"),
   definition = function(entity){
     getEntity(as.character(entity))
   }
@@ -33,7 +60,7 @@ setMethod(
 
 setMethod(
   f = "getEntity",
-  signature = signature("integer"),
+  signature = signature("integer", "missing"),
   definition = function(entity){
     getEntity(as.character(entity))
   }

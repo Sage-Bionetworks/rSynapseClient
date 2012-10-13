@@ -17,7 +17,7 @@ setMethod(
 
 setMethod(
     f = "loadEntity",
-    signature = "SynapseLocationOwner",
+    signature = signature("SynapseLocationOwner", "missing"),
     definition = function(entity){
       ##if(length(entity$files) == 0)
       entity <- downloadEntity(entity)
@@ -25,6 +25,26 @@ setMethod(
       setFetchMethod(entity, "load")
       entity
     }
+)
+
+setMethod(
+    f = "loadEntity",
+    signature = signature("SynapseLocationOwner", "character"),
+    definition = function(entity, versionId){
+      ##if(length(entity$files) == 0)
+      entity <- downloadEntity(entity, versionId)
+      entity@archOwn <- loadObjectsFromFiles(entity@archOwn)
+      setFetchMethod(entity, "load")
+      entity
+    }
+)
+
+setMethod(
+  f = "loadEntity",
+  signature = signature("SynapseLocationOwner", "numeric"),
+  definition = function(entity, versionId){
+    loadEntity(entity, as.character(versionId))
+  }
 )
 
 
@@ -115,6 +135,8 @@ setMethod(
       stop("NULL URL")
     parsedUrl <- synapseClient:::.ParsedUrl(propertyValue(entity, 'locations')[[1]]['path'])
     destdir <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@pathPrefix))
+    if(!is.null(entity$properties$versionId))
+      destdir <- file.path(destdir, entity$properties$versionId)
     destdir <- path.expand(destdir)
 
     ## set the cachRoot to the new location this method should do the right
@@ -135,7 +157,7 @@ setMethod(
 
 setMethod(
   f = "getEntity",
-  signature = "SynapseLocationOwner",
+  signature = signature("SynapseLocationOwner", "missing"),
   definition = function(entity){
     gfun <- getMethod("getEntity", "SynapseEntity")
     ee <- gfun(entity)
@@ -157,8 +179,26 @@ setMethod(
 
 setMethod(
   f = "downloadEntity",
-  signature = "SynapseLocationOwner",
+  signature = signature("SynapseLocationOwner", "missing"),
   definition = function(entity){
+    downloadEntity(entity, entity$properties$versionNumber)
+  }
+)
+
+setMethod(
+  f = "downloadEntity",
+  signature = signature("SynapseLocationOwner", "numeric"),
+  definition = function(entity, versionId){
+    downloadEntity(entity, as.character(versionId))
+  }
+)
+
+setMethod(
+  f = "downloadEntity",
+  signature = signature("SynapseLocationOwner", "character"),
+  definition = function(entity, versionId){
+    if(versionId != as.character(entity$properties$versionNumber))
+      entity <- getEntity(entity, versionId)
 
     if(is.null(propertyValue(entity, "locations")[[1]][['path']]))
       return(entity)
@@ -169,6 +209,8 @@ setMethod(
     parsedUrl <- synapseClient:::.ParsedUrl(url)
     destfile <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@path))
     destfile <- path.expand(destfile)
+    if(!is.null(entity$properties$versionId))
+      destfile <- file.path(dirname(destfile), entity$properties$versionId, basename(destfile))
     cacheRoot <- dirname(destfile)
     if(entity@archOwn@fileCache$archiveFile != basename(destfile)){
       entity@archOwn <- ArchiveOwner(cacheRoot, basename(destfile))
@@ -180,7 +222,7 @@ setMethod(
     ## passing the md5 sum causes this funciton to only download the file
     ## if the cached copy does not match that md5 sum
     if(file.exists(destfile)){
-      archiveFile <- synapseClient:::synapseDownloadFile(url, propertyValue(entity, "md5"))
+      archiveFile <- synapseClient:::synapseDownloadFile(url, propertyValue(entity, "md5"), versionId=entity$properties$versionId)
     }else{
       archiveFile <- synapseDownloadFile(url)
     }

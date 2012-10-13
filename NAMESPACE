@@ -23,7 +23,8 @@ export(
   hmacSecretKey,
   edit,
   setApiCredentials,
-  synapseQuery
+  synapseQuery,
+  available.versions
 ##  .Last.lib,
 ##  signEula
 )

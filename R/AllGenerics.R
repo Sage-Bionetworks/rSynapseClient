@@ -3,6 +3,14 @@
 # Author: furia
 ###############################################################################
 setGeneric(
+  name = "available.versions",
+  def = function(object){
+    standardGeneric('available.versions')
+  }
+
+)
+
+setGeneric(
   name = "downloadAttachment",
   def = function(object, which){
     standardGeneric("downloadAttachment")
@@ -257,7 +265,7 @@ setGeneric(
 
 setGeneric(
   name = "downloadEntity",
-  def = function(entity){
+  def = function(entity, versionId){
     standardGeneric("downloadEntity")
   }
 )
@@ -285,7 +293,7 @@ setGeneric(
 
 setGeneric(
   name = "getEntity",
-  def = function(entity){
+  def = function(entity, versionId){
     standardGeneric("getEntity")
   }
 )
@@ -307,7 +315,7 @@ setGeneric(
 
 setGeneric(
   name = "loadEntity",
-  def=function(entity){
+  def=function(entity, versionId){
     standardGeneric("loadEntity")
   }
 )

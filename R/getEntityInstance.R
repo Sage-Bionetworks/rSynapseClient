@@ -31,6 +31,8 @@ setMethod(
         parsedUrl <- .ParsedUrl(url)
         destfile <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@path))
         destfile <- path.expand(destfile)
+        if(!is.null(entity$properties$versionId))
+          destfile <- file.path(dirname(destfile), entity$properties$versionId, basename(destfile))
         cacheRoot <- dirname(destfile)
       }else if(!is.null(ee$properties$id)){
         ## use an entity-specifict temp dir
@@ -39,6 +41,8 @@ setMethod(
         ## use a temp dir
         cacheRoot <- tempdir()
       }
+      if(is.null(cacheRoot))
+        stop("null cache root")
 
       if(!file.exists(cacheRoot))
         dir.create(cacheRoot, recursive=TRUE)
@@ -79,6 +83,8 @@ setMethod(
       return(entity)
     parsedUrl <- synapseClient:::.ParsedUrl(propertyValue(entity, 'locations')[[1]]['path'])
     destdir <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@pathPrefix))
+    if(!is.null(entity$properties$versionId))
+      destdir <- file.path(destdir, entity$properties$versionId)
     if(!file.exists(destdir))
       dir.create(destdir, recursive=T)
     destdir <- normalizePath(path.expand(destdir))

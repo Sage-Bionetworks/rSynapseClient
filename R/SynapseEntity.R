@@ -3,6 +3,16 @@
 # Author: furia
 ###############################################################################
 setMethod(
+  f = "available.versions",
+  signature = signature("SynapseEntity"),
+  definition = function(object){
+    if(is.null(object$properties$id))
+      return(NULL)
+    .jsonListToDataFrame(synapseGet(sprintf("/entity/%s/version", object$properties$id))$results)
+  }
+)
+
+setMethod(
   f = "storeAttachment",
   signature = signature("SynapseEntity", "missing"),
   definition = function(object){
@@ -14,7 +24,7 @@ setMethod(
   f = "storeAttachment",
   signature = signature("SynapseEntity", "character"),
   definition = function(object, which){
-    files = file.path(object$attachDir, object$attachments)
+    files = file.path(object$attachDir, which)
     for(f in files){
       doStoreAttachment(object$properties$id, f)
     }
@@ -24,7 +34,7 @@ setMethod(
 
 setMethod(
   f = "downloadAttachment",
-  signature = signature("synapseEntity", "missing"),
+  signature = signature("SynapseEntity", "missing"),
   definition = function(object){
     stop("not implemented")
   }
@@ -120,7 +130,7 @@ setMethod(
       cat("Type                : ", properties(object)$type, "\n", sep="")
     if (!is.null(properties(object)$versionNumber)) {
       cat("Version Number      : ", properties(object)$versionNumber, "\n", sep="")
-      cat("Version Label       : ", properties(object)$versionLabel, "\n", sep="")
+      cat("Version ID       : ", properties(object)$versionId, "\n", sep="")
     }
     
     cat("\nFor complete list of annotations, please use the annotations() function.\n")
@@ -153,6 +163,30 @@ setMethod(
       entity <- deleteProperty(entity, "etag")
       invisible(entity)
     }
+)
+
+setMethod(
+  f = "getEntity",
+  signature = signature("SynapseEntity", "missing"),
+  definition = function(entity){
+    getEntity(entity$properties$id)
+  }
+)
+
+setMethod(
+  f = "getEntity",
+  signature = signature("SynapseEntity", "character"),
+  definition = function(entity, versionId){
+    getEntity(entity$properties$id, versionId)
+  }
+)
+
+setMethod(
+  f = "getEntity",
+  signature = signature("SynapseEntity", "numeric"),
+  definition = function(entity, versionId){
+    getEntity(entity$properties$id, as.character(versionId))
+  }
 )
 
 setMethod(
@@ -427,7 +461,7 @@ setMethod(
 names.SynapseEntity <-
   function(x)
 {
-  c("properties", "annotations", "attachments", "attachDir")
+  c("properties", "annotations", "attachments", "attachDir", "available.versions")
 }
 
 setMethod(
@@ -451,6 +485,12 @@ setMethod(
           retVal <- attachDir(x)
         }else if(i == "attachments"){
           attachments(x)
+        } else if(i == "available.versions"){
+          if(is.null(x$properties$id)){
+            retVal <- NULL
+          }else{
+            retVal <- available.versions(x$properties$id)
+          }
         } else if(i %in% names(x)){
           retVal <- slot(x, i)
         }else{
