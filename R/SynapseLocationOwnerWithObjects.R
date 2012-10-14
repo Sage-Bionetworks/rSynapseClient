@@ -49,6 +49,28 @@ setMethod(
 )
 
 setMethod(
+  f = "loadEntity",
+  signature = signature("SynapseLocationOwnerWithObjects","character"),
+  definition = function(entity, versionId){
+
+    lfun <- getMethod("loadEntity", signature("SynapseLocationOwner", "character"))
+    entity <- lfun(entity, versionId)
+    entity@objOwn$objects@fileCache <- entity@archOwn@fileCache
+    entity@objOwn <- loadObjectsFromFiles(entity@objOwn)
+
+    entity
+  }
+)
+
+setMethod(
+  f = "loadEntity",
+  signature = signature("SynapseLocationOwnerWithObjects","numeric"),
+  definition = function(entity, versionId){
+    loadEntity(entity, as.character(versionId))
+  }
+)
+
+setMethod(
   f = "getEntity",
   signature = signature("SynapseLocationOwnerWithObjects", "missing"),
   definition = function(entity){

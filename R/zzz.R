@@ -44,7 +44,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     .setCache("hasZip", FALSE)
   }else{
     packageStartupMessage("OK")
-    .setCache("rObjCacheDir", ".R_OBJECTS")
+    .setCache("rObjCacheDir", ".R_OBJECTS/")
     .setCache("hasZip", TRUE)
   }
   classpath <- c(list.files(file.path(find.package("synapseClient"), "java"), full.names=TRUE, pattern='jar$', recursive=FALSE))

@@ -254,9 +254,49 @@ setMethod(
 
 setMethod(
   f = "downloadEntity",
-  signature = "SynapseEntity",
+  signature = signature("SynapseEntity","missing"),
   definition = function(entity){
     getEntity(entity)
+  }
+)
+
+setMethod(
+  f = "downloadEntity",
+  signature = signature("SynapseEntity","character"),
+  definition = function(entity, versionId){
+    getEntity(entity, versionId)
+  }
+)
+
+setMethod(
+  f = "downloadEntity",
+  signature = signature("SynapseEntity","numeric"),
+  definition = function(entity, versionId){
+    getEntity(entity, as.character(versionId))
+  }
+)
+
+setMethod(
+  f = "loadEntity",
+  signature = signature("SynapseEntity","missing"),
+  definition = function(entity){
+    getEntity(entity)
+  }
+)
+
+setMethod(
+  f = "loadEntity",
+  signature = signature("SynapseEntity","character"),
+  definition = function(entity, versionId){
+    getEntity(entity, versionId)
+  }
+)
+
+setMethod(
+  f = "loadEntity",
+  signature = signature("SynapseEntity","numeric"),
+  definition = function(entity, versionId){
+    getEntity(entity, as.character(versionId))
   }
 )
 

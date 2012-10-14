@@ -14,6 +14,17 @@ setMethod(
   }
 )
 
+setMethod(
+  f = "files",
+  signature = "ArchiveOwner",
+  definition = function(object){
+    files <- object@fileCache$files()
+    indx <- grep(sprintf("^[\\.]?[/\\]?[\\.]?%s", synapseObjectCache()), files)
+    if(length(indx) > 0L)
+      files <- files[-indx]
+    files
+  }
+)
 
 setMethod(
   f = "loadObjectsFromFiles",
@@ -23,8 +34,8 @@ setMethod(
     files <- files(owner)
     indx <- grep("\\.rbin$", tolower(files))
     lapply(indx, function(ii){
-          load(file.path(cacheDir(owner), files[ii]), envir=as.environment(owner@objects))
-        })
+      load(file.path(cacheDir(owner), files[ii]), envir=as.environment(owner@objects))
+    })
     invisible(owner)
   }
 )

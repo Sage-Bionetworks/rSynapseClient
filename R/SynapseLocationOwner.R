@@ -19,8 +19,8 @@ setMethod(
     f = "loadEntity",
     signature = signature("SynapseLocationOwner", "missing"),
     definition = function(entity){
-      ##if(length(entity$files) == 0)
-      entity <- downloadEntity(entity)
+      if(!is.null(entity$properties$id))
+        entity <- downloadEntity(entity)
       entity@archOwn <- loadObjectsFromFiles(entity@archOwn)
       setFetchMethod(entity, "load")
       entity

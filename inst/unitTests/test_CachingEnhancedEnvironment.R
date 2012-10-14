@@ -42,7 +42,7 @@ unitTestCachingRenameObject <-
 
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(ee, "foo")))
   checkEquals(length(files(ee)), 1L)
-  checkTrue(grepl("^\\.R_OBJECTS.+\\.rbin$", files(ee)))
+  checkTrue(grepl(sprintf("^%s.+\\.rbin$",synapseClient:::synapseObjectCache()), files(ee)))
 
   ## do a simple rename. verify the return value
   copy <- renameObject(ee, "foo", "blah")
@@ -81,7 +81,7 @@ unitTestCachingDeleteObject <-
 
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(ee, "foo")))
   checkEquals(length(files(ee)), 1L)
-  checkTrue(grepl("^\\.R_OBJECTS.+\\.rbin$", files(ee)))
+  checkTrue(grepl(sprintf("^%s.+\\.rbin$", synapseClient:::synapseObjectCache()), files(ee)))
 
   ## make sure that no warnings are produced but converting warnings
   ## to errors by setting warn=2. reset back to original value in tearDown()
