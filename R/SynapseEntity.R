@@ -26,7 +26,7 @@ setMethod(
   definition = function(object, which){
     files = file.path(object$attachDir, which)
     for(f in files){
-      doStoreAttachment(object$properties$id, f)
+      synapseAttach(object, f)
     }
     object
   }

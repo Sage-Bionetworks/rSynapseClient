@@ -326,7 +326,7 @@ setGeneric(
 
 setGeneric(
   name = "loadEntity",
-  def=function(entity, versionId){
+  def=function(entity, versionId, ...){
     standardGeneric("loadEntity")
   }
 )
