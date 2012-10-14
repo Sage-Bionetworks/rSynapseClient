@@ -67,8 +67,6 @@ setMethod(
   }
 )
 
-
-
 setMethod(
   f = "updateEntity",
   signature = "SynapseLocationOwnerWithObjects",

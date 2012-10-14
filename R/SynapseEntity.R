@@ -142,7 +142,30 @@ setMethod(
   f = "createEntity",
   signature = "SynapseEntity",
   definition = function(entity){
-    createSynapseEntity(entity)
+    oldAnnots <- entity@annotations
+    entity <- as.list.SimplePropertyOwner(entity)
+    entity <- getEntityInstance(synapsePost("/entity", entity))
+    # create the entity in Synapse and get back the id
+    annots <- getAnnotations(entity$properties$id)
+
+    # merge annotations from input variable into 'annots'
+    for (n in annotationNames(oldAnnots)) {
+      annotValue(annots, n) <- annotValue(oldAnnots, n)
+    }
+
+    if(length(annotationNames(annots)) > 0L){
+      annots <- updateEntity(annots)
+      propertyValue(annots, "id") <- entity$properties$id
+    }
+    entity$properties$etag <- propertyValue(annots, "etag")
+
+    ## store the annotations
+    entity@annotations <- annots
+
+    ## store the updated entity to the file cache
+    cacheEntity(entity)
+
+    entity
   }
 )
 
@@ -153,9 +176,20 @@ setMethod(
       envir <- parent.frame(2)
       inherits <- FALSE
       name <- deparse(substitute(entity, env=parent.frame()))
-      deleteSynapseEntity(propertyValue(entity,"id"))
+
+      ## delete the entity in synapse
+      if(!is.null(entity$properties$id))
+        synapseDelete(.generateEntityUri(entity$properties$id))
+
+      ## remove entity from the cache
+      purgeCache(entity)
+
+      ## remove the enity from the parent environment
       if(any(grepl(name,ls(envir=envir))))
         remove(list = name, envir=envir, inherits=inherits)
+
+      ## strip out the system controlled properties and invisibly
+      ## return the entity
       entity <- deleteProperty(entity, "id")
       entity <- deleteProperty(entity, "accessControlList")
       entity <- deleteProperty(entity, "uri")
@@ -169,7 +203,11 @@ setMethod(
   f = "getEntity",
   signature = signature("SynapseEntity", "missing"),
   definition = function(entity){
-    getEntity(entity$properties$id)
+    id <- propertyValue(entity, "id")
+    if(is.null(id))
+      stop("entity id cannot be null")
+
+    getEntity(as.character(id))
   }
 )
 
@@ -194,7 +232,23 @@ setMethod(
   signature = "SynapseEntity",
   definition = function(entity)
   {
-    updateSynapseEntity(entity)
+    if(is.null(entity$properties$id))
+      stop("entity ID was null so could not update. use createEntity instead.")
+
+    annots <- entity@annotations
+    ee <- getEntityInstance(synapsePut(entity$properties$uri, as.list.SimplePropertyOwner(entity)))
+
+    propertyValue(annots, "etag") <- ee$properties$etag
+    propertyValue(annots, "id") <- ee$properties$id
+    propertyValue(annots, "uri") <- ee$properties$annotations
+    annots <- updateEntity(annots)
+    propertyValue(annots, "id") <- ee$properties$id
+
+    ee$properties$etag <- propertyValue(annots, "etag")
+    ee@annotations <- annots
+    cacheEntity(ee)
+
+    ee
   }
 )
 
@@ -532,4 +586,32 @@ setReplaceMethod("$",
     x
   }
 )
+
+setMethod(
+  f = "getAnnotations",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    id <- entity$properties$id
+    if(is.null(id))
+      stop("entity id cannot be null")
+    getAnnotations(id)
+  }
+)
+
+setMethod(
+  f = "cacheEntity",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    ##warning('not implemented')
+  }
+)
+
+setMethod(
+  f = "purgeCache",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    ##warning('not implemented')
+  }
+)
+
 

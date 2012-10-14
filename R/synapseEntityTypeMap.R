@@ -11,8 +11,6 @@ synapseEntityTypeMap <-
     org.sagebionetworks.repo.model.Study = "Study",
     org.sagebionetworks.repo.model.Data = "Data",
     org.sagebionetworks.repo.model.Project = "Project",
-    org.sagebionetworks.repo.model.Analysis = "Analysis",
-    org.sagebionetworks.repo.model.Step = "Step",
     org.sagebionetworks.repo.model.Code = "Code",
     org.sagebionetworks.repo.model.Link = "Link",
     org.sagebionetworks.repo.model.ExpressionData = "ExpressionData",

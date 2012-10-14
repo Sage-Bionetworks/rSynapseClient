@@ -28,11 +28,7 @@ setMethod(
       url <- ee$properties$locations[[1]][['path']]
       if(!is.null(url)){
         ## instantiate the ArchiveOwner
-        parsedUrl <- .ParsedUrl(url)
-        destfile <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@path))
-        destfile <- path.expand(destfile)
-        if(!is.null(entity$properties$versionId))
-          destfile <- file.path(dirname(destfile), entity$properties$versionId, basename(destfile))
+        destfile <- .generateCacheDestFile(url, ee$properties$versionNumber)
         cacheRoot <- dirname(destfile)
       }else if(!is.null(ee$properties$id)){
         ## use an entity-specifict temp dir
@@ -63,7 +59,7 @@ setMethod(
 
 
 setMethod(
-  f = "initialzeEntity",
+  f = "initializeEntity",
   signature = "SynapseEntity",
   definition = function(entity){
     entity
@@ -71,20 +67,17 @@ setMethod(
 )
 
 setMethod(
-  f = "initialzeEntity",
+  f = "initializeEntity",
   signature = "SynapseLocationOwner",
   definition = function(entity){
-    ifun <- getMethod("initialzeEntity", "SynapseEntity")
+    ifun <- getMethod("initializeEntity", "SynapseEntity")
     entity <- ifun(entity)
 
     ## get the cache url for this entity
-    url <- properties(entity)$locations[[1]][['path']]
+    url <- entity$properties$locations[[1]][['path']]
     if(is.null(url))
       return(entity)
-    parsedUrl <- synapseClient:::.ParsedUrl(propertyValue(entity, 'locations')[[1]]['path'])
-    destdir <- file.path(synapseCacheDir(), gsub("^/", "", parsedUrl@pathPrefix))
-    if(!is.null(entity$properties$versionId))
-      destdir <- file.path(destdir, entity$properties$versionId)
+    destdir <- .generateCacheDestDir(url, entity$properties$versionNumber)
     if(!file.exists(destdir))
       dir.create(destdir, recursive=T)
     destdir <- normalizePath(path.expand(destdir))
@@ -98,10 +91,10 @@ setMethod(
 )
 
 setMethod(
-  f = "initialzeEntity",
+  f = "initializeEntity",
   signature = "SynapseLocationOwnerWithObjects",
   definition = function(entity){
-    ifun <- getMethod("initialzeEntity", "SynapseLocationOwner")
+    ifun <- getMethod("initializeEntity", "SynapseLocationOwner")
     entity <- ifun(entity)
 
     ## instantiate the file cache an put the reference in

@@ -38,13 +38,10 @@ synapseDownloadFile  <-
 	if (is.null(cacheDir)) stop(paste("cacheDir is required. synapseCacheDir() returns ", synapseCacheDir()))
 	
   ## Download the file to the cache
-  parsedUrl <- .ParsedUrl(url)
-  destfile <- file.path(cacheDir, gsub("^/", "", parsedUrl@path))
-  destfile <- path.expand(destfile)
-  if(!is.null(versionId))
-    destfile <- file.path(dirname(destfile), versionId, basename(destfile))
+  destfile <- .generateCacheDestFile(url, versionId)
   
   ## temporary hack for github url that does not contain file extension
+  parsedUrl <- .ParsedUrl(url)
   if( parsedUrl@host=="github.com" ){
     splits <- strsplit(parsedUrl@pathPrefix, "/")
     if( splits[[1]][length(splits[[1]])] == "zipball" )

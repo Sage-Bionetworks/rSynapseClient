@@ -5,29 +5,6 @@
 ###############################################################################
 
 ##
-## Step entity to be used for tracking provenance
-##
-setClass(
-  "Step",
-  contains = "SynapseEntity",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Step"
-  )
-)
-
-
-##
-## Analysis entity to be used for tracking provenance
-##
-setClass(
-  "Analysis",
-  contains = "SynapseEntity",
-  prototype = prototype(
-    synapseEntityKind = "org.sagebionetworks.repo.model.Analysis"
-  )
-)
-
-##
 ## Project entity
 ##
 setClass(

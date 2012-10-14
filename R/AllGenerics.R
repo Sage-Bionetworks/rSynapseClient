@@ -3,11 +3,24 @@
 # Author: furia
 ###############################################################################
 setGeneric(
+  name = "cacheEntity",
+  def = function(entity){
+    standardGeneric("cacheEntity")
+  }
+)
+
+setGeneric(
+  name = "purgeCache",
+  def = function(entity){
+    standardGeneric("purgeCache")
+  }
+)
+
+setGeneric(
   name = "available.versions",
   def = function(object){
     standardGeneric('available.versions')
   }
-
 )
 
 setGeneric(
@@ -159,12 +172,10 @@ setGeneric(
   }
 )
 
-
-
 setGeneric(
-  name = "initialzeEntity",
+  name = "initializeEntity",
   def = function(entity){
-    standardGeneric("initialzeEntity")
+    standardGeneric("initializeEntity")
   }
 )
 
@@ -346,22 +357,6 @@ setGeneric(
   name = "Data",
   def = function(entity, ...){
     standardGeneric("Data")
-  }
-)
-
-
-setGeneric(
-  name = "Analysis",
-  def = function(entity, ...){
-    standardGeneric("Analysis")
-  }
-)
-
-
-setGeneric(
-  name = "Step",
-  def = function(entity, ...){
-    standardGeneric("Step")
   }
 )
 
