@@ -3,6 +3,77 @@
 # Author: furia
 ###############################################################################
 setGeneric(
+  name = "cacheEntity",
+  def = function(entity){
+    standardGeneric("cacheEntity")
+  }
+)
+
+setGeneric(
+  name = "purgeCache",
+  def = function(entity){
+    standardGeneric("purgeCache")
+  }
+)
+
+setGeneric(
+  name = "available.versions",
+  def = function(object){
+    standardGeneric('available.versions')
+  }
+)
+
+setGeneric(
+  name = "downloadAttachment",
+  def = function(object, which){
+    standardGeneric("downloadAttachment")
+  }
+)
+
+setGeneric(
+  name = "storeAttachment",
+  def = function(object, which){
+    standardGeneric("storeAttachment")
+  }
+)
+
+setGeneric(
+  name = "attachments",
+  def = function(object){
+    standardGeneric("attachments")
+  }
+)
+
+setGeneric(
+  name = "attachDir",
+  def = function(object){
+    standardGeneric("attachDir")
+  }
+)
+
+setGeneric(
+  name = "addAttachment",
+  def = function(object, file){
+    standardGeneric("addAttachment")
+  }
+)
+
+setGeneric(
+  name = "deleteAttachment",
+  def = function(object, file){
+    standardGeneric("deleteAttachment")
+  }
+)
+
+setGeneric(
+  name = "storeAttachment",
+  def = function(object, which){
+    standardGeneric("storeAttachment")
+  }
+)
+
+
+setGeneric(
   name = "getFileCacheName",
   def = function(object){
     standardGeneric("getFileCacheName")
@@ -34,6 +105,13 @@ setGeneric(
   name = "ArchiveOwner",
   def = function(path, ...){
     standardGeneric("ArchiveOwner")
+  }
+)
+
+setGeneric(
+  name = "AttachmentOwner",
+  def = function(path, ...){
+    standardGeneric("AttachmentOwner")
   }
 )
 
@@ -94,12 +172,10 @@ setGeneric(
   }
 )
 
-
-
 setGeneric(
-  name = "initialzeEntity",
+  name = "initializeEntity",
   def = function(entity){
-    standardGeneric("initialzeEntity")
+    standardGeneric("initializeEntity")
   }
 )
 
@@ -200,7 +276,7 @@ setGeneric(
 
 setGeneric(
   name = "downloadEntity",
-  def = function(entity){
+  def = function(entity, versionId){
     standardGeneric("downloadEntity")
   }
 )
@@ -228,7 +304,7 @@ setGeneric(
 
 setGeneric(
   name = "getEntity",
-  def = function(entity){
+  def = function(entity, versionId){
     standardGeneric("getEntity")
   }
 )
@@ -250,7 +326,7 @@ setGeneric(
 
 setGeneric(
   name = "loadEntity",
-  def=function(entity){
+  def=function(entity, versionId, ...){
     standardGeneric("loadEntity")
   }
 )
@@ -281,22 +357,6 @@ setGeneric(
   name = "Data",
   def = function(entity, ...){
     standardGeneric("Data")
-  }
-)
-
-
-setGeneric(
-  name = "Analysis",
-  def = function(entity, ...){
-    standardGeneric("Analysis")
-  }
-)
-
-
-setGeneric(
-  name = "Step",
-  def = function(entity, ...){
-    standardGeneric("Step")
   }
 )
 

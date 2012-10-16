@@ -345,6 +345,14 @@ setClass(
     )
 )
 
+setClass(
+  Class = "FileCacheOwner",
+  contains = "VIRTUAL",
+  representation = representation(
+    fileCache = "FileCache"
+  )
+)
+
 ##
 ## wrapping FileCache in ArchiveOwner will allow for seamless
 ## switching between read-only and write-only mode in the future
@@ -355,28 +363,38 @@ setClass(
 ## do this with FileCache since it's R5. This is neccessary to maintain
 ## backward compatibility of the user interface
 setClass(
-    Class = "ArchiveOwner",
-    representation = representation(
-        fileCache = "FileCache",
-        objects = "EnhancedEnvironment"
-    )
+  Class = "ArchiveOwner",
+  contains = "FileCacheOwner",
+  representation = representation(
+    objects = "EnhancedEnvironment"
+  )
+)
+
+
+##
+## Maintain local cache of attachments
+##
+setClass(
+  Class = "AttachmentOwner",
+  contains = "FileCacheOwner"
 )
 
 ##
 ## All non-locationable Synapse entities will be derived from this class
 ##
 setClass(
-    Class = "SynapseEntity",
-    contains = "SimplePropertyOwner",
-    representation = representation(
-        annotations = "SynapseAnnotations",
-        synapseEntityKind = "character",
-        synapseWebUrl = "character"
-    ),
-    prototype = prototype(
-        annotations = new("SynapseAnnotations"),
-        synapseWebUrl = ""
-    )
+  Class = "SynapseEntity",
+  contains = "SimplePropertyOwner",
+  representation = representation(
+    attachOwn = "AttachmentOwner",
+    annotations = "SynapseAnnotations",
+    synapseEntityKind = "character",
+    synapseWebUrl = "character"
+  ),
+  prototype = prototype(
+    annotations = new("SynapseAnnotations"),
+    SynapseWebUrl = ""
+  )
 )
 
 ##

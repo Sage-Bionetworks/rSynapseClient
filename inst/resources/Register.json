@@ -56,24 +56,6 @@
             "validParentTypes":[
                 "org.sagebionetworks.repo.model.Project"
             ],
-            "name":"analysis",
-            "entityType":"org.sagebionetworks.repo.model.Analysis",
-            "defaultParentPath":"/root"
-        },
-        {
-            "validParentTypes":[
-                "org.sagebionetworks.repo.model.Folder",
-                "org.sagebionetworks.repo.model.Analysis",
-                "DEFAULT"
-            ],
-            "name":"step",
-            "entityType":"org.sagebionetworks.repo.model.Step",
-            "defaultParentPath":"/root"
-        },
-        {
-            "validParentTypes":[
-                "org.sagebionetworks.repo.model.Project"
-            ],
             "name":"code",
             "entityType":"org.sagebionetworks.repo.model.Code",
             "defaultParentPath":"/root"
@@ -84,8 +66,6 @@
                 "org.sagebionetworks.repo.model.Folder",
                 "org.sagebionetworks.repo.model.Study",
                 "org.sagebionetworks.repo.model.Data",
-                "org.sagebionetworks.repo.model.Step",
-                "org.sagebionetworks.repo.model.Analysis",
                 "DEFAULT"
             ],
             "name":"link",

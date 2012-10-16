@@ -36,10 +36,10 @@ setMethod(
 
 setMethod(
 	f = "loadEntity",
-	signature = "SynapseLocationOwnerWithObjects",
+	signature = signature("SynapseLocationOwnerWithObjects","missing"),
 	definition = function(entity){
 
-    lfun <- getMethod("loadEntity", "SynapseLocationOwner")
+    lfun <- getMethod("loadEntity", signature("SynapseLocationOwner", "missing"))
     entity <- lfun(entity)
     entity@objOwn$objects@fileCache <- entity@archOwn@fileCache
 		entity@objOwn <- loadObjectsFromFiles(entity@objOwn)
@@ -49,10 +49,32 @@ setMethod(
 )
 
 setMethod(
+  f = "loadEntity",
+  signature = signature("SynapseLocationOwnerWithObjects","character"),
+  definition = function(entity, versionId){
+
+    lfun <- getMethod("loadEntity", signature("SynapseLocationOwner", "character"))
+    entity <- lfun(entity, versionId)
+    entity@objOwn$objects@fileCache <- entity@archOwn@fileCache
+    entity@objOwn <- loadObjectsFromFiles(entity@objOwn)
+
+    entity
+  }
+)
+
+setMethod(
+  f = "loadEntity",
+  signature = signature("SynapseLocationOwnerWithObjects","numeric"),
+  definition = function(entity, versionId){
+    loadEntity(entity, as.character(versionId))
+  }
+)
+
+setMethod(
   f = "getEntity",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = signature("SynapseLocationOwnerWithObjects", "missing"),
   definition = function(entity){
-    gfun <- getMethod("getEntity", "SynapseLocationOwner")
+    gfun <- getMethod("getEntity", signature("SynapseLocationOwner", "missing"))
     ee <- gfun(entity)
     ee@objOwn <- entity@objOwn
     ee
@@ -66,8 +88,6 @@ setMethod(
     storeEntity(entity)
   }
 )
-
-
 
 setMethod(
   f = "updateEntity",
@@ -92,10 +112,10 @@ setMethod(
 
 setMethod(
   f = "downloadEntity",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = signature("SynapseLocationOwnerWithObjects", "missing"),
   definition = function(entity){
     ## call the superclass method
-    dlfun <- getMethod("downloadEntity", signature="SynapseLocationOwner")
+    dlfun <- getMethod("downloadEntity", signature=signature("SynapseLocationOwner", "missing"))
     ee <- dlfun(entity)
     ee@objOwn <- entity@objOwn
 
@@ -290,7 +310,7 @@ setMethod(
   signature = "SynapseLocationOwnerWithObjects",
   definition = function(owner){
     ## call the superclass method
-    lfun <- getMethod("loadObjectsFromFiles", "SynapseLocationOwner")
+    lfun <- getMethod("loadObjectsFromFiles", signature("SynapseLocationOwner"))
     owner <- lfun(owner)
     owner@objOwn <- loadObjectsFromFiles(owner@objOwn)
     invisible(owner)

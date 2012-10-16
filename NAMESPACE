@@ -17,15 +17,13 @@ export(
   synapseRepoServiceEndpoint,
   synapsePortalEndpoint,
   synapseLogin, 
-  synapseLogout, 
-## synapseQuery, 
+  synapseLogout,  
   synapseCacheDir,
   hmacSecretKey,
   edit,
   setApiCredentials,
-  synapseQuery
-##  .Last.lib,
-##  signEula
+  synapseQuery,
+  available.versions
 )
 
 ## S3 convenience methods
@@ -55,8 +53,6 @@ exportMethods(
   PhenotypeData,
   RObject,
   Project,
-  Analysis,
-  Step,
   Code,
   Folder,
   Preview,
@@ -123,9 +119,3 @@ exportMethods(
   propertyNames
 )
 
-## Provenance Methods
-exportMethods(
-  startStep,
-  getStep,
-  stopStep
-)
