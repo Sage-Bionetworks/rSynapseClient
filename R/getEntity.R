@@ -3,29 +3,47 @@
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
+setMethod(
+  f = "getEntity",
+  signature = signature("character", "missing"),
+  definition = function(entity){
+    getEntity(entity, "")
+  }
+)
 
 setMethod(
   f = "getEntity",
-  signature = signature("character"),
-  definition = function(entity){
-    ## download entity and annotations to disk
-    synapseClient:::getAnnotationsFromSynapse(entity)
-    synapseClient:::getEntityFromSynapse(entity)
+  signature = signature("character", "numeric"),
+  definition = function(entity, versionId){
+    getEntity(entity, as.character(versionId))
+  }
+)
 
+setMethod(
+  f = "getEntity",
+  signature = signature("character", "character"),
+  definition = function(entity, versionId){
     ## instantiate the entity
-    ee <- getEntityFromFileCache(entity)
+    if(versionId == ""){
+      ee <- synapseGet(.generateEntityUri(entity))
+    }else{
+      ee <- synapseGet(.generateEntityUri(entity, versionId))
+    }
+    ee <- getEntityInstance(ee)
 
-    ## load annotations from disk
-    ee@annotations <- getAnnotationsFromFileCache(entity)
+    ## get annotations
+    ee@annotations <- getAnnotations(ee)
+
+    ## cache the entity to disk
+    cacheEntity(ee)
 
     ee
   }
 )
 
-
 setMethod(
   f = "getEntity",
-  signature = signature("numeric"),
+  signature = signature("numeric", "missing"),
   definition = function(entity){
     getEntity(as.character(entity))
   }
@@ -33,24 +51,11 @@ setMethod(
 
 setMethod(
   f = "getEntity",
-  signature = signature("integer"),
+  signature = signature("integer", "missing"),
   definition = function(entity){
     getEntity(as.character(entity))
   }
 )
-
-setMethod(
-  f = "getEntity",
-  signature = signature("SynapseEntity"),
-  definition = function(entity){
-    id <- propertyValue(entity, "id")
-    if(is.null(id))
-      stop("entity id cannot be null")
-
-    getEntity(as.character(id))
-  }
-)
-
 
 setMethod(
   f = "getEntity",
@@ -60,6 +65,13 @@ setMethod(
       stop("entity must have a field named id")
     if(is.null(entity$id))
       stop("id cannot be null")
-    getEntity(as.character(entity$id))
+
+    version <- entity$versionNumber
+    if(is.null(version)){
+      ee <- getEntity(as.character(entity$id))
+    }else{
+      ee <- getEntity(as.character(entity$id), version)
+    }
+    ee
   }
 )

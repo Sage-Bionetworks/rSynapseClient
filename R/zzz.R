@@ -22,6 +22,10 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     2) Not discriminate, identify, or recontact individuals or groups represented by the data.
     3) Use and contribute only data de-identified to HIPAA standards.
     4) Redistribute data only under these same terms of use.\n"
+
+  ## check RJSONIO version
+  if(installed.packages()['RJSONIO', 'Version'] == "1.0-0")
+    stop("An unsupported version of RJSONIO is installed on your system. For instructions on how to resolve the issue visit this web page: https://sagebionetworks.jira.com/wiki/display/SYNR/I%27m+unable+to+download+or+upload+entity+data")
   
   
   ##set the R_OBJECT cache directory. check for a funcitonal zip first
@@ -40,7 +44,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     .setCache("hasZip", FALSE)
   }else{
     packageStartupMessage("OK")
-    .setCache("rObjCacheDir", ".R_OBJECTS")
+    .setCache("rObjCacheDir", ".R_OBJECTS/")
     .setCache("hasZip", TRUE)
   }
   classpath <- c(list.files(file.path(find.package("synapseClient"), "java"), full.names=TRUE, pattern='jar$', recursive=FALSE))
@@ -93,26 +97,9 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   
   synapseResetEndpoints()
   
-  # used in entityToFileCache.R
-  .setCache("ENTITY_FILE_NAME", "entity.json")
-  .setCache("ANNOTATIONS_FILE_NAME", "annotations.json")
-  
   synapseDataLocationPreferences(kSupportedDataLocationTypes)
   synapseCacheDir(gsub("[\\/]+", "/", path.expand("~/.synapseCache")))
-  
-  ## install cleanup hooks upon shutdown
-  reg.finalizer(topenv(parent.frame()),
-    function(...) .Last.lib(),
-    onexit=TRUE)
-  reg.finalizer(getNamespace("synapseClient"),
-    function(...) .Last.lib(),
-    onexit=TRUE)
 }
 
-.onUnload <- function(libpath) .Last.lib()
 
-.Last.lib <- function(...) {
-  if(!is.null(step <- synapseClient::getStep()))
-    try(stoppedStep <- synapseClient::stopStep(step), silent=TRUE)
-}
 

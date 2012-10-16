@@ -14,6 +14,8 @@ setMethod(
   f = "setCacheRoot",
   signature = signature("FileCache", "character", "logical", "missing"),
   definition = function(object, path, clean){
+    if(is.null(path))
+      stop("path cannot be null")
 
     path <- gsub("[\\/]+", "/", path)
     ## compute the cachedir <cacheroot>/<cachedir>

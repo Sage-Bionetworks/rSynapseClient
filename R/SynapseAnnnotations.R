@@ -11,7 +11,6 @@ SynapseAnnotations <-
   if(!is.list(entity))
     stop("entity must be a list.")
   if(any(names(entity) == "") && length(entity) > 0)
-
     stop("all elements of the entity must be named")
   
   aa <- new(Class = "SynapseAnnotations")
@@ -259,6 +258,27 @@ setMethod(
   definition = function(object, which){
     object@annotations <- deleteProperty(object@annotations, which)
     object
+  }
+)
+
+setMethod(
+  f = "updateEntity",
+  signature = "SynapseAnnotations",
+  definition = function(entity){
+    annotations <- as.list(entity)
+
+    for(key in names(annotations)){
+      ## This is one of our annotation buckets
+      if(is.list(annotations[[key]])) {
+        for(annotKey in names(annotations[[key]])) {
+          if(is.scalar(annotations[[key]][[annotKey]])) {
+            annotations[[key]][[annotKey]] <- list(annotations[[key]][[annotKey]])
+          }
+        }
+      }
+    }
+
+    SynapseAnnotations(synapsePut(entity@properties$uri, as.list(annotations)))
   }
 )
 

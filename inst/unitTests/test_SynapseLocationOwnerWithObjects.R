@@ -376,3 +376,23 @@ unitTestDetach <-
   checkTrue(!(getPackageName(ee@archOwn) %in% search()))
   checkTrue(!(getPackageName(ee@objOwn) %in% search()))
 }
+
+unitTestMultipleObjectsWithSameNameArchOwnObjOwn <-
+  function()
+{
+  d <- Data()
+  value <- 1
+  file <- file.path(tempdir(), "value.rbin")
+  save("value", file=file)
+  addFile(d, file)
+
+  addObject(d, 2, "value")
+
+  dd <- loadEntity(d)
+  checkEquals(d$objects$value, 1L)
+}
+
+
+
+
+

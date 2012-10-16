@@ -5,8 +5,6 @@
 \alias{SynapseEntity}
 \alias{SynapseLocationOwner}
 \alias{Project}
-\alias{Analysis}
-\alias{Step}
 \title{
 Entity Constructors
 }

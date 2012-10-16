@@ -58,7 +58,7 @@ edit.Code <-
 
 setMethod(
   f = "loadEntity",
-  signature = "Code",
+  signature = signature("Code", "missing"),
   definition = function(entity){
     if(!is.null(propertyValue(entity, "id"))){
       entity <- downloadEntity(entity)

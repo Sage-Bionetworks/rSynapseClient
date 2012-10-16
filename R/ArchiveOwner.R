@@ -15,85 +15,14 @@ setMethod(
 )
 
 setMethod(
-  f = "getEntity",
-  signature = "SynapseLocationOwner",
-  definition = function(entity){
-    gfun <- getMethod("getEntity", "SynapseEntity")
-    ee <- gfun(entity)
-    ee@archOwn <- entity@archOwn
-    ee
-  }
-)
-
-setMethod(
-  f = "setFileCache",
-  signature = signature("ArchiveOwner", "FileCache"),
-  definition = function(owner, fileCache){
-    owner@fileCache <- fileCache
-    owner
-  }
-)
-
-
-
-setMethod(
-  f = "setCacheRoot",
-  signature = signature("ArchiveOwner", "character", "logical", "missing"),
-  definition = function(object, path, clean){
-    setCacheRoot(object@fileCache, path, clean)
-    invisible(object)
-  }
-)
-
-setMethod(
-  f = "addFile",
-  signature = signature("ArchiveOwner", "character", "missing"),
-  definition = function(entity,file, path){
-    entity@fileCache <- addFile(entity@fileCache, file)
-    invisible(entity)
-  }
-)
-
-setMethod(
-    f = "addFile",
-    signature = signature("ArchiveOwner", "character", "character"),
-    definition = function(entity,file, path){
-      entity@fileCache <- addFile(entity@fileCache, file, path)
-      invisible(entity)
-    }
-)
-
-setMethod(
-    f = "deleteFile",
-    signature = signature("ArchiveOwner", "character"),
-    definition = function(entity,file){
-      entity@fileCache <- deleteFile(entity@fileCache, file)
-      invisible(entity)
-    }
-)
-
-setMethod(
-    f = "moveFile",
-    signature = signature("ArchiveOwner", "character", "character"),
-    definition = function(entity,src, dest){
-      entity@fileCache <- moveFile(entity@fileCache, src, dest)
-      invisible(entity)
-    }
-)
-
-setMethod(
-  f = "cacheDir",
-  signature = "ArchiveOwner",
-  definition = function(object){
-    object@fileCache$getCacheDir()
-  }
-)
-
-setMethod(
   f = "files",
   signature = "ArchiveOwner",
   definition = function(object){
-    object@fileCache$files()
+    files <- object@fileCache$files()
+    indx <- grep(sprintf("^[\\.]?[/\\]?[\\.]?%s", synapseObjectCache()), files)
+    if(length(indx) > 0L)
+      files <- files[-indx]
+    files
   }
 )
 
@@ -105,8 +34,8 @@ setMethod(
     files <- files(owner)
     indx <- grep("\\.rbin$", tolower(files))
     lapply(indx, function(ii){
-          load(file.path(cacheDir(owner), files[ii]), envir=as.environment(owner@objects))
-        })
+      load(file.path(cacheDir(owner), files[ii]), envir=as.environment(owner@objects))
+    })
     invisible(owner)
   }
 )
@@ -133,17 +62,6 @@ setMethod(
   signature = "ArchiveOwner",
   definition = function(owner){
     file.path(owner@fileCache$getCacheRoot(), owner@fileCache$getArchiveFile())
-  }
-)
-
-setMethod(
-  f = "setPackageName",
-  signature = signature(env = "ArchiveOwner"),
-  definition = function(pkg, env)
-  {
-    if(missing(pkg))
-      pkg <- basename(tempfile(pattern=as.character(class(env))))
-    setPackageName(pkg = pkg, env = env@objects)
   }
 )
 
@@ -194,28 +112,13 @@ setMethod(
   }
 )
 
-
 getPackageName.ArchiveOwner <-
   function (where, create = TRUE)
 {
   getPackageName(where = where@objects, create = create)
 }
 
-setMethod(
-  f = "setFetchMethod",
-  signature = signature("ArchiveOwner", "character"),
-  definition = function(object, method){
-    setFetchMethod(object@fileCache, method)
-  }
-)
 
-setMethod(
-  f = "getFetchMethod",
-  signature = signature("ArchiveOwner"),
-  definition = function(object){
-    getFetchMethod(object@fileCache)
-  }
-)
 
 
 

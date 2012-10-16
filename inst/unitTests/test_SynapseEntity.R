@@ -250,11 +250,70 @@ unitTestDeleteAnnotation <-
   checkEquals(length(annotationNames(entity)), 0L)
 }
 
-#unitTestDateProperty <-
-#		function()
-#{
-#	## test setting and getting date properties
-#}
+testAddAttachment <-
+  function()
+{
+  entity <- SynapseEntity()
+  file <- tempfile()
+  cat("hello world", file = file)
+  file <- gsub("[/\\]+", "/", normalizePath(file))
+  copy <- synapseClient:::addAttachment(entity, file)
+  checkEquals(basename(file), synapseClient:::attachments(entity))
+  checkEquals(basename(file), entity$attachments)
+  checkTrue(file.exists(file.path(entity$attachDir, entity$attachments)))
+
+  checkEquals(basename(file), synapseClient:::attachments(copy))
+  checkEquals(basename(file), copy$attachments)
+  checkTrue(file.exists(file.path(copy$attachDir, copy$attachments)))
+
+  file2 <- tempfile()
+  cat("goodbye world", file=file2)
+  file2 <- gsub("[/\\]+", "/", normalizePath(file2))
+
+  copy2 <- synapseClient:::addAttachment(copy, file2)
+
+  checkEquals(2L, length(synapseClient:::attachments(entity)))
+  checkEquals(2L, length(entity$attachments))
+  checkEquals(2L, length(synapseClient:::attachments(copy2)))
+  checkEquals(2L, length(copy2$attachments))
+  checkEquals(2L, length(synapseClient:::attachments(copy)))
+  checkEquals(2L, length(copy$attachments))
+
+  checkTrue(all(c(basename(file), basename(file2)) %in% copy$attachments))
+  checkTrue(all(entity$attachments %in% copy$attachments))
+  checkTrue(all(copy2$attachments %in% copy$attachments))
+  checkTrue(file.exists(file.path(copy$attachDir, copy$attachments[1])))
+  checkTrue(file.exists(file.path(copy$attachDir, copy$attachments[2])))
+
+}
+
+testDeleteAttachment <-
+  function()
+{
+  entity <- SynapseEntity()
+  file <- tempfile()
+  file2 <- tempfile()
+  cat("hello world", file = file)
+  cat("goodbye world", file=file2)
+  synapseClient:::addAttachment(entity, file)
+  synapseClient:::addAttachment(entity, file2)
+
+  checkTrue(file.exists(file.path(entity$attachDir,basename(file))))
+  copy = synapseClient:::deleteAttachment(entity, basename(file))
+
+  checkEquals(1L, length(entity$attachments))
+  checkEquals(1L, length(copy$attachments))
+  checkEquals(copy$attachments, basename(file2))
+  checkTrue(file.exists(file.path(copy$attachDir, copy$attachments)))
+  checkTrue(!file.exists(file.path(copy$attachDir, basename(file))))
+  synapseClient:::deleteAttachment(entity, basename(file2))
+
+  checkEquals(0L, length(entity$attachments))
+  checkEquals(0L, length(copy$attachments))
+  checkTrue(!file.exists(file.path(copy$attachDir, basename(file2))))
+  checkTrue(!file.exists(file.path(copy$attachDir, basename(file))))
+}
+
 
 
 
