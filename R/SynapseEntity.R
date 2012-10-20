@@ -179,7 +179,7 @@ setMethod(
 
       ## delete the entity in synapse
       if(!is.null(entity$properties$id))
-        synapseDelete(.generateEntityUri(entity$properties$id))
+        deleteEntity(entity$properties$id)
 
       ## remove entity from the cache
       purgeCache(entity)
