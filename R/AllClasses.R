@@ -69,6 +69,22 @@ setClass(
 )
 
 ##
+## All non-locationable Synapse entities will be derived from this class
+##
+setClass(
+		Class = "Activity",
+		contains = "SimplePropertyOwner",
+		representation = representation(
+				synapseEntityKind = "character",
+				synapseWebUrl = "character"
+		),
+		prototype = prototype(
+				synapseEntityKind = "Activity",
+				SynapseWebUrl = ""
+		)
+)
+
+##
 ## A class for representing the Synapse Annotations entity
 ##
 setClass(

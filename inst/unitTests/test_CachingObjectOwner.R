@@ -276,5 +276,5 @@ unitTestNoZip <-
   ## 5) Once the archive "repaired", the restriction of a storing only
   ## a single object should be lifted.
   options(warn=1)
-  warning("Not yet implmented: Bruce?")
+  warning("Not yet implmented")
 }

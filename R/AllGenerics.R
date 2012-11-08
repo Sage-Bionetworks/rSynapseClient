@@ -66,14 +66,6 @@ setGeneric(
 )
 
 setGeneric(
-  name = "storeAttachment",
-  def = function(object, which){
-    standardGeneric("storeAttachment")
-  }
-)
-
-
-setGeneric(
   name = "getFileCacheName",
   def = function(object){
     standardGeneric("getFileCacheName")
@@ -510,20 +502,6 @@ setGeneric(
 
 
 setGeneric(
-  name = ".extractEntityFromSlots",
-  def = function(object){
-    standardGeneric(".extractEntityFromSlots")
-  }
-)
-
-setGeneric(
-  name = ".populateSlotsFromEntity",
-  def = function(object, entity, json){
-    standardGeneric(".populateSlotsFromEntity")
-  }
-)
-
-setGeneric(
   name = "deleteProperty",
   def = function(object, which){
     standardGeneric("deleteProperty")
@@ -808,8 +786,80 @@ setGeneric(
 )
 
 setGeneric(
-  name = "refreshAnnotations",
-  def = function(entity){
-    standardGeneric("refreshAnnotations")
-  }
+		name = "refreshAnnotations",
+		def = function(entity){
+			standardGeneric("refreshAnnotations")
+		}
 )
+
+setGeneric(
+		name = "Activity",
+		def = function(activity){
+			standardGeneric("Activity")
+		}
+)
+
+setGeneric(
+		name = "createActivity",
+		def = function(activity) {
+			standardGeneric("createActivity")
+		}
+)
+
+setGeneric(
+		name = "showActivity",
+		def = function(activity) {
+			standardGeneric("showActivity")
+		}
+)
+
+setGeneric(
+		name = "getActivity",
+		def = function(activity) {
+			standardGeneric("getActivity")
+		}
+)
+
+setGeneric(
+		name = "getActivity",
+		def = function(id) {
+			standardGeneric("getActivity")
+		}
+)
+
+setGeneric(
+		name = "updateActivity",
+		def = function(activity) {
+			standardGeneric("updateActivity")
+		}
+)
+
+setGeneric(
+		name = "deleteActivity",
+		def = function(activity) {
+			standardGeneric("deleteActivity")
+		}
+)
+
+setGeneric(
+		name = ".extractEntityFromSlots",
+		def = function(object){
+			standardGeneric(".extractEntityFromSlots")
+		}
+)
+
+setGeneric(
+		name = ".populateSlotsFromEntity",
+		def = function(object, entity, json){
+			standardGeneric(".populateSlotsFromEntity")
+		}
+)
+
+setGeneric(
+		name = ".populateSlotsFromActivity",
+		def = function(object, activity){
+			standardGeneric(".populateSlotsFromActivity")
+		}
+)
+
+

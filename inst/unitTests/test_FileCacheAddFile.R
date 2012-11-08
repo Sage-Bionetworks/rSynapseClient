@@ -379,5 +379,5 @@ unitTestNoZip <-
   ## and an informative warning message should be printed.
   ##
 
-  warning("not yet implemented: Bruce?")
+  warning("not yet implemented")
 }

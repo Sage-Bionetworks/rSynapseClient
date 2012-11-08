@@ -45,6 +45,7 @@ names.SynapseLocationOwnerWithObjects,
 
 ## S4 entity constructors
 exportMethods(
+  Activity,
   Data, 
   Study,
   Link,
@@ -60,6 +61,14 @@ exportMethods(
 )
 
 ## entity S4 methods
+exportMethods(
+	showActivity,
+	createActivity,
+	deleteActivity,
+	getActivity,
+	updateActivity
+)
+
 exportMethods(
   storeEntityFiles,
   storeEntityObjects,
