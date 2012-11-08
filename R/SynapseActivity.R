@@ -1,5 +1,7 @@
 ###############################################################################
 # methods for Activity class
+# Note, this class ought to be named 'Activity' but it must come
+# after 'AllGenerics' alphabetically
 # 
 # Author: bhoff
 ###############################################################################
@@ -45,10 +47,10 @@ setMethod(
 ## Activity "show" method
 #####
 setMethod(
-  f = "showActivity",
+  f = "showEntity",
   signature = signature("Activity"),
   definition = function(activity){
-    cat('An object of class "', class(object), '"\n', sep="")
+    cat('An object of class "', class(activity), '"\n', sep="")
     
 	if (!is.null(properties(object)$name))
 		cat("Activity Name : ", properties(object)$name, "\n", sep="")
@@ -56,31 +58,20 @@ setMethod(
 		cat("Activity Id : ", properties(object)$id, "\n", sep="")
 	if (!is.null(properties(object)$description))
 		cat("Activity Description  : ", properties(object)$id, "\n", sep="")
-	# TODO add other properties
+	# TODO add 'used'
 }
-)
-
-setMethod(
-  f = "createActivity",
-  signature = "Activity",
-  definition = function(activity){
-    activity <- as.list.SimplePropertyOwner(activity)
-	# create the activity in Synapse and get back the id
-	activity <- Activity(synapsePost("/activity", activity))
-
-    activity
-  }
 )
 
 # URI is: 
 .generateActivityUri<-function(id) {
-	paste("/activity", id, sep="")
+	paste("/activity", id, sep="/")
 }
 
 setMethod(
-    f = "deleteActivity",
+    f = "deleteEntity",
     signature = "Activity",
-    definition = function(activity){
+    definition = function(entity){
+	  activity<-entity
       envir <- parent.frame(2)
       inherits <- FALSE
       name <- deparse(substitute(activity, env=parent.frame()))
@@ -96,16 +87,16 @@ setMethod(
       ## strip out the system controlled properties and invisibly
       ## return the activity
       activity <- deleteProperty(activity, "id")
-      activity <- deleteProperty(activity, "uri")
 	  activity <- deleteProperty(activity, "etag")
       invisible(activity)
     }
 )
 
 setMethod(
-		f = "getActivity",
+		f = "getEntity",
 		signature = signature("Activity"),
-		definition = function(activity){
+		definition = function(entity){
+			activity<-entity
 			ee<-Activity(synapseGet(.generateActivityUri(activity$properties$id)))
 			ee
 		}
@@ -114,24 +105,55 @@ setMethod(
 setMethod(
 		f = "getActivity",
 		signature = signature("character"),
-		definition = function(id){
-			ee<-Activity(synapseGet(.generateActivityUri(id)))
+		definition = function(activity){
+			ee<-Activity(synapseGet(.generateActivityUri(activity)))
 			ee
 		}
 )
 
 
 setMethod(
-  f = "updateActivity",
-  signature = "Activity",
-  definition = function(activity)
-  {
-    if(is.null(activity$properties$id))
-      stop("ID was null so could not update. use create instead.")
+		f = "createEntity",
+		signature = "Activity",
+		definition = function(entity)
+		{
+			activity<-entity
+			activity <- as.list.SimplePropertyOwner(activity)
+			activity <- Activity(synapsePost("/activity", activity))
+			activity
+		}
+)
 
-    	ee <- Activity(synapsePut(activity$properties$uri, as.list.SimplePropertyOwner(activity)))
-    	ee
-  }
+setMethod(
+		f = "updateEntity",
+		signature = "Activity",
+		definition = function(entity)
+		{
+			activity<-entity
+			if(is.null(activity$properties$id)) {
+				stop("Cannot update an Activity which has no ID.")
+			} else {
+				uri <- .generateActivityUri(activity$properties$id)
+				activity <- as.list.SimplePropertyOwner(activity)
+				activity <- Activity(synapsePut(uri, activity))
+			}
+			activity
+		}
+)
+
+setMethod(
+		f = "storeEntity",
+		signature = "Activity",
+		definition = function(entity)
+		{
+			activity<-entity
+			if(is.null(activity$properties$id)) {
+				activity <- createEntity(activity)
+			} else {
+				activity <- updateEntity(activity)
+			}
+			activity
+		}
 )
 
 

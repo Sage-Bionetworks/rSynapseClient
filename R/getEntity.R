@@ -36,7 +36,24 @@ setMethod(
 
     ## cache the entity to disk
     cacheEntity(ee)
-
+	
+	generatedBy <- try(synapseGet(
+			paste("/entity/", 
+					propertyValue(entity, "id"), 
+					"/version/", 
+					propertyValue(entity, "versionNumber"), 
+					"/generatedBy", 
+					sep="")))
+	if (class(generatedBy)=='try-error') {
+		if (length(grep("404", generatedBy, fixed=T))>0) {
+			# it's a 404 Not Found status
+			ee@generatedBy<-NULL
+		} else {
+			stop(foo)
+		}
+	} else {
+		ee@generatedBy<-generatedBy
+	}
     ee
   }
 )

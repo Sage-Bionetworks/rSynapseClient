@@ -144,6 +144,11 @@ setMethod(
   definition = function(entity){
     oldAnnots <- entity@annotations
     entity <- as.list.SimplePropertyOwner(entity)
+	createUri = "/entity"
+	if (!is.null(entity@generatedBy)) {
+		createUri <- paste(createUri, "?generatedBy=", entity@generatedBy, sep="")
+	}
+	
     entity <- getEntityInstance(synapsePost("/entity", entity))
     # create the entity in Synapse and get back the id
     annots <- getAnnotations(entity$properties$id)
@@ -161,7 +166,7 @@ setMethod(
 
     ## store the annotations
     entity@annotations <- annots
-
+	
     ## store the updated entity to the file cache
     cacheEntity(entity)
 
@@ -236,7 +241,16 @@ setMethod(
       stop("entity ID was null so could not update. use createEntity instead.")
 
     annots <- entity@annotations
-    ee <- getEntityInstance(synapsePut(entity$properties$uri, as.list.SimplePropertyOwner(entity)))
+	updateUri<-entity$properties$uri
+	if (is.null(entity@generatedBy)) {
+		# need to ensure the 'generatedBy' field is also cleared on the server side
+		# it's unfortunate to have to make another method call to update 'generatedBy' but
+		# eventually 'generatedBy' may be part of the entity schema, obviating the need for the extra method call
+		synapseDelete(paste("/entity/", entity$properties$id, "/generatedBy"))
+	} else {
+		updateUri <- paste(updateUri, "?generatedBy=", entity@generatedBy, sep="")
+	}
+	ee <- getEntityInstance(synapsePut(updateUri, as.list.SimplePropertyOwner(entity)))
 
     propertyValue(annots, "etag") <- ee$properties$etag
     propertyValue(annots, "id") <- ee$properties$id
@@ -653,5 +667,33 @@ setMethod(
     ##warning('not implemented')
   }
 )
+
+setMethod(
+		f = "generatedBy",
+		signature = "SynapseEntity",
+		definition = function(entity){
+			if (is.null(entity@generatedBy)) {
+				NULL
+			} else {
+				# TODO cache the value (how do you know when it's stale?)
+				getActivity(entity@generatedBy)
+			}
+		}
+)
+
+setMethod(
+		f = "generatedBy<-",
+		signature = signature("SynapseEntity", "Activity"),
+		definition = function(entity, activity) {
+			if (is.null(activity)) {
+				entit@generatedBy <- NULL
+			} else {
+				entity@generatedBy <- propertyValue(activity, "id")
+			}
+			entity
+		}
+
+)
+
 
 

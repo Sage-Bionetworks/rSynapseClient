@@ -523,17 +523,17 @@ setGeneric(
 )
 
 setGeneric(
-  name = "propertyValues",
-  def = function(object){
-    standardGeneric("propertyValues")
-  }
+		name = "propertyValues",
+		def = function(object){
+			standardGeneric("propertyValues")
+		}
 )
 
 setGeneric(
-  name = "propertyValues<-",
-  def = function(object, value){
-    standardGeneric("propertyValues<-")
-  }
+		name = "propertyValues<-",
+		def = function(object, value){
+			standardGeneric("propertyValues<-")
+		}
 )
 
 setGeneric(
@@ -800,16 +800,16 @@ setGeneric(
 )
 
 setGeneric(
-		name = "createActivity",
+		name = "storeActivity",
 		def = function(activity) {
-			standardGeneric("createActivity")
+			standardGeneric("storeActivity")
 		}
 )
 
 setGeneric(
-		name = "showActivity",
+		name = "showEntity",
 		def = function(activity) {
-			standardGeneric("showActivity")
+			standardGeneric("showEntity")
 		}
 )
 
@@ -817,20 +817,6 @@ setGeneric(
 		name = "getActivity",
 		def = function(activity) {
 			standardGeneric("getActivity")
-		}
-)
-
-setGeneric(
-		name = "getActivity",
-		def = function(id) {
-			standardGeneric("getActivity")
-		}
-)
-
-setGeneric(
-		name = "updateActivity",
-		def = function(activity) {
-			standardGeneric("updateActivity")
 		}
 )
 
@@ -838,6 +824,20 @@ setGeneric(
 		name = "deleteActivity",
 		def = function(activity) {
 			standardGeneric("deleteActivity")
+		}
+)
+
+setGeneric(
+		name = "generatedBy",
+		def = function(entity){
+			standardGeneric("generatedBy")
+		}
+)
+
+setGeneric(
+		name = "generatedBy<-",
+		def = function(entity, activity){
+			standardGeneric("generatedBy<-")
 		}
 )
 

@@ -62,14 +62,6 @@ exportMethods(
 
 ## entity S4 methods
 exportMethods(
-	showActivity,
-	createActivity,
-	deleteActivity,
-	getActivity,
-	updateActivity
-)
-
-exportMethods(
   storeEntityFiles,
   storeEntityObjects,
   storeEntity,
@@ -86,7 +78,9 @@ exportMethods(
   detach,
   setPackageName,
   getPackageName,
-  objects
+  objects,
+	getActivity,
+	generatedBy
   )
 
 ## methods for managing layer files

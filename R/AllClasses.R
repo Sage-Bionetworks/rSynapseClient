@@ -75,12 +75,8 @@ setClass(
 		Class = "Activity",
 		contains = "SimplePropertyOwner",
 		representation = representation(
-				synapseEntityKind = "character",
-				synapseWebUrl = "character"
 		),
 		prototype = prototype(
-				synapseEntityKind = "Activity",
-				SynapseWebUrl = ""
 		)
 )
 
@@ -405,7 +401,9 @@ setClass(
     attachOwn = "AttachmentOwner",
     annotations = "SynapseAnnotations",
     synapseEntityKind = "character",
-    synapseWebUrl = "character"
+    synapseWebUrl = "character",
+	# Note: this custom field may eventually become part of the entity schema
+	generatedBy = "character"
   ),
   prototype = prototype(
     annotations = new("SynapseAnnotations"),
