@@ -836,7 +836,7 @@ setGeneric(
 
 setGeneric(
 		name = "generatedBy<-",
-		def = function(entity, activity){
+		def = function(entity, value){
 			standardGeneric("generatedBy<-")
 		}
 )

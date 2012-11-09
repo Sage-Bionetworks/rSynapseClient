@@ -80,7 +80,8 @@ exportMethods(
   getPackageName,
   objects,
 	getActivity,
-	generatedBy
+	generatedBy,
+	"generatedBy<-"
   )
 
 ## methods for managing layer files

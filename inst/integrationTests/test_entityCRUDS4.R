@@ -3,11 +3,24 @@
 ### Author: Matthew D. Furia <matt.furia@sagebase.org>
 ################################################################################ 
 
+.setUp <-
+		function()
+{
+	activity<-Activity(list(name="test activity"))
+	activity<-createEntity(activity)
+	synapseClient:::.setCache("testActivity", activity)
+}
+
+
 
 .tearDown <- 
   function()
 {
-  if(!is.null(synapseClient:::.getCache("testProject"))) {
+	if(!is.null(synapseClient:::.getCache("testActivity"))) {
+		deleteEntity(synapseClient:::.getCache("testActivity"))	
+		synapseClient:::.deleteCache("testActivity")
+	}
+	if(!is.null(synapseClient:::.getCache("testProject"))) {
     deleteEntity(synapseClient:::.getCache("testProject"))	
     synapseClient:::.deleteCache("testProject")
   }
@@ -41,25 +54,50 @@ integrationTestCreateS4Entities <-
 }
 
 integrationTestCreateEntityWithAnnotations <- 
-  function()
+		function()
 {
-  ## Create Project
-  project <- Project()
-  annotValue(project, "annotationKey") <- "projectAnnotationValue"
-  createdProject <- createEntity(project)
-  synapseClient:::.setCache("testProject", createdProject)
-  checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
-  
-  ## Create Study
-  study <- Study()
-  propertyValue(study, "name") <- "testStudyName"
-  propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
-  annotValue(study, "annotKey") <- "annotValue"
-  createdStudy <- createEntity(study)
-  checkEquals(propertyValue(createdStudy,"name"), propertyValue(study, "name"))
-  checkEquals(propertyValue(createdStudy,"parentId"), propertyValue(createdProject, "id"))
-  checkEquals(annotValue(createdStudy,"annotKey"), annotValue(study, "annotKey"))
-  
+	## Create Project
+	project <- Project()
+	annotValue(project, "annotationKey") <- "projectAnnotationValue"
+	createdProject <- createEntity(project)
+	synapseClient:::.setCache("testProject", createdProject)
+	checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
+	
+	## Create Study
+	study <- Study()
+	propertyValue(study, "name") <- "testStudyName"
+	propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
+	annotValue(study, "annotKey") <- "annotValue"
+	createdStudy <- createEntity(study)
+	checkEquals(propertyValue(createdStudy,"name"), propertyValue(study, "name"))
+	checkEquals(propertyValue(createdStudy,"parentId"), propertyValue(createdProject, "id"))
+	checkEquals(annotValue(createdStudy,"annotKey"), annotValue(study, "annotKey"))
+	checkEquals(NULL, generatedBy(createdStudy))
+	
+}
+
+integrationTestCreateEntityWithGeneratedBy <- 
+		function()
+{
+	## Create Project
+	project <- Project()
+	annotValue(project, "annotationKey") <- "projectAnnotationValue"
+	createdProject <- createEntity(project)
+	synapseClient:::.setCache("testProject", createdProject)
+	checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
+	
+	## Create Study
+	study <- Study()
+	propertyValue(study, "name") <- "testStudyName"
+	propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
+	testActivity <-synapseClient:::.getCache("testActivity")
+	checkTrue(!is.null(testActivity))
+	generatedBy(study)<-testActivity
+	createdStudy <- createEntity(study)
+	checkEquals(propertyValue(createdStudy,"name"), propertyValue(study, "name"))
+	checkEquals(propertyValue(createdStudy,"parentId"), propertyValue(createdProject, "id"))
+	checkTrue(!is.null(generatedBy(createdStudy)))
+	checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(createdStudy), "id"))
 }
 
 integrationTestCreateEntityWithNAAnnotations <- 

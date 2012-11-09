@@ -33,7 +33,7 @@ setMethod(
 
     ## get annotations
     ee@annotations <- getAnnotations(ee)
-	ee@generatedBy <- getGeneratedBy(entity)
+	ee@generatedBy <- getGeneratedBy(ee)
 
     ## cache the entity to disk
     cacheEntity(ee)
@@ -58,16 +58,16 @@ getGeneratedBy<-function(entity) {
 				"/generatedBy", 
 				sep="")
 	}
-	generatedBy <- try(synapseGet(uri), silent=T)
-	if (class(generatedBy)=='try-error') {
-		if (length(grep("404", generatedBy, fixed=T))>0) {
+	activity <- try(synapseGet(uri), silent=T)
+	if (class(activity)=='try-error') {
+		if (length(grep("404", activity, fixed=T))>0) {
 			# it's a 404 Not Found status
-			generatedBy<-""
+			return("")
 		} else {
-			stop(generatedBy)
+			stop(activity)
 		}
 	}
-	generatedBy
+	activity$id
 }
 
 setMethod(

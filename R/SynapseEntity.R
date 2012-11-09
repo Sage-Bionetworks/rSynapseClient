@@ -143,13 +143,14 @@ setMethod(
   signature = "SynapseEntity",
   definition = function(entity){
     oldAnnots <- entity@annotations
-    entity <- as.list.SimplePropertyOwner(entity)
+	
 	createUri = "/entity"
-	if (!is.null(entity$generatedBy) && entity$generatedBy!="") {
-		createUri <- paste(createUri, "?generatedBy=", entity$generatedBy, sep="")
+	if (!is.null(entity@generatedBy) && entity@generatedBy!="") {
+		createUri <- paste(createUri, "?generatedBy=", entity@generatedBy, sep="")
 	}
 	
-    entity <- getEntityInstance(synapsePost("/entity", entity))
+	entity <- as.list.SimplePropertyOwner(entity)
+	entity <- getEntityInstance(synapsePost(createUri, entity))
     # create the entity in Synapse and get back the id
     annots <- getAnnotations(entity$properties$id)
 
@@ -244,11 +245,6 @@ setMethod(
     annots <- entity@annotations
 	updateUri<-entity$properties$uri
 	if (entity@generatedBy!="") {
-		# need to ensure the 'generatedBy' field is also cleared on the server side
-		# it's unfortunate to have to make another method call to update 'generatedBy' but
-		# eventually 'generatedBy' may be part of the entity schema, obviating the need for the extra method call
-		synapseDelete(paste("/entity/", entity$properties$id, "/generatedBy"))
-	} else {
 		updateUri <- paste(updateUri, "?generatedBy=", entity@generatedBy, sep="")
 	}
 	ee <- getEntityInstance(synapsePut(updateUri, as.list.SimplePropertyOwner(entity)))
@@ -261,6 +257,18 @@ setMethod(
 
     ee$properties$etag <- propertyValue(annots, "etag")
     ee@annotations <- annots
+	
+	# now take care of the 'generatedBy' field
+	if (entity@generatedBy=="") {
+		# need to ensure the 'generatedBy' field is also cleared on the server side
+		# it's unfortunate to have to make another method call to update 'generatedBy' but
+		# eventually 'generatedBy' may be part of the entity schema, obviating the need for the extra method call
+		synapseDelete(paste("/entity/", entity$properties$id, "/generatedBy", sep=""))
+		ee@generatedBy<-""
+	} else {
+		ee@generatedBy<-entity@generatedBy
+	}
+			
     cacheEntity(ee)
 
     ee
@@ -673,7 +681,7 @@ setMethod(
 		f = "generatedBy",
 		signature = "SynapseEntity",
 		definition = function(entity){
-			if (is.null(entity@generatedBy)) {
+			if (is.null(entity@generatedBy) || entity@generatedBy=="") {
 				NULL
 			} else {
 				# TODO cache the value (how do you know when it's stale?)
@@ -685,11 +693,11 @@ setMethod(
 setMethod(
 		f = "generatedBy<-",
 		signature = signature("SynapseEntity", "Activity"),
-		definition = function(entity, activity) {
-			if (is.null(activity)) {
-				entit@generatedBy <- NULL
+		definition = function(entity, value) {
+			if (is.null(value)) {
+				entity@generatedBy <- ""
 			} else {
-				entity@generatedBy <- propertyValue(activity, "id")
+				entity@generatedBy <- propertyValue(value, "id")
 			}
 			entity
 		}

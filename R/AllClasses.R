@@ -407,7 +407,8 @@ setClass(
   ),
   prototype = prototype(
     annotations = new("SynapseAnnotations"),
-    SynapseWebUrl = ""
+    SynapseWebUrl = "",
+	generatedBy = ""
   )
 )
 
