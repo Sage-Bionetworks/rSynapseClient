@@ -21,8 +21,8 @@
 		synapseClient:::.deleteCache("testActivity")
 	}
 	if(!is.null(synapseClient:::.getCache("testProject"))) {
-    deleteEntity(synapseClient:::.getCache("testProject"))	
-    synapseClient:::.deleteCache("testProject")
+    	deleteEntity(synapseClient:::.getCache("testProject"))	
+    	synapseClient:::.deleteCache("testProject")
   }
 }
 
@@ -181,6 +181,44 @@ integrationTestUpdateS4Entity <-
   updatedProject <- updateEntity(createdProject)
   checkEquals(propertyValue(createdProject, "description"), propertyValue(updatedProject, "description"))
   
+}
+
+integrationTestUpdateS4EntityWithGeneratedBy <-
+		function()
+{
+	## Create Project
+	project <- Project()
+	createdProject <- createEntity(project)
+	synapseClient:::.setCache("testProject", createdProject)
+	
+	## set generatedBy and update. 
+	testActivity <-synapseClient:::.getCache("testActivity")
+	checkTrue(!is.null(testActivity))
+	generatedBy(createdProject) <- testActivity
+	updatedProject <- updateEntity(createdProject)
+	checkEquals(propertyValue(testActivity, "id"), propertyValue(generatedBy(updatedProject), "id"))
+	checkTrue(propertyValue(updatedProject, "etag") != propertyValue(createdProject, "etag"))
+
+	## remove generatedBy and update
+	createdProject<-updatedProject
+	generatedBy(createdProject) <- NULL
+	updatedProject <- updateEntity(createdProject)
+	checkTrue(is.null(generatedBy(updatedProject)))
+	
+	## now *create* an Entity having a generatedBy initially
+	deleteEntity(synapseClient:::.getCache("testProject"))	
+	synapseClient:::.deleteCache("testProject")
+	project <- Project()
+	generatedBy(project) <- testActivity
+	createdProject <- createEntity(project)
+	checkTrue(!is.null(generatedBy(createdProject)))
+	synapseClient:::.setCache("testProject", createdProject)
+	
+	## remove generatedBy and update
+	generatedBy(createdProject)<-NULL
+	updatedProject <- updateEntity(createdProject)
+	checkTrue(is.null(generatedBy(updatedProject)))
+	
 }
 
 integrationTestDeleteEntity <- 

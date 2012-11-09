@@ -694,11 +694,17 @@ setMethod(
 		f = "generatedBy<-",
 		signature = signature("SynapseEntity", "Activity"),
 		definition = function(entity, value) {
-			if (is.null(value)) {
-				entity@generatedBy <- ""
-			} else {
-				entity@generatedBy <- propertyValue(value, "id")
-			}
+			entity@generatedBy <- propertyValue(value, "id")
+			entity
+		}
+
+)
+
+setMethod(
+		f = "generatedBy<-",
+		signature = signature("SynapseEntity", "NULL"),
+		definition = function(entity, value) {
+			entity@generatedBy <- ""
 			entity
 		}
 
