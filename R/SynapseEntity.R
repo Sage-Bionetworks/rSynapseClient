@@ -264,6 +264,8 @@ setMethod(
 		# it's unfortunate to have to make another method call to update 'generatedBy' but
 		# eventually 'generatedBy' may be part of the entity schema, obviating the need for the extra method call
 		synapseDelete(paste("/entity/", entity$properties$id, "/generatedBy", sep=""))
+		updatedEtagEntity<-synapseGet(entity$properties$uri)
+		propertyValue(ee, "etag")<-updatedEtagEntity$etag
 		ee@generatedBy<-""
 	} else {
 		ee@generatedBy<-entity@generatedBy
