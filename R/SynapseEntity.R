@@ -145,8 +145,8 @@ setMethod(
     oldAnnots <- entity@annotations
     entity <- as.list.SimplePropertyOwner(entity)
 	createUri = "/entity"
-	if (!is.null(entity@generatedBy)) {
-		createUri <- paste(createUri, "?generatedBy=", entity@generatedBy, sep="")
+	if (!is.null(entity$generatedBy) && entity$generatedBy!="") {
+		createUri <- paste(createUri, "?generatedBy=", entity$generatedBy, sep="")
 	}
 	
     entity <- getEntityInstance(synapsePost("/entity", entity))
@@ -166,6 +166,7 @@ setMethod(
 
     ## store the annotations
     entity@annotations <- annots
+	entity@generatedBy <- getGeneratedBy(entity)
 	
     ## store the updated entity to the file cache
     cacheEntity(entity)
@@ -242,7 +243,7 @@ setMethod(
 
     annots <- entity@annotations
 	updateUri<-entity$properties$uri
-	if (is.null(entity@generatedBy)) {
+	if (entity@generatedBy!="") {
 		# need to ensure the 'generatedBy' field is also cleared on the server side
 		# it's unfortunate to have to make another method call to update 'generatedBy' but
 		# eventually 'generatedBy' may be part of the entity schema, obviating the need for the extra method call
