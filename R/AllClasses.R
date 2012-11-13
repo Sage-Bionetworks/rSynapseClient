@@ -394,6 +394,8 @@ setClass(
 ##
 ## All non-locationable Synapse entities will be derived from this class
 ##
+setClassUnion("activityOrNULL", c("Activity", "NULL"))
+
 setClass(
   Class = "SynapseEntity",
   contains = "SimplePropertyOwner",
@@ -402,13 +404,12 @@ setClass(
     annotations = "SynapseAnnotations",
     synapseEntityKind = "character",
     synapseWebUrl = "character",
-	# Note: this custom field may eventually become part of the entity schema
-	generatedBy = "character"
+	generatedBy = "activityOrNULL"
   ),
   prototype = prototype(
     annotations = new("SynapseAnnotations"),
     SynapseWebUrl = "",
-	generatedBy = ""
+	generatedBy = NULL
   )
 )
 

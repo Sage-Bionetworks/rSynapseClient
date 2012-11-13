@@ -145,8 +145,10 @@ setMethod(
     oldAnnots <- entity@annotations
 	
 	createUri = "/entity"
-	if (!is.null(entity@generatedBy) && entity@generatedBy!="") {
-		createUri <- paste(createUri, "?generatedBy=", entity@generatedBy, sep="")
+	generatingActivity <- generatedBy(entity)
+	if (!is.null(generatingActivity)) {
+		generatingActivity <-storeEntity(generatingActivity)
+		createUri <- paste(createUri, "?generatedBy=", propertyValue(generatingActivity, "id"), sep="")
 	}
 	
 	entity <- as.list.SimplePropertyOwner(entity)
@@ -167,7 +169,7 @@ setMethod(
 
     ## store the annotations
     entity@annotations <- annots
-	entity@generatedBy <- getGeneratedBy(entity)
+	entity@generatedBy <- generatingActivity
 	
     ## store the updated entity to the file cache
     cacheEntity(entity)
@@ -244,9 +246,13 @@ setMethod(
 
     annots <- entity@annotations
 	updateUri<-entity$properties$uri
-	if (entity@generatedBy!="") {
-		updateUri <- paste(updateUri, "?generatedBy=", entity@generatedBy, sep="")
+
+	generatingActivity <- generatedBy(entity)
+	if (!is.null(generatingActivity)) {
+		generatingActivity <-storeEntity(generatingActivity)
+		updateUri <- paste(updateUri, "?generatedBy=", propertyValue(generatingActivity, "id"), sep="")
 	}
+	
 	ee <- getEntityInstance(synapsePut(updateUri, as.list.SimplePropertyOwner(entity)))
 
     propertyValue(annots, "etag") <- ee$properties$etag
@@ -259,18 +265,16 @@ setMethod(
     ee@annotations <- annots
 	
 	# now take care of the 'generatedBy' field
-	if (entity@generatedBy=="") {
+	if (is.null(generatingActivity)) {
 		# need to ensure the 'generatedBy' field is also cleared on the server side
 		# it's unfortunate to have to make another method call to update 'generatedBy' but
 		# eventually 'generatedBy' may be part of the entity schema, obviating the need for the extra method call
 		synapseDelete(paste("/entity/", entity$properties$id, "/generatedBy", sep=""))
 		updatedEtagEntity<-synapseGet(entity$properties$uri)
 		propertyValue(ee, "etag")<-updatedEtagEntity$etag
-		ee@generatedBy<-""
-	} else {
-		ee@generatedBy<-entity@generatedBy
 	}
-			
+	generatedBy(ee)<-generatingActivity
+	
     cacheEntity(ee)
 
     ee
@@ -683,12 +687,7 @@ setMethod(
 		f = "generatedBy",
 		signature = "SynapseEntity",
 		definition = function(entity){
-			if (is.null(entity@generatedBy) || entity@generatedBy=="") {
-				NULL
-			} else {
-				# TODO cache the value (how do you know when it's stale?)
-				getActivity(entity@generatedBy)
-			}
+			entity@generatedBy
 		}
 )
 
@@ -696,7 +695,7 @@ setMethod(
 		f = "generatedBy<-",
 		signature = signature("SynapseEntity", "Activity"),
 		definition = function(entity, value) {
-			entity@generatedBy <- propertyValue(value, "id")
+			entity@generatedBy <- value
 			entity
 		}
 
@@ -706,10 +705,90 @@ setMethod(
 		f = "generatedBy<-",
 		signature = signature("SynapseEntity", "NULL"),
 		definition = function(entity, value) {
-			entity@generatedBy <- ""
+			entity@generatedBy <- NULL
 			entity
 		}
 
+)
+
+setMethod(
+		f = "used",
+		signature = "SynapseEntity",
+		definition = function(entity){
+			activity <- generatedBy(entity)
+			if (is.null(activity)) {
+				return(NULL)
+			} else {
+				return(propertyValue(activity, "used"))
+			}
+		}
+)
+
+setMethod(
+		f = "used<-",
+		signature = signature("SynapseEntity", "list"),
+		definition = function(entity, value) {
+			usedList <- lapply(value, usedListEntry)
+			activity <- generatedBy(entity)
+			if (is.null(activity)) {
+				activity <- new("Activity")
+			} 
+			propertyValue(activity, "used") <- usedList
+			generatedBy(entity)<-activity
+			entity
+		}
+
+)
+
+setMethod(
+		f="usedListEntry",
+		signature = signature("SynapseEntity"),
+		definition = function(listEntry) {
+			list(reference=getReference(listEntry), wasExecuted=F)
+		}
+)
+
+setMethod(
+		f="usedListEntry",
+		signature = signature("list"),
+		definition = function(listEntry) {
+			# get the reference and the 'executed' 
+			usedEntity<-listEntry$entity
+			if (is.null(usedEntity)) stop("Entity required.")
+			executed<-listEntry$wasExecuted
+			if (is.null(executed)) stop ("Executed required.")
+			list(reference=getReference(usedEntity), wasExecuted=executed)
+		}
+)
+
+setMethod(
+		f="getReference",
+		signature = signature("SynapseEntity"),
+		definition = function(entity) {
+			versionNumber <- propertyValue(entity, "versionNumber")
+			if (is.null(versionNumber)) {
+				list(targetId=propertyValue(entity, "id"))
+			} else {
+				list(targetId=propertyValue(entity, "id"), targetVersionNumber=versionNumber)
+			}
+		}
+)
+
+setMethod(
+		f="getReference",
+		signature = signature("character"),
+		definition = function(entity) {
+				list(targetId=entity)
+		}
+)
+
+setMethod(
+		f = "used<-",
+		signature = signature("SynapseEntity", "NULL"),
+		definition = function(entity, value) {
+			generatedBy(entity)<-NULL
+			entity
+		}
 )
 
 

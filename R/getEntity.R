@@ -33,6 +33,8 @@ setMethod(
 
     ## get annotations
     ee@annotations <- getAnnotations(ee)
+	
+	## get the 'generatedBy' activity, if any
 	ee@generatedBy <- getGeneratedBy(ee)
 
     ## cache the entity to disk
@@ -42,8 +44,8 @@ setMethod(
   }
 )
 
-# returns the Activity ID linked to the entity by the 'generatedBy' relationship,
-# or "" (empty character string) if there is no such Activity
+# returns the Activity linked to the entity by the 'generatedBy' relationship,
+# or NULL if there is no such Activity
 getGeneratedBy<-function(entity) {
 	if (is.null(propertyValue(entity, "versionNumber"))) {
 		uri<-paste("/entity/", 
@@ -58,16 +60,16 @@ getGeneratedBy<-function(entity) {
 				"/generatedBy", 
 				sep="")
 	}
-	activity <- try(synapseGet(uri), silent=T)
-	if (class(activity)=='try-error') {
-		if (length(grep("404", activity, fixed=T))>0) {
+	activityList <- try(synapseGet(uri), silent=T)
+	if (class(activityList)=='try-error') {
+		if (length(grep("404", activityList, fixed=T))>0) {
 			# it's a 404 Not Found status
-			return("")
+			return(NULL)
 		} else {
-			stop(activity)
+			stop(activityList)
 		}
 	}
-	activity$id
+	Activity(activityList)
 }
 
 setMethod(

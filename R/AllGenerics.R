@@ -862,4 +862,38 @@ setGeneric(
 		}
 )
 
+setGeneric(
+		name = "used",
+		def = function(entity) {
+			standardGeneric("used")
+			
+		}
+)
+
+setGeneric(
+		name = "used<-",
+		def = function(entity, value) {
+			standardGeneric("used<-")
+			
+		}
+)
+
+# returns a reference list of the form (targetId="syn1234") or
+# (targetId="syn1234", targetVersionNumber="1") referring
+# to the given entity.  The argument can be a SynapseEntity or a 
+# synapse ID
+setGeneric(
+		name = "getReference",
+		def = function(entity) {
+			standardGeneric("getReference")
+		}
+)
+
+setGeneric(
+		name="usedListEntry",
+		def = function(listEntry) {
+			standardGeneric("usedListEntry")
+		}
+)
+
 

@@ -81,7 +81,9 @@ exportMethods(
   objects,
 	getActivity,
 	generatedBy,
-	"generatedBy<-"
+	"generatedBy<-",
+	"used",
+	"used<-"
   )
 
 ## methods for managing layer files
