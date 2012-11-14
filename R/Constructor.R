@@ -29,7 +29,7 @@ setMethod(
       if(any(names(argList) == ""))
         stop(sprintf("Arguments passed to %s must be named", classType))
     }
-    Constructor(classType, argList)
+    Constructor(classType = classType, entity = argList)
     
   }
 )

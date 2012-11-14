@@ -14,6 +14,16 @@ setClass(
     synapseEntityKind = "org.sagebionetworks.repo.model.Project"
   )
 )
+##
+## Project entity
+##
+setClass(
+  "Summary",
+  contains = "SynapseEntity",
+  prototype = prototype(
+    synapseEntityKind = "org.sagebionetworks.repo.model.Summary"
+  )
+)
 
 ##
 ## Link entity points to other Synapse entities

@@ -21,7 +21,8 @@ setMethod(
 
     ## call the appropriate constructor and pass the list
     ## representation of the entity
-    ee <- do.call(class, list(entity = entity))
+    fun <- getMethod(class, signature = "list", where="synapseClient")
+    ee <- fun(entity)
     ee@synapseWebUrl <- .buildSynapseUrl(propertyValue(ee, "id"))
 
     if(inherits(ee, "SynapseLocationOwner")){

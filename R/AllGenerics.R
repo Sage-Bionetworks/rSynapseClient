@@ -352,6 +352,13 @@ setGeneric(
   }
 )
 
+setGeneric(
+  name = "Summary",
+  def = function(entity, ...){
+    standardGeneric("Summary")
+  }
+)
+
 
 setGeneric(
   name = "Data",

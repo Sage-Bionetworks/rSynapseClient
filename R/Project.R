@@ -14,7 +14,7 @@ setMethod(
 setMethod(
   f = "Project",
   signature = "missing",
-  definition = function(entity, ...){
+  definition = function(...){
     Constructor("Project", ...)
   }
 )
