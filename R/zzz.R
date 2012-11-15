@@ -42,9 +42,20 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     .setCache("rObjCacheDir", ".R_OBJECTS/")
     .setCache("hasZip", TRUE)
   }
+  
+  if(!.getCache("useJava"))
+    packageStartupMessage("NOTE: rJava and/or the Synapse Java client are not installed on your system and so file \nupload/download performance will be reduced and file uploads will be limited to 5GB. \nConsider installing rJava by typing install.packages(rJava) at the command prompt")
+  
+  packageStartupMessage(tou)
+}
+
+.onLoad <-
+  function(libname, pkgname)
+{  
+
   classpath <- c(list.files(file.path(find.package("synapseClient"), "java"), full.names=TRUE, pattern='jar$', recursive=FALSE))
   packageStartupMessage("\nChecking rJava installation...")
-  
+
   .setCache("useJava", FALSE)
 
   if(("rJava" %in% utils::installed.packages())){
@@ -74,10 +85,6 @@ kSupportedDataLocationTypes <- c("external", "awss3")
       )
     }
   }
-  if(!.getCache("useJava"))
-    packageStartupMessage("NOTE: rJava and/or the Synapse Java client are not installed on your system and so file \nupload/download performance will be reduced and file uploads will be limited to 5GB. \nConsider installing rJava by typing install.packages(rJava) at the command prompt")
-  
-  packageStartupMessage(tou)
 
   .setCache("curlOpts", list(low.speed.time=60, low.speed.limit=1, connecttimeout=300, followlocation=TRUE, ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))
   .setCache("curlHeader", c('Content-Type'="application/json", Accept = "application/json", "Accept-Charset"="utf-8"))
@@ -94,16 +101,13 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   
   synapseDataLocationPreferences(kSupportedDataLocationTypes)
   synapseCacheDir(gsub("[\\/]+", "/", path.expand("~/.synapseCache")))
-}
-
-.onLoad <-
-  function(libname, pkgname)
-{  
   ## check RJSONIO version
   if(installed.packages()['RJSONIO', 'Version'] == "1.0-0")
     stop("An unsupported version of RJSONIO is installed on your system. For instructions on how to resolve the issue visit this web page: https://sagebionetworks.jira.com/wiki/display/SYNR/I%27m+unable+to+download+or+upload+entity+data")
 
-  synapseClient:::defineEntityClass("org.sagebionetworks.repo.model.Project", package="synapseClient")
+  entities <- synapseClient:::entitiesToLoad()
+  for(ee in entities)
+    synapseClient:::defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
 }
 
 

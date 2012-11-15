@@ -352,37 +352,6 @@ setGeneric(
   }
 )
 
-
-setGeneric(
-  name = "Summary",
-  def = function(entity, ...){
-    standardGeneric("Summary")
-  }
-)
-
-
-setGeneric(
-  name = "Data",
-  def = function(entity, ...){
-    standardGeneric("Data")
-  }
-)
-
-setGeneric(
-  name = "Study",
-  def = function(entity, ...){
-    standardGeneric("Study")
-  }
-)
-
-setGeneric(
-  name = "Link",
-  def = function(entity){
-    standardGeneric("Link")
-  }
-)
-
-
 setGeneric(
   name = ".doGetObjects",
   def = function(x){

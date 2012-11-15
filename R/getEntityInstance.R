@@ -25,7 +25,7 @@ setMethod(
     ee <- fun(entity)
     ee@synapseWebUrl <- .buildSynapseUrl(propertyValue(ee, "id"))
 
-    if(inherits(ee, "SynapseLocationOwner")){
+    if(inherits(ee, "Locationable")){
       url <- ee$properties$locations[[1]][['path']]
       if(!is.null(url)){
         ## instantiate the ArchiveOwner

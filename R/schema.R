@@ -102,7 +102,8 @@ defineEntityClass <-
         propertyValue(ee, prop) <- entity[[prop]]
       propertyValue(ee, "entityType") <- synapseType
       ee
-    }
+    },
+    where = where
   )
 
   setMethod(
@@ -114,11 +115,10 @@ defineEntityClass <-
       ## GRAB NAMED ARGUMENTS AND ADD TO ENTITY LIST
       entity <- list(...)
       do.call(name, list(entity))
-    }
+    },
+    where = where
   )
 }
-
-
 
 getPropertyTypes <- 
   function(which, entityDef, mapTypes=TRUE)
