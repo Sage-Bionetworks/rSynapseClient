@@ -44,7 +44,8 @@ names.Locationable,getPackageName.EnhancedEnvironment, getPackageName.ArchiveOwn
 ## S4 convenience methods
 ##exportMethods(getDatasetLayers)
 
-## S4 entity constructors
+## S4 entity constructors export methods starting with a capital letter. this is a hack.
+exportPattern("^[A-Z]")
 
 ## entity S4 methods
 exportMethods(

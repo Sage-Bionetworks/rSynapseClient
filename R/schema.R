@@ -78,9 +78,14 @@ defineEntityClass <-
 defineEntityConstructors <-
   function(which, name, overrideExiting = FALSE, where = parent.frame(), package)
 {
+  if(missing(name))
+    name <- gsub("^.+[\\.]", "", which)
+  
+  if(is.null(name) | name == "")
+    stop("name must not be null")
   ## define the generic
 
-  if(overrideExiting | is.null(getGeneric(name, package=package))){
+  if(overrideExiting | is.null(getGeneric(name))){
     setGeneric(
       name=name,
       def = function(entity, ...){
