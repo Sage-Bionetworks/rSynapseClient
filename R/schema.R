@@ -3,6 +3,14 @@
 # Author: mfuria
 ###############################################################################
 
+TYPEMAP <- list(
+  string = "character",
+  integer = "integer",
+  float = "numeric",
+  object = "character",
+  array = "character"
+)
+
 getResources <- 
     function()
 {
@@ -22,7 +30,6 @@ entitiesToLoad <-
   setdiff(paths, "DEFAULT")
 }
 
-
 readEntityDef <-
     function(name, path = system.file("resources/schema",package="synapseClient"))
 {
@@ -39,35 +46,78 @@ readEntityDef <-
 }
 
 defineEntityClass <- 
-    function(entityDef, name, where = parent.frame())
+    function(which, name, where = parent.frame(), package)
 {
+  entityDef <- readEntityDef(which)
+
   if(missing(name))
-    name <- entityDef$title
+    name <- gsub("^.+[\\.]", "", which)
   
-  if(is.null(name))
+  if(is.null(name) | name == "")
     stop("name must not be null")
   
   implements <- unique(c(entityDef$implements[[1]][[1]], synapseClient:::getImplements(entityDef$implements[[1]][[1]])))
   
   if("org.sagebionetworks.repo.model.Locationable" %in% implements){
-    contains <- "SynapseLocationOwner"
+    contains <- "Locationable"
   }else{
-    contains <- "SynapseEntity"
+    contains <- "Entity"
   }
-  
-  propTypes <- synapseClient:::getEffectivePropertyTypes(entityDef = entityDef)
   
   setClass(
       Class = name,
       contains = contains,
-      representation = propTypes,
       prototype = prototype(
           synapseEntityKind = name,
-          properties = list(names(propTypes))
+          properties = SynapseProperties(getEffectivePropertyTypes(which))
       ),
-      where = where
+      package=package
+  )
+
+  ## define the constructors
+  setGeneric(
+    name=name,
+    def = function(entity, ...){
+      do.call("standardGeneric", list(name))
+    },
+    package = package
+  )
+  setMethod(
+    f = name,
+    signature = "list",
+    definition = function(entity, ...){
+      classType <- name
+      synapseType <- which
+      ## GRAB NAMED ARGUMENTS AND ADD TO ENTITY LIST
+      argList <- list(...)
+      entity <- c(entity, argList)
+
+      if(length(entity) > 0){
+        if(any(names(argList) == ""))
+          stop(sprintf("Arguments passed to %s must be named", classType))
+      }
+      
+      ee <- new(classType)
+      for(prop in names(entity))
+        propertyValue(ee, prop) <- entity[[prop]]
+      propertyValue(ee, "entityType") <- synapseType
+      ee
+    }
+  )
+
+  setMethod(
+    f = name,
+    signature = "missing",
+    definition = function(...){
+      classType <- name
+      synapseType <- which
+      ## GRAB NAMED ARGUMENTS AND ADD TO ENTITY LIST
+      entity <- list(...)
+      do.call(name, list(entity))
+    }
   )
 }
+
 
 
 getPropertyTypes <- 
@@ -111,15 +161,7 @@ getEffectivePropertyTypes <-
 
 mapTypes <- 
     function(types)
-{
-  TYPEMAP <- list(
-      string = "character",
-      integer = "integer",
-      float = "numeric",
-      object = "character",
-      array = "character"
-  )
-  
+{ 
   indx <- match(types, names(TYPEMAP))
   retval <- TYPEMAP[indx]
   

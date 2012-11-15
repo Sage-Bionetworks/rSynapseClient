@@ -12,8 +12,7 @@ kSynapseRAnnotationTypeMap <- list(
 )
 kSupportedDataLocationTypes <- c("external", "awss3")
 
-
-.onLoad <-
+.onAttach <-
   function(libname, pkgname)
 {
   tou <- "\nTERMS OF USE NOTICE:
@@ -23,13 +22,9 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     3) Use and contribute only data de-identified to HIPAA standards.
     4) Redistribute data only under these same terms of use.\n"
 
-  ## check RJSONIO version
-  if(installed.packages()['RJSONIO', 'Version'] == "1.0-0")
-    stop("An unsupported version of RJSONIO is installed on your system. For instructions on how to resolve the issue visit this web page: https://sagebionetworks.jira.com/wiki/display/SYNR/I%27m+unable+to+download+or+upload+entity+data")
-  
-  
   ##set the R_OBJECT cache directory. check for a funcitonal zip first
   packageStartupMessage("Verifying zip installation...")
+
   ff <- tempfile()
   file.create(ff)
   zipfile <- tempfile()
@@ -83,7 +78,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     packageStartupMessage("NOTE: rJava and/or the Synapse Java client are not installed on your system and so file \nupload/download performance will be reduced and file uploads will be limited to 5GB. \nConsider installing rJava by typing install.packages(rJava) at the command prompt")
   
   packageStartupMessage(tou)
-  
+
   .setCache("curlOpts", list(low.speed.time=60, low.speed.limit=1, connecttimeout=300, followlocation=TRUE, ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))
   .setCache("curlHeader", c('Content-Type'="application/json", Accept = "application/json", "Accept-Charset"="utf-8"))
   .setCache("sessionRefreshDurationMin", 1440)
@@ -99,6 +94,16 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   
   synapseDataLocationPreferences(kSupportedDataLocationTypes)
   synapseCacheDir(gsub("[\\/]+", "/", path.expand("~/.synapseCache")))
+}
+
+.onLoad <-
+  function(libname, pkgname)
+{  
+  ## check RJSONIO version
+  if(installed.packages()['RJSONIO', 'Version'] == "1.0-0")
+    stop("An unsupported version of RJSONIO is installed on your system. For instructions on how to resolve the issue visit this web page: https://sagebionetworks.jira.com/wiki/display/SYNR/I%27m+unable+to+download+or+upload+entity+data")
+
+  synapseClient:::defineEntityClass("org.sagebionetworks.repo.model.Project", package="synapseClient")
 }
 
 

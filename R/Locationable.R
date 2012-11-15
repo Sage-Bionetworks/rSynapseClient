@@ -4,10 +4,10 @@
 ###############################################################################
 
 setMethod(
-  f = "SynapseLocationOwnerWithObjects",
+  f = "Locationable",
   signature = "list",
   definition = function(entity){
-    ee <- new("SynapseLocationOwnerWithObjects")
+    ee <- new("Locationable")
     ee@properties <- entity
     ee
   }
@@ -15,7 +15,7 @@ setMethod(
 
 setMethod(
   f = "attach",
-  signature = signature(what = "SynapseLocationOwnerWithObjects"),
+  signature = signature(what = "Locationable"),
   definition = function (what, pos = 2, name = getPackageName(what@objOwn), warn.conflicts = TRUE){
     attach(what@objOwn, pos = pos, name = name, warn.conflicts = warn.conflicts)
 
@@ -26,7 +26,7 @@ setMethod(
 
 setMethod(
   f = "detach",
-  signature = signature(name = "SynapseLocationOwnerWithObjects"),
+  signature = signature(name = "Locationable"),
   definition = function (name)
   {
     detach(name@objOwn)
@@ -36,7 +36,7 @@ setMethod(
 
 setMethod(
 	f = "loadEntity",
-	signature = signature("SynapseLocationOwnerWithObjects","missing"),
+	signature = signature("Locationable","missing"),
 	definition = function(entity){
 
     lfun <- getMethod("loadEntity", signature("SynapseLocationOwner", "missing"))
@@ -50,7 +50,7 @@ setMethod(
 
 setMethod(
   f = "loadEntity",
-  signature = signature("SynapseLocationOwnerWithObjects","character"),
+  signature = signature("Locationable","character"),
   definition = function(entity, versionId){
 
     lfun <- getMethod("loadEntity", signature("SynapseLocationOwner", "character"))
@@ -64,7 +64,7 @@ setMethod(
 
 setMethod(
   f = "loadEntity",
-  signature = signature("SynapseLocationOwnerWithObjects","numeric"),
+  signature = signature("Locationable","numeric"),
   definition = function(entity, versionId){
     loadEntity(entity, as.character(versionId))
   }
@@ -72,7 +72,7 @@ setMethod(
 
 setMethod(
   f = "getEntity",
-  signature = signature("SynapseLocationOwnerWithObjects", "missing"),
+  signature = signature("Locationable", "missing"),
   definition = function(entity){
     gfun <- getMethod("getEntity", signature("SynapseLocationOwner", "missing"))
     ee <- gfun(entity)
@@ -83,7 +83,7 @@ setMethod(
 
 setMethod(
   f = "storeEntityObjects",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = "Locationable",
   definition = function(entity){
     storeEntity(entity)
   }
@@ -91,7 +91,7 @@ setMethod(
 
 setMethod(
   f = "updateEntity",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = "Locationable",
   definition = function(entity){
     ufun <- getMethod("updateEntity", "SynapseLocationOwner")
     updatedEntity <- ufun(entity)
@@ -101,7 +101,7 @@ setMethod(
 )
 setMethod(
   f = "createEntity",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = "Locationable",
   definition = function(entity){
     cfun <- getMethod("createEntity", "SynapseLocationOwner")
     ee <- cfun(entity)
@@ -112,7 +112,7 @@ setMethod(
 
 setMethod(
   f = "downloadEntity",
-  signature = signature("SynapseLocationOwnerWithObjects", "missing"),
+  signature = signature("Locationable", "missing"),
   definition = function(entity){
     ## call the superclass method
     dlfun <- getMethod("downloadEntity", signature=signature("SynapseLocationOwner", "missing"))
@@ -132,7 +132,7 @@ setMethod(
 
 setMethod(
   f = "addObject",
-  signature = signature("SynapseLocationOwnerWithObjects", "ANY", "character", "missing"),
+  signature = signature("Locationable", "ANY", "character", "missing"),
   definition = function(owner, object, name){
     owner@objOwn <- addObject(owner@objOwn, object, name)
     invisible(owner)
@@ -141,7 +141,7 @@ setMethod(
 
 setMethod(
   f = "addObject",
-  signature = signature("SynapseLocationOwnerWithObjects", "ANY", "missing", "missing"),
+  signature = signature("Locationable", "ANY", "missing", "missing"),
   definition = function(owner, object){
     name = deparse(substitute(object, env=parent.frame()))
     name <- gsub("\\\"", "", name)
@@ -151,7 +151,7 @@ setMethod(
 
 setMethod(
   f = "addObject",
-  signature = signature("SynapseLocationOwnerWithObjects", "list", "missing", "logical"),
+  signature = signature("Locationable", "list", "missing", "logical"),
   definition = function(owner, object, unlist){
     if(unlist){
       if(any(names(object) == ""))
@@ -168,7 +168,7 @@ setMethod(
 
 setMethod(
   f = "deleteObject",
-  signature = signature("SynapseLocationOwnerWithObjects", "character"),
+  signature = signature("Locationable", "character"),
   definition = function(owner, which){
     owner@objOwn <- deleteObject(owner@objOwn, which)
     invisible(owner)
@@ -177,7 +177,7 @@ setMethod(
 
 setMethod(
   f = "renameObject",
-  signature = signature("SynapseLocationOwnerWithObjects", "character", "character"),
+  signature = signature("Locationable", "character", "character"),
   definition = function(owner, which, name){
     owner@objOwn <- renameObject(owner@objOwn, which, name)
     invisible(owner)
@@ -186,7 +186,7 @@ setMethod(
 
 setMethod(
   f = "getObject",
-  signature = signature("SynapseLocationOwnerWithObjects", "character"),
+  signature = signature("Locationable", "character"),
   definition = function(owner, which){
     getObject(owner@objOwn, which)
   }
@@ -194,7 +194,7 @@ setMethod(
 
 setMethod(
   f = "files",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = "Locationable",
   definition = function(object){
     setdiff(files(object@archOwn), files(object@objOwn))
   }
@@ -202,13 +202,13 @@ setMethod(
 
 setMethod(
   f = "cacheDir",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = "Locationable",
   definition = function(object){
     cacheDir(object@objOwn)
   }
 )
 
-objects.SynapseLocationOwnerWithObjects <-
+objects.Locationable <-
   function(x)
 {
   objects(x@objOwn)
@@ -216,7 +216,7 @@ objects.SynapseLocationOwnerWithObjects <-
 
 setMethod(
   f = "[",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = "Locationable",
   definition = function(x, i, j, ...){
     if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
       stop("incorrect number of subscripts")
@@ -237,8 +237,8 @@ setMethod(
           files = files(x),
           fileObjects = x@archOwn@objects,
           binObjects = x@objOwn$objects[],
-          if(i %in% names.SynapseEntity(x)){
-              class(x) <- "SynapseEntity"
+          if(i %in% names.Entity(x)){
+              class(x) <- "Entity"
               return(x[[i]])
             }else{
               return(NULL)
@@ -253,7 +253,7 @@ setMethod(
 
 setMethod(
   f = ".doGetObjects",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = "Locationable",
   definition = function(x){
     oo <- union(objects(x@archOwn@objects, all.names=T), objects(x@objOwn$objects, all.names=T))
     retVal <- lapply(oo, function(oName){
@@ -268,7 +268,7 @@ setMethod(
 
 setMethod(
   f = "initialize",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = "Locationable",
   definition = function(.Object){
     .Object@archOwn <- new("ArchiveOwner")
     .Object@archOwn@fileCache <- getFileCache(.Object@archOwn@fileCache$getCacheRoot())
@@ -278,15 +278,15 @@ setMethod(
   }
 )
 
-names.SynapseLocationOwnerWithObjects <-
+names.Locationable <-
   function(x)
 {
-  c("objects", "cacheDir","files", "fileObjects", "binObjects", names.SynapseEntity(x))
+  c("objects", "cacheDir","files", "fileObjects", "binObjects", names.Entity(x))
 }
 
 setMethod(
   f = "summarizeObjects",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = "Locationable",
   definition = function(entity){
     msg <- NULL
     if(length(names(entity$objects)) > 0){
@@ -299,7 +299,7 @@ setMethod(
   }
 )
 
-objects.SynapseLocationOwnerWithObjects <-
+objects.Locationable <-
   function(name)
 {
   union(objects(name@archOwn@objects, all.names=T), objects(name@objOwn$objects, all.names=T))
@@ -307,7 +307,7 @@ objects.SynapseLocationOwnerWithObjects <-
 
 setMethod(
   f = "loadObjectsFromFiles",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = "Locationable",
   definition = function(owner){
     ## call the superclass method
     lfun <- getMethod("loadObjectsFromFiles", signature("SynapseLocationOwner"))

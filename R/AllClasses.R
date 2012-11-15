@@ -49,6 +49,14 @@ setClass(
     )
 )
 
+setClass(
+  Class = "SynapseProperties",
+  representation = representation(
+    properties = "TypedPropertyStore",
+    typeMap = "list"
+  )
+)
+
 ##
 ## this class may not seem necessary since it's just a wrapper on
 ## a list, but it will allow for an easier changeover to typed
@@ -61,10 +69,10 @@ setClass(
     Class = "SimplePropertyOwner",
     contains = "VIRTUAL",
     representation = representation(
-        properties = "list"
+      properties = "SynapseProperties"
     ),
     prototype = prototype(
-        properties = emptyNamedList
+      properties = new("SynapseProperties")
     )
 )
 
@@ -383,7 +391,7 @@ setClass(
 ## All non-locationable Synapse entities will be derived from this class
 ##
 setClass(
-  Class = "SynapseEntity",
+  Class = "Entity",
   contains = "SimplePropertyOwner",
   representation = representation(
     attachOwn = "AttachmentOwner",
@@ -447,7 +455,7 @@ setRefClass(
 ##
 setClass(
     Class = "SynapseLocationOwner",
-    contains = c("SynapseEntity"),
+    contains = c("Entity"),
     representation = representation(
         archOwn = "ArchiveOwner"
     )
@@ -457,7 +465,7 @@ setClass(
 ## These entities can own R objects that are added via addObject.
 ##
 setClass(
-    Class = "SynapseLocationOwnerWithObjects",
+    Class = "Locationable",
     contains = c("SynapseLocationOwner"),
     representation(
       objOwn = "CachingObjectOwner"

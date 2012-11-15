@@ -3,6 +3,13 @@
 # Author: furia
 ###############################################################################
 setGeneric(
+  name = "SynapseProperties",
+  def = function(typeMap){
+    standardGeneric("SynapseProperties")
+  }
+)
+
+setGeneric(
   name = "cacheEntity",
   def = function(entity){
     standardGeneric("cacheEntity")
@@ -332,9 +339,9 @@ setGeneric(
 )
 
 setGeneric(
-  name = "SynapseLocationOwnerWithObjects",
+  name = "Locationable",
   def = function(entity){
-    standardGeneric("SynapseLocationOwnerWithObjects")
+    standardGeneric("Locationable")
   }
 )
 
@@ -345,12 +352,6 @@ setGeneric(
   }
 )
 
-setGeneric(
-  name = "Project",
-  def = function(entity, ...){
-    standardGeneric("Project")
-  }
-)
 
 setGeneric(
   name = "Summary",
@@ -794,9 +795,9 @@ setGeneric(
 
 
 setGeneric(
-  name = "SynapseEntity",
+  name = "Entity",
   def = function(entity){
-    standardGeneric("SynapseEntity")
+    standardGeneric("Entity")
   }
 )
 

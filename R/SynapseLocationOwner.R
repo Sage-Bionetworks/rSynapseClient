@@ -95,7 +95,7 @@ setMethod(
   definition = function(entity){ 
     entity@archOwn@fileCache <- getFileCache(getFileCacheName(entity@archOwn@fileCache))
     archOwn <- entity@archOwn
-    cfun <- getMethod("createEntity", "SynapseEntity")
+    cfun <- getMethod("createEntity", "Entity")
     entity <- cfun(entity)
     entity@archOwn <- setCacheRoot(archOwn, entity@archOwn@fileCache$getCacheRoot(), TRUE )
     entity
@@ -143,7 +143,7 @@ setMethod(
 
     ## make sure the fileCache gets added to the FileCacheFactory
     ##entity@archOwn <- ArchiveOwner(destdir)
-    if(inherits(entity, "SynapseLocationOwnerWithObjects"))
+    if(inherits(entity, "Locationable"))
       setFileCache(entity@objOwn, entity@archOwn@fileCache)
 
     ## unpack the archive into it's new root directory.
@@ -156,7 +156,7 @@ setMethod(
   f = "getEntity",
   signature = signature("SynapseLocationOwner", "missing"),
   definition = function(entity){
-    gfun <- getMethod("getEntity", signature("SynapseEntity", "missing"))
+    gfun <- getMethod("getEntity", signature("Entity", "missing"))
     ee <- gfun(entity)
     ee@archOwn <- entity@archOwn
     ee
@@ -167,7 +167,7 @@ setMethod(
     f = "updateEntity",
     signature = "SynapseLocationOwner",
     definition = function(entity){
-      ufun <- getMethod("updateEntity", "SynapseEntity")
+      ufun <- getMethod("updateEntity", "Entity")
       updatedEntity <- ufun(entity)
       slot(updatedEntity, "archOwn") <- entity@archOwn
       updatedEntity
@@ -232,7 +232,7 @@ setMethod(
     signature = "SynapseLocationOwner",
     definition = function(entity){
       entity@archOwn@fileCache$delete()
-      dfun <- getMethod("deleteEntity", "SynapseEntity")
+      dfun <- getMethod("deleteEntity", "Entity")
       entity <- dfun(entity)
       invisible(entity)
     }
@@ -278,7 +278,7 @@ setMethod(
 names.SynapseLocationOwner <-
     function(x)
 {
-  c("objects", "cacheDir", "files", names.SynapseEntity(x))
+  c("objects", "cacheDir", "files", names.Entity(x))
 }
 
 
@@ -305,8 +305,8 @@ setMethod(
               retVal <- cacheDir(x@archOwn)
             }else if(i == "files"){
               retVal <- files(x)
-            }else if(i %in% names.SynapseEntity(x)){
-              class(x) <- "SynapseEntity"
+            }else if(i %in% names.Entity(x)){
+              class(x) <- "Entity"
               x[[i]]
             }else{
               retVal <- NULL
@@ -461,9 +461,9 @@ setMethod(
 setReplaceMethod("$",
   signature = "SynapseLocationOwner",
   definition = function(x, name, value) {
-     if(!(name %in% names.SynapseEntity(x)))
+     if(!(name %in% names.Entity(x)))
       stop("invalid element")
-    fun <- getMethod("$<-", "SynapseEntity")
+    fun <- getMethod("$<-", "Entity")
     fun(x, name, value)
   }
 )

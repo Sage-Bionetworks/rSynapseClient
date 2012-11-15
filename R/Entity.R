@@ -3,8 +3,33 @@
 # Author: furia
 ###############################################################################
 setMethod(
+  f = "getParentEntity",
+  signature = "Entity",
+  definition = function(entity){
+    if(is.null(entityId <- propertyValue(entity, "parentId")))
+      return(NULL)
+    parent <- tryCatch(
+      getEntity(entityId),
+      error = function(e){
+        warning(as.character(e))
+        NULL
+      }
+    )
+    parent
+  }
+)
+
+setMethod(
+  f = "onWeb",
+  signature = signature("Entity"),
+  definition = function(entity){
+    .doOnWeb(entity)
+  }
+)
+
+setMethod(
   f = "available.versions",
-  signature = signature("SynapseEntity"),
+  signature = signature("Entity"),
   definition = function(object){
     if(is.null(object$properties$id))
       return(NULL)
@@ -14,7 +39,7 @@ setMethod(
 
 setMethod(
   f = "storeAttachment",
-  signature = signature("SynapseEntity", "missing"),
+  signature = signature("Entity", "missing"),
   definition = function(object){
     storeAttachment(object, object$attachments)
   }
@@ -22,7 +47,7 @@ setMethod(
 
 setMethod(
   f = "storeAttachment",
-  signature = signature("SynapseEntity", "character"),
+  signature = signature("Entity", "character"),
   definition = function(object, which){
     files = file.path(object$attachDir, which)
     for(f in files){
@@ -34,7 +59,7 @@ setMethod(
 
 setMethod(
   f = "downloadAttachment",
-  signature = signature("SynapseEntity", "missing"),
+  signature = signature("Entity", "missing"),
   definition = function(object){
     stop("not implemented")
   }
@@ -43,7 +68,7 @@ setMethod(
 
 setMethod(
   f = "attachDir",
-  signature = signature('SynapseEntity'),
+  signature = signature('Entity'),
   definition = function(object){
     cacheDir(object@attachOwn)
   }
@@ -51,7 +76,7 @@ setMethod(
 
 setMethod(
   f = "attachments",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(object){
     files(object@attachOwn)
   }
@@ -59,7 +84,7 @@ setMethod(
 
 setMethod(
   f = "addAttachment",
-  signature = signature("SynapseEntity", "character"),
+  signature = signature("Entity", "character"),
   definition = function(object, file){
     if(length(file) != 1L)
       stop("can only attach a single file")
@@ -75,7 +100,7 @@ setMethod(
 
 setMethod(
   f = "deleteAttachment",
-  signature = signature("SynapseEntity", "missing"),
+  signature = signature("Entity", "missing"),
   definition = function(object){
     if(length(object$attachments) == 0L)
       return(object)
@@ -85,7 +110,7 @@ setMethod(
 
 setMethod(
   f = "deleteAttachment",
-  signature = signature("SynapseEntity", "character"),
+  signature = signature("Entity", "character"),
   definition = function(object, file){
     if(any(!(file %in% object$attachments)))
       stop("could not find one or more of the specified attachments")
@@ -103,7 +128,7 @@ setMethod(
 ##
 setMethod(
   f = "initialize",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(.Object){
     .Object@attachOwn <- new("AttachmentOwner")
     .Object@attachOwn@fileCache <- getFileCache(.Object@attachOwn@fileCache$getCacheRoot())
@@ -113,11 +138,11 @@ setMethod(
 
 
 #####
-## SynapseEntity "show" method
+## Entity "show" method
 #####
 setMethod(
   f = "show",
-  signature = signature("SynapseEntity"),
+  signature = signature("Entity"),
   definition = function(object){
     cat('An object of class "', class(object), '"\n', sep="")
     
@@ -140,7 +165,7 @@ setMethod(
 
 setMethod(
   f = "createEntity",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity){
     oldAnnots <- entity@annotations
     entity <- as.list.SimplePropertyOwner(entity)
@@ -171,7 +196,7 @@ setMethod(
 
 setMethod(
     f = "deleteEntity",
-    signature = "SynapseEntity",
+    signature = "Entity",
     definition = function(entity){
       envir <- parent.frame(2)
       inherits <- FALSE
@@ -179,11 +204,7 @@ setMethod(
 
       ## delete the entity in synapse
       if(!is.null(entity$properties$id))
-<<<<<<< HEAD
         deleteEntity(entity$properties$id)
-=======
-        synapseDelete(.generateEntityUri(entity$properties$id))
->>>>>>> 46590eaf07e7ddd287936830a64d1eb12a664af8
 
       ## remove entity from the cache
       purgeCache(entity)
@@ -205,7 +226,7 @@ setMethod(
 
 setMethod(
   f = "getEntity",
-  signature = signature("SynapseEntity", "missing"),
+  signature = signature("Entity", "missing"),
   definition = function(entity){
     id <- propertyValue(entity, "id")
     if(is.null(id))
@@ -217,7 +238,7 @@ setMethod(
 
 setMethod(
   f = "getEntity",
-  signature = signature("SynapseEntity", "character"),
+  signature = signature("Entity", "character"),
   definition = function(entity, versionId){
     getEntity(entity$properties$id, versionId)
   }
@@ -225,7 +246,7 @@ setMethod(
 
 setMethod(
   f = "getEntity",
-  signature = signature("SynapseEntity", "numeric"),
+  signature = signature("Entity", "numeric"),
   definition = function(entity, versionId){
     getEntity(entity$properties$id, as.character(versionId))
   }
@@ -233,7 +254,7 @@ setMethod(
 
 setMethod(
   f = "updateEntity",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity)
   {
     if(is.null(entity$properties$id))
@@ -258,7 +279,7 @@ setMethod(
 
 setMethod(
   f = "downloadEntity",
-  signature = signature("SynapseEntity","missing"),
+  signature = signature("Entity","missing"),
   definition = function(entity){
     getEntity(entity)
   }
@@ -266,7 +287,7 @@ setMethod(
 
 setMethod(
   f = "downloadEntity",
-  signature = signature("SynapseEntity","character"),
+  signature = signature("Entity","character"),
   definition = function(entity, versionId){
     getEntity(entity, versionId)
   }
@@ -274,7 +295,7 @@ setMethod(
 
 setMethod(
   f = "downloadEntity",
-  signature = signature("SynapseEntity","numeric"),
+  signature = signature("Entity","numeric"),
   definition = function(entity, versionId){
     getEntity(entity, as.character(versionId))
   }
@@ -282,7 +303,7 @@ setMethod(
 
 setMethod(
   f = "loadEntity",
-  signature = signature("SynapseEntity","missing"),
+  signature = signature("Entity","missing"),
   definition = function(entity){
     getEntity(entity)
   }
@@ -290,7 +311,7 @@ setMethod(
 
 setMethod(
   f = "loadEntity",
-  signature = signature("SynapseEntity","character"),
+  signature = signature("Entity","character"),
   definition = function(entity, versionId){
     getEntity(entity, versionId)
   }
@@ -298,7 +319,7 @@ setMethod(
 
 setMethod(
   f = "loadEntity",
-  signature = signature("SynapseEntity","numeric"),
+  signature = signature("Entity","numeric"),
   definition = function(entity, versionId){
     getEntity(entity, as.character(versionId))
   }
@@ -306,7 +327,7 @@ setMethod(
 
 setMethod(
   f = "storeEntity",
-  signature= "SynapseEntity",
+  signature= "Entity",
   definition = function(entity) {
     if (is.null(propertyValue(entity, "id"))) {
       entity <- createEntity(entity)
@@ -318,9 +339,9 @@ setMethod(
 )
 
 #####
-## as.list function. Coerce SynapseEntity to list by returning annotations
+## as.list function. Coerce Entity to list by returning annotations
 #####
-as.list.SynapseEntity <- 
+as.list.Entity <- 
   function(x, ...){
   as.list(annotations(x))         
 }
@@ -330,7 +351,7 @@ as.list.SynapseEntity <-
 #####
 setMethod(
   f = "annotationNames",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(object){
     annotationNames(annotations(object))
   }
@@ -341,7 +362,7 @@ setMethod(
 #####
 setMethod(
   f = "annotationValues",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(object){
     annotationValues(annotations(object))
   }
@@ -352,7 +373,7 @@ setMethod(
 #####
 setMethod(
   f = "annotationValues<-",
-  signature = signature("SynapseEntity","list"),
+  signature = signature("Entity","list"),
   definition = function(object, value){
     annotationValues(annotations(object)) <- value
     object
@@ -361,7 +382,7 @@ setMethod(
 
 setMethod(
   f = "annotValue<-",
-  signature = signature("SynapseEntity", "character", "ANY"),
+  signature = signature("Entity", "character", "ANY"),
   definition = function(object, which, value){
     annotValue(object@annotations, which = which) <- value
     object
@@ -373,7 +394,7 @@ setMethod(
 #####
 setMethod(
   f = "annotations",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(object){
     object@annotations
   }
@@ -382,7 +403,7 @@ setMethod(
 
 setMethod(
     f = "annotations<-",
-    signature = signature("SynapseEntity", "list"),
+    signature = signature("Entity", "list"),
     definition = function(object, value){
       if(any(names(value) == ""))
         stop("all elements of the list must be named")
@@ -400,7 +421,7 @@ setMethod(
 #####
 setMethod(
   f = "annotations<-",
-  signature = signature("SynapseEntity","SynapseAnnotations"),
+  signature = signature("Entity","SynapseAnnotations"),
   definition = function(object, value){
     object@annotations <- value
     object
@@ -412,7 +433,7 @@ setMethod(
 #####
 setMethod(
   f = "annotations<-",
-  signature = signature("SynapseEntity", "list"),
+  signature = signature("Entity", "list"),
   definition = function(object, value){
 
 	a <- new("SynapseAnnotations")
@@ -427,7 +448,7 @@ setMethod(
 #####
 setMethod(
   f = "annotValue",
-  signature = signature("SynapseEntity", "character"),
+  signature = signature("Entity", "character"),
   definition = function(object, which){
     annotValue(annotations(object), which)  
   }
@@ -440,7 +461,7 @@ setMethod(
 #####
 setMethod(
   f = "deleteAnnotation",
-  signature = signature("SynapseEntity", "character"),
+  signature = signature("Entity", "character"),
   definition = function(object, which){
     annotations(object) <- deleteAnnotation(annotations(object), which)
     object
@@ -451,10 +472,10 @@ setMethod(
 ## constructor that takes a list entity
 #####
 setMethod(
-		f = "SynapseEntity",
+		f = "Entity",
 		signature = signature("list"),
 		definition = function(entity){
-			ee <- new("SynapseEntity")
+			ee <- new("Entity")
 			ee@properties <- entity
       ee
 		}
@@ -464,10 +485,10 @@ setMethod(
 ## constructor that takes a list entity
 #####
 setMethod(
-  f = "SynapseEntity",
+  f = "Entity",
   signature = signature("missing"),
   definition = function(entity){
-    SynapseEntity(emptyNamedList)
+    Entity(emptyNamedList)
   }
 )
 
@@ -475,7 +496,7 @@ setMethod(
 ## constructor that takes a serialized JSON object
 #####
 setMethod(
-		f = "SynapseEntity",
+		f = "Entity",
 		signature = signature("character"),
 		definition = function(entity){
       ee<-fromJSON(entity)
@@ -489,7 +510,7 @@ setMethod(
 #####
 setMethod(
   f = ".extractEntityFromSlots",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(object){
 	properties(object)
   }
@@ -500,7 +521,7 @@ setMethod(
 #####
 setMethod(
   f = ".populateSlotsFromEntity",
-  signature = signature("SynapseEntity", "list"),
+  signature = signature("Entity", "list"),
   definition = function(object, entity){
     if(any(names(entity) == "") && length(entity) > 0)
       stop("All elements of the entity must be named")
@@ -517,7 +538,7 @@ setMethod(
 #####
 setMethod(
   f = "synapseEntityKind",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity){
     entity@synapseEntityKind
   }
@@ -528,7 +549,7 @@ setMethod(
 #####
 setMethod(
   f = "synapseEntityKind<-",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity, value){
     entity@synapseEntityKind <- value
     entity
@@ -540,7 +561,7 @@ setMethod(
 #####
 setMethod(
   f = "refreshAnnotations",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity){
 	  #  MF will refactor this code
     annotations(entity) <- do.call(class(annotations(entity)), list(entity = getAnnotations(.extractEntityFromSlots(entity))))
@@ -550,13 +571,13 @@ setMethod(
 
 setMethod(
   f = "getAnnotations",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity){
     as.list(entity@annotations)
   }
 )
 
-names.SynapseEntity <-
+names.Entity <-
   function(x)
 {
   c("properties", "annotations", "attachments", "attachDir", "available.versions")
@@ -564,7 +585,7 @@ names.SynapseEntity <-
 
 setMethod(
   f = "[",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(x, i, j, ...){
     if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
       stop("incorrect number of subscripts")
@@ -603,7 +624,7 @@ setMethod(
 
 setMethod(
   f = "[[",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(x, i, j, ...){
     if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
       stop("incorrect number of subscripts")
@@ -615,14 +636,14 @@ setMethod(
 
 setMethod(
   f = "$",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(x, name){
     x[[name]]
   }
 )
 
 setReplaceMethod("$", 
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(x, name, value) {
     if(!(name %in% names(x)))
       stop("invalid element")
@@ -633,7 +654,7 @@ setReplaceMethod("$",
 
 setMethod(
   f = "getAnnotations",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity){
     id <- entity$properties$id
     if(is.null(id))
@@ -644,7 +665,7 @@ setMethod(
 
 setMethod(
   f = "cacheEntity",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity){
     ##warning('not implemented')
   }
@@ -652,7 +673,7 @@ setMethod(
 
 setMethod(
   f = "purgeCache",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity){
     ##warning('not implemented')
   }

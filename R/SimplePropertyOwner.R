@@ -15,7 +15,11 @@ setMethod(
     f = "properties<-",
     signature = "SimplePropertyOwner",
     definition = function(object, value){
-      object@properties <- value
+      if(!all(names(value) %in% propertyNames(object)))
+        stop("invalid property names specified")
+      for(n in names(value)){
+        propertyValue(object, n) <- value
+      }
       object
     }
 
@@ -33,8 +37,11 @@ setMethod(
   f = "propertyValues",
   signature = "SimplePropertyOwner",
   definition = function(object){
-    values <- lapply(propertyNames(object@properties), function(n){
-        getProperty(object,n)
+    values <- lapply(propertyNames(object), function(n){
+        val <- propertyValue(object,n)
+        if(is.null(val))
+          val <- "NULL"
+        val
       }
     )
     unlist(values)
@@ -50,9 +57,14 @@ setMethod(
 		definition = function(object, value){
 			if(any(names(value) == "") && length(value) > 0)
 				stop("All entity members must be named")
+
+      if(!all(names(value) %in% propertyNames(object)))
+        stop("invalid property names specified")
+
 			for(name in names(value))
 				propertyValue(object, name) <- value[[name]]
-			return(object)
+
+			object
 		}
 )
 
@@ -67,8 +79,9 @@ setMethod(
 				indx <- which(!(which %in% propertyNames(object)))
 				warning(paste(propertyNames(object)[indx], sep="", collapse=","), "were not found in the object, so were not deleted.")
 			}
-			object@properties <- object@properties[setdiff(propertyNames(object), which)]
-			return(object)
+      for(w in which)
+        properyValue(object, which) <- ""
+			object
 		}
 )
 
@@ -79,7 +92,11 @@ setMethod(
 		f = "propertyValue<-",
 		signature = signature("SimplePropertyOwner", "character"),
 		definition = function(object, which, value){
-			properties(object)[[which]] <- as.character(value)
+      if(!all(which %in% propertyNames(object)))
+        stop("invalid property name specified")
+      if(is.null(value))
+        value <- list(value)
+			propertyValue(object@properties, which) <- value
 			object
 		}
 )
@@ -88,6 +105,8 @@ setMethod(
   f = "propertyValue<-",
   signature = signature("SimplePropertyOwner", "character", "list"),
   definition = function(object, which, value){
+    if(!all(which %in% propertyNames(object)))
+      stop("invalid property name specified")
     props <- properties(object)
     indx <- which(names(object@properties) == which)
     if(length(indx) > 0L)
@@ -100,8 +119,6 @@ setMethod(
     object
   }
 )
-
-
 
 ## S3 method to convert object to list
 as.list.SimplePropertyOwner<-function(x) {
@@ -123,7 +140,6 @@ setMethod(
 setMethod(
     f = "propertyValue",
     signature = signature("SimplePropertyOwner", "character"),
-
     definition = function(object, which){
       properties(object)[[which]]
     }

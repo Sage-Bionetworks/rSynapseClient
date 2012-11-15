@@ -12,11 +12,11 @@ setMethod(
 
     ## synapseEntity is the default
     if(is.null(class))
-      class <- "SynapseEntity"
+      class <- "Entity"
 
-    if(class == "SynapseEntity"){
+    if(class == "Entity"){
       if(!is.null(entity$locations) && length(entity$locations) > 0)
-        class <- "SynapseLocationOwnerWithObjects"
+        class <- "Locationable"
     }
 
     ## call the appropriate constructor and pass the list
@@ -61,7 +61,7 @@ setMethod(
 
 setMethod(
   f = "initializeEntity",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity){
     entity
   }
@@ -71,7 +71,7 @@ setMethod(
   f = "initializeEntity",
   signature = "SynapseLocationOwner",
   definition = function(entity){
-    ifun <- getMethod("initializeEntity", "SynapseEntity")
+    ifun <- getMethod("initializeEntity", "Entity")
     entity <- ifun(entity)
 
     ## get the cache url for this entity
@@ -93,7 +93,7 @@ setMethod(
 
 setMethod(
   f = "initializeEntity",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = "Locationable",
   definition = function(entity){
     ifun <- getMethod("initializeEntity", "SynapseLocationOwner")
     entity <- ifun(entity)
