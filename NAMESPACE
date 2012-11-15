@@ -45,19 +45,6 @@ names.Locationable,getPackageName.EnhancedEnvironment, getPackageName.ArchiveOwn
 ##exportMethods(getDatasetLayers)
 
 ## S4 entity constructors
-exportMethods(
-  Data, 
-  Study,
-  Link,
-  ExpressionData,
-  GenotypeData,
-  PhenotypeData,
-  RObject,
-  Code,
-  Folder,
-  Preview,
-  Entity
-)
 
 ## entity S4 methods
 exportMethods(

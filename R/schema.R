@@ -73,51 +73,58 @@ defineEntityClass <-
       ),
       package=package
   )
+}
 
-  ## define the constructors
-  setGeneric(
-    name=name,
-    def = function(entity, ...){
-      do.call("standardGeneric", list(name))
-    },
-    package = package
-  )
-  setMethod(
-    f = name,
-    signature = "list",
-    definition = function(entity, ...){
-      classType <- name
-      synapseType <- which
-      ## GRAB NAMED ARGUMENTS AND ADD TO ENTITY LIST
-      argList <- list(...)
-      entity <- c(entity, argList)
+defineEntityConstructors <-
+  function(which, name, overrideExiting = FALSE, where = parent.frame(), package)
+{
+  ## define the generic
 
-      if(length(entity) > 0){
-        if(any(names(argList) == ""))
-          stop(sprintf("Arguments passed to %s must be named", classType))
-      }
-      
-      ee <- new(classType)
-      for(prop in names(entity))
-        propertyValue(ee, prop) <- entity[[prop]]
-      propertyValue(ee, "entityType") <- synapseType
-      ee
-    },
-    where = where
-  )
+  if(overrideExiting | is.null(getGeneric(name, package=package))){
+    setGeneric(
+      name=name,
+      def = function(entity, ...){
+        do.call("standardGeneric", list(name))
+      },
+      package = package
+    )
+    setMethod(
+      f = name,
+      signature = "list",
+      definition = function(entity, ...){
+        classType <- name
+        synapseType <- which
+        ## GRAB NAMED ARGUMENTS AND ADD TO ENTITY LIST
+        argList <- list(...)
+        entity <- c(entity, argList)
 
-  setMethod(
-    f = name,
-    signature = "missing",
-    definition = function(...){
-      classType <- name
-      synapseType <- which
-      ## GRAB NAMED ARGUMENTS AND ADD TO ENTITY LIST
-      entity <- list(...)
-      do.call(name, list(entity))
-    },
-    where = where
-  )
+        if(length(entity) > 0){
+          if(any(names(argList) == ""))
+            stop(sprintf("Arguments passed to %s must be named", classType))
+        }
+        
+        ee <- new(classType)
+        for(prop in names(entity))
+          propertyValue(ee, prop) <- entity[[prop]]
+        propertyValue(ee, "entityType") <- synapseType
+        ee
+      },
+      where = where
+    )
+
+    setMethod(
+      f = name,
+      signature = "missing",
+      definition = function(...){
+        classType <- name
+        synapseType <- which
+        ## GRAB NAMED ARGUMENTS AND ADD TO ENTITY LIST
+        entity <- list(...)
+        do.call(name, list(entity))
+      },
+      where = where
+    )
+  }
 }
 
 getPropertyTypes <- 
