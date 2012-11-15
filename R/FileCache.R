@@ -53,7 +53,6 @@ setMethod(
     names(object$metaData) <- gsub(object$cacheDir, cacheDir, names(object$metaData), fixed = TRUE)
 
     ## move the FileCache in the Factory
-
     if(fixFilePath(object$cacheRoot, mustWork=FALSE) %in% availFileCaches()){
       if(path %in% availFileCaches() && clean)
         removeFileCache(path)

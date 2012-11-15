@@ -54,6 +54,7 @@ QueryResult$methods(
       else {
         query <- paste(queryStatement, "limit", n, "offset", offset)
         result <- synapseQuery(query)
+        if (is.null(result)) result <- data.frame()
         offset <<- as.integer(offset + nrow(result))
         totalNumberOfResults <<- as.integer(attr(result, "totalNumberOfResults"))
       }

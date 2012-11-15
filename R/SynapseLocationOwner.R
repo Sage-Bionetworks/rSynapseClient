@@ -120,7 +120,7 @@ setMethod(
 
     entity <- tryCatch(
       if(synapseClient:::.getCache("useJava")){
-        synapseClient:::.performMultipartUpload(entity, filePath)
+        .performMultipartUpload(entity, filePath)
       }else{
         .performRUpload(entity, filePath)
       },

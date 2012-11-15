@@ -63,9 +63,10 @@ unitTestExistingCacheZipNotInFactory <-
   fc <- getFileCache(archivefile)
   checkEquals(fc$cacheRoot, cacheRoot)
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
-  checkEquals(synapseClient:::availFileCaches(), cacheRoot)
 
-  fc.copy <- getFileCache(fc$cacheRoot)
+  checkEquals(synapseClient:::availFileCaches(), cacheRoot)
+  
+  fc.copy <- getFileCache(file.path(fc$cacheRoot, fc$archiveFile))
   checkEquals(fc.copy$cacheRoot, fc$cacheRoot)
   checkEquals(fc.copy$files(), fc$files())
   checkEquals(fc.copy$archiveFile, fc.copy$archiveFile)
@@ -224,6 +225,7 @@ unitTestSingleNonCompressedFileArchive <-
   fc$createArchive()
   checkTrue(file.exists(file.path(fc$cacheRoot, fc$archiveFile)))
 }
+
 
 unitTestRemoveFileCache <-
   function()
