@@ -12,7 +12,7 @@
 #        suppressWarnings(
 #            setClass(
 #                "LocOwnO",
-#                contains = "SynapseLocationOwnerWithObjects",
+#                contains = "Locationable",
 #                where = env
 #            )
 #        )
@@ -41,7 +41,7 @@
 unitTestAddObject <-
     function()
 {
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
 
   foo<-diag(10)
   copy <- addObject(own, foo)
@@ -73,7 +73,7 @@ unitTestAddObject <-
 unitTestAddObjectRename <-
     function()
 {
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
 
   foo<-diag(10)
   copy <- addObject(own, foo, "bar")
@@ -86,7 +86,7 @@ unitTestAddObjectRename <-
 unitTestAddList <-
     function()
 {
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
 
   foo <- list(b="a", one=1)
   copy <- addObject(own, foo, "bar")
@@ -96,7 +96,7 @@ unitTestAddList <-
   checkEquals(length(names(copy$objects)), 1L)
   checkEquals(names(copy$objects), "bar")
 
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
   copy <- addObject(own, foo)
   checkEquals(length(names(own$objects)), 1L)
   checkEquals(names(own$objects), "foo")
@@ -110,7 +110,7 @@ unitTestAddList <-
 unitTestAddListFcn <-
   function()
 {
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
   foo <- list(a="b", one=1)
   copy <- addObject(own, foo)
   checkEquals(length(own$objects), 1L)
@@ -137,7 +137,7 @@ unitTestAddListFcn <-
 unitTestAddListUnlist <-
     function()
 {
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
   foo <- list(a="b", one=1)
   copy <- addObject(own, foo, unlist=T)
   checkEquals(length(own$objects), 2L)
@@ -163,7 +163,7 @@ unitTestAddDataFrame <-
 unitTestDeleteObject <-
     function()
 {
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
   foo <- list(a="b", one=1)
   addObject(own, foo)
   checkEquals(length(own$objects), 1L)
@@ -176,7 +176,7 @@ unitTestDeleteObject <-
 unitTestRenameObject <-
     function()
 {
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
   foo <- "boo"
   addObject(own, foo)
   checkEquals(length(own$objects), 1L)
@@ -190,7 +190,7 @@ unitTestRenameObject <-
 unitTestGetObject <-
     function()
 {
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
   foo <- "boo"
   addObject(own, foo)
   checkEquals(getObject(own, "foo"), "boo")
@@ -199,7 +199,7 @@ unitTestGetObject <-
 unitTestAddFile <-
   function()
 {
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
 
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
@@ -278,7 +278,7 @@ unitTestConstructorArchivePath <-
 unitTestAddFile <-
     function()
 {
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
 
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
@@ -290,7 +290,7 @@ unitTestAddFile <-
 
   ## make sure the cache re-initializes but running the exact same
   ## test again
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
   file <- tempfile()
@@ -307,7 +307,7 @@ unitTestAddFile <-
 unitTestMoveFile <-
     function()
 {
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
 
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
@@ -334,7 +334,7 @@ unitTestMoveFile <-
 uniTestDeleteFile <-
     function()
 {
-  own <- new("SynapseLocationOwnerWithObjects")
+  own <- new("Locationable")
 
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
@@ -351,7 +351,7 @@ uniTestDeleteFile <-
 unitTestAttach <-
   function()
 {
-  ee <- new("SynapseLocationOwnerWithObjects")
+  ee <- new("Locationable")
 
   ee@archOwn@objects$aNum <- 1L
   attach(ee)
@@ -364,7 +364,7 @@ unitTestAttach <-
 unitTestDetach <-
   function()
 {
-  ee <- new("SynapseLocationOwnerWithObjects")
+  ee <- new("Locationable")
 
   ee@archOwn@objects$aNum <- 1L
   attach(ee)

@@ -469,43 +469,6 @@ setMethod(
 )
 
 #####
-## constructor that takes a list entity
-#####
-setMethod(
-		f = "Entity",
-		signature = signature("list"),
-		definition = function(entity){
-			ee <- new("Entity")
-			ee@properties <- entity
-      ee
-		}
-)
-
-#####
-## constructor that takes a list entity
-#####
-setMethod(
-  f = "Entity",
-  signature = signature("missing"),
-  definition = function(entity){
-    Entity(emptyNamedList)
-  }
-)
-
-#####
-## constructor that takes a serialized JSON object
-#####
-setMethod(
-		f = "Entity",
-		signature = signature("character"),
-		definition = function(entity){
-      ee<-fromJSON(entity)
-      ee@properties <- entity
-      ee
-		}
-)
-
-#####
 ## convert the S4 entity to a list entity
 #####
 setMethod(
