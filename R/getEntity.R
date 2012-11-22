@@ -35,6 +35,9 @@ setMethod(
     ee@annotations <- getAnnotations(ee)
 	
 	## get the 'generatedBy' activity, if any
+  ## !!!! Note, it's crucial to retrieve the 'generatedBy' info when !!!!
+  ## !!!! retrieving the entity, otherwise on the subsequent call to  !!!!
+  ## !!!! storeEntity the link will be lost !!!!
 	ee@generatedBy <- getGeneratedBy(ee)
 
     ## cache the entity to disk
@@ -46,31 +49,33 @@ setMethod(
 
 # returns the Activity linked to the entity by the 'generatedBy' relationship,
 # or NULL if there is no such Activity
-getGeneratedBy<-function(entity) {
-	if (is.null(propertyValue(entity, "versionNumber"))) {
-		uri<-paste("/entity/", 
-				propertyValue(entity, "id"), 
-				"/generatedBy", 
-				sep="")
-	} else {
-		uri<-paste("/entity/", 
-				propertyValue(entity, "id"), 
-				"/version/", 
-				propertyValue(entity, "versionNumber"), 
-				"/generatedBy", 
-				sep="")
-	}
-	activityList <- try(synapseGet(uri), silent=T)
-	if (class(activityList)=='try-error') {
-		if (length(grep("404", activityList, fixed=T))>0) {
-			# it's a 404 Not Found status
-			return(NULL)
-		} else {
-			stop(activityList)
-		}
-	}
-	Activity(activityList)
-}
+setMethod(
+    f = "getGeneratedBy",
+    signature = signature("SynapseEntity"),
+    definition = function(entity) {
+    	if (is.null(propertyValue(entity, "versionNumber"))) {
+    		uri<-paste("/entity/", 
+    				propertyValue(entity, "id"), 
+    				"/generatedBy", 
+    				sep="")
+    	} else {
+    		uri<-paste("/entity/", 
+    				propertyValue(entity, "id"), 
+    				"/version/", 
+    				propertyValue(entity, "versionNumber"), 
+    				"/generatedBy", 
+    				sep="")
+    	}
+      curlHandle<-getCurlHandle()
+    	activityList <- synapseGet(uri, curlHandle=curlHandle)
+      info <- getCurlInfo(curlHandle)
+      if(info$response.code == 404) {
+        return(NULL) # not found
+      }
+      
+    	Activity(activityList)
+    }
+)
 
 setMethod(
   f = "getEntity",

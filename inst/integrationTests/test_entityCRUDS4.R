@@ -187,6 +187,7 @@ integrationTestUpdateS4Entity <-
   
 }
 
+
 integrationTestUpdateS4EntityWithGeneratedBy <-
 		function()
 {
@@ -205,7 +206,12 @@ integrationTestUpdateS4EntityWithGeneratedBy <-
 	synapseClient:::.setCache("testActivity", testActivity)
 	checkEquals(propertyValue(testActivity, "id"), propertyValue(generatedBy(updatedProject), "id"))
 	checkTrue(propertyValue(updatedProject, "etag") != propertyValue(createdProject, "etag"))
-	
+
+  #  get the entity by ID and verify that the generatedBy is not null
+  gotProject <- getEntity(propetyValue(createdProject, "id"))
+  checkTrue(!is.null(gotProject))
+  checkTrue(!is.null(generatedBy(gotProject)))
+  
 	## remove generatedBy and update
 	createdProject<-updatedProject
 	generatedBy(createdProject) <- NULL
@@ -224,7 +230,12 @@ integrationTestUpdateS4EntityWithGeneratedBy <-
 	# since storing the entity also stores the activity, we need to update the cached value
 	synapseClient:::.setCache("testActivity", testActivity)
 	
-	## remove generatedBy and update
+  #  get the entity by ID and verify that the generatedBy is not null
+  gotProject <- getEntity(propetyValue(createdProject, "id"))
+  checkTrue(!is.null(gotProject))
+  checkTrue(!is.null(generatedBy(gotProject)))
+  
+  ## remove generatedBy and update
 	generatedBy(createdProject)<-NULL
 	updatedProject <- updateEntity(createdProject)
 	checkTrue(is.null(generatedBy(updatedProject)))

@@ -842,6 +842,13 @@ setGeneric(
 )
 
 setGeneric(
+  name = "getGeneratedBy",
+  def = function(entity){
+    standardGeneric("getGeneratedBy")
+  }
+)
+
+setGeneric(
   name = ".extractEntityFromSlots",
   def = function(object){
     standardGeneric(".extractEntityFromSlots")

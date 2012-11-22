@@ -10,37 +10,37 @@
 ## constructor that takes a list argument
 #####
 setMethod(
-		f = "Activity",
-		signature = signature("list"),
-		definition = function(activity){
-			ee <- new("Activity")
-			ee@properties <- activity
-			ee
-		}
+  f = "Activity",
+  signature = signature("list"),
+  definition = function(activity){
+    ee <- new("Activity")
+    ee@properties <- activity
+    ee
+  }
 )
 
 #####
 ## constructor that takes no arguments
 #####
 setMethod(
-		f = "Activity",
-		signature = signature("missing"),
-		definition = function(activity){
-			Activity(emptyNamedList)
-		}
+  f = "Activity",
+  signature = signature("missing"),
+  definition = function(activity){
+    Activity(emptyNamedList)
+  }
 )
 
 #####
 ## constructor that takes a serialized JSON object
 #####
 setMethod(
-		f = "Activity",
-		signature = signature("character"),
-		definition = function(activity){
-			ee<-fromJSON(activity)
-			ee@properties <- activity
-			ee
-		}
+  f = "Activity",
+  signature = signature("character"),
+  definition = function(activity){
+    ee<-fromJSON(activity)
+    ee@properties <- activity
+    ee
+  }
 )
 
 #####
@@ -52,108 +52,102 @@ setMethod(
   definition = function(activity){
     cat('An object of class "', class(activity), '"\n', sep="")
     
-	if (!is.null(properties(object)$name))
-		cat("Activity Name : ", properties(object)$name, "\n", sep="")
-	if (!is.null(properties(object)$id))
-		cat("Activity Id : ", properties(object)$id, "\n", sep="")
-	if (!is.null(properties(object)$description))
-		cat("Activity Description  : ", properties(object)$id, "\n", sep="")
-	# TODO add 'used'
-}
+    if (!is.null(properties(object)$name))
+      cat("Activity Name : ", properties(object)$name, "\n", sep="")
+    if (!is.null(properties(object)$id))
+      cat("Activity Id : ", properties(object)$id, "\n", sep="")
+    if (!is.null(properties(object)$description))
+      cat("Activity Description  : ", properties(object)$id, "\n", sep="")
+  }
 )
 
-# URI is: 
-.generateActivityUri<-function(id) {
-	paste("/activity", id, sep="/")
-}
+setMethod(
+  f = "deleteEntity",
+  signature = "Activity",
+  definition = function(entity){
+    activity<-entity
+    envir <- parent.frame(2)
+    inherits <- FALSE
+    name <- deparse(substitute(activity, env=parent.frame()))
+    
+    ## delete the activity in synapse
+    if(!is.null(activity$properties$id))
+      synapseDelete(.generateActivityUri(activity$properties$id))
+    
+    ## remove the activity from the parent environment
+    if(any(grepl(name,ls(envir=envir))))
+      remove(list = name, envir=envir, inherits=inherits)
+    
+    ## strip out the system controlled properties and invisibly
+    ## return the activity
+    activity <- deleteProperty(activity, "id")
+    activity <- deleteProperty(activity, "etag")
+    invisible(activity)
+  }
+)
 
 setMethod(
-    f = "deleteEntity",
-    signature = "Activity",
-    definition = function(entity){
-	  activity<-entity
-      envir <- parent.frame(2)
-      inherits <- FALSE
-      name <- deparse(substitute(activity, env=parent.frame()))
+  f = "getEntity",
+  signature = signature("Activity"),
+  definition = function(entity){
+    activity<-entity
+    ee<-Activity(synapseGet(.generateActivityUri(activity$properties$id)))
+    ee
+  }
+)
 
-      ## delete the activity in synapse
-      if(!is.null(activity$properties$id))
-        synapseDelete(.generateActivityUri(activity$properties$id))
+setMethod(
+  f = "getActivity",
+  signature = signature("character"),
+  definition = function(activity){
+    ee<-Activity(synapseGet(.generateActivityUri(activity)))
+    ee
+  }
+)
 
-      ## remove the activity from the parent environment
-      if(any(grepl(name,ls(envir=envir))))
-        remove(list = name, envir=envir, inherits=inherits)
 
-      ## strip out the system controlled properties and invisibly
-      ## return the activity
-      activity <- deleteProperty(activity, "id")
-	  activity <- deleteProperty(activity, "etag")
-      invisible(activity)
+setMethod(
+  f = "createEntity",
+  signature = "Activity",
+  definition = function(entity)
+  {
+    activity<-entity
+    activity <- as.list.SimplePropertyOwner(activity)
+    activity <- Activity(synapsePost("/activity", activity))
+    activity
+  }
+)
+
+setMethod(
+  f = "updateEntity",
+  signature = "Activity",
+  definition = function(entity)
+  {
+    activity<-entity
+    if(is.null(activity$properties$id)) {
+      stop("Cannot update an Activity which has no ID.")
+    } else {
+      uri <- .generateActivityUri(activity$properties$id)
+      activity <- as.list.SimplePropertyOwner(activity)
+      activity <- Activity(synapsePut(uri, activity))
     }
+    activity
+  }
 )
 
 setMethod(
-		f = "getEntity",
-		signature = signature("Activity"),
-		definition = function(entity){
-			activity<-entity
-			ee<-Activity(synapseGet(.generateActivityUri(activity$properties$id)))
-			ee
-		}
-)
-
-setMethod(
-		f = "getActivity",
-		signature = signature("character"),
-		definition = function(activity){
-			ee<-Activity(synapseGet(.generateActivityUri(activity)))
-			ee
-		}
-)
-
-
-setMethod(
-		f = "createEntity",
-		signature = "Activity",
-		definition = function(entity)
-		{
-			activity<-entity
-			activity <- as.list.SimplePropertyOwner(activity)
-			activity <- Activity(synapsePost("/activity", activity))
-			activity
-		}
-)
-
-setMethod(
-		f = "updateEntity",
-		signature = "Activity",
-		definition = function(entity)
-		{
-			activity<-entity
-			if(is.null(activity$properties$id)) {
-				stop("Cannot update an Activity which has no ID.")
-			} else {
-				uri <- .generateActivityUri(activity$properties$id)
-				activity <- as.list.SimplePropertyOwner(activity)
-				activity <- Activity(synapsePut(uri, activity))
-			}
-			activity
-		}
-)
-
-setMethod(
-		f = "storeEntity",
-		signature = "Activity",
-		definition = function(entity)
-		{
-			activity<-entity
-			if(is.null(activity$properties$id)) {
-				activity <- createEntity(activity)
-			} else {
-				activity <- updateEntity(activity)
-			}
-			activity
-		}
+  f = "storeEntity",
+  signature = "Activity",
+  definition = function(entity)
+  {
+    activity<-entity
+    if(is.null(activity$properties$id)) {
+      activity <- createEntity(activity)
+    } else {
+      activity <- updateEntity(activity)
+    }
+    activity
+  }
 )
 
 
@@ -165,7 +159,7 @@ setMethod(
   f = ".extractEntityFromSlots",
   signature = "Activity",
   definition = function(object){
-	properties(object)
+    properties(object)
   }
 )
 
