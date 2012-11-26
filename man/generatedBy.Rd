@@ -1,7 +1,7 @@
 \name{generatedBy}
 \alias{generatedBy}
 \title{
-Retrieve the Activity which generated an Entity
+\code{generatedBy}
 }
 \description{
 Function for retrieving the Activity which generated an Entity
@@ -11,20 +11,17 @@ generatedBy(entity)
 }
 \arguments{
   \item{entity}{
-The entity of interest
+the entity of interest
 }
 }
 \details{
-Returns information already in memory.  (No server interaction takes place.)
+This method returns information already in the session.  There is no server interaction.
 }
 \value{
-The Activity which generated the Entity, or NULL if there is no activity.
+The Activity which generated the given Entity, or NULL if there is no activity.
 }
 
 \author{
 Bruce Hoff
-}
-
-\seealso{
 }
 

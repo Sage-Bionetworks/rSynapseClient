@@ -208,7 +208,7 @@ integrationTestUpdateS4EntityWithGeneratedBy <-
 	checkTrue(propertyValue(updatedProject, "etag") != propertyValue(createdProject, "etag"))
 
   #  get the entity by ID and verify that the generatedBy is not null
-  gotProject <- getEntity(propetyValue(createdProject, "id"))
+  gotProject <- getEntity(propertyValue(createdProject, "id"))
   checkTrue(!is.null(gotProject))
   checkTrue(!is.null(generatedBy(gotProject)))
   
@@ -231,7 +231,7 @@ integrationTestUpdateS4EntityWithGeneratedBy <-
 	synapseClient:::.setCache("testActivity", testActivity)
 	
   #  get the entity by ID and verify that the generatedBy is not null
-  gotProject <- getEntity(propetyValue(createdProject, "id"))
+  gotProject <- getEntity(propertyValue(createdProject, "id"))
   checkTrue(!is.null(gotProject))
   checkTrue(!is.null(generatedBy(gotProject)))
   

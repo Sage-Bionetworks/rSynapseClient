@@ -1,21 +1,23 @@
 \name{used<--methods}
-\docType{methods}
-\alias{used<--methods}
-\alias{used<-,SynapseEntity,list}
-\title{ ~~ Methods for Function \code{used<-}  ~~}
+\alias{used<-}
+\title{
+	\code{used<-}
+}
 \description{
- ~~ Methods for function \code{used<-}  ~~
+	Function for setting the entities used to generate an entity.
 }
 \usage{
 used(entity)<-list(entity1, entity2, entity3)
 used(entity)<-list(list(entity=codeEntity, wasExecuted=T), list(entity=dataEntity, wasExecuted=F))
 }
-\section{Methods}{
-\describe{
-
-\item{\code{signature(object = "SynapseEntity", list = "list")}}{
+\details{
 Sets the list of entities involved in generating the given entity, optionally specifying 
-whether each entity was executed to generate the given entity. (Default is False.)
-
+whether each entity was executed to generate the given entity. (Default is False.)    No server interaction takes place. (That is done when \code{storeEntity} is called.)
 }
-}}
+
+
+\author{
+Bruce Hoff
+}
+
+

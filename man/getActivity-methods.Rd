@@ -1,17 +1,26 @@
 \name{getActivity-methods}
-\docType{methods}
-\alias{getActivity-methods}
-\alias{getActivity,character-method}
-\title{ ~~ Methods for Function \code{getActivity}  ~~}
+\alias{getActivity}
+\title{
+\code{getActivity}
+}
 \description{
- ~~ Methods for function \code{getActivity}  ~~
+	Function for retrieving the Activity based on its ID
 }
-\section{Methods}{
-\describe{
-
-\item{\code{signature(entity = "character")}}{
-Get the specified Activity
+\usage{
+	getActivity(id)
+}
+\arguments{
+  \item{id}{
+	the ID of the Activity
+}
+}
+\details{
+	Retrieves an Activity from Synapse based on its ID.
+}
+\value{
+	an Activity object
 }
 
-}}
-\keyword{methods}
+\author{
+Bruce Hoff
+}

@@ -67,7 +67,7 @@ setMethod(
     				sep="")
     	}
       curlHandle<-getCurlHandle()
-    	activityList <- synapseGet(uri, curlHandle=curlHandle)
+    	activityList <- synapseGet(uri, curlHandle=curlHandle, checkHttpStatus=F)
       info <- getCurlInfo(curlHandle)
       if(info$response.code == 404) {
         return(NULL) # not found

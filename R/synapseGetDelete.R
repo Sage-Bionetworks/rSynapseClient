@@ -5,7 +5,7 @@
 
 .synapseGetDelete <- 
   function(uri, requestMethod, host = .getRepoEndpointLocation(), curlHandle=getCurlHandle(), 
-    anonymous = .getCache("anonymous"), path = .getRepoEndpointPrefix(), opts = .getCache("curlOpts"), entity=NULL, checkHttpStatus=F)
+    anonymous = .getCache("anonymous"), path = .getRepoEndpointPrefix(), opts = .getCache("curlOpts"), entity=NULL, checkHttpStatus=T)
 {
 
   if(is.null(uri))

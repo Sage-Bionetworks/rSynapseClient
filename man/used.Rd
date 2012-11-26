@@ -1,7 +1,7 @@
 \name{used}
 \alias{used}
 \title{
-Gets the entities used to generate an entity
+	\code{used}
 }
 \description{
 Function for getting the entities used to generate an entity
@@ -25,6 +25,4 @@ A list of entities involved in generating the given entity, and whether each ent
 Bruce Hoff
 }
 
-\seealso{
-}
 

@@ -1,7 +1,7 @@
 \name{Activity}
 \alias{Activity}
 \title{
-Actiity Constructor
+Activity Constructor
 }
 \description{
 Constructor for Activity
@@ -17,7 +17,7 @@ valid properties is controlled by Synapse and currently no client-side verificat
 }
 
 \value{
-The entity
+The created Activity is returned.
 }
 \author{
 Bruce Hoff
