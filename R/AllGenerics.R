@@ -66,14 +66,6 @@ setGeneric(
 )
 
 setGeneric(
-  name = "storeAttachment",
-  def = function(object, which){
-    standardGeneric("storeAttachment")
-  }
-)
-
-
-setGeneric(
   name = "getFileCacheName",
   def = function(object){
     standardGeneric("getFileCacheName")
@@ -95,10 +87,10 @@ setGeneric(
 )
 
 setGeneric(
- name = "moveFileCache",
- def = function(from, to, factory){
-   standardGeneric("moveFileCache")
- }
+  name = "moveFileCache",
+  def = function(from, to, factory){
+    standardGeneric("moveFileCache")
+  }
 )
 
 setGeneric(
@@ -239,17 +231,17 @@ setGeneric(
 
 setGeneric(
   name = "updateEntity",
-    def = function(entity){
-      standardGeneric("updateEntity")
-    }
+  def = function(entity){
+    standardGeneric("updateEntity")
+  }
 )
 
 
 setGeneric(
-    name = "deleteEntity",
-    def = function(entity){
-      standardGeneric("deleteEntity")
-    }
+  name = "deleteEntity",
+  def = function(entity){
+    standardGeneric("deleteEntity")
+  }
 )
 
 setGeneric(
@@ -397,17 +389,17 @@ setGeneric(
 )
 
 setGeneric(
-    name = "getAnnotations",
-   def = function(entity){
-     standardGeneric("getAnnotations")
-   }
+  name = "getAnnotations",
+  def = function(entity){
+    standardGeneric("getAnnotations")
+  }
 )
 
 setGeneric(
-    name = "loadObjectsFromFiles",
-    def = function(owner){
-      standardGeneric("loadObjectsFromFiles")
-    }
+  name = "loadObjectsFromFiles",
+  def = function(owner){
+    standardGeneric("loadObjectsFromFiles")
+  }
 )
 
 setGeneric(
@@ -508,20 +500,6 @@ setGeneric(
   }
 )
 
-
-setGeneric(
-  name = ".extractEntityFromSlots",
-  def = function(object){
-    standardGeneric(".extractEntityFromSlots")
-  }
-)
-
-setGeneric(
-  name = ".populateSlotsFromEntity",
-  def = function(object, entity, json){
-    standardGeneric(".populateSlotsFromEntity")
-  }
-)
 
 setGeneric(
   name = "deleteProperty",
@@ -813,3 +791,114 @@ setGeneric(
     standardGeneric("refreshAnnotations")
   }
 )
+
+setGeneric(
+  name = "Activity",
+  def = function(activity){
+    standardGeneric("Activity")
+  }
+)
+
+setGeneric(
+  name = "storeActivity",
+  def = function(activity) {
+    standardGeneric("storeActivity")
+  }
+)
+
+setGeneric(
+  name = "showEntity",
+  def = function(activity) {
+    standardGeneric("showEntity")
+  }
+)
+
+setGeneric(
+  name = "getActivity",
+  def = function(activity) {
+    standardGeneric("getActivity")
+  }
+)
+
+setGeneric(
+  name = "deleteActivity",
+  def = function(activity) {
+    standardGeneric("deleteActivity")
+  }
+)
+
+setGeneric(
+  name = "generatedBy",
+  def = function(entity){
+    standardGeneric("generatedBy")
+  }
+)
+
+setGeneric(
+  name = "generatedBy<-",
+  def = function(entity, value){
+    standardGeneric("generatedBy<-")
+  }
+)
+
+setGeneric(
+  name = "getGeneratedBy",
+  def = function(entity){
+    standardGeneric("getGeneratedBy")
+  }
+)
+
+setGeneric(
+  name = ".extractEntityFromSlots",
+  def = function(object){
+    standardGeneric(".extractEntityFromSlots")
+  }
+)
+
+setGeneric(
+  name = ".populateSlotsFromEntity",
+  def = function(object, entity, json){
+    standardGeneric(".populateSlotsFromEntity")
+  }
+)
+
+setGeneric(
+  name = ".populateSlotsFromActivity",
+  def = function(object, activity){
+    standardGeneric(".populateSlotsFromActivity")
+  }
+)
+
+setGeneric(
+  name = "used",
+  def = function(entity) {
+    standardGeneric("used")	
+  }
+)
+
+setGeneric(
+  name = "used<-",
+  def = function(entity, value) {
+    standardGeneric("used<-")
+  }
+)
+
+# returns a reference list of the form (targetId="syn1234") or
+# (targetId="syn1234", targetVersionNumber="1") referring
+# to the given entity.  The argument can be a SynapseEntity or a 
+# synapse ID
+setGeneric(
+  name = "getReference",
+  def = function(entity) {
+    standardGeneric("getReference")
+  }
+)
+
+setGeneric(
+  name="usedListEntry",
+  def = function(listEntry) {
+    standardGeneric("usedListEntry")
+  }
+)
+
+

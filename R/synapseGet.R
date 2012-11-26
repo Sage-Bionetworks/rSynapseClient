@@ -5,7 +5,7 @@
 
 synapseGet <- 
   function(uri, host = .getRepoEndpointLocation(), curlHandle=getCurlHandle(), anonymous = .getCache("anonymous"), 
-    path = .getRepoEndpointPrefix(), opts = .getCache("curlOpts"), entity = NULL)
+    path = .getRepoEndpointPrefix(), opts = .getCache("curlOpts"), entity = NULL, checkHttpStatus=T)
 {
   ## constants
   kMethod <- "GET"
@@ -18,7 +18,8 @@ synapseGet <-
     anonymous = anonymous, 
     path = path, 
     opts = opts,
-    entity = entity
+    entity = entity,
+    checkHttpStatus
   )
 }
 
