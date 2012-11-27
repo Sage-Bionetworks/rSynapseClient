@@ -788,5 +788,5 @@ unitTestNoZip <-
   ## archive built on a system without zip, the archive should automatically
   ## be "repaired" and an informative warning message should be printed.
 
-  warning("not yet implemented: Bruce?")
+  warning("not yet implemented")
 }

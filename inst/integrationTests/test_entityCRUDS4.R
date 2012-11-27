@@ -3,14 +3,31 @@
 ### Author: Matthew D. Furia <matt.furia@sagebase.org>
 ################################################################################ 
 
+.setUp <-
+		function()
+{
+	activity<-Activity(list(name="test activity"))
+	activity<-createEntity(activity)
+	synapseClient:::.setCache("testActivity", activity)
+}
+
+
 
 .tearDown <- 
   function()
 {
-  if(!is.null(synapseClient:::.getCache("testProject"))) {
-    deleteEntity(synapseClient:::.getCache("testProject"))	
-    synapseClient:::.deleteCache("testProject")
-  }
+	if(!is.null(synapseClient:::.getCache("testActivity"))) {
+		deleteEntity(synapseClient:::.getCache("testActivity"))	
+		synapseClient:::.deleteCache("testActivity")
+	}
+	if(!is.null(synapseClient:::.getCache("testProject"))) {
+		deleteEntity(synapseClient:::.getCache("testProject"))	
+		synapseClient:::.deleteCache("testProject")
+	}
+	if(!is.null(synapseClient:::.getCache("testProject2"))) {
+		deleteEntity(synapseClient:::.getCache("testProject2"))	
+		synapseClient:::.deleteCache("testProject2")
+	}
 }
 
 integrationTestCreateS4Entities <- 
@@ -41,25 +58,50 @@ integrationTestCreateS4Entities <-
 }
 
 integrationTestCreateEntityWithAnnotations <- 
-  function()
+		function()
 {
-  ## Create Project
-  project <- Project()
-  annotValue(project, "annotationKey") <- "projectAnnotationValue"
-  createdProject <- createEntity(project)
-  synapseClient:::.setCache("testProject", createdProject)
-  checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
-  
-  ## Create Study
-  study <- Study()
-  propertyValue(study, "name") <- "testStudyName"
-  propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
-  annotValue(study, "annotKey") <- "annotValue"
-  createdStudy <- createEntity(study)
-  checkEquals(propertyValue(createdStudy,"name"), propertyValue(study, "name"))
-  checkEquals(propertyValue(createdStudy,"parentId"), propertyValue(createdProject, "id"))
-  checkEquals(annotValue(createdStudy,"annotKey"), annotValue(study, "annotKey"))
-  
+	## Create Project
+	project <- Project()
+	annotValue(project, "annotationKey") <- "projectAnnotationValue"
+	createdProject <- createEntity(project)
+	synapseClient:::.setCache("testProject", createdProject)
+	checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
+	
+	## Create Study
+	study <- Study()
+	propertyValue(study, "name") <- "testStudyName"
+	propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
+	annotValue(study, "annotKey") <- "annotValue"
+	createdStudy <- createEntity(study)
+	checkEquals(propertyValue(createdStudy,"name"), propertyValue(study, "name"))
+	checkEquals(propertyValue(createdStudy,"parentId"), propertyValue(createdProject, "id"))
+	checkEquals(annotValue(createdStudy,"annotKey"), annotValue(study, "annotKey"))
+	checkEquals(NULL, generatedBy(createdStudy))
+	
+}
+
+integrationTestCreateEntityWithGeneratedBy <- 
+		function()
+{
+	## Create Project
+	project <- Project()
+	annotValue(project, "annotationKey") <- "projectAnnotationValue"
+	createdProject <- createEntity(project)
+	synapseClient:::.setCache("testProject", createdProject)
+	checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
+	
+	## Create Study
+	study <- Study()
+	propertyValue(study, "name") <- "testStudyName"
+	propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
+	testActivity <-synapseClient:::.getCache("testActivity")
+	checkTrue(!is.null(testActivity))
+	generatedBy(study)<-testActivity
+	createdStudy <- createEntity(study)
+	checkEquals(propertyValue(createdStudy,"name"), propertyValue(study, "name"))
+	checkEquals(propertyValue(createdStudy,"parentId"), propertyValue(createdProject, "id"))
+	checkTrue(!is.null(generatedBy(createdStudy)))
+	checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(createdStudy), "id"))
 }
 
 integrationTestCreateEntityWithNAAnnotations <- 
@@ -170,6 +212,111 @@ integrationTestDeleteEntityById <-
   checkException(getEntity(createdStudy))
   checkException(getEntity(createdProject))
   synapseClient:::.deleteCache("testProject")
+
+integrationTestUpdateS4EntityWithGeneratedBy <-
+		function()
+{
+	## Create Project
+	project <- Project()
+	createdProject <- createEntity(project)
+	synapseClient:::.setCache("testProject", createdProject)
+	
+	## set generatedBy and update. 
+	testActivity <-synapseClient:::.getCache("testActivity")
+	checkTrue(!is.null(testActivity))
+	generatedBy(createdProject) <- testActivity
+	updatedProject <- updateEntity(createdProject)
+	testActivity <- generatedBy(updatedProject)
+	# since storing the entity also stores the activity, we need to update the cached value
+	synapseClient:::.setCache("testActivity", testActivity)
+	checkEquals(propertyValue(testActivity, "id"), propertyValue(generatedBy(updatedProject), "id"))
+	checkTrue(propertyValue(updatedProject, "etag") != propertyValue(createdProject, "etag"))
+
+  #  get the entity by ID and verify that the generatedBy is not null
+  gotProject <- getEntity(propertyValue(createdProject, "id"))
+  checkTrue(!is.null(gotProject))
+  checkTrue(!is.null(generatedBy(gotProject)))
+  
+	## remove generatedBy and update
+	createdProject<-updatedProject
+	generatedBy(createdProject) <- NULL
+	updatedProject <- updateEntity(createdProject)
+	checkTrue(is.null(generatedBy(updatedProject)))
+	
+	## now *create* an Entity having a generatedBy initially
+	deleteEntity(synapseClient:::.getCache("testProject"))	
+	synapseClient:::.deleteCache("testProject")
+	project <- Project()
+	generatedBy(project) <- testActivity
+	createdProject <- createEntity(project)
+	checkTrue(!is.null(generatedBy(createdProject)))
+	synapseClient:::.setCache("testProject", createdProject)
+	testActivity <- generatedBy(createdProject)
+	# since storing the entity also stores the activity, we need to update the cached value
+	synapseClient:::.setCache("testActivity", testActivity)
+	
+  #  get the entity by ID and verify that the generatedBy is not null
+  gotProject <- getEntity(propertyValue(createdProject, "id"))
+  checkTrue(!is.null(gotProject))
+  checkTrue(!is.null(generatedBy(gotProject)))
+  
+  ## remove generatedBy and update
+	generatedBy(createdProject)<-NULL
+	updatedProject <- updateEntity(createdProject)
+	checkTrue(is.null(generatedBy(updatedProject)))
+	
+}
+# a variation of the previous test, using the 'used' convenience function
+integrationTestUpdateS4EntityWithUsed <-
+		function()
+{
+	## Create Project
+	project <- Project()
+	createdProject <- createEntity(project)
+	synapseClient:::.setCache("testProject", createdProject)
+	
+	project2 <- Project()
+	createdProject2 <- createEntity(project2)
+	synapseClient:::.setCache("testProject2", createdProject2)
+	
+	checkTrue(is.null(used(createdProject)))
+	## 2nd project was 'used' to generate 1st project
+	used(createdProject)<-list(createdProject2)
+	updatedProject <- updateEntity(createdProject)
+	checkTrue(propertyValue(updatedProject, "etag") != propertyValue(createdProject, "etag"))
+	usedList<-used(updatedProject)
+	checkTrue(!is.null(usedList))
+	checkEquals(1, length(usedList))
+	targetId<-usedList[[1]]$reference["targetId"]
+	names(targetId)<-NULL # needed to make the following check work
+	checkEquals(propertyValue(createdProject2, "id"), targetId)
+	
+	## remove "used" list and update
+	createdProject<-updatedProject
+	used(createdProject) <- NULL
+	updatedProject <- updateEntity(createdProject)
+	checkTrue(is.null(used(updatedProject)))
+	
+	## now *create* an Entity having a "used" list initially
+	deleteEntity(synapseClient:::.getCache("testProject"))	
+	synapseClient:::.deleteCache("testProject")
+	project <- Project()
+	used(project)<-list(list(entity=createdProject2, wasExecuted=F))
+	
+	createdProject <- createEntity(project)
+	synapseClient:::.setCache("testProject", createdProject)
+	usedList2 <- used(createdProject)
+	checkTrue(!is.null(usedList2))
+	checkEquals(1, length(usedList2))
+	targetId<-usedList2[[1]]$reference["targetId"]
+	names(targetId)<-NULL # needed to make the following check work
+	checkEquals(propertyValue(createdProject2, "id"), targetId)
+	checkEquals(F, usedList2[[1]]$wasExecuted)
+	
+	## remove "used" list and update
+	used(createdProject)<-NULL
+	updatedProject <- updateEntity(createdProject)
+	checkTrue(is.null(used(updatedProject)))
 }
 
 integrationTestDeleteEntity <- 

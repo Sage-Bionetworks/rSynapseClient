@@ -65,7 +65,12 @@ exportMethods(
   detach,
   setPackageName,
   getPackageName,
-  objects
+  objects,
+	getActivity,
+	generatedBy,
+	"generatedBy<-",
+	"used",
+	"used<-"
   )
 
 ## methods for managing layer files

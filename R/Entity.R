@@ -92,7 +92,7 @@ setMethod(
       stop(sprintf("file %s does not exists."), file)
     if(file.info(file)$isdir)
       stop("file must be a regular file.")
-
+    
     addFile(object@attachOwn, file)
     invisible(object)
   }
@@ -114,10 +114,10 @@ setMethod(
   definition = function(object, file){
     if(any(!(file %in% object$attachments)))
       stop("could not find one or more of the specified attachments")
-
+    
     for(f in file)
       deleteFile(object@attachOwn, f)
-
+    
     invisible(object)
   }
 )
@@ -150,12 +150,12 @@ setMethod(
     cat("Synapse Entity Id   : ", properties(object)$id, "\n", sep="")
     
     if (!is.null(properties(object)$parentId))
-      cat("Parent Id           : ", properties(object)$parentId, "\n", sep="")
+      cat("Parent Id     : ", properties(object)$parentId, "\n", sep="")
     if (!is.null(properties(object)$type))
-      cat("Type                : ", properties(object)$type, "\n", sep="")
+      cat("Type    : ", properties(object)$type, "\n", sep="")
     if (!is.null(properties(object)$versionNumber)) {
-      cat("Version Number      : ", properties(object)$versionNumber, "\n", sep="")
-      cat("Version ID       : ", properties(object)$versionId, "\n", sep="")
+      cat("Version Number  : ", properties(object)$versionNumber, "\n", sep="")
+      cat("Version ID   : ", properties(object)$versionId, "\n", sep="")
     }
     
     cat("\nFor complete list of annotations, please use the annotations() function.\n")
@@ -168,28 +168,37 @@ setMethod(
   signature = "Entity",
   definition = function(entity){
     oldAnnots <- entity@annotations
+    
+    createUri = "/entity"
+    generatingActivity <- generatedBy(entity)
+    if (!is.null(generatingActivity)) {
+      generatingActivity <-storeEntity(generatingActivity)
+      createUri <- sprintf("%s?generatedBy=%s", createUri, propertyValue(generatingActivity, "id"))
+    }
+    
     entity <- as.list.SimplePropertyOwner(entity)
-    entity <- getEntityInstance(synapsePost("/entity", entity))
+    entity <- getEntityInstance(synapsePost(createUri, entity))
     # create the entity in Synapse and get back the id
     annots <- getAnnotations(entity$properties$id)
-
+    
     # merge annotations from input variable into 'annots'
     for (n in annotationNames(oldAnnots)) {
       annotValue(annots, n) <- annotValue(oldAnnots, n)
     }
-
+    
     if(length(annotationNames(annots)) > 0L){
       annots <- updateEntity(annots)
       propertyValue(annots, "id") <- entity$properties$id
     }
     entity$properties$etag <- propertyValue(annots, "etag")
-
+    
     ## store the annotations
     entity@annotations <- annots
-
+    entity@generatedBy <- generatingActivity
+    
     ## store the updated entity to the file cache
     cacheEntity(entity)
-
+    
     entity
   }
 )
@@ -231,7 +240,7 @@ setMethod(
     id <- propertyValue(entity, "id")
     if(is.null(id))
       stop("entity id cannot be null")
-
+    
     getEntity(as.character(id))
   }
 )
@@ -259,20 +268,40 @@ setMethod(
   {
     if(is.null(entity$properties$id))
       stop("entity ID was null so could not update. use createEntity instead.")
-
+    
     annots <- entity@annotations
-    ee <- getEntityInstance(synapsePut(entity$properties$uri, as.list.SimplePropertyOwner(entity)))
-
+    updateUri<-entity$properties$uri
+    
+    generatingActivity <- generatedBy(entity)
+    if (!is.null(generatingActivity)) {
+      generatingActivity <-storeEntity(generatingActivity)
+      updateUri <- sprintf("%s?generatedBy=%s", updateUri, propertyValue(generatingActivity, "id"))
+    }
+    
+    ee <- getEntityInstance(synapsePut(updateUri, as.list.SimplePropertyOwner(entity)))
+    
     propertyValue(annots, "etag") <- ee$properties$etag
     propertyValue(annots, "id") <- ee$properties$id
     propertyValue(annots, "uri") <- ee$properties$annotations
     annots <- updateEntity(annots)
     propertyValue(annots, "id") <- ee$properties$id
-
+    
     ee$properties$etag <- propertyValue(annots, "etag")
     ee@annotations <- annots
+    
+    # now take care of the 'generatedBy' field
+    if (is.null(generatingActivity)) {
+      # need to ensure the 'generatedBy' field is also cleared on the server side
+      # it's unfortunate to have to make another method call to update 'generatedBy' but
+      # eventually 'generatedBy' may be part of the entity schema, obviating the need for the extra method call
+      synapseDelete(sprintf("/entity/%s/generatedBy", entity$properties$id))
+      updatedEtagEntity<-synapseGet(entity$properties$uri)
+      propertyValue(ee, "etag")<-updatedEtagEntity$etag
+    }
+    generatedBy(ee)<-generatingActivity
+    
     cacheEntity(ee)
-
+    
     ee
   }
 )
@@ -343,7 +372,7 @@ setMethod(
 #####
 as.list.Entity <- 
   function(x, ...){
-  as.list(annotations(x))         
+  as.list(annotations(x))   
 }
 
 #####
@@ -414,6 +443,9 @@ setMethod(
       annotations(object) <- aa
       object
     }
+    annotations(object) <- aa
+    object
+  }
 )
 
 #####
@@ -435,9 +467,9 @@ setMethod(
   f = "annotations<-",
   signature = signature("Entity", "list"),
   definition = function(object, value){
-
-	a <- new("SynapseAnnotations")
-	annotations(a)<-value
+    
+    a <- new("SynapseAnnotations")
+    annotations(a)<-value
     annotations(object) <- a
     object
   }
@@ -475,7 +507,7 @@ setMethod(
   f = ".extractEntityFromSlots",
   signature = "Entity",
   definition = function(object){
-	properties(object)
+    properties(object)
   }
 )
 
@@ -526,10 +558,10 @@ setMethod(
   f = "refreshAnnotations",
   signature = "Entity",
   definition = function(entity){
-	  #  MF will refactor this code
+    #  MF will refactor this code
     annotations(entity) <- do.call(class(annotations(entity)), list(entity = getAnnotations(.extractEntityFromSlots(entity))))
     entity
-  }     
+  }   
 )
 
 setMethod(
@@ -641,5 +673,112 @@ setMethod(
     ##warning('not implemented')
   }
 )
+
+setMethod(
+  f = "generatedBy",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    entity@generatedBy
+  }
+)
+
+setMethod(
+  f = "generatedBy<-",
+  signature = signature("SynapseEntity", "Activity"),
+  definition = function(entity, value) {
+    entity@generatedBy <- value
+    entity
+  }
+)
+
+setMethod(
+  f = "generatedBy<-",
+  signature = signature("SynapseEntity", "NULL"),
+  definition = function(entity, value) {
+    entity@generatedBy <- NULL
+    entity
+  }
+
+)
+
+setMethod(
+  f = "used",
+  signature = "SynapseEntity",
+  definition = function(entity){
+    activity <- generatedBy(entity)
+    if (is.null(activity)) {
+      return(NULL)
+    }
+    propertyValue(activity, "used")
+  }
+)
+
+setMethod(
+  f = "used<-",
+  signature = signature("SynapseEntity", "list"),
+  definition = function(entity, value) {
+    usedList <- lapply(value, usedListEntry)
+    activity <- generatedBy(entity)
+    if (is.null(activity)) {
+      activity <- new("Activity")
+    } 
+    propertyValue(activity, "used") <- usedList
+    generatedBy(entity)<-activity
+    entity
+  }
+
+)
+
+setMethod(
+  f="usedListEntry",
+  signature = signature("SynapseEntity"),
+  definition = function(listEntry) {
+    list(reference=getReference(listEntry), wasExecuted=F)
+  }
+)
+
+setMethod(
+  f="usedListEntry",
+  signature = signature("list"),
+  definition = function(listEntry) {
+    # get the reference and the 'executed' 
+    usedEntity<-listEntry$entity
+    if (is.null(usedEntity)) stop("Entity required.")
+    executed<-listEntry$wasExecuted
+    if (is.null(executed)) stop ("Executed required.")
+    list(reference=getReference(usedEntity), wasExecuted=executed)
+  }
+)
+
+setMethod(
+  f="getReference",
+  signature = signature("SynapseEntity"),
+  definition = function(entity) {
+    versionNumber <- propertyValue(entity, "versionNumber")
+    if (is.null(versionNumber)) {
+      list(targetId=propertyValue(entity, "id"))
+    } else {
+      list(targetId=propertyValue(entity, "id"), targetVersionNumber=versionNumber)
+    }
+  }
+)
+
+setMethod(
+  f="getReference",
+  signature = signature("character"),
+  definition = function(entity) {
+    list(targetId=entity)
+  }
+)
+
+setMethod(
+  f = "used<-",
+  signature = signature("SynapseEntity", "NULL"),
+  definition = function(entity, value) {
+    generatedBy(entity)<-NULL
+    entity
+  }
+)
+
 
 
