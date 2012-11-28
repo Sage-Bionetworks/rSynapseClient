@@ -212,6 +212,7 @@ integrationTestDeleteEntityById <-
   checkException(getEntity(createdStudy))
   checkException(getEntity(createdProject))
   synapseClient:::.deleteCache("testProject")
+}
 
 integrationTestUpdateS4EntityWithGeneratedBy <-
 		function()

@@ -2,6 +2,27 @@
 # 
 # Author: furia
 ###############################################################################
+
+
+setClass(
+  Class = "Entity",
+  contains = "SimplePropertyOwner",
+  representation = representation(
+    attachOwn = "AttachmentOwner",
+    annotations = "SynapseAnnotations",
+    synapseEntityKind = "character",
+    synapseWebUrl = "character",
+    generatedBy = "activityOrNULL"
+  ),
+  prototype = prototype(
+    annotations = new("SynapseAnnotations"),
+    SynapseWebUrl = "",
+    properties = SynapseProperties(getEffectivePropertyTypes("org.sagebionetworks.repo.model.Entity"))
+  )
+)
+
+defineEntityConstructors("org.sagebionetworks.repo.model.Entity", package="synapseClient")
+
 setMethod(
   f = "getParentEntity",
   signature = "Entity",
@@ -172,7 +193,7 @@ setMethod(
     createUri = "/entity"
     generatingActivity <- generatedBy(entity)
     if (!is.null(generatingActivity)) {
-      generatingActivity <-storeEntity(generatingActivity)
+      generatingActivity <- storeEntity(generatingActivity)
       createUri <- sprintf("%s?generatedBy=%s", createUri, propertyValue(generatingActivity, "id"))
     }
     
@@ -443,9 +464,6 @@ setMethod(
       annotations(object) <- aa
       object
     }
-    annotations(object) <- aa
-    object
-  }
 )
 
 #####
@@ -676,7 +694,7 @@ setMethod(
 
 setMethod(
   f = "generatedBy",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity){
     entity@generatedBy
   }
@@ -684,7 +702,7 @@ setMethod(
 
 setMethod(
   f = "generatedBy<-",
-  signature = signature("SynapseEntity", "Activity"),
+  signature = signature("Entity", "Activity"),
   definition = function(entity, value) {
     entity@generatedBy <- value
     entity
@@ -693,7 +711,7 @@ setMethod(
 
 setMethod(
   f = "generatedBy<-",
-  signature = signature("SynapseEntity", "NULL"),
+  signature = signature("Entity", "NULL"),
   definition = function(entity, value) {
     entity@generatedBy <- NULL
     entity
@@ -703,7 +721,7 @@ setMethod(
 
 setMethod(
   f = "used",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity){
     activity <- generatedBy(entity)
     if (is.null(activity)) {
@@ -715,7 +733,7 @@ setMethod(
 
 setMethod(
   f = "used<-",
-  signature = signature("SynapseEntity", "list"),
+  signature = signature("Entity", "list"),
   definition = function(entity, value) {
     usedList <- lapply(value, usedListEntry)
     activity <- generatedBy(entity)
@@ -731,7 +749,7 @@ setMethod(
 
 setMethod(
   f="usedListEntry",
-  signature = signature("SynapseEntity"),
+  signature = signature("Entity"),
   definition = function(listEntry) {
     list(reference=getReference(listEntry), wasExecuted=F)
   }
@@ -752,7 +770,7 @@ setMethod(
 
 setMethod(
   f="getReference",
-  signature = signature("SynapseEntity"),
+  signature = signature("Entity"),
   definition = function(entity) {
     versionNumber <- propertyValue(entity, "versionNumber")
     if (is.null(versionNumber)) {
@@ -773,7 +791,7 @@ setMethod(
 
 setMethod(
   f = "used<-",
-  signature = signature("SynapseEntity", "NULL"),
+  signature = signature("Entity", "NULL"),
   definition = function(entity, value) {
     generatedBy(entity)<-NULL
     entity

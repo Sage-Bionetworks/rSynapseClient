@@ -3,6 +3,11 @@
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
+setClass(
+  Class="Code",
+  contains = "VIRTUAL"
+)
+
 edit.Code <- 
   function(name, which, ...)
 {

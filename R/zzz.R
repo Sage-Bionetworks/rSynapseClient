@@ -105,6 +105,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   if(installed.packages()['RJSONIO', 'Version'] == "1.0-0")
     stop("An unsupported version of RJSONIO is installed on your system. For instructions on how to resolve the issue visit this web page: https://sagebionetworks.jira.com/wiki/display/SYNR/I%27m+unable+to+download+or+upload+entity+data")
 
+
   entities <- synapseClient:::entitiesToLoad()
   for(ee in entities){
     synapseClient:::defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))

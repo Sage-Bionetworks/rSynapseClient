@@ -69,7 +69,7 @@ setMethod(
 
 setMethod(
   f = "initializeEntity",
-  signature = "SynapseLocationOwner",
+  signature = "LocationableWithoutBinaries",
   definition = function(entity){
     ifun <- getMethod("initializeEntity", "Entity")
     entity <- ifun(entity)
@@ -95,7 +95,7 @@ setMethod(
   f = "initializeEntity",
   signature = "Locationable",
   definition = function(entity){
-    ifun <- getMethod("initializeEntity", "SynapseLocationOwner")
+    ifun <- getMethod("initializeEntity", "LocationableWithoutBinaries")
     entity <- ifun(entity)
 
     ## instantiate the file cache an put the reference in

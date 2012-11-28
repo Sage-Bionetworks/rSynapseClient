@@ -1,24 +1,14 @@
-setMethod(
-	f = "SynapseProperties",
-	signature = "list",
-	definition = function(typeMap){
-		if(any(names(typeMap) == ""))
-			stop("all properties must be named")
-		if(any(table(names(typeMap)) > 1L))
-			stop("each name must appear only once")
-		if(!all(typeMap %in% TYPEMAP))
-			stop("invalid data type specified")
-
-		object <- new("SynapseProperties")
-		object@typeMap <- typeMap
-		object
-	}
-)
+##
+## NOTE: SynapseProperties constructor that would normally be defined here is instead defined
+## in AllClasses.R
+##
 
 setMethod(
 	f = "propertyNames",
 	signature = "SynapseProperties",
 	definition = function(object){
+    if(is.null(object@typeMap))
+      return(propertyNames(object@properties))
 		names(object@typeMap)
 	}
 )
@@ -41,18 +31,32 @@ setMethod(
 
 setMethod(
 	f = "propertyValue<-",
-	signature = "SynapseProperties",
+	signature = signature("SynapseProperties", "character"),
 	definition = function(object, which, value){
-		if(!all(which %in% names(object@typeMap)))
-			stop("invalid ptoperty specified")
+		if(!is.null(object@typeMap) & !all(which %in% names(object@typeMap)))
+			stop("invalid property specified")
 
 		## coerce the value to the correct type
-		type <- object@typeMap[[which]]
-		value <- do.call(sprintf("as.%s", type), list(value))
+    if(!is.null(object@typeMap)){
+		  type <- object@typeMap[[which]]
+		  value <- do.call(sprintf("as.%s", type), list(value))
+    }
 
 		object@properties <- setProperty(object@properties, which, value)
 		object
 	}
+)
+
+setMethod(
+  f = "propertyValue<-",
+  signature = signature("SynapseProperties", "character", "list"),
+  definition = function(object, which, value){
+    if(!is.null(object@typeMap) & !all(which %in% names(object@typeMap)))
+      stop("invalid property specified")
+
+    object@properties <- setProperty(object@properties, which, value)
+    object
+  }
 )
 
 
@@ -103,8 +107,8 @@ setReplaceMethod(
     i = "character"
   ),
   definition = function(x, i, value) {
-  	if(!all(i %in% names(x@typeMap)))
-			stop("invalid ptoperty specified")
+  	if(!is.null(x@typeMap) & !all(i %in% names(x@typeMap)))
+			stop("invalid property specified")
     propertyValue(x, i) <- value
     x
   }

@@ -2,12 +2,6 @@
 #
 # Author: furia
 ###############################################################################
-setGeneric(
-  name = "SynapseProperties",
-  def = function(typeMap){
-    standardGeneric("SynapseProperties")
-  }
-)
 
 setGeneric(
   name = "cacheEntity",
@@ -691,14 +685,6 @@ setGeneric(
   }
 )
 
-
-setGeneric(
-  name = "Entity",
-  def = function(entity){
-    standardGeneric("Entity")
-  }
-)
-
 setGeneric(
   name = "synapseEntityKind",
   def = function(entity){
@@ -717,13 +703,6 @@ setGeneric(
   name = "refreshAnnotations",
   def = function(entity){
     standardGeneric("refreshAnnotations")
-  }
-)
-
-setGeneric(
-  name = "Activity",
-  def = function(activity){
-    standardGeneric("Activity")
   }
 )
 

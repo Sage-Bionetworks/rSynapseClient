@@ -38,7 +38,7 @@ unitTestConstructorArchivePath <-
 unitTestAddFile <-
   function()
 {
-  own <- new("SynapseLocationOwner")
+  own <- new("LocationableWithoutBinaries")
 
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
@@ -50,7 +50,7 @@ unitTestAddFile <-
 
   ## make sure the cache re-initializes but running the exact same
   ## test again
-  own <- new("SynapseLocationOwner")
+  own <- new("LocationableWithoutBinaries")
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
   file <- tempfile()
@@ -67,7 +67,7 @@ unitTestAddFile <-
 unitTestMoveFile <-
   function()
 {
-  own <- new("SynapseLocationOwner")
+  own <- new("LocationableWithoutBinaries")
 
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
@@ -94,7 +94,7 @@ unitTestMoveFile <-
 uniTestDeleteFile <-
   function()
 {
-  own <- new("SynapseLocationOwner")
+  own <- new("LocationableWithoutBinaries")
 
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
@@ -111,7 +111,7 @@ uniTestDeleteFile <-
 unitTestDoubleBracketAccessor <-
     function()
 {
-  own <- new("SynapseLocationOwner")
+  own <- new("LocationableWithoutBinaries")
 
   checkEquals(own[['files']], character())
   checkEquals(own[['objects']][], RJSONIO::emptyNamedList)
@@ -121,7 +121,7 @@ unitTestDoubleBracketAccessor <-
 unitTestBracketAccessor <-
     function()
 {
-  own <- new("SynapseLocationOwner")
+  own <- new("LocationableWithoutBinaries")
 
   checkEquals(names(own['files']), 'files')
   checkEquals(names(own['objects']), 'objects')
@@ -134,7 +134,7 @@ unitTestBracketAccessor <-
 unitTestAttach <-
   function()
 {
-  ee <- new("SynapseLocationOwner")
+  ee <- new("LocationableWithoutBinaries")
 
   ee@archOwn@objects$aNum <- 1L
   attach(ee)
@@ -146,7 +146,7 @@ unitTestAttach <-
 unitTestDetach <-
   function()
 {
-  ee <- new("SynapseLocationOwner")
+  ee <- new("LocationableWithoutBinaries")
 
   ee@archOwn@objects$aNum <- 1L
   attach(ee)
@@ -161,6 +161,6 @@ unitTestDetach <-
 unitTestPackageName <-
   function()
 {
-  ee <- new("SynapseLocationOwner")
-  checkTrue(grepl("^SynapseLocationOwner.+", getPackageName(ee@archOwn)))
+  ee <- new("LocationableWithoutBinaries")
+  checkTrue(grepl("^LocationableWithoutBinaries.+", getPackageName(ee@archOwn)))
 }

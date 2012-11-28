@@ -6,29 +6,9 @@
 # Author: bhoff
 ###############################################################################
 
-#####
-## constructor that takes a list argument
-#####
-setMethod(
-  f = "Activity",
-  signature = signature("list"),
-  definition = function(activity){
-    ee <- new("Activity")
-    ee@properties <- activity
-    ee
-  }
-)
 
-#####
-## constructor that takes no arguments
-#####
-setMethod(
-  f = "Activity",
-  signature = signature("missing"),
-  definition = function(activity){
-    Activity(emptyNamedList)
-  }
-)
+## define the generic and defaut constructors for Activity
+defineEntityConstructors("org.sagebionetworks.repo.model.provenance.Activity", "Activity", package="synapseClient")
 
 #####
 ## constructor that takes a serialized JSON object
@@ -36,10 +16,8 @@ setMethod(
 setMethod(
   f = "Activity",
   signature = signature("character"),
-  definition = function(activity){
-    ee<-fromJSON(activity)
-    ee@properties <- activity
-    ee
+  definition = function(entity){
+    Activity(fromJSON(entity))
   }
 )
 

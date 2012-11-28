@@ -15,8 +15,8 @@ setMethod(
     f = "properties<-",
     signature = "SimplePropertyOwner",
     definition = function(object, value){
-      if(!all(names(value) %in% propertyNames(object)))
-        stop("invalid property names specified")
+      if(!is.null(object@properties@typeMap) & !all(names(value) %in% propertyNames(object)))
+        stop(sprintf("invalid property names specified: %s", names(value)))
       for(n in names(value)){
         propertyValue(object, n) <- value
       }
@@ -58,8 +58,8 @@ setMethod(
 			if(any(names(value) == "") && length(value) > 0)
 				stop("All entity members must be named")
 
-      if(!all(names(value) %in% propertyNames(object)))
-        stop("invalid property names specified")
+      if(!is.null(object@properties@typeMap) & !all(names(value) %in% propertyNames(object)))
+        stop(sprintf("invalid property names specified: %s", names(value)))
 
 			for(name in names(value))
 				propertyValue(object, name) <- value[[name]]
@@ -80,7 +80,7 @@ setMethod(
 				warning(paste(propertyNames(object)[indx], sep="", collapse=","), "were not found in the object, so were not deleted.")
 			}
       for(w in which)
-        properyValue(object, which) <- ""
+        propertyValue(object, which) <- ""
 			object
 		}
 )
@@ -92,8 +92,8 @@ setMethod(
 		f = "propertyValue<-",
 		signature = signature("SimplePropertyOwner", "character"),
 		definition = function(object, which, value){
-      if(!all(which %in% propertyNames(object)))
-        stop("invalid property name specified")
+      if(!is.null(object@properties@typeMap) & !all(which %in% propertyNames(object)))
+        stop(sprintf("invalid property name specified: %s", which))
       if(is.null(value))
         value <- list(value)
 			propertyValue(object@properties, which) <- value
@@ -105,17 +105,10 @@ setMethod(
   f = "propertyValue<-",
   signature = signature("SimplePropertyOwner", "character", "list"),
   definition = function(object, which, value){
-    if(!all(which %in% propertyNames(object)))
-      stop("invalid property name specified")
-    props <- properties(object)
-    indx <- which(names(object@properties) == which)
-    if(length(indx) > 0L)
-      props <- props[-indx]
-    val <- list()
-    val[[which]] <- value
+    if(!is.null(object@properties@typeMap) & !all(which %in% propertyNames(object)))
+      stop(sprintf("invalid property name specified: %s", which))
 
-    props <- c(props, val)
-    object@properties <- props
+    propertyValue(object@properties, which) <- value
     object
   }
 )
