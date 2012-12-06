@@ -7,20 +7,13 @@ synapseVersionsServiceEndpoint <-
   function(endpoint)
 {
   if (!missing(endpoint)) {
-    .setCache("versionsserviceEndpoint", endpoint)
-    url <- .ParsedUrl(url=endpoint)
-    .setCache("versionsserviceEndpointLocation", paste(url@protocol, '://', url@authority, sep=''))
-    .setCache("versionsserviceEndpointPrefix", url@path)
-  }
-  else {
-    return(.getCache("versionsserviceEndpoint"))
+    .setCache("versionsServiceEndpoint", endpoint)
+  } else {
+    return(.getCache("versionsServiceEndpoint"))
   }
 }
 
-.getVersionsEndpointLocation <- function() {
-  .getCache("versionsserviceEndpointLocation")	
+.getVersionsEndpoint <- function() {
+  .getCache("versionsServiceEndpoint")	
 }
 
-.getVersionsEndpointPrefix <- function() {
-  .getCache("versionsserviceEndpointPrefix")	
-}

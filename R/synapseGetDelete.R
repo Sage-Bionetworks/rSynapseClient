@@ -76,7 +76,7 @@
     }
     
     # check own version, stopping if blacklisted
-    .checkBlackListVsMyOwnVersion()
+    checkBlackList()
     
     response <- getURL(uri, 
       postfields = httpBody, 

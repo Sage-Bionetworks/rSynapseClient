@@ -15,7 +15,7 @@ checkLatestVersion<-function() {
   if (is.null(myOwnVersion) || myOwnVersion=="") return("")
   
   # get the latest version, release notes, black list, and optional user message
-  versionInfo <- fromJSON(getURL(.getVersionsEndpointLocation()))
+  versionInfo <- fromJSON(getURL(.getVersionsEndpoint()))
   
   if (myOwnVersion!=versionInfo$latestVersion) {
     message = sprintf("Please upgrade to the latest version of the Synapse Client, %s, having the following changes/features:\n%s\n\n%s\n",
