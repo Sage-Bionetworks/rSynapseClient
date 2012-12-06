@@ -94,6 +94,10 @@
     message("REQUEST: ", requestMethod, " ", uri)
     message("REQUEST_BODY: ", httpBody)
   }
+  
+  # check own version, stopping if blacklisted
+  .checkBlackListVsMyOwnVersion()
+  
   response <- getURL(uri, 
     postfields = httpBody, 
     customrequest = requestMethod, 

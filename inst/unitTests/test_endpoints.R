@@ -12,6 +12,7 @@
   synapseClient:::.setCache('oldRepoEndpoint', synapseRepoServiceEndpoint())
   synapseClient:::.setCache('oldAuthEndpoint', synapseAuthServiceEndpoint())
   synapseClient:::.setCache('oldPortalEndpoint', synapsePortalEndpoint())
+  synapseClient:::.setCache('oldVersionsEndpoint', synapseClient:::.getVersionsEndpointLocation())
   synapseClient:::sessionToken(NULL)
   hmacSecretKey(NULL)
   synapseAuthServiceEndpoint("http://foobar.com")
@@ -25,6 +26,7 @@
 {
   synapseAuthServiceEndpoint(synapseClient:::.getCache('oldAuthEndpoint'))
   synapseRepoServiceEndpoint(synapseClient:::.getCache('oldRepoEndpoint'))
+  synapseVersionsServiceEndpoint(synapseClient:::.getCache('oldVersionsEndpoint'))
   synapsePortalEndpoint(synapseClient:::.getCache('oldPortalEndpoint'))
   synapseClient:::sessionToken(synapseClient:::.getCache('oldSessionToken'))
   hmacSecretKey(synapseClient:::.getCache('oldHmacKey'))
@@ -104,4 +106,10 @@ unitTestResetEndpoints <-
   checkEquals(synapsePortalEndpoint(), 'http://synapse.sagebase.org')
   checkTrue(is.null(synapseClient:::.getCache("sessionToken")))
   checkTrue(is.null(synapseClient:::.getCache("hmacSecretKey")))
+}
+
+unitTestSetVersionsEndpoint <- function()
+{
+  synapseVersionsServiceEndpoint("http://boobar.com")
+  checkEquals("http://boobar.com", synapseClient:::.getVersionsEndpointLocation())
 }

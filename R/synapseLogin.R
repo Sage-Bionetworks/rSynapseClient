@@ -146,6 +146,9 @@ synapseLogin <-
   entity$email <- credentials$username
   entity$password <- credentials$password
   
+  .checkBlackListVsMyOwnVersion()
+  .checkLatestVersionVsMyOwn()
+  
   ## Login and check for success
   response <- synapsePost(uri = kService, 
     entity = entity, 

@@ -8,5 +8,6 @@ synapseResetEndpoints <-
 {
   synapseAuthServiceEndpoint("https://auth-alpha.sagebase.org/auth/v1")
   synapseRepoServiceEndpoint("https://repo-alpha.sagebase.org/repo/v1")
+  synapseVersionsServiceEndpoint("http://versions.synapse.sagebase.org/synapseRClient")
   synapsePortalEndpoint("http://synapse.sagebase.org")
 }
