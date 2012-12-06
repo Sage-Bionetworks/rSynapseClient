@@ -74,6 +74,10 @@
     if(.getCache("debug")) {
       message("REQUEST_BODY: ", httpBody)
     }
+    
+    # check own version, stopping if blacklisted
+    checkBlackList()
+    
     response <- getURL(uri, 
       postfields = httpBody, 
       customrequest = requestMethod, 
