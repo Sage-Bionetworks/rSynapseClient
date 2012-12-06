@@ -18,13 +18,13 @@ checkLatestVersion<-function() {
   versionInfo <- fromJSON(getURL(.getVersionsEndpoint()))
   
   if (myOwnVersion!=versionInfo$latestVersion) {
-    message = sprintf("Please upgrade to the latest version of the Synapse Client, %s, having the following changes/features:\n%s\n\n%s\n",
+    msg <- sprintf("Please upgrade to the latest version of the Synapse Client, %s, having the following changes/features:\n%s\n\n%s\n",
       versionInfo$latestVersion, versionInfo$releaseNotes, versionInfo$message)
   } else {
-    message = sprintf("\n\n%s\n", versionInfo$message)
+    msg <- sprintf("\n\n%s\n", versionInfo$message)
   }
-  cat(message)
-  message
+  message(msg)
+  msg
 }
 
 
