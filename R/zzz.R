@@ -87,7 +87,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   }
 
   .setCache("curlOpts", list(low.speed.time=60, low.speed.limit=1, connecttimeout=300, followlocation=TRUE, ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))
-  .setCache("curlHeader", c('Content-Type'="application/json", Accept = "application/json", "Accept-Charset"="utf-8"))
+  .setCache("curlHeader", c('Content-Type'="application/json", Accept = "application/json", "Accept-Charset"="utf-8", "User-Agent" = .userAgent()))
   .setCache("sessionRefreshDurationMin", 1440)
   .setCache("curlWriter", getNativeSymbolInfo("_writer_write", PACKAGE="synapseClient")$address)
   .setCache("curlReader", getNativeSymbolInfo("_reader_read", PACKAGE="synapseClient")$address)
@@ -111,6 +111,12 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     synapseClient:::defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
     synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
   }
+}
+
+
+.userAgent<-function() {
+  myOwnVersion<-packageDescription("synapseClient", fields="Version")
+  paste("synapseRClient", myOwnVersion, sep="/")
 }
 
 
