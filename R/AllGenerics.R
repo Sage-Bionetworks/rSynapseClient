@@ -4,6 +4,13 @@
 ###############################################################################
 
 setGeneric(
+  name="Activity",
+  def = function(entity, ...){
+    standardGeneric("Activity")
+  }
+)
+
+setGeneric(
   name = "cacheEntity",
   def = function(entity){
     standardGeneric("cacheEntity")

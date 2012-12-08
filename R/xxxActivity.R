@@ -6,9 +6,37 @@
 # Author: bhoff
 ###############################################################################
 
+setMethod(
+  f = "Activity",
+  signature = "list",
+  definition = function(entity, ...){
+    classType <- "Activity"
+    synapseType <- which
+    ## GRAB NAMED ARGUMENTS AND ADD TO ENTITY LIST
+    argList <- list(...)
+    entity <- c(entity, argList)
 
-## define the generic and defaut constructors for Activity
-defineEntityConstructors("org.sagebionetworks.repo.model.provenance.Activity", "Activity", package="synapseClient")
+    if(length(entity) > 0){
+      if(any(names(argList) == ""))
+        stop(sprintf("Arguments passed to %s must be named", classType))
+    }
+        
+    ee <- new(classType)
+    for(prop in names(entity))
+      propertyValue(ee, prop) <- entity[[prop]]
+    ee
+  }
+)
+
+setMethod(
+  f = "Activity",
+  signature = "missing",
+  definition = function(...){
+    ## GRAB NAMED ARGUMENTS AND ADD TO ENTITY LIST
+    entity <- list(...)
+    do.call("Activity", list(entity))
+  }
+)
 
 #####
 ## constructor that takes a serialized JSON object

@@ -80,7 +80,7 @@ setMethod(
 				warning(paste(propertyNames(object)[indx], sep="", collapse=","), "were not found in the object, so were not deleted.")
 			}
       for(w in which)
-        propertyValue(object, which) <- ""
+        propertyValue(object, which) <- NULL
 			object
 		}
 )
