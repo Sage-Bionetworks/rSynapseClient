@@ -57,7 +57,7 @@ unitTestFactors <-
 unitTestS4Class <-
   function()
 {
-  checkTrue(!synapseClient:::checkInteger(new("SynapseEntity")))
+  checkTrue(!synapseClient:::checkInteger(new("Entity")))
 }
 
 unitTestMultipleValues <-

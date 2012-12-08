@@ -15,8 +15,7 @@ setMethod(
     f = "deleteEntity",
     signature = "character",
     definition = function(entity){
-      deleteEntityFromSynapse(entity)
-      deleteEntityFromFileCache(entity)
+      synapseDelete(.generateEntityUri(entity))
     }
 )
 

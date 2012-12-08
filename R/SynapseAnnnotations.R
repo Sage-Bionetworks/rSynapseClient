@@ -155,42 +155,6 @@ as.list.SynapseAnnotations<-function(x) {
   c(as.list(x@properties), annotations)
 }
 
-# move content from 'entity' (a list) to 'object' ( a SynapseAnnotations)
-setMethod(
-  f = ".populateSlotsFromEntity",
-  signature = signature("TypedPropertyStore", "list", "missing"),
-  definition = function(object, entity){
-    
-    nms <- c("stringAnnotations",
-      "doubleAnnotations",
-      "longAnnotations",
-      "dateAnnotations",
-      "blobAnnotations")
-    
-    # for some reason this doesn't work
-    #lapply(nms, function(n) slot(object, n) <- entity[[n]])
-    # but this does
-    for (n in nms) {
-      if(!is.list(entity[[n]])){
-        slot(object, n)<- as.list(entity[[n]])
-      }else{
-        slot(object, n)<- entity[[n]]
-      }
-    }
-    
-    object
-  }
-)
-
-setMethod(
-  f = ".populateSlotsFromEntity",
-  signature = signature("TypedPropertyStore", "missing", "character"),
-  definition = function(object, json){
-    data <- fromJSON(json)
-    .populateSlotsFromEntity(object, list=data)
-  }
-)
-
 setMethod(
   f = "[",
   signature = "SynapseAnnotations",

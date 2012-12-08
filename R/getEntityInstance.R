@@ -12,19 +12,20 @@ setMethod(
 
     ## synapseEntity is the default
     if(is.null(class))
-      class <- "SynapseEntity"
+      class <- "Entity"
 
-    if(class == "SynapseEntity"){
+    if(class == "Entity"){
       if(!is.null(entity$locations) && length(entity$locations) > 0)
-        class <- "SynapseLocationOwnerWithObjects"
+        class <- "Locationable"
     }
 
     ## call the appropriate constructor and pass the list
     ## representation of the entity
-    ee <- do.call(class, list(entity = entity))
+    fun <- getMethod(class, signature = "list", where="synapseClient")
+    ee <- fun(entity)
     ee@synapseWebUrl <- .buildSynapseUrl(propertyValue(ee, "id"))
 
-    if(inherits(ee, "SynapseLocationOwner")){
+    if(inherits(ee, "Locationable")){
       url <- ee$properties$locations[[1]][['path']]
       if(!is.null(url)){
         ## instantiate the ArchiveOwner
@@ -60,7 +61,7 @@ setMethod(
 
 setMethod(
   f = "initializeEntity",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity){
     entity
   }
@@ -68,9 +69,9 @@ setMethod(
 
 setMethod(
   f = "initializeEntity",
-  signature = "SynapseLocationOwner",
+  signature = "LocationableWithoutBinaries",
   definition = function(entity){
-    ifun <- getMethod("initializeEntity", "SynapseEntity")
+    ifun <- getMethod("initializeEntity", "Entity")
     entity <- ifun(entity)
 
     ## get the cache url for this entity
@@ -92,9 +93,9 @@ setMethod(
 
 setMethod(
   f = "initializeEntity",
-  signature = "SynapseLocationOwnerWithObjects",
+  signature = "Locationable",
   definition = function(entity){
-    ifun <- getMethod("initializeEntity", "SynapseLocationOwner")
+    ifun <- getMethod("initializeEntity", "LocationableWithoutBinaries")
     entity <- ifun(entity)
 
     ## instantiate the file cache an put the reference in

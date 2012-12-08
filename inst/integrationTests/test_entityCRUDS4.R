@@ -187,6 +187,32 @@ integrationTestUpdateS4Entity <-
   
 }
 
+integrationTestDeleteEntityById <-
+  function()
+{
+  project <- Project()
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  
+  study <- Study()
+  propertyValue(study, "name") <- "testStudyName"
+  propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
+  createdStudy <- createEntity(study)
+  createdData <- Data(list(name="aData", type="C", parentId=propertyValue(createdStudy, "id")))
+  data <- addObject(createdData, "foo", "bar")
+  createdData <- storeEntity(createdData)
+  
+  cacheDir <- createdData$cacheDir
+  checkTrue(file.exists(cacheDir))
+  deleteEntity(createdData)
+  checkTrue(!file.exists(cacheDir))
+  
+  
+  deleteEntity(createdProject$properties$id)
+  checkException(getEntity(createdStudy))
+  checkException(getEntity(createdProject))
+  synapseClient:::.deleteCache("testProject")
+}
 
 integrationTestUpdateS4EntityWithGeneratedBy <-
 		function()

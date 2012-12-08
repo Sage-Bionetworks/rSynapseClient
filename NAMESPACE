@@ -30,35 +30,22 @@ export(
 ##export(getDatasets)
 export(as.environment.EnhancedEnvironment,as.environment.GlobalCache, as.list.SimplePropertyOwner, 
 as.list.SynapseAnnotations, as.list.TypedPropertyStore, as.environment.EnhancedEnvironment,
-length.EnhancedEnvironment, names.CachingObjectOwner, names.EnhancedEnvironment, names.SynapseLocationOwner,
-names.SynapseLocationOwnerWithObjects,
- getPackageName.EnhancedEnvironment, getPackageName.ArchiveOwner,
-  as.environment.ArchiveOwner, edit.Code, names.SynapseEntity,
+length.EnhancedEnvironment, names.CachingObjectOwner, names.EnhancedEnvironment, names.LocationableWithoutBinaries,
+names.Locationable,getPackageName.EnhancedEnvironment, getPackageName.ArchiveOwner,
+  as.environment.ArchiveOwner, edit.Code, names.Entity,
   
   names.QueryResult,
   as.data.frame.QueryResult,
   length.QueryResult,
-  dim.QueryResult)
+  dim.QueryResult,
+  as.list.SynapseProperties,
+  names.SynapseProperties)
 
 ## S4 convenience methods
 ##exportMethods(getDatasetLayers)
 
-## S4 entity constructors
-exportMethods(
-  Activity,
-  Data, 
-  Study,
-  Link,
-  ExpressionData,
-  GenotypeData,
-  PhenotypeData,
-  RObject,
-  Project,
-  Code,
-  Folder,
-  Preview,
-  SynapseEntity
-)
+## S4 entity constructors export methods starting with a capital letter. this is a hack.
+exportPattern("^[A-Z]")
 
 ## entity S4 methods
 exportMethods(

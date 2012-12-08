@@ -171,11 +171,31 @@ setMethod(
       object <- setUpdatePropValue(object, which)
     
     ## assign the new value to the correct type slot
-	# note: by convention the values in the key-value pairs are *vectors* not *scalars*
+    # note: by convention the values in the key-value pairs are *vectors* not *scalars*
     slot(object, type)[[which]] <- value
     object
   }
 )
+
+setMethod(
+  f = "setUpdatePropValue",
+  signature= signature("TypedPropertyStore", "character", "list", "missing"),
+  definition = function(object, which, value){
+    type = "stringAnnotations"
+    nms <- propertyNames(object)
+    
+    ## clear the existig value if it exists
+    if(any(which %in% nms))
+      object <- setUpdatePropValue(object, which)
+    
+    ## assign the new value to the correct type slot
+    # note: by convention the values in the key-value pairs are *vectors* not *scalars*
+    slot(object, type)[[which]] <- value
+    object
+  }
+)
+
+
 
 setMethod(
   f = "setProperty",
@@ -190,6 +210,14 @@ setMethod(
   signature = signature("TypedPropertyStore", "character", "character"),
   definition = function(object, which, value){
     setUpdatePropValue(object, which, value, type = "stringAnnotations")
+  }
+)
+
+setMethod(
+  f = "setProperty",
+  signature = signature("TypedPropertyStore", "character", "list"),
+  definition = function(object, which, value){
+    setUpdatePropValue(object, which, value)
   }
 )
 
@@ -300,6 +328,43 @@ as.list.TypedPropertyStore <- function(x, ...){
     }
   ret
 }
+
+
+# move content from 'entity' (a list) to 'object' ( a SynapseAnnotations)
+setMethod(
+  f = ".populateSlotsFromEntity",
+  signature = signature("TypedPropertyStore", "list", "missing"),
+  definition = function(object, entity){
+    
+    nms <- c("stringAnnotations",
+      "doubleAnnotations",
+      "longAnnotations",
+      "dateAnnotations",
+      "blobAnnotations")
+    
+    # for some reason this doesn't work
+    #lapply(nms, function(n) slot(object, n) <- entity[[n]])
+    # but this does
+    for (n in nms) {
+      if(!is.list(entity[[n]])){
+        slot(object, n)<- as.list(entity[[n]])
+      }else{
+        slot(object, n)<- entity[[n]]
+      }
+    }
+    
+    object
+  }
+)
+
+setMethod(
+  f = ".populateSlotsFromEntity",
+  signature = signature("TypedPropertyStore", "missing", "character"),
+  definition = function(object, json){
+    data <- fromJSON(json)
+    .populateSlotsFromEntity(object, list=data)
+  }
+)
 
 
 
