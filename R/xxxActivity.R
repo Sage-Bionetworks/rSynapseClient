@@ -14,6 +14,11 @@ setMethod(
   signature = signature("list"),
   definition = function(activity){
     ee <- new("Activity")
+    usedEntitiesOrReferences <- activity$used
+    if (!is.null(usedEntitiesOrReferences)) {
+      usedReferences<-lapply(usedEntitiesOrReferences, usedListEntry)
+      activity$used<-usedReferences
+    }
     ee@properties <- activity
     ee
   }
