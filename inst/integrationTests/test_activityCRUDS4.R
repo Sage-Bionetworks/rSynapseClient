@@ -83,3 +83,43 @@ integrationTestCRUDS4Activity <-
   checkTrue(class(shouldBeError)=="try-error")
 }
 
+integrationTestReferenceConstructor <- 
+  function()
+{
+  ## Create Activity
+  name<-"testName"
+  description<-"a description of the activity"
+  testData <-synapseClient:::.getCache("testData")
+  activity<-Activity(list(name=name, description=description, used=list(list(reference=list(targetId=propertyValue(testData, "id")), wasExecuted=F))))
+  activity<-createEntity(activity)
+  activityId<-propertyValue(activity, "id")
+  checkTrue(!is.null(activityId))
+  synapseClient:::.setCache("testActivity", activity)
+  
+  # delete
+  deleteEntity(activity)	
+  synapseClient:::.deleteCache("testActivity")
+  shouldBeError<-try(getActivity(activityId), silent=T)
+  checkTrue(class(shouldBeError)=="try-error")
+}
+
+integrationTestEntityConstructor <- 
+  function()
+{
+  ## Create Activity
+  name<-"testName"
+  description<-"a description of the activity"
+  testData <-synapseClient:::.getCache("testData")
+  activity<-Activity(list(name=name, description=description, used=list(testData)))
+  activity<-createEntity(activity)
+  activityId<-propertyValue(activity, "id")
+  checkTrue(!is.null(activityId))
+  synapseClient:::.setCache("testActivity", activity)
+  
+  # delete
+  deleteEntity(activity)	
+  synapseClient:::.deleteCache("testActivity")
+  shouldBeError<-try(getActivity(activityId), silent=T)
+  checkTrue(class(shouldBeError)=="try-error")
+}
+
