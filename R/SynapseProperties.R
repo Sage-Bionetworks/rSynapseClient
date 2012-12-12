@@ -4,6 +4,15 @@
 ##
 
 setMethod(
+  f = "deleteProperty",
+  signature = signature("SynapseProperties", "character"),
+  definition = function(object, which){
+    object@properties <- deleteProperty(object@properties, which)
+    object
+  }
+)
+
+setMethod(
   f = "SynapseProperties",
   signature = "missing",
   definition = function(){
@@ -49,15 +58,7 @@ setMethod(
 	f = "propertyValue",
 	signature = "SynapseProperties",
 	definition = function(object, which){
-		val <- getProperty(object@properties, which)
-
-    ## coerce to the NULL equivalent in the 
-    ## apropriate type
-    if(is.null(val)){
-      type <- object@typeMap[[which]]
-      val <- do.call(sprintf("as.%s", type), list(val))
-    }
-    val
+		getProperty(object@properties, which)
 	}
 )
 
@@ -69,7 +70,7 @@ setMethod(
 			stop("invalid property specified")
 
 		## coerce the value to the correct type
-    if(!is.null(object@typeMap)){
+    if(!is.null(object@typeMap) & !is.null(value)){
 		  type <- object@typeMap[[which]]
 		  value <- do.call(sprintf("as.%s", type), list(value))
     }

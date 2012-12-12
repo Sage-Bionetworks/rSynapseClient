@@ -11,8 +11,6 @@
 	synapseClient:::.setCache("testActivity", activity)
 }
 
-
-
 .tearDown <- 
   function()
 {

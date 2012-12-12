@@ -378,7 +378,9 @@ setMethod(
   f = "downloadEntity",
   signature = signature("LocationableWithoutBinaries", "missing"),
   definition = function(entity){
-    downloadEntity(entity, entity$properties$versionNumber)
+    if(length(entity$properties$id) > 0)
+      entity <- downloadEntity(entity, entity$properties$versionNumber)
+    entity
   }
 )
 

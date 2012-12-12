@@ -98,7 +98,7 @@ unitTestAsList <-
 	propertyValue(obj, "goo") <- "boo"
 	ans <- as.list.SynapseProperties(obj)
 	checkEquals(class(ans), "list")
-	checkTrue(all(names(ans)) %in% c('foo','goo'))
+	checkTrue(all(names(ans) %in% c('foo','goo')))
 	checkTrue(all(c('foo','goo') %in% names(ans)))
 	checkEquals(length(ans), 2L)
 	checkEquals(ans$foo, obj$foo)
@@ -131,9 +131,28 @@ unitTestConstructorList <-
 	checkTrue(all(names(obj) %in% c('foo','boo','goo')))
 	checkTrue(all(c('foo','boo','goo') %in% names(obj)))
 
-	checkEquals(obj[['foo']], as.character(NULL))
-	checkEquals(obj[['boo']], as.integer(NULL))
-	checkEquals(obj[['goo']], as.numeric(NULL))
+	checkEquals(obj[['foo']], NULL)
+	checkEquals(obj[['boo']], NULL)
+	checkEquals(obj[['goo']], NULL)
+}
+
+unitTestDeleteProperty <-
+	function()
+{
+	obj <- new("SynapseProperties")
+	propertyValue(obj, "foo") <- "bar"
+	obj <- deleteProperty(obj, "foo")
+	checkEquals(length(propertyNames(obj)), 0L)
+}
+
+unitTestSetPropertyNull <-
+	function()
+{
+	## this should be the equivilant of calling deleteProperty
+	obj <- new("SynapseProperties")
+	propertyValue(obj, "foo") <- "bar"
+	obj$foo <- NULL
+	checkEquals(length(propertyNames(obj)), 0L)
 }
 
 

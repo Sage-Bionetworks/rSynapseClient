@@ -62,7 +62,6 @@ unitTestConstructors <-
   ## these just need to work without throwing an exception. the JSON parsing and mapping to
   ## slots is tested elsewhere
   suppressWarnings(entity <- synapseClient:::Entity(entity = as.list(RJSONIO::fromJSON(synapseClient:::.getCache("datasetJSON")))))
-  ## entity@annotations <- synapseClient:::SynapseAnnotations(entity = as.list(RJSONIO::fromJSON(synapseClient:::.getCache("datasetAnnotationJSON"))))
 }
 
 unitTestProperties <-
@@ -324,6 +323,13 @@ unitTestDeleteProperty <-
   newEntity <- deleteProperty(entity, "id")
 
   checkEquals(newEntity$properties$id, Entity()$properties$id)
+}
+
+unitTestSetPropertyNull <-
+  function()
+{
+  ## should be the equivalent of calling deleteProperty
+
 }
 
 unitTestAsList <-

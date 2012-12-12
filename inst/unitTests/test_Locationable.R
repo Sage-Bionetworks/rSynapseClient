@@ -6,23 +6,6 @@
 .setUp <-
     function()
 {
-#  env <- attach(NULL, name = "testEnv")
-#  tryCatch({
-#        setPackageName("testEnv", env)
-#        suppressWarnings(
-#            setClass(
-#                "LocOwnO",
-#                contains = "Locationable",
-#                where = env
-#            )
-#        )
-#      },
-#      error = function(e){
-#        detach("testEnv")
-#        stop(e)
-#      }
-#  )
-
   synapseClient:::.setCache("oldWarn", options("warn")[[1]])
   options(warn=2L)
 }
@@ -30,7 +13,6 @@
 .tearDown <-
     function()
 {
-#  detach("testEnv")
   options(warn = synapseClient:::.getCache("oldWarn"))
   if(!is.null(name <- synapseClient:::.getCache("detachMe"))){
     detach(name)
