@@ -250,7 +250,7 @@ unitTestDeleteAnnotation <-
   checkEquals(length(annotationNames(entity)), 0L)
 }
 
-testAddAttachment <-
+unitTestAddAttachment <-
   function()
 {
   entity <- Entity()
@@ -287,7 +287,7 @@ testAddAttachment <-
 
 }
 
-testDeleteAttachment <-
+unitTestDeleteAttachment <-
   function()
 {
   entity <- Entity()
@@ -312,6 +312,45 @@ testDeleteAttachment <-
   checkEquals(0L, length(copy$attachments))
   checkTrue(!file.exists(file.path(copy$attachDir, basename(file2))))
   checkTrue(!file.exists(file.path(copy$attachDir, basename(file))))
+}
+
+unitTestDeleteProperty <-
+  function()
+{
+  entity <- Entity()
+  entity$properties$id <- "syn1234"
+
+  checkEquals("syn1234", entity$properties$id)
+  newEntity <- deleteProperty(entity, "id")
+
+  checkEquals(newEntity$properties$id, Entity()$properties$id)
+}
+
+unitTestAsList <-
+  function()
+{
+  entity <- new("Entity")
+}
+
+unitTestBracketAccessorProperties <-
+  function()
+{
+  entity <- Entity()
+  
+
+}
+
+unitTestPropertyValues <-
+  function()
+{
+  entity <- Entity()
+  checkEquals(length(propertyValues(entity)), length(propertyValues(entity)))
+}
+
+unitTestPropertyNames <-
+  function()
+{
+
 }
 
 

@@ -4,9 +4,33 @@
 ##
 
 setMethod(
+  f = "SynapseProperties",
+  signature = "missing",
+  definition = function(){
+    new("SynapseProperties")
+  }
+)
+
+setMethod(
+  f = "properties",
+  signature = "SynapseProperties",
+  definition = function(object){
+    ## include all valid properties, including the
+    ## NULL equivilant for ones that haven't been set
+    val <- lapply(propertyNames(object), function(name){
+        propertyValue(object, name)
+      }
+    )
+    names(val) <- propertyNames(object)
+    val
+  }
+)
+
+setMethod(
 	f = "propertyNames",
 	signature = "SynapseProperties",
 	definition = function(object){
+    ## return the names of all valid properties
     if(is.null(object@typeMap))
       return(propertyNames(object@properties))
 		names(object@typeMap)
@@ -17,7 +41,7 @@ setMethod(
 	f = "propertyValues",
 	signature = "SynapseProperties",
 	definition = function(object){
-		propertyValues(object@properties)
+		unlist(lapply(propertyNames(object), function(name) propertyValue(object, name)))
 	}
 )
 
@@ -25,7 +49,15 @@ setMethod(
 	f = "propertyValue",
 	signature = "SynapseProperties",
 	definition = function(object, which){
-		getProperty(object@properties, which)
+		val <- getProperty(object@properties, which)
+
+    ## coerce to the NULL equivalent in the 
+    ## apropriate type
+    if(is.null(val)){
+      type <- object@typeMap[[which]]
+      val <- do.call(sprintf("as.%s", type), list(val))
+    }
+    val
 	}
 )
 
@@ -59,7 +91,6 @@ setMethod(
   }
 )
 
-
 setMethod(
   f = "[",
   signature = "SynapseProperties",
@@ -71,12 +102,7 @@ setMethod(
         stop("subscript out of bounds")
       i <- propertyNames(x)[i]
     }
-    retVal <- lapply(i, function(i){
-        propertyValue(x, i)
-      }
-    )
-    names(retVal) <- i
-    retVal
+    properties(x)[i]
   }
 )
 
@@ -107,9 +133,34 @@ setReplaceMethod(
     i = "character"
   ),
   definition = function(x, i, value) {
+    if(length(i) > 1)
+      stop("subscript out of bounds")
   	if(!is.null(x@typeMap) & !all(i %in% names(x@typeMap)))
 			stop("invalid property specified")
     propertyValue(x, i) <- value
+    x
+  }
+)
+
+setReplaceMethod(
+  f = "[", 
+  signature = signature(
+    x = "SynapseProperties",
+    i = "character"
+  ),
+  definition = function(x, i, value) {
+    if(length(i) < length(value))
+      stop("more elements supplied than there are to replace")
+    if(length(i) %% length(value) != 0L)
+      stop("number of items to replace is not a multiple of replacement length")
+
+    if(!is.null(x@typeMap) & !all(i %in% names(x@typeMap)))
+      stop("invalid property specified")
+
+    if(length(i) != length(value))
+      value <- rep(value, length(i)/length(value))
+
+    lapply(1:length(i), function(indx) propertyValue(x, i[indx]) <<- value[indx])
     x
   }
 )
@@ -126,14 +177,26 @@ setReplaceMethod(
 as.list.SynapseProperties <-
 	function(x, ...)
 {
-	ll <- lapply(propertyNames(x), function(n) propertyValue(x, n))
-	names(ll) <- propertyNames(x)
-	ll
+  ## This method should only return property values
+  ## that are actually set, which is the behavior of
+  ## the TypedPropertyStore class of which SynapseProperties
+  ## is composed. This is in contrast to 
+  ## the properties() function and show method that
+  ## display all valid properties, even if they're not
+  ## set. The reason for this behavior is that as.list
+  ## is used when converting the SynapseProperties
+  ## object into JSON. In that case, only set properties
+  ## should be included
+	val <- lapply(propertyNames(x@properties), function(n) propertyValue(x, n))
+	names(val) <- propertyNames(x@properties)
+	val
 }
 
 names.SynapseProperties <-
 	function(x)
 {
+  ## return the names of all valid
+  ## properties
 	propertyNames(x)
 }
 
@@ -141,6 +204,6 @@ setMethod(
 	f = "show",
 	signature = "SynapseProperties",
 	definition = function(object){
-		show(as.list(object))
+		show(properties(object))
 	}
 )

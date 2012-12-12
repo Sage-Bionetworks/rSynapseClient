@@ -7,7 +7,9 @@ setMethod(
     f = "properties",
     signature = "SimplePropertyOwner",
     definition = function(object){
-      object@properties
+      val <- lapply(propertyNames(object), function(name) propertyValue(object, name))
+      names(val) <- propertyNames(object)
+      val
     }
 )
 
@@ -94,8 +96,6 @@ setMethod(
 		definition = function(object, which, value){
       if(!is.null(object@properties@typeMap) & !all(which %in% propertyNames(object)))
         stop(sprintf("invalid property name specified: %s", which))
-      if(is.null(value))
-        value <- list(value)
 			propertyValue(object@properties, which) <- value
 			object
 		}
@@ -134,7 +134,7 @@ setMethod(
     f = "propertyValue",
     signature = signature("SimplePropertyOwner", "character"),
     definition = function(object, which){
-      properties(object)[[which]]
+      propertyValue(object@properties, which)
     }
 )
 

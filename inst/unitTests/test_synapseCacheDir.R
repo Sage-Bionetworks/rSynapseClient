@@ -46,23 +46,24 @@ unitTestReglarFileWithSameNameExists <-
 unitTestNewDirReadOnlyParent <-
 	function()
 {
-	parent = tempfile()
-	dd = tempfile(tmpdir=parent)
-	synapseClient:::.setCache("fileChmod", parent)
-	dir.create(parent)
+	if(Sys.info()[['sysname']] != "Windows"){
+		parent = tempfile()
+		dd = tempfile(tmpdir=parent)
+		synapseClient:::.setCache("fileChmod", parent)
+		dir.create(parent)
 
-	## set parent permissions to read only
-	Sys.chmod(parent, "400")
+		## set parent permissions to read only
+		Sys.chmod(parent, "400")
 
-	## make sure that we only get a warning
-	options(warn=0)
-	synapseCacheDir(dd)
-	checkEquals(dd, synapseCacheDir())
+		## make sure that we only get a warning
+		options(warn=0)
+		synapseCacheDir(dd)
+		checkEquals(dd, synapseCacheDir())
 
-	## make sure that a warning is produced
-	options(warn=2)
-	checkException(synapseCacheDir(dd))
-
+		## make sure that a warning is produced
+		options(warn=2)
+		checkException(synapseCacheDir(dd))
+	}
 }
 
 unitTestSetCacheDirNewDirDoesNotExists <-
