@@ -19,8 +19,9 @@
 .tearDown <-
   function()
 {
-  deleteEntity(synapseClient:::.getCache("testProject"))
+  try(deleteEntity(synapseClient:::.getCache("testProject")))
   synapseClient:::.deleteCache("testProject")
+  try(deleteEntity(synapseClient:::.getCache("testProject2")))
   synapseClient:::.deleteCache("testProject2")
 }
 

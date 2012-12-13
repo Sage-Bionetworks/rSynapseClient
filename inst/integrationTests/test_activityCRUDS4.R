@@ -20,15 +20,15 @@
   function()
 {
 	if(!is.null(synapseClient:::.getCache("testActivity"))) {
-		deleteEntity(synapseClient:::.getCache("testActivity"))	
+		try(deleteEntity(synapseClient:::.getCache("testActivity")))
 		synapseClient:::.deleteCache("testActivity")
 	}
 	if(!is.null(synapseClient:::.getCache("testData"))) {
-		deleteEntity(synapseClient:::.getCache("testData"))	
+		try(deleteEntity(synapseClient:::.getCache("testData")))
 		synapseClient:::.deleteCache("testData")
 	}
 	if(!is.null(synapseClient:::.getCache("testProject"))) {
-	  deleteEntity(synapseClient:::.getCache("testProject"))	
+	  try(deleteEntity(synapseClient:::.getCache("testProject")))
 	  synapseClient:::.deleteCache("testProject")
   }
 }
