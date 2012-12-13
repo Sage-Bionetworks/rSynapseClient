@@ -49,7 +49,7 @@ integrationTestQueryResult_Collect <- function() {
   data <- Data(parentId=project)
   lapply(1:10, function(i) createEntity(data))
 
-  qr <- synapseClient:::QueryResult$new("select id, name, parentId from entity LIMIT 10", blockSize=3)
+  qr <- synapseClient:::QueryResult$new(sprintf("select id, name, parentId from entity where parentId=='%s'", project), blockSize=3)
   df <- qr$collect()
   checkEquals(nrow(df),3)
   checkEquals(ncol(df),3)
