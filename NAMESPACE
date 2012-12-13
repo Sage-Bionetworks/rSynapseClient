@@ -23,7 +23,8 @@ export(
   edit,
   setApiCredentials,
   synapseQuery,
-  available.versions
+  available.versions,
+  touOnWeb
 )
 
 ## S3 convenience methods
