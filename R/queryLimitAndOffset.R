@@ -18,7 +18,7 @@
     result$limit <- as.integer(sub(re.limit, "\\1", queryStatement, ignore.case=TRUE))
     
     # remove limit from query
-    queryStatement <- sub("\\s*limit\\s+\\d+\\s*"," ",queryStatement)
+    queryStatement <- sub("\\s*limit\\s+\\d+\\s*"," ",queryStatement, ignore.case=TRUE)
   
   }
   
