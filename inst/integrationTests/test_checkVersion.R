@@ -14,14 +14,20 @@
   synapseClient:::synapseVersionsServiceEndpoint(synapseClient:::.getCache('oldVersionsEndpoint'))
 }
 
+integrationTestCheckServerVersion <- function() 
+{
+  v <- synapseClient:::getServerVersion()
+  checkTrue(!is.null(v))
+}
+
 integrationTestCheckVersionLatest <- function()
 {
   genericMessage<-"\n\nOn January 1, all clients will be required to upgrade to the latest version.\n"
 
   # latest version, should just display the 'message' field
-  message<-synapseClient:::.checkLatestVersionGivenMyVersion("0.19-0")
+  message<-synapseClient:::.checkLatestVersionGivenMyVersion("0.19-0", "1.15.0-8-ge79db7a")
   checkEquals(genericMessage, message)
-  error<-try(synapseClient:::.checkBlackListGivenMyVersion("0.19-0"), silent=TRUE)
+  error<-try(synapseClient:::.checkBlackListGivenMyVersion("0.19-0", "1.15.0-8-ge79db7a"), silent=TRUE)
   checkTrue(is.null(error))
   }
 
@@ -29,21 +35,42 @@ integrationTestCheckVersionOld <- function()
 {
    
   # old version (not blacklisted), should display message to upgrade
-  message<- synapseClient:::.checkLatestVersionGivenMyVersion("0.18")
+  message<- synapseClient:::.checkLatestVersionGivenMyVersion("0.18", "1.15.0-8-ge79db7a")
   upgradeMessage<-"Please upgrade to the latest version of the Synapse Client, 0.19-0, having the following changes/features:\nThis version includes new provenance features.\n\nOn January 1, all clients will be required to upgrade to the latest version.\n"
   checkEquals(upgradeMessage, message)
-  error<-try(synapseClient:::.checkBlackListGivenMyVersion("0.18"), silent=TRUE)
+  error<-try(synapseClient:::.checkBlackListGivenMyVersion("0.18", "1.15.0-8-ge79db7a"), silent=TRUE)
   checkTrue(is.null(error))
 
+}
+
+integrationTestCheckVersionOldLatestIsBlacklisted <- function()
+{
+  
+  # old version (not blacklisted), should suppress message to upgrade
+  message<- synapseClient:::.checkLatestVersionGivenMyVersion("0.18", "1.12.0-7-ch24528f")
+  upgradeMessage<-"\n\nOn January 1, all clients will be required to upgrade to the latest version.\n"
+  checkEquals(upgradeMessage, message)
+  error<-try(synapseClient:::.checkBlackListGivenMyVersion("0.18", "1.12.0-7-ch24528f"), silent=TRUE)
+  checkTrue(is.null(error))
+  
 }
 
 
 integrationTestCheckVersionBlackListed <- function()
 {
-   # black listed version, should throw exception
-  error<-try(synapseClient:::.checkBlackListGivenMyVersion("0.11"), silent=TRUE)
+  # black listed version, should throw exception
+  error<-try(synapseClient:::.checkBlackListGivenMyVersion("0.10", "1.15.0-8-ge79db7a"), silent=TRUE)
   checkEquals("try-error", class(error))
-  blackListMessage<-"Error in synapseClient:::.checkBlackListGivenMyVersion(\"0.11\") : \n  This version of the Synapse Client, 0.11, has been disabled.  Please upgrade to the latest version, 0.19-0.\nOn January 1, all clients will be required to upgrade to the latest version.\n"
-  checkEquals(blackListMessage, error[1])
+  blackListMessage<-"This version of the Synapse Client, 0.10, has been disabled.  Please upgrade to the latest version, 0.19-0.\nOn January 1, all clients will be required to upgrade to the latest version.\n"
+  checkTrue(any(grep(blackListMessage, error[1])))
+}
+
+integrationTestCheckVersionBlackListedLatestIsBlacklisted <- function()
+{
+  # black listed version, should throw exception
+  error<-try(synapseClient:::.checkBlackListGivenMyVersion("0.05", "1.12.0-7-ch24528f"), silent=TRUE)
+  checkEquals("try-error", class(error))
+  blackListMessage<-"This version of the Synapse Client, 0.05, has been disabled.  Please contact Synapse support to access an enabled client.\nOn January 1, all clients will be required to upgrade to the latest version.\n"
+  checkTrue(any(grep(blackListMessage, error[1])))
 }
 

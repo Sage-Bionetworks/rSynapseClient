@@ -2,5 +2,5 @@
 # returns the version of the Synapse server
 #
 getServerVersion<-function() {
-  synapseGet("/version")$version
+  synapseGet("/version", anonymous=T)$version
 }
