@@ -101,8 +101,8 @@ unitTestResetEndpoints <-
   checkEquals(synapseRepoServiceEndpoint(), "http://boobar.com")	
   
   synapseResetEndpoints()	
-  checkEquals(synapseRepoServiceEndpoint(), 'https://repo-alpha.sagebase.org/repo/v1')
-  checkEquals(synapseAuthServiceEndpoint(), 'https://auth-alpha.sagebase.org/auth/v1')
+  checkEquals(synapseRepoServiceEndpoint(), 'https://repo-prod.sagebase.org/repo/v1')
+  checkEquals(synapseAuthServiceEndpoint(), 'https://auth-prod.sagebase.org/auth/v1')
   checkEquals(synapsePortalEndpoint(), 'http://synapse.sagebase.org')
   checkTrue(is.null(synapseClient:::.getCache("sessionToken")))
   checkTrue(is.null(synapseClient:::.getCache("hmacSecretKey")))

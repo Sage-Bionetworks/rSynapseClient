@@ -19,19 +19,19 @@ setMethod(
       usedReferences<-lapply(usedEntitiesOrReferences, usedListEntry)
       activity$used<-usedReferences
     }
-    ee@properties <- activity
+    for(prop in names(activity))
+      propertyValue(ee, prop) <- activity[[prop]]
     ee
   }
 )
 
-#####
-## constructor that takes no arguments
-#####
 setMethod(
   f = "Activity",
-  signature = signature("missing"),
-  definition = function(activity){
-    Activity(emptyNamedList)
+  signature = "missing",
+  definition = function(...){
+    ## GRAB NAMED ARGUMENTS AND ADD TO ENTITY LIST
+    entity <- list(...)
+    do.call("Activity", list(entity))
   }
 )
 
@@ -42,9 +42,7 @@ setMethod(
   f = "Activity",
   signature = signature("character"),
   definition = function(activity){
-    ee<-fromJSON(activity)
-    ee@properties <- activity
-    ee
+    Activity(fromJSON(activity))
   }
 )
 

@@ -33,12 +33,12 @@ setMethod(
 
     ## get annotations
     ee@annotations <- getAnnotations(ee)
-	
-	## get the 'generatedBy' activity, if any
-  ## !!!! Note, it's crucial to retrieve the 'generatedBy' info when !!!!
-  ## !!!! retrieving the entity, otherwise on the subsequent call to  !!!!
-  ## !!!! storeEntity the link will be lost !!!!
-	ee@generatedBy <- getGeneratedBy(ee)
+
+    ## get the 'generatedBy' activity, if any
+    ## !!!! Note, it's crucial to retrieve the 'generatedBy' info when !!!!
+    ## !!!! retrieving the entity, otherwise on the subsequent call to  !!!!
+    ## !!!! storeEntity the link will be lost !!!!
+    ee@generatedBy <- getGeneratedBy(ee)
 
     ## cache the entity to disk
     cacheEntity(ee)
@@ -50,31 +50,32 @@ setMethod(
 # returns the Activity linked to the entity by the 'generatedBy' relationship,
 # or NULL if there is no such Activity
 setMethod(
-    f = "getGeneratedBy",
-    signature = signature("SynapseEntity"),
-    definition = function(entity) {
-    	if (is.null(propertyValue(entity, "versionNumber"))) {
-    		uri<-paste("/entity/", 
+  f = "getGeneratedBy",
+  signature = signature("Entity"),
+  definition = function(entity) {
+    if(is.null(propertyValue(entity, "versionNumber"))) {
+    	uri<-paste("/entity/", 
     				propertyValue(entity, "id"), 
     				"/generatedBy", 
     				sep="")
-    	} else {
-    		uri<-paste("/entity/", 
+    } else {
+    	uri<-paste("/entity/", 
     				propertyValue(entity, "id"), 
     				"/version/", 
     				propertyValue(entity, "versionNumber"), 
     				"/generatedBy", 
     				sep="")
-    	}
-      curlHandle<-getCurlHandle()
-    	activityList <- synapseGet(uri, curlHandle=curlHandle, checkHttpStatus=F)
-      info <- getCurlInfo(curlHandle)
-      if(info$response.code == 404) {
-        return(NULL) # not found
-      }
-      
-    	Activity(activityList)
     }
+    curlHandle<-getCurlHandle()
+    activityList <- synapseGet(uri, curlHandle=curlHandle, checkHttpStatus=F)
+    info <- getCurlInfo(curlHandle)
+    if(info$response.code == 404) {
+      return(NULL) # not found
+    }
+    .checkCurlResponse(curlHandle)
+      
+    Activity(activityList)
+  }
 )
 
 setMethod(

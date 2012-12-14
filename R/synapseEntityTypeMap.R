@@ -18,7 +18,8 @@ synapseEntityTypeMap <-
     org.sagebionetworks.repo.model.PhenotypeData = "PhenotypeData",
     org.sagebionetworks.repo.model.RObject = "RObject",
     org.sagebionetworks.repo.model.Folder = "Folder",
-    org.sagebionetworks.repo.model.Preview = "Preview"
+    org.sagebionetworks.repo.model.Preview = "Preview",
+    org.sagebionetworks.repo.model.Summary = "Summary"
   )
 }
 

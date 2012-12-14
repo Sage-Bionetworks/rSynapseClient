@@ -55,7 +55,7 @@ setMethod(
 #
 #setMethod(
 #  f = ".loadSageBioPacket",
-#  signature = "SynapseEntity",
+#  signature = "Entity",
 #  definition = function(entity){
 #    stop("Only Layer entities can be loaded from SageBioCurated format")
 #  }

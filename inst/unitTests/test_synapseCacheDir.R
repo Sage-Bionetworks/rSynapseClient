@@ -46,7 +46,7 @@ unitTestReglarFileWithSameNameExists <-
 unitTestNewDirReadOnlyParent <-
 	function()
 {
-	if(Sys.info()[['sysname']] != "Windows"){ 
+	if(Sys.info()[['sysname']] != "Windows"){
 		parent = tempfile()
 		dd = tempfile(tmpdir=parent)
 		synapseClient:::.setCache("fileChmod", parent)
