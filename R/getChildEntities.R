@@ -5,7 +5,7 @@
 
 setMethod(
   f = "getChildEntities",
-  signature = "SynapseEntity",
+  signature = "Entity",
   definition = function(entity){
     qry <- "Select id, type from entity"
     stop("I'm broken")
