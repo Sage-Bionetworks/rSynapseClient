@@ -3,7 +3,7 @@ import(RCurl, Biobase, methods, affy)
 importFrom(RJSONIO, toJSON, fromJSON, emptyNamedList)
 importFrom(tools, md5sum)
 importFrom(digest, digest, hmac)
-importFrom(utils, edit)
+importFrom(utils, edit, compareVersion)
 
 ## package has a dynamic library
 useDynLib(synapseClient)
@@ -23,7 +23,8 @@ export(
   edit,
   setApiCredentials,
   synapseQuery,
-  available.versions
+  available.versions,
+  touOnWeb
 )
 
 ## S3 convenience methods
@@ -45,6 +46,7 @@ names.SynapseLocationOwnerWithObjects,
 
 ## S4 entity constructors
 exportMethods(
+  Activity,
   Data, 
   Study,
   Link,
@@ -77,7 +79,12 @@ exportMethods(
   detach,
   setPackageName,
   getPackageName,
-  objects
+  objects,
+	getActivity,
+	generatedBy,
+	"generatedBy<-",
+	"used",
+	"used<-"
   )
 
 ## methods for managing layer files
