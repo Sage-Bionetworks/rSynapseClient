@@ -5,7 +5,7 @@
 
 setGeneric(
   name="Activity",
-  def = function(entity, ...){
+  def = function(activity, ...){
     standardGeneric("Activity")
   }
 )

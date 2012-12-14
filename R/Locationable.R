@@ -190,7 +190,7 @@ setMethod(
 
     ## make sure that the entity is up to date
     if(is.null(propertyValue(entity, "id"))){
-      ## Create the LocationOwner in Synapse
+      ## Create the Locationable in Synapse
       entity <- createEntity(entity)
       filePath <- file.path(entity@archOwn@fileCache$getCacheRoot(), basename(filePath))
     }
@@ -399,8 +399,17 @@ setMethod(
     if(versionId != as.character(entity$properties$versionNumber))
       entity <- getEntity(entity, versionId)
 
-    if(is.null(propertyValue(entity, "locations")[[1]][['path']]))
+    if(is.null(propertyValue(entity, "locations")[[1]][['path']])) {
+      unfulfilledAccessRequirements<-synapseGet(sprintf("/entity/%s/accessRequirementUnfulfilled", propertyValue(entity, "id")))
+      if (unfulfilledAccessRequirements$totalNumberOfResults>0) { # if there is a file but I lack access due to a restriction...
+        # ...an error message is displayed which include the 'onweb' command to open the entity page, 
+        # where a user can address the access requirements.
+        message <- sprintf("Please visit the web page for this entity (onWeb(\"%s\")) to review and fulfill its download requirement(s).",
+          propertyValue(entity, "id"))
+        stop(message)
+      }
       return(entity)
+    }
 
     ## download the file
     url <- entity$properties$locations[[1]][['path']]

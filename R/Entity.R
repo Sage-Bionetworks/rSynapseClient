@@ -748,48 +748,6 @@ setMethod(
 )
 
 setMethod(
-  f="usedListEntry",
-  signature = signature("Entity"),
-  definition = function(listEntry) {
-    list(reference=getReference(listEntry), wasExecuted=F)
-  }
-)
-
-setMethod(
-  f="usedListEntry",
-  signature = signature("list"),
-  definition = function(listEntry) {
-    # get the reference and the 'executed' 
-    usedEntity<-listEntry$entity
-    if (is.null(usedEntity)) stop("Entity required.")
-    executed<-listEntry$wasExecuted
-    if (is.null(executed)) stop ("Executed required.")
-    list(reference=getReference(usedEntity), wasExecuted=executed)
-  }
-)
-
-setMethod(
-  f="getReference",
-  signature = signature("Entity"),
-  definition = function(entity) {
-    versionNumber <- propertyValue(entity, "versionNumber")
-    if (is.null(versionNumber)) {
-      list(targetId=propertyValue(entity, "id"))
-    } else {
-      list(targetId=propertyValue(entity, "id"), targetVersionNumber=versionNumber)
-    }
-  }
-)
-
-setMethod(
-  f="getReference",
-  signature = signature("character"),
-  definition = function(entity) {
-    list(targetId=entity)
-  }
-)
-
-setMethod(
   f = "used<-",
   signature = signature("Entity", "NULL"),
   definition = function(entity, value) {

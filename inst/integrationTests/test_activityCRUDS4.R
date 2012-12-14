@@ -20,15 +20,15 @@
   function()
 {
 	if(!is.null(synapseClient:::.getCache("testActivity"))) {
-		deleteEntity(synapseClient:::.getCache("testActivity"))	
+		try(deleteEntity(synapseClient:::.getCache("testActivity")))
 		synapseClient:::.deleteCache("testActivity")
 	}
 	if(!is.null(synapseClient:::.getCache("testData"))) {
-		deleteEntity(synapseClient:::.getCache("testData"))	
+		try(deleteEntity(synapseClient:::.getCache("testData")))
 		synapseClient:::.deleteCache("testData")
 	}
 	if(!is.null(synapseClient:::.getCache("testProject"))) {
-	  deleteEntity(synapseClient:::.getCache("testProject"))	
+	  try(deleteEntity(synapseClient:::.getCache("testProject")))
 	  synapseClient:::.deleteCache("testProject")
   }
 }
@@ -75,6 +75,46 @@ integrationTestCRUDS4Activity <-
   names(targetId)<-NULL # needed to make the following check work
   checkEquals(propertyValue(testData, "id"), targetId)
   checkEquals(T, used2[[1]]$wasExecuted)
+  
+  # delete
+  deleteEntity(activity)	
+  synapseClient:::.deleteCache("testActivity")
+  shouldBeError<-try(getActivity(activityId), silent=T)
+  checkTrue(class(shouldBeError)=="try-error")
+}
+
+integrationTestReferenceConstructor <- 
+  function()
+{
+  ## Create Activity
+  name<-"testName"
+  description<-"a description of the activity"
+  testData <-synapseClient:::.getCache("testData")
+  activity<-Activity(list(name=name, description=description, used=list(list(reference=list(targetId=propertyValue(testData, "id")), wasExecuted=F))))
+  activity<-createEntity(activity)
+  activityId<-propertyValue(activity, "id")
+  checkTrue(!is.null(activityId))
+  synapseClient:::.setCache("testActivity", activity)
+  
+  # delete
+  deleteEntity(activity)	
+  synapseClient:::.deleteCache("testActivity")
+  shouldBeError<-try(getActivity(activityId), silent=T)
+  checkTrue(class(shouldBeError)=="try-error")
+}
+
+integrationTestEntityConstructor <- 
+  function()
+{
+  ## Create Activity
+  name<-"testName"
+  description<-"a description of the activity"
+  testData <-synapseClient:::.getCache("testData")
+  activity<-Activity(list(name=name, description=description, used=list(testData)))
+  activity<-createEntity(activity)
+  activityId<-propertyValue(activity, "id")
+  checkTrue(!is.null(activityId))
+  synapseClient:::.setCache("testActivity", activity)
   
   # delete
   deleteEntity(activity)	

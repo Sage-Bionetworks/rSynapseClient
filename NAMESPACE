@@ -3,7 +3,7 @@ import(RCurl, Biobase, methods, affy)
 importFrom(RJSONIO, toJSON, fromJSON, emptyNamedList)
 importFrom(tools, md5sum)
 importFrom(digest, digest, hmac)
-importFrom(utils, edit)
+importFrom(utils, edit, compareVersion)
 
 ## package has a dynamic library
 useDynLib(synapseClient)
@@ -23,7 +23,8 @@ export(
   edit,
   setApiCredentials,
   synapseQuery,
-  available.versions
+  available.versions,
+  touOnWeb
 )
 
 ## S3 convenience methods

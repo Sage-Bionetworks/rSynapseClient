@@ -6,24 +6,21 @@
 # Author: bhoff
 ###############################################################################
 
+#####
+## constructor that takes a list argument
+#####
 setMethod(
   f = "Activity",
-  signature = "list",
-  definition = function(entity, ...){
-    classType <- "Activity"
-    synapseType <- which
-    ## GRAB NAMED ARGUMENTS AND ADD TO ENTITY LIST
-    argList <- list(...)
-    entity <- c(entity, argList)
-
-    if(length(entity) > 0){
-      if(any(names(argList) == ""))
-        stop(sprintf("Arguments passed to %s must be named", classType))
+  signature = signature("list"),
+  definition = function(activity){
+    ee <- new("Activity")
+    usedEntitiesOrReferences <- activity$used
+    if (!is.null(usedEntitiesOrReferences)) {
+      usedReferences<-lapply(usedEntitiesOrReferences, usedListEntry)
+      activity$used<-usedReferences
     }
-        
-    ee <- new(classType)
-    for(prop in names(entity))
-      propertyValue(ee, prop) <- entity[[prop]]
+    for(prop in names(activity))
+      propertyValue(ee, prop) <- activity[[prop]]
     ee
   }
 )
@@ -44,8 +41,8 @@ setMethod(
 setMethod(
   f = "Activity",
   signature = signature("character"),
-  definition = function(entity){
-    Activity(fromJSON(entity))
+  definition = function(activity){
+    Activity(fromJSON(activity))
   }
 )
 
