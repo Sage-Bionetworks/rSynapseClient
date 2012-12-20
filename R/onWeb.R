@@ -20,14 +20,6 @@ setMethod(
   }
 )
 
-setMethod(
-  f = "onWeb",
-  signature = signature("SynapseEntity"),
-  definition = function(entity){
-    .doOnWeb(entity)
-  }
-)
-
 .doOnWeb <- function(entity) {
   if(entity@synapseWebUrl == "")
     stop("This Entity has not been saved to Synapse yet. Use createEntity() to save it and then try again.")

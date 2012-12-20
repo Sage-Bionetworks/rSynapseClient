@@ -2,6 +2,14 @@
 #
 # Author: furia
 ###############################################################################
+
+setGeneric(
+  name="Activity",
+  def = function(activity, ...){
+    standardGeneric("Activity")
+  }
+)
+
 setGeneric(
   name = "cacheEntity",
   def = function(entity){
@@ -112,55 +120,6 @@ setGeneric(
   name = "removeFileCache",
   def = function(object, method, factory){
     standardGeneric("removeFileCache")
-  }
-)
-
-setGeneric(
-  name = "Constructor",
-  def = function(classType, entity, ...){
-    standardGeneric("Constructor")
-  }
-)
-
-setGeneric(
-  name = "Folder",
-  def = function(entity, ...){
-    standardGeneric("Folder")
-  }
-)
-
-setGeneric(
-  name = "RObject",
-  def = function(entity, ...){
-    standardGeneric("RObject")
-  }
-)
-
-setGeneric(
-  name = "PhenotypeData",
-  def = function(entity, ...){
-    standardGeneric("PhenotypeData")
-  }
-)
-
-setGeneric(
-  name = "GenotypeData",
-  def = function(entity, ...){
-    standardGeneric("GenotypeData")
-  }
-)
-
-setGeneric(
-  name = "Preview",
-  def = function(entity){
-    standardGeneric("Preview")
-  }
-)
-
-setGeneric(
-  name = "ExpressionData",
-  def = function(entity, ...){
-    standardGeneric("ExpressionData")
   }
 )
 
@@ -324,9 +283,9 @@ setGeneric(
 )
 
 setGeneric(
-  name = "SynapseLocationOwnerWithObjects",
+  name = "Locationable",
   def = function(entity){
-    standardGeneric("SynapseLocationOwnerWithObjects")
+    standardGeneric("Locationable")
   }
 )
 
@@ -336,36 +295,6 @@ setGeneric(
     standardGeneric("Code")
   }
 )
-
-setGeneric(
-  name = "Project",
-  def = function(entity, ...){
-    standardGeneric("Project")
-  }
-)
-
-
-setGeneric(
-  name = "Data",
-  def = function(entity, ...){
-    standardGeneric("Data")
-  }
-)
-
-setGeneric(
-  name = "Study",
-  def = function(entity, ...){
-    standardGeneric("Study")
-  }
-)
-
-setGeneric(
-  name = "Link",
-  def = function(entity){
-    standardGeneric("Link")
-  }
-)
-
 
 setGeneric(
   name = ".doGetObjects",
@@ -763,14 +692,6 @@ setGeneric(
   }
 )
 
-
-setGeneric(
-  name = "SynapseEntity",
-  def = function(entity){
-    standardGeneric("SynapseEntity")
-  }
-)
-
 setGeneric(
   name = "synapseEntityKind",
   def = function(entity){
@@ -789,13 +710,6 @@ setGeneric(
   name = "refreshAnnotations",
   def = function(entity){
     standardGeneric("refreshAnnotations")
-  }
-)
-
-setGeneric(
-  name = "Activity",
-  def = function(activity){
-    standardGeneric("Activity")
   }
 )
 

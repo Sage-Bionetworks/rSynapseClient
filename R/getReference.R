@@ -6,7 +6,7 @@
 
 setMethod(
   f="getReference",
-  signature = signature("SynapseEntity"),
+  signature = signature("Entity"),
   definition = function(entity) {
     versionNumber <- propertyValue(entity, "versionNumber")
     if (is.null(versionNumber)) {

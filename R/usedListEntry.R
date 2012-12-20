@@ -5,7 +5,7 @@
 #
 setMethod(
   f="usedListEntry",
-  signature = signature("SynapseEntity"),
+  signature = signature("Entity"),
   definition = function(listEntry) {
     list(reference=getReference(listEntry), wasExecuted=F)
   }

@@ -5,6 +5,36 @@
 ###############################################################################
 
 ##
+## NOTE: this constructor is defined here because it is used in the definition of
+## the Entity and Locationable classes
+##
+setGeneric(
+  name = "SynapseProperties",
+  def = function(typeMap){
+    standardGeneric("SynapseProperties")
+  }
+)
+
+setMethod(
+  f = "SynapseProperties",
+  signature = "list",
+  definition = function(typeMap){
+    if(any(names(typeMap) == ""))
+      stop("all properties must be named")
+    if(any(table(names(typeMap)) > 1L))
+      stop("each name must appear only once")
+    if(!all(typeMap %in% TYPEMAP))
+      stop("invalid data type specified")
+
+    object <- new("SynapseProperties")
+    object@typeMap <- typeMap
+    object
+  }
+)
+
+
+
+##
 ## the global cache is a singleton
 ##
 setClass(
@@ -49,6 +79,15 @@ setClass(
     )
 )
 
+setClass(
+  Class = "SynapseProperties",
+  representation = representation(
+    properties = "TypedPropertyStore",
+    typeMap = "list"
+  ),
+  prototype=prototype(typeMap=NULL)
+)
+
 ##
 ## this class may not seem necessary since it's just a wrapper on
 ## a list, but it will allow for an easier changeover to typed
@@ -61,22 +100,19 @@ setClass(
     Class = "SimplePropertyOwner",
     contains = "VIRTUAL",
     representation = representation(
-        properties = "list"
+      properties = "SynapseProperties"
     ),
     prototype = prototype(
-        properties = emptyNamedList
+      properties = new("SynapseProperties")
     )
 )
 
-##
-## All non-locationable Synapse entities will be derived from this class
-##
+
 setClass(
 		Class = "Activity",
 		contains = "SimplePropertyOwner",
-		representation = representation(
-		),
 		prototype = prototype(
+      properties = SynapseProperties(getEffectivePropertyTypes("org.sagebionetworks.repo.model.provenance.Activity"))
 		)
 )
 
@@ -400,27 +436,8 @@ setClass(
   contains = "FileCacheOwner"
 )
 
-##
-## All non-locationable Synapse entities will be derived from this class
-##
-setClassUnion("activityOrNULL", c("Activity", "NULL"))
 
-setClass(
-  Class = "SynapseEntity",
-  contains = "SimplePropertyOwner",
-  representation = representation(
-    attachOwn = "AttachmentOwner",
-    annotations = "SynapseAnnotations",
-    synapseEntityKind = "character",
-    synapseWebUrl = "character",
-	generatedBy = "activityOrNULL"
-  ),
-  prototype = prototype(
-    annotations = new("SynapseAnnotations"),
-    SynapseWebUrl = "",
-	generatedBy = NULL
-  )
-)
+setClassUnion("activityOrNULL", c("Activity", "NULL"))
 
 ##
 ## This class gives an object the ability to own R binary objects, allowing
@@ -463,28 +480,3 @@ setRefClass(
     )
 )
 
-##
-## All locationable Synapse entities will be derived from this class
-## If it is possible to determine that an entity with an unrecognized
-## value of the "type" property is "Locationable", then change this from
-## an abstract class to a concrete class by removing "VIRTUAL" from the
-## contains list
-##
-setClass(
-    Class = "SynapseLocationOwner",
-    contains = c("SynapseEntity"),
-    representation = representation(
-        archOwn = "ArchiveOwner"
-    )
-)
-
-##
-## These entities can own R objects that are added via addObject.
-##
-setClass(
-    Class = "SynapseLocationOwnerWithObjects",
-    contains = c("SynapseLocationOwner"),
-    representation(
-      objOwn = "CachingObjectOwner"
-    )
-)

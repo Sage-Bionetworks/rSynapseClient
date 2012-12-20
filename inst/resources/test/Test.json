@@ -1,0 +1,32 @@
+{
+	"title": "Test",
+	"description": "This is a test entity definition",
+	"type": "interface",
+	"implements": [
+		{
+			"$ref": "org.sagebionetworks.repo.model.Entity"
+		}
+	],
+	"properties": {
+		"string": {
+			"type": "string",
+			"description": "string property",
+			"title": "Name"
+		},
+		"integer": {
+			"type": "integer",
+			"description": "integer property",
+			"title": "Name"
+		},
+		"numeric": {
+			"type": "numeric",
+			"description": "numeric property",
+			"title": "Name"
+		},
+		"transient": {
+			"type": "string",
+			"description": "transient string",
+			"transient": true
+		}
+	}
+}
