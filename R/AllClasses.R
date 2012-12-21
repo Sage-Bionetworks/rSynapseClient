@@ -212,22 +212,13 @@ setRefClass(
           ## this function should also update the metadata to reflect the fact that the archive was changed
           ## although this is not needed now, but will be when we wait to aggregate added files in the cache
           ## directory until archive creation time
-          
-          ## delete the existing archive file
-          if(file.exists(file.path(.self$cacheRoot, .self$archiveFile)))
-            unlink(file.path(.self$cacheRoot, .self$archiveFile))
 
           ## if the FileCache has no files, delete the archive file, if it exists and return NULL
           if(length(.self$files()) == 0L){
-             unlink(file.path(.self$cacheRoot, .self$archiveFile))
-          
+            unlink(file.path(.self$cacheRoot, .self$archiveFile))
             return(NULL)
           }
-          
-          ## if the FileCache has no files, throw and exception
-          if(length(.self$files()) == 0L)
-            stop("There are not files to archive, add files using addFile then try again")
-          
+
           ## if the archive file doesn't have a zip extension. simply copy it to the root
           if(!grepl("\\.zip",.self$archiveFile)){
             if(length(.self$files()) != 1L)

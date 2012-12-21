@@ -65,7 +65,7 @@ unitTestExistingCacheZipNotInFactory <-
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
 
   checkEquals(synapseClient:::availFileCaches(), cacheRoot)
-  
+ 
   fc.copy <- getFileCache(file.path(fc$cacheRoot, fc$archiveFile))
   checkEquals(fc.copy$cacheRoot, fc$cacheRoot)
   checkEquals(fc.copy$files(), fc$files())
