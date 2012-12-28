@@ -60,7 +60,11 @@
   }
   
   # check own version, stopping if blacklisted
-  checkBlackList()
+  # but only do this check if the request is not for "/version" 
+  # which is part of the blacklist check itself
+  if (!(uri=="/version")) {
+    checkBlackList()
+  }
   
   ##curlSetOpt(opts,curl=curlHandle)
   if(is.null(entity)){

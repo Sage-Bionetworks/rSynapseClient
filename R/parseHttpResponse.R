@@ -18,7 +18,7 @@ parseHttpResponse<-function(r) {
   responseStatusString<-paste(firstRow[3:length(firstRow)], collapse=" ")
   zeroLengthElement<-.zeroLengthElement(parsedResult)
   headerCount<-zeroLengthElement-2
-  if (headerCount<0) stop(sprintf("unexpected http response: %s", result))
+  if (headerCount<0) stop(sprintf("unexpected http response: %s", r))
   # create list of headers
   headers<-list()
   if (headerCount>0) {
@@ -34,14 +34,14 @@ parseHttpResponse<-function(r) {
     responseBody<-""
   }
   # return list of response code, response string, headers, response body
-  return(list(statusCode=reponseStatusCode, statusString=responseStatusString, headers=headers, body=responseBody))
+  return(list(statusCode=responseStatusCode, statusString=responseStatusString, headers=headers, body=responseBody))
 }
 
 # returns the zero length character string from an array of character strings
 # stops if no zero length character string is found
 .zeroLengthElement<-function(stringArray) {
   for (i in 1:length(stringArray)) {
-    if (nchar(stringArray[i]==0)) return (i)
+    if (nchar(stringArray[i])==0) return (i)
   }
   stop("zero length element not found")
 }
