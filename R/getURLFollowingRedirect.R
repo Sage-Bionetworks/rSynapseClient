@@ -28,23 +28,36 @@ getURLFollowingRedirect<-function(
     } else {
       url <- paste(synapseAuthServiceEndpoint(), uri, sep="")
     }
-    rawResponse<-getURL(url, 
-      postfields=postfields, 
-      customrequest=customrequest, 
-      .opts=noRedirOpts, 
-      httpheader=httpheader, 
-      curl=curl, 
-      debugfunction=debugfunction)
+    if (is.null(postfields)) {
+      rawResponse<-getURL(url, 
+        customrequest=customrequest, 
+        .opts=noRedirOpts, 
+        httpheader=httpheader, 
+        curl=curl, 
+        debugfunction=debugfunction)
+    } else {
+      rawResponse<-getURL(url, 
+        postfields=postfields, 
+        customrequest=customrequest, 
+        .opts=noRedirOpts, 
+        httpheader=httpheader, 
+        curl=curl, 
+        debugfunction=debugfunction)
+    }
     
     response<-parseHttpResponse(rawResponse)
     httpStatus<-getCurlInfo(curl)$response.code
-    if (httpStatus!=response$statusCode) stop(sprintf("%d!=%d", httpStatus, response$statusCode))
+
     # TODO what about other 3XX statuses?
     if (httpStatus==301) {
       redirectLocation<-response$headers[["Location"]]
       if (is.null(redirectLocation)) stop("received redirect status but no redirect location")
-      redirectEndpoint<-parseEndpoint(redirectLocation, uri)
-      if (isAuthenticationRequest) {
+      # uri should be at the end of the redirect location
+      uriStart <- regexpr(uri, redirectLocation, fixed=T)
+      if (uriStart<0) stop(sprintf("%s does not appear in %s", uri, redirectLocation))
+      if (uriStart+nchar(uri)!=1+nchar(redirectLocation)) stop(sprintf("%s does not come at the end of %s", uri, redirectLocation))
+      redirectEndpoint<-substr(redirectLocation, 1, uriStart-1)
+      if (!isRepoRequest) {
         synapseAuthServiceEndpoint(redirectEndpoint)
       } else {
         synapseRepoServiceEndpoint(redirectEndpoint)
