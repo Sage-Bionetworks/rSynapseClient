@@ -36,10 +36,10 @@ unitTestRedirect <-
   checkEquals("Moved Permanently", ans$statusString)
   checkEquals(5, length(ans$headers))
   checkEquals("Wed, 02 Jan 2013 17:50:10 GMT", ans$headers$Date)
-  checkEquals("https://auth-dev-xschildw.dev.sagebase.org/auth/v1/session", ans$status$Location)
-  checkEquals("Apache-Coyote/1.1", ans$status$Server)
-  checkEquals("0", ans$status$`Content-Length`)
-  checkEquals("keep-alive", ans$status$Connection)
+  checkEquals("https://auth-dev-xschildw.dev.sagebase.org/auth/v1/session", ans$headers$Location)
+  checkEquals("Apache-Coyote/1.1", ans$headers$Server)
+  checkEquals("0", ans$headers$`Content-Length`)
+  checkEquals("keep-alive", ans$headers$Connection)
   
   checkEquals("", ans$body)
   
