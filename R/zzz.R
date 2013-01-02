@@ -22,7 +22,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     3) Use and contribute only data de-identified to HIPAA standards.
     4) Redistribute data only under these same terms of use.\n"
 
-  ##set the R_OBJECT cache directory. check for a funcitonal zip first
+  ##set the R_OBJECT cache directory. check for a functional zip first
   packageStartupMessage("Verifying zip installation...")
 
   ff <- tempfile()
