@@ -4,8 +4,8 @@
 ###############################################################################
 
 synapsePut <- 
-  function(uri, entity, host = .getRepoEndpointLocation(), curlHandle=getCurlHandle(), anonymous = FALSE, 
-    path = .getRepoEndpointPrefix(), opts = .getCache("curlOpts"))
+  function(uri, entity, isRepoRequest=TRUE, curlHandle=getCurlHandle(), anonymous = FALSE, 
+    opts = .getCache("curlOpts"))
 {
   ## constants
   kMethod <- "PUT"
@@ -13,11 +13,10 @@ synapsePut <-
   
   .synapsePostPut(uri = uri, 
     entity = entity, 
+    isRepoRequest = isRepoRequest,
     requestMethod = kMethod,
-    host = host,
     curlHandle = curlHandle, 
-    anonymous = anonymous, 
-    path = path, 
+    anonymous = anonymous,  
     opts = opts
   )
 }

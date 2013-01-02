@@ -4,8 +4,8 @@
 ###############################################################################
 
 .synapsePostPut <- 
-  function(uri, entity, requestMethod, host = .getRepoEndpointLocation(), curlHandle = getCurlHandle(), 
-    anonymous = FALSE, path = .getRepoEndpointPrefix(), opts = .getCache("curlOpts"))
+  function(uri, entity, isRepoRequest, requestMethod, curlHandle = getCurlHandle(), 
+    anonymous = FALSE, opts = .getCache("curlOpts"))
 {
   ## constants
   kValidMethods <- c("POST", "PUT", "DELETE")
@@ -14,6 +14,12 @@
   if(is.null(uri))
     stop("uri cannot be null")
 
+  if (isRepoRequest) {
+    path = .getRepoEndpointPrefix()
+  } else { # is auth request
+    path = .getAuthEndpointPrefix()
+  }
+  
   if(is.null(path))
     stop("path cannot be null")
 
@@ -60,12 +66,12 @@
   httpBody <- toJSON(entity)
   
   ## uris formed by the service already have their servlet prefix
-  if(grepl(path, uri)) {
-    uri <- paste(host, uri, sep="")
+  pathIndex<-regexpr(path, uri, fixed=T)
+  if(pathIndex>0) {
+    uri<-substr(uri, pathIndex+nchar(path), nchar(uri))
   }
-  else {
-    uri <- paste(host, path, uri, sep="")
-  }
+  
+  
   
   ## Prepare the header. If not an anonymous request, stuff the
   ## sessionToken into the header
@@ -73,7 +79,7 @@
   if(is.null(anonymous) || !anonymous) {
     header <- switch(authMode(),
       auth = .stuffHeaderAuth(header),
-      hmac = .stuffHeaderHmac(header, uri),
+      hmac = .stuffHeaderHmac(header, , paste(path, uri, sep="")),
       stop("Unknown auth mode: %s. Could not build header", authMode())
     )		
   }
@@ -98,14 +104,17 @@
   # check own version, stopping if blacklisted
   checkBlackList()
   
-  response <- getURL(uri, 
-    postfields = httpBody, 
-    customrequest = requestMethod, 
-    httpheader = header, 
-    curl = curlHandle, 
+  response<-getURLFollowingRedirect(
+    uri,
+    isRepoRequest,
+    postfields = httpBody,
+    customrequest = requestMethod,
+    httpheader = header,
+    curl = curlHandle,
     debugfunction=d$update,
     .opts=opts
   )
+  
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
     message("RESPONSE_BODY:: ", response)
   }

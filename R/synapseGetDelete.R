@@ -4,13 +4,19 @@
 ###############################################################################
 
 .synapseGetDelete <- 
-  function(uri, requestMethod, host = .getRepoEndpointLocation(), curlHandle=getCurlHandle(), 
-    anonymous = .getCache("anonymous"), path = .getRepoEndpointPrefix(), opts = .getCache("curlOpts"), entity=NULL, checkHttpStatus=T)
+  function(uri, isRepoRequest, requestMethod, curlHandle=getCurlHandle(), 
+    anonymous = .getCache("anonymous"), opts = .getCache("curlOpts"), entity=NULL, checkHttpStatus=T)
 {
-
+  
   if(is.null(uri))
     stop("uri cannot be null")
 
+  if (isRepoRequest) {
+    path = .getRepoEndpointPrefix()
+  } else { # is auth request
+    path = .getAuthEndpointPrefix()
+  }
+  
   if(is.null(path))
     stop("path cannot be null")
 
@@ -27,10 +33,9 @@
   }
   
   ## uris formed by the service already have their servlet prefix
-  if(grepl(path, uri)) {
-    uri <- paste(host, uri, sep="")
-  }else {
-    uri <- paste(host, path, uri, sep="")
+  pathIndex<-regexpr(path, uri, fixed=T)
+  if(pathIndex>0) {
+    uri<-substr(uri, pathIndex+nchar(path), nchar(uri))
   }
   
   if(length(path) > 1)
@@ -41,7 +46,7 @@
   if(is.null(anonymous) || !anonymous) {
     header <- switch(authMode(),
       auth = .stuffHeaderAuth(header),
-      hmac = .stuffHeaderHmac(header, uri),
+      hmac = .stuffHeaderHmac(header, paste(path, uri, sep="")),
       stop("Unknown auth mode: %s. Could not build header", authMode())
     )		
   }
@@ -51,18 +56,28 @@
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
     message("----------------------------------")
-    message("REQUEST: ", requestMethod, " ", uri)
+    message("REQUEST: ", requestMethod, " ", url)
+  }
+  
+  # check own version, stopping if blacklisted
+  # but only do this check if the request is not for "/version" 
+  # which is part of the blacklist check itself
+  if (!(uri=="/version")) {
+    checkBlackList()
   }
   
   ##curlSetOpt(opts,curl=curlHandle)
   if(is.null(entity)){
-    response <- getURL(uri, 
-      customrequest = requestMethod, 
-      httpheader = header, 
-      curl = curlHandle, 
+    response<-getURLFollowingRedirect(
+      uri,
+      isRepoRequest,
+      postfields = NULL, # the request body
+      customrequest = requestMethod,
+      httpheader = header,
+      curl = curlHandle, # the curl handle
       debugfunction=d$update,
       .opts=opts
-    )
+      )
   }else{
     ## convert integers to characters
     for(ii in 1:length(entity)){
@@ -75,14 +90,13 @@
       message("REQUEST_BODY: ", httpBody)
     }
     
-    # check own version, stopping if blacklisted
-    checkBlackList()
-    
-    response <- getURL(uri, 
-      postfields = httpBody, 
-      customrequest = requestMethod, 
-      httpheader = header, 
-      curl = curlHandle, 
+    response<-getURLFollowingRedirect(
+      uri,
+      isRepoRequest,
+      postfields = httpBody,
+      customrequest = requestMethod,
+      httpheader = header,
+      curl = curlHandle, # the curl handle
       debugfunction=d$update,
       .opts=opts
     )
