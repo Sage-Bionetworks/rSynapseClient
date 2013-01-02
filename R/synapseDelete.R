@@ -4,8 +4,8 @@
 ###############################################################################
 
 synapseDelete <- 
-  function(uri, entity, host = .getRepoEndpointLocation(), curlHandle=getCurlHandle(), anonymous=FALSE, 
-    path = .getRepoEndpointPrefix(), opts = .getCache("curlOpts"))
+  function(uri, isRepoRequest=TRUE, entity, curlHandle=getCurlHandle(), anonymous=FALSE, 
+    opts = .getCache("curlOpts"))
 {
   ## constants
   kMethod <- "DELETE"
@@ -13,21 +13,19 @@ synapseDelete <-
   
   if(!missing(entity)){
     .synapsePostPut(uri = uri, 
-      requestMethod = kMethod,
       entity = entity,
-      host = host, 
+      isRepoRequest = isRepoRequest,
+      requestMethod = kMethod, 
       curlHandle = curlHandle, 
-      anonymous = anonymous, 
-      path = path, 
+      anonymous = anonymous,  
       opts = opts		
     )
   }else{
     .synapseGetDelete(uri = uri, 
       requestMethod = kMethod,
-      host = host, 
+      isRepoRequest = isRepoRequest,
       curlHandle = curlHandle, 
       anonymous = anonymous, 
-      path = path, 
       opts = opts
     )
   }

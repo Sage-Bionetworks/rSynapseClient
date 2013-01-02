@@ -41,18 +41,13 @@ synapseLogin <-
   if(is.null(credentials$username) || credentials$username == "")
     stop("Must provide username in hmac mode")
   
-  ## get auth service endpoint and prefix from memory cache
-  host <- .getAuthEndpointLocation()
-  path <- .getAuthEndpointPrefix()
-  
   entity <- list()
   entity$email <- credentials$username
   
   ## Request the secret key
   response <- synapseGet(uri = kService, 
+    isRepoRequest=FALSE,
     entity = entity, 
-    host = host, 
-    path = path,
     anonymous = FALSE
   )
   
@@ -152,8 +147,7 @@ synapseLogin <-
   ## Login and check for success
   response <- synapsePost(uri = kService, 
     entity = entity, 
-    host = host, 
-    path = path,
+    isRepoRequest = FALSE,
     anonymous = TRUE
   )
   
@@ -196,8 +190,7 @@ synapseLogout <-
   if(!localOnly){
     response <- synapseDelete(uri = kService,
       entity = entity,
-      host = host,
-      path = path
+      isRepoRequest=FALSE
     )
   }
   hmacSecretKey(NULL)
@@ -236,17 +229,17 @@ hmacSecretKey <-
   c(header, sessionToken = sessionToken())
 }
 
+# uri is, for example, /repo/v1/dataset
 .stuffHeaderHmac <-
-  function(header, url)
+  function(header, uri)
 {
   timestamp <- sprintf("%sZ", format(Sys.time(),"%Y-%m-%dT%H:%M:%OS2", tz="GMT"))
   ## this is a hack. drop leap seconds
   timestamp <- gsub(":6[01][\\.]", ":59.", timestamp)
   
-  parsedUrl <- .ParsedUrl(url)
   c(header, userId = userName(), 
     signatureTimestamp = timestamp, 
-    signature = .generateHMACSignature(parsedUrl@path, timestamp)
+    signature = .generateHMACSignature(uri, timestamp)
   )
 }
 
