@@ -23,7 +23,8 @@ parseHttpResponse<-function(r) {
   # create list of headers
   headers<-list()
   if (headerCount>0) {
-    for (headerRow in parsedResult[2:headerCount+1]) {
+    for (j in 2:(headerCount+1)) {
+      headerRow<-parsedResult[j]
       i <- regexpr(": ", headerRow, fixed=T)
       if (i<0) stop(sprintf("Unexpected format for header %s", headerRow))
       headers[[substr(headerRow, 1, i-1)]]<-substr(headerRow, i+2, nchar(headerRow))
