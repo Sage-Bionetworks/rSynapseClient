@@ -4,8 +4,16 @@
 ###############################################################################
 
 .synapsePostPut <- 
-  function(uri, entity, isRepoRequest, requestMethod, curlHandle = getCurlHandle(), 
-    anonymous = FALSE, opts = .getCache("curlOpts"))
+  function(
+    uri, 
+    entity, 
+    isRepoRequest, 
+    requestMethod, 
+    curlHandle = getCurlHandle(), 
+    anonymous = FALSE, 
+    opts = .getCache("curlOpts"), 
+    maxTries # the number of tries when timeout or 503 is encountered.  1=no retries
+)
 {
   ## constants
   kValidMethods <- c("POST", "PUT", "DELETE")
@@ -112,7 +120,8 @@
     httpheader = header,
     curl = curlHandle,
     debugfunction=d$update,
-    .opts=opts
+    .opts=opts,
+    maxTries=maxTries
   )
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
