@@ -40,18 +40,20 @@ getURLFollowingRedirect<-function(
       if (is.null(postfields)) {
         rawResponse<-try(.getURLIntern(url, 
           customrequest=customrequest, 
-          .opts=noRedirOpts, 
           httpheader=httpheader, 
           curl=curl, 
-          debugfunction=debugfunction), silent=T)
+          debugfunction=debugfunction,
+          .opts=noRedirOpts
+          ), silent=T)
       } else {
         rawResponse<-try(.getURLIntern(url, 
           postfields=postfields, 
           customrequest=customrequest, 
-          .opts=noRedirOpts, 
           httpheader=httpheader, 
           curl=curl, 
-          debugfunction=debugfunction), silent=T)
+          debugfunction=debugfunction,
+          .opts=noRedirOpts
+          ), silent=T)
       }
       
       if (class(rawResponse)=="try-error") {
@@ -107,25 +109,28 @@ getURLFollowingRedirect<-function(
 .getURLIntern<-function(url, 
   postfields,
   customrequest, 
-  .opts, 
   httpheader, 
   curl, 
-  debugfunction) {
+  debugfunction,
+  .opts
+  ) {
   if (missing(postfields)) {
-    getURL(url, 
-      customrequest, 
-      .opts, 
-      httpheader, 
-      curl, 
-      debugfunction)
+    getURL(url=url, 
+      customrequest=customrequest, 
+      httpheader=httpheader, 
+      curl=curl, 
+      debugfunction=debugfunction,
+      .opts=.opts
+      )
   } else {
-    getURL(url, 
-      postfields, 
-      customrequest, 
-      .opts, 
-      httpheader, 
-      curl, 
-      debugfunction)
+    getURL(url=url, 
+      postfields=postfields, 
+      customrequest=customrequest, 
+      httpheader=httpheader, 
+      curl=curl, 
+      debugfunction=debugfunction,
+      .opts=.opts
+    )
   }
 }
 

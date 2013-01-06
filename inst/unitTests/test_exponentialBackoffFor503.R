@@ -11,10 +11,11 @@
   ## this function will 'time out' the first time but pass the second time
   myGetUrl <- function(url, 
     customrequest, 
-    .opts, 
     httpheader, 
     curl, 
-    debugfunction) { 
+    debugfunction,
+    .opts 
+    ) { 
     if (regexpr("/version", url, fixed=T)>=0) {
       synapseClient:::.setCache("httpStatus", 200)
       return("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"version\":\"foo\"}")
