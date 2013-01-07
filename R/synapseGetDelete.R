@@ -4,8 +4,17 @@
 ###############################################################################
 
 .synapseGetDelete <- 
-  function(uri, isRepoRequest, requestMethod, curlHandle=getCurlHandle(), 
-    anonymous = .getCache("anonymous"), opts = .getCache("curlOpts"), entity=NULL, checkHttpStatus=T)
+  function(
+    uri, 
+    isRepoRequest, 
+    requestMethod, 
+    curlHandle=getCurlHandle(), 
+    anonymous = .getCache("anonymous"), 
+    opts = .getCache("curlOpts"), 
+    entity=NULL, 
+    checkHttpStatus=T, 
+    maxTries # the number of tries when timeout or 503 is encountered.  1=no retries
+)
 {
   
   if(is.null(uri))
@@ -76,7 +85,8 @@
       httpheader = header,
       curl = curlHandle, # the curl handle
       debugfunction=d$update,
-      .opts=opts
+      .opts=opts,
+      maxTries=maxTries
       )
   }else{
     ## convert integers to characters
@@ -98,7 +108,8 @@
       httpheader = header,
       curl = curlHandle, # the curl handle
       debugfunction=d$update,
-      .opts=opts
+      .opts=opts,
+      maxTries=maxTries
     )
   }
   
@@ -109,8 +120,12 @@
   if (checkHttpStatus) .checkCurlResponse(curlHandle, response)
   
   if("GET" == requestMethod) {
-    ## Parse response and prepare return value
-    as.list(fromJSON(response))
+    if (is.null(response) ||  response=="") {
+      response
+    } else {
+      ## Parse response and prepare return value
+      as.list(fromJSON(response))
+    }
   }
 }
 

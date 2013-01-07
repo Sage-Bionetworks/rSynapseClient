@@ -4,8 +4,14 @@
 ###############################################################################
 
 synapsePost <- 
-  function(uri, entity, isRepoRequest=TRUE, curlHandle=getCurlHandle(), anonymous = FALSE, 
-   opts = .getCache("curlOpts"))
+  function(uri,
+    entity, 
+    isRepoRequest=TRUE, 
+    curlHandle=getCurlHandle(), 
+    anonymous = FALSE, 
+   opts = .getCache("curlOpts"),
+   maxTries=10 # the number of tries when timeout or 503 is encountered.  1=no retries
+)
 {
   ## constants
   kMethod <- "POST"
@@ -17,6 +23,7 @@ synapsePost <-
     requestMethod = kMethod,  
     curlHandle = curlHandle, 
     anonymous = anonymous, 
-    opts = opts
+    opts = opts,
+    maxTries=maxTries
   )
 }

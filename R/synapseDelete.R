@@ -4,8 +4,15 @@
 ###############################################################################
 
 synapseDelete <- 
-  function(uri, isRepoRequest=TRUE, entity, curlHandle=getCurlHandle(), anonymous=FALSE, 
-    opts = .getCache("curlOpts"))
+  function(
+    uri, 
+    isRepoRequest=TRUE, 
+    entity, 
+    curlHandle=getCurlHandle(), 
+    anonymous=FALSE, 
+    opts = .getCache("curlOpts"),
+    maxTries = 10 # the number of tries when timeout or 503 is encountered.  1=no retries
+)
 {
   ## constants
   kMethod <- "DELETE"
@@ -18,7 +25,8 @@ synapseDelete <-
       requestMethod = kMethod, 
       curlHandle = curlHandle, 
       anonymous = anonymous,  
-      opts = opts		
+      opts = opts,
+      maxTries=maxTries
     )
   }else{
     .synapseGetDelete(uri = uri, 
@@ -26,7 +34,8 @@ synapseDelete <-
       isRepoRequest = isRepoRequest,
       curlHandle = curlHandle, 
       anonymous = anonymous, 
-      opts = opts
+      opts = opts,
+      maxTries=maxTries
     )
   }
 }

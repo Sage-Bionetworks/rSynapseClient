@@ -6,7 +6,7 @@
 
 .checkCurlResponse <- function(object, response, call.=FALSE){
   if(class(object) != "CURLHandle") stop("invalid curl handle")
-  info <- getCurlInfo(object)
+  info <- .getCurlInfo(object)
   if(info$response.code != 0 & (info$response.code < 200 || info$response.code >= 300)){
     message <- paste("HTTP Error:", info$response.code, "for request", info$effective.url)
     if(!missing(response)) {
