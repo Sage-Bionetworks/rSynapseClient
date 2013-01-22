@@ -15,7 +15,7 @@ checkLatestVersion<-function() {
   if (is.null(myOwnVersion) || myOwnVersion=="") return("")
   
   # get the latest version, release notes, black list, and optional user message
-  versionInfo <- fromJSON(getURL(.getVersionsEndpoint()))
+  versionInfo <- fromJSON(getURLWithRetries(.getVersionsEndpoint(), opts=.getCache("curlOpts"))$response$body)
   
   # in the unlikely/transient event that there is a more up-to-date client but that client is *blacklisted* for this server, 
   # then we suppress telling the user to update their client.  They will receive the message once the latest client works with the server

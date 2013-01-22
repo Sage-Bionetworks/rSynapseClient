@@ -12,6 +12,11 @@
 
 parseHttpResponse<-function(r) {
   parsedResult<-strsplit(r, "\r\n", fixed=TRUE)[[1]]
+  # sometimes the response has two extra lines:  "100 Continue", followed by a blank line
+  # I believe this is RCurl returning an intermediate response concatenated with the final response
+  while (length(parsedResult)>2 && parsedResult[1]=="HTTP/1.1 100 Continue" && parsedResult[2]=="") {
+    parsedResult<-parsedResult[3:length(parsedResult)]
+	}
   firstRow<-strsplit(parsedResult[1], " ")[[1]]
   if (firstRow[1]!="HTTP/1.1") stop(sprintf("Expected 'HTTP/1.1' but found %s", firstRow[1]))
   # in practice we find the response code found here is 100 when the curl handle has the expected 200 value
@@ -31,7 +36,14 @@ parseHttpResponse<-function(r) {
     }
   }
   if (zeroLengthElement<length(parsedResult)) {
-    responseBody<-parsedResult[length(parsedResult)]
+    #responseBody<-parsedResult[length(parsedResult)]
+    j<-zeroLengthElement+1
+    responseBody<-parsedResult[j]
+    j<-j+1
+    while (j<=length(parsedResult)) {
+      responseBody<-paste(responseBody, parsedResult[j], sep="\r\n")
+      j<-j+1
+    }
   } else {
     responseBody<-""
   }
