@@ -25,12 +25,22 @@
   }
   attr(myGetUrl, "origDef") <- synapseClient:::.getURLIntern
   assignInNamespace(".getURLIntern", myGetUrl, "synapseClient")
+  
+  # also spoof checking black list, latest version
+  myCheckBlackList<-function() {"ok"}
+  myCheckLatestVersion<-function() {"ok"}
+  attr(myCheckBlackList, "origDef") <- synapseClient:::checkBlackList
+  assignInNamespace("checkBlackList", myCheckBlackList, "synapseClient")
+  attr(myCheckLatestVersion, "origDef") <- synapseClient:::checkLatestVersion
+  assignInNamespace("checkLatestVersion", myCheckLatestVersion, "synapseClient")
 }
 
 .tearDown <-
   function()
 {
   assignInNamespace(".getURLIntern", attr(synapseClient:::.getURLIntern, "origDef"), "synapseClient")
+  assignInNamespace("checkBlackList", attr(synapseClient:::checkBlackList, "origDef"), "synapseClient")
+  assignInNamespace("checkLatestVersion", attr(synapseClient:::checkLatestVersion, "origDef"), "synapseClient")
   unloadNamespace('synapseClient')
   library(synapseClient)
 }

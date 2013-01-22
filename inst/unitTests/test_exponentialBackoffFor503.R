@@ -1,4 +1,4 @@
-# Teest expontential backoff/retry
+# Test expontential backoff/retry
 # 
 # Author: brucehoff
 ###############################################################################
@@ -38,6 +38,14 @@
   }
   attr(myGetCurlInfo, "origDef") <- synapseClient:::.getCurlInfo
   assignInNamespace(".getCurlInfo", myGetCurlInfo, "synapseClient")
+  
+  # also spoof checking black list, latest version
+  myCheckBlackList<-function() {"ok"}
+  myCheckLatestVersion<-function() {"ok"}
+  attr(myCheckBlackList, "origDef") <- synapseClient:::checkBlackList
+  assignInNamespace("checkBlackList", myCheckBlackList, "synapseClient")
+  attr(myCheckLatestVersion, "origDef") <- synapseClient:::checkLatestVersion
+  assignInNamespace("checkLatestVersion", myCheckLatestVersion, "synapseClient")
 }
 
 .tearDown <-
@@ -45,6 +53,8 @@
 {
   assignInNamespace(".getURLIntern", attr(synapseClient:::.getURLIntern, "origDef"), "synapseClient")
   assignInNamespace(".getCurlInfo", attr(synapseClient:::.getCurlInfo, "origDef"), "synapseClient")
+  assignInNamespace("checkBlackList", attr(synapseClient:::checkBlackList, "origDef"), "synapseClient")
+  assignInNamespace("checkLatestVersion", attr(synapseClient:::checkLatestVersion, "origDef"), "synapseClient")
   unloadNamespace('synapseClient')
   library(synapseClient)
 }
