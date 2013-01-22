@@ -16,7 +16,8 @@ checkBlackList<-function() {
   if (is.null(myOwnVersion) || myOwnVersion=="") return
   
   # get the latest version, release notes, black list, and optional user message
-  versionInfo <- fromJSON(getURL(.getVersionsEndpoint()))
+  response<-getURLWithRetries(.getVersionsEndpoint(), opts=.getCache("curlOpts"))$response
+  versionInfo <- fromJSON(response$body)
   
   if (.versionIsBlackListed(myOwnVersion, serverVersion, versionInfo$blacklist)) {
     # check whether the *latest* version is also blacklisted for the server we're using
