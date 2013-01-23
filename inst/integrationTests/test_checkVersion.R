@@ -5,6 +5,7 @@
   # set versions service endpoint
   synapseClient:::.setCache('oldVersionsEndpoint', synapseClient:::.getVersionsEndpoint())
   synapseClient:::synapseVersionsServiceEndpoint("http://dev-versions.synapse.sagebase.org/synapseRClient")
+  .clearCachedVersionInfo()
 }
 
 .tearDown <- 
@@ -12,6 +13,14 @@
 {
   # set versions service endpoint
   synapseClient:::synapseVersionsServiceEndpoint(synapseClient:::.getCache('oldVersionsEndpoint'))
+  .clearCachedVersionInfo()
+}
+
+.clearCachedVersionInfo<-function() {
+  cacheTimestampName<-"versionsInfoTimestamp"
+  cacheVersionInfoName<-"versionsInfo"
+  synapseClient:::.setCache(cacheTimestampName, NULL)
+  synapseClient:::.setCache(cacheVersionInfoName, NULL)
 }
 
 integrationTestCheckServerVersion <- function() 
