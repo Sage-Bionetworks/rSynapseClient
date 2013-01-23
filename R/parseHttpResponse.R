@@ -36,14 +36,7 @@ parseHttpResponse<-function(r) {
     }
   }
   if (zeroLengthElement<length(parsedResult)) {
-    #responseBody<-parsedResult[length(parsedResult)]
-    j<-zeroLengthElement+1
-    responseBody<-parsedResult[j]
-    j<-j+1
-    while (j<=length(parsedResult)) {
-      responseBody<-paste(responseBody, parsedResult[j], sep="\r\n")
-      j<-j+1
-    }
+    responseBody<-paste(parsedResult[(zeroLengthElement+1):length(parsedResult)], collapse="\r\n")
   } else {
     responseBody<-""
   }
