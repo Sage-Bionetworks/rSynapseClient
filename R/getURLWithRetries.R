@@ -40,7 +40,8 @@ getURLWithRetries<-function(url,
     
     if (class(rawResponse)=="try-error") {
       if ((regexpr("connect() timed out", rawResponse[[1]], fixed=T)[1]>=0) || 
-        (regexpr("Connection reset by peer", rawResponse[[1]], fixed=T)[1]>=0)) {
+        (regexpr("Connection reset by peer", rawResponse[[1]], fixed=T)[1]>=0) ||
+        (regexpr("Failure when receiving data from the peer", rawResponse[[1]], fixed=T)[1]>=0)) {
         # then it's a time out
         Sys.sleep(backoff)
         backoff <- backoff * BACKOFF_MULTIPLIER
