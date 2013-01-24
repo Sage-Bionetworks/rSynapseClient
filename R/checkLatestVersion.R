@@ -7,7 +7,8 @@
 checkLatestVersion<-function() {
   # get my own version
   myOwnVersion<-packageDescription("synapseClient", fields="Version")
-  .checkLatestVersionGivenMyVersion(myOwnVersion)
+  serverVersion<-getServerVersion()
+  .checkLatestVersionGivenMyVersion(myOwnVersion, serverVersion)
 }
 
 # for testing purposes returns the printed message
