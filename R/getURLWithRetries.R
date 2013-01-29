@@ -5,13 +5,14 @@ getURLWithRetries<-function(url,
   httpheader=NULL, # the headers
   curl=getCurlHandle(), # the curl handle
   debugfunction = NULL,
-  opts, 
-  maxTries=10 # the number of tries when timeout or 503 is encountered.  1=no retries
+  opts
 ) {
   # for exponential retries, used for 503 errors and timeouts (see SYNR-296)
   INITIAL_BACKOFF_SECONDS <- 1
   BACKOFF_MULTIPLIER <- 2 # i.e. the back off time is (initial)*[multiplier^(# retries)]
-  if (maxTries<1) stop(sprintf("Illegal parameter maxTries %d.", maxTries))
+  
+  maxTries<-.getCache("webRequestMaxTries")
+  if (is.null(maxTries) || maxTries<1) stop(sprintf("Illegal value for maxTries %d.", maxTries))
   
   optsWithHeader<-opts
   optsWithHeader$header<-TRUE
@@ -38,15 +39,19 @@ getURLWithRetries<-function(url,
         ), silent=T)
     }
     
+    errorMessages <- c("connect() timed out",
+      "Connection reset by peer",
+      "Failure when receiving data from the peer",
+      "Empty reply from server")
+    
     if (class(rawResponse)=="try-error") {
-      if ((regexpr("connect() timed out", rawResponse[[1]], fixed=T)[1]>=0) || 
-        (regexpr("Connection reset by peer", rawResponse[[1]], fixed=T)[1]>=0) ||
-        (regexpr("Failure when receiving data from the peer", rawResponse[[1]], fixed=T)[1]>=0)) {
-        # then it's a time out
+      # if any of the strings in 'errorMessages' appear anywhere in 'rawResponse[[1]]'...
+      if (any(sapply(errorMessages, function(pattern){regexpr(pattern, rawResponse[[1]], fixed=T)[1]>=0}))) {
+        # ...then it's a time out
         Sys.sleep(backoff)
         backoff <- backoff * BACKOFF_MULTIPLIER
       } else {
-        # then it's some other error
+        # ... otherwise it's some other error
         stop(rawResponse[[1]])
       }
     } else {

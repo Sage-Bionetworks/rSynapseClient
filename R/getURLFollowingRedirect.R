@@ -16,13 +16,12 @@ getURLFollowingRedirect<-function(
   httpheader, # the headers
   curl, # the curl handle
   debugfunction = NULL,
-  .opts, 
-  maxTries # the number of tries when timeout or 503 is encountered.  1=no retries
-) {
+  .opts) {
   noRedirOpts<-.opts
   noRedirOpts$followlocation<-NULL # do NOT include 'followlocation'
   noRedirOpts$header<-TRUE
-  MAX_REDIRECTS <- 3
+  MAX_REDIRECTS<-.getCache("webRequestMaxRedirects")
+  if (is.null(MAX_REDIRECTS) || MAX_REDIRECTS<1) stop(sprintf("Illegal value for MAX_REDIRECTS %d.", MAX_REDIRECTS))
   
   for (redirs in 1:MAX_REDIRECTS) { 
     if (isRepoRequest) {
@@ -37,8 +36,7 @@ getURLFollowingRedirect<-function(
       httpheader, # the headers
       curl, # the curl handle
       debugfunction,
-      opts=noRedirOpts, 
-      maxTries)
+      opts=noRedirOpts)
     
     if (result$httpStatus==301) {
       redirectLocation<-result$response$headers[["Location"]]

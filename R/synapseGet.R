@@ -10,8 +10,7 @@ synapseGet <-
     anonymous = .getCache("anonymous"), 
     opts = .getCache("curlOpts"), 
     entity = NULL, 
-    checkHttpStatus=T,
-    maxTries=10 # the number of tries when timeout or 503 is encountered.  1=no retries
+    checkHttpStatus=T
 )
 {
   ## constants
@@ -25,8 +24,7 @@ synapseGet <-
     anonymous = anonymous, 
     opts = opts,
     entity = entity,
-    checkHttpStatus=checkHttpStatus, 
-    maxTries=maxTries
+    checkHttpStatus=checkHttpStatus
   )
 }
 

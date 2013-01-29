@@ -11,8 +11,7 @@
     requestMethod, 
     curlHandle = getCurlHandle(), 
     anonymous = FALSE, 
-    opts = .getCache("curlOpts"), 
-    maxTries # the number of tries when timeout or 503 is encountered.  1=no retries
+    opts = .getCache("curlOpts")
 )
 {
   ## constants
@@ -120,8 +119,7 @@
     httpheader = header,
     curl = curlHandle,
     debugfunction=d$update,
-    .opts=opts,
-    maxTries=maxTries
+    .opts=opts
   )
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
