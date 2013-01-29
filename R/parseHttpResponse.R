@@ -18,7 +18,7 @@ parseHttpResponse<-function(r) {
     parsedResult<-parsedResult[3:length(parsedResult)]
 	}
   firstRow<-strsplit(parsedResult[1], " ")[[1]]
-  if (firstRow[1]!="HTTP/1.1") stop(sprintf("Expected 'HTTP/1.1' but found %s", firstRow[1]))
+  if (substr(firstRow[1],1,4)!="HTTP") stop(sprintf("Expected 'HTTP' but found %s", substr(firstRow[1],1,4)))
   # in practice we find the response code found here is 100 when the curl handle has the expected 200 value
   responseStatusCode<-as.integer(firstRow[2])
   responseStatusString<-paste(firstRow[3:length(firstRow)], collapse=" ")
