@@ -69,8 +69,9 @@ unitTestExponentialBackoffShouldFail <-
   opts$timeout.ms<-100
   
   # this will get a 503, and an empty response
+  synapseClient:::.setCache("webRequestMaxTries", 1)
   shouldBeEmpty<-synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", 
-      anonymous=T, opts=opts, checkHttpStatus=FALSE, maxTries=1)
+      anonymous=T, opts=opts, checkHttpStatus=FALSE)
   checkEquals("", shouldBeEmpty)
   checkEquals(503, synapseClient:::.getCurlInfo()$response.code)
 }
@@ -82,7 +83,8 @@ unitTestExponentialBackoffShouldComplete <-
   opts$timeout.ms<-100
   
   # this will complete
-  result<-synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", anonymous=T, opts=opts, maxTries=3)
+  synapseClient:::.setCache("webRequestMaxTries", 3)
+  result<-synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", anonymous=T, opts=opts)
   checkEquals(list(foo="bar"), result)
   checkEquals(200, synapseClient:::.getCurlInfo()$response.code)
 }
