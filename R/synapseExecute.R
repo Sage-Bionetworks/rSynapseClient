@@ -5,10 +5,10 @@
 # adapted by: Bruce Hoff
 #
 # adaptations made for inclusion in synapseClient:
-# - redefined isSynapseId
+# - defined isSynapseId (check for numeric suffix)
 # - createUsedEntities recurses on vectors as well as lists
-# - made entity name 'scrubbing' comphrehensive
-# - code project is an input parameter
+# - entity name 'scrubbing' converts all illegal characters
+# - TODO code project is an input parameter
 
 
 require(rGithubClient)
@@ -35,7 +35,7 @@ createUsedEntitiesList <- function(args) {
   usedEntitiesList <- list()
   for (argVal in args) {
     if (is.vector(argVal)) {
-      usedEntitiesList <- append(usedEntityList, createUsedEntitiesList(argVal)
+      usedEntitiesList <- append(usedEntityList, createUsedEntitiesList(argVal))
     } else if (isSynapseId(argVal)) {
       usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=argVal, wasExecuted=FALSE)
     } else if (class(argVal) %in% c("Data", "Code", "Folder") ){ # TODO what if it's some other Synapse type
