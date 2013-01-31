@@ -1,8 +1,19 @@
 # getURLFollowingRedirect
 # wraps getURL in RCurl adding logic for following redirects
-# Note: getURL also has redirect following logic, but doesn't support
-# the option to suppress mapping 'POST' to 'GET' when redirecting a request
-# Therefore we implement the redirect logic ourselves.
+#
+# Note: getURL also has redirect following logic, but doesn't 
+# return the new location to which the client is redirected.
+# Therefore we implement the redirect logic ourselves, capturing
+# the location and updating the 'repo' or 'auth' endpoint accordingly.
+#
+# Note:  This method ONLY executes GET requests, not PUT, POST, or DELETE
+# since following other redirects is not kosher:
+# From
+# http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+# Sect. 10.3.2:  "If the 301 status code is received in response to a request 
+# other than GET or HEAD, the user agent MUST NOT automatically redirect the 
+# request unless it can be confirmed by the user, since this might change the 
+# conditions under which the request was issued."
 # 
 # Author: brucehoff
 ###############################################################################
@@ -12,11 +23,11 @@ getURLFollowingRedirect<-function(
   uri, # omitting the endpoint
   isRepoRequest=TRUE, # if FALSE then it's an auth request
   postfields = NULL, # the request body
-  customrequest, # the request method
   httpheader, # the headers
   curl, # the curl handle
   debugfunction = NULL,
   .opts) {
+  customrequest<-"GET"
   noRedirOpts<-.opts
   noRedirOpts$followlocation<-NULL # do NOT include 'followlocation'
   noRedirOpts$header<-TRUE
