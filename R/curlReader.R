@@ -21,7 +21,7 @@
 }
 
 .curlReaderUpload <-
-  function(url, srcfile, header, curlHandle = getCurlHandle(), readFunction=.getCache('curlReader'), opts = .getCache("curlOpts"))
+  function(url, srcfile, header, method="PUT", curlHandle = getCurlHandle(), readFunction=.getCache('curlReader'), opts = .getCache("curlOpts"))
 {
   parsedUrl <- .ParsedUrl(url)
   if(tolower(parsedUrl@protocol) == "file"){
@@ -32,12 +32,15 @@
   ext <- .curlReaderOpen(srcfile)
   on.exit(.curlReaderClose(ext))
   opts$noprogress <- 0L
-  opts$put <- 1L
+  #  opts$put <- 1L use customrequest parameter instead
+
   opts$infilesize <- file.info(srcfile)$size
+  responseWriteFunction<-basicTextGatherer()
   if(missing(header)){
-    response <- curlPerform(URL=url, readfunction=readFunction,readdata=ext, .opts = opts)
+    response <- curlPerform(URL=url, customrequest=method, readfunction=readFunction,readdata=ext, curl=curlHandle, .opts = opts, writefunction=responseWriteFunction$update)
   }else{
-    response <- curlPerform(URL=url, readfunction=readFunction,readdata=ext, httpHeader=header, .opts = opts)
+    response <- curlPerform(URL=url, customrequest=method, readfunction=readFunction,readdata=ext, curl=curlHandle, httpHeader=header, .opts = opts, writefunction=responseWriteFunction$update)
   }
-  .checkCurlResponse(curlHandle, response)
+  .checkCurlResponse(curlHandle, responseWriteFunction$value())
+  responseWriteFunction$value()
 }
