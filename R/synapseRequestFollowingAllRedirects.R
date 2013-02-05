@@ -18,21 +18,7 @@ synapseRequestFollowingAllRedirects<-function(
   .opts) {
   
   # need to make sure that permanent redirects have been resolved:
-  redirectResolvedKey <- sprintf("permanent.redirects.resolved.%s", service)
-  redirectResolvedStatus <- .getCache(redirectResolvedKey)
-  if (is.null(redirectResolvedStatus)) {
-    # this will follow redirects and update the service endpoint globally
-    redirectResult<-synapseGetFollowingPermanentRedirects(
-      uri="/nonexistentservice", # non-existent service, just to trigger the redirect
-      service=service,
-      httpheader=httpheader,
-      curl=curl,
-      debugfunction = debugfunction,
-      .opts=.opts)  
-     # we expect a 404 error since we called a non-existent service
-     if (redirectResult$httpStatus!=404) stop(sprintf("Expected HTTP Status 404 but found %s", redirectResult$httpStatus))
-    .setCache(redirectResolvedKey, TRUE)
-  }
+  resolvePermanentRedirects(service)
     
   followRedirOpts<-.opts
   followRedirOpts$followlocation<-T # DO include 'followlocation'

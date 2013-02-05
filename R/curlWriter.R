@@ -30,8 +30,9 @@
   ext <- .curlWriterOpen(destfile)
   on.exit(.curlWriterClose(ext))
   opts$noprogress <- 0L
-  response <- curlPerform(URL=url, writefunction=writeFunction,
+  curlPerform(URL=url, writefunction=writeFunction,
     writedata=ext, .opts = opts, curl = curlHandle)
-  .checkCurlResponse(curlHandle, response)
+  #TODO 'readlines(destfile)' should be avoided for large files
+  .checkCurlResponse(curlHandle, readlines(destfile))
   destfile
 }

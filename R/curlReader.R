@@ -32,7 +32,9 @@
   ext <- .curlReaderOpen(srcfile)
   on.exit(.curlReaderClose(ext))
   opts$noprogress <- 0L
-  #  opts$put <- 1L use customrequest parameter instead
+  # I have not idea why, but to get 'curlPerfom' to move a file to another file (see test_curlUploadDownload)
+  # it is not sufficient to set customrequestmethod to POST, you also have to set opts$put
+  if (method=="PUT") opts$put <- 1L
 
   opts$infilesize <- file.info(srcfile)$size
   responseWriteFunction<-basicTextGatherer()

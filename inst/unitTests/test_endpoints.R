@@ -115,7 +115,7 @@ unitTestResetEndpoints <-
   synapseResetEndpoints()	
   checkEquals(synapseRepoServiceEndpoint(), 'https://repo-prod.sagebase.org/repo/v1')
   checkEquals(synapseAuthServiceEndpoint(), 'https://auth-prod.sagebase.org/auth/v1')
-  checkEquals(synapseFileServiceEndpoint(), 'https://file-prod.sagebase.org/auth/v1')
+  checkEquals(synapseFileServiceEndpoint(), 'https://file-prod.sagebase.org/file/v1')
   checkEquals(synapsePortalEndpoint(), 'http://synapse.sagebase.org')
   checkTrue(is.null(synapseClient:::.getCache("sessionToken")))
   checkTrue(is.null(synapseClient:::.getCache("hmacSecretKey")))
