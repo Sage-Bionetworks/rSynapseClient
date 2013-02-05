@@ -5,7 +5,7 @@
 
 synapseGet <- 
   function(uri, 
-    isRepoRequest=TRUE, 
+    service="REPO", 
     curlHandle=getCurlHandle(), 
     anonymous = .getCache("anonymous"), 
     opts = .getCache("curlOpts"), 
@@ -18,7 +18,7 @@ synapseGet <-
   ## end constants
   
   .synapseGetDelete(uri = uri, 
-    isRepoRequest = isRepoRequest,
+    service = service,
     requestMethod = kMethod,  
     curlHandle = curlHandle, 
     anonymous = anonymous, 

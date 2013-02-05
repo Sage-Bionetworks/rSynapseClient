@@ -1,5 +1,6 @@
-# getURLFollowingRedirect
-# wraps getURL in RCurl adding logic for following redirects
+# synapseGetFollowingPermanentRedirects
+#
+# wraps getURL in RCurl adding logic for following permanent redirects
 #
 # Note: getURL also has redirect following logic, but doesn't 
 # return the new location to which the client is redirected.
@@ -19,10 +20,9 @@
 ###############################################################################
 
 
-getURLFollowingRedirect<-function(
+synapseGetFollowingPermanentRedirects<-function(
   uri, # omitting the endpoint
-  isRepoRequest=TRUE, # if FALSE then it's an auth request
-  postfields = NULL, # the request body
+  service="REPO", # one of REPO, AUTH, FILE
   httpheader, # the headers
   curl, # the curl handle
   debugfunction = NULL,
@@ -35,19 +35,25 @@ getURLFollowingRedirect<-function(
   if (is.null(MAX_REDIRECTS) || MAX_REDIRECTS<1) stop(sprintf("Illegal value for MAX_REDIRECTS %d.", MAX_REDIRECTS))
   
   for (redirs in 1:MAX_REDIRECTS) { 
-    if (isRepoRequest) {
+    if (service=="REPO") {
       url <- paste(synapseRepoServiceEndpoint(), uri, sep="")
-    } else {
+    } else if (service=="AUTH") {
       url <- paste(synapseAuthServiceEndpoint(), uri, sep="")
+    } else if (service=="FILE") {
+      url <- paste(synapseFileServiceEndpoint(), uri, sep="")
+    } else {
+      stop(sprintf("Unexpected service: %s.", service))
     }
     
     result<-getURLWithRetries(url,
-      postfields, # the request body
+      NULL, # the request body
       customrequest, # the request method
       httpheader, # the headers
       curl, # the curl handle
       debugfunction,
       opts=noRedirOpts)
+    
+    # message(sprintf("synapseGetFollowingPermanentRedirects: got status %d for url %s and service %s.", result$httpStatus, url, service))
     
     if (result$httpStatus==301) {
       redirectLocation<-result$response$headers[["Location"]]
@@ -57,13 +63,15 @@ getURLFollowingRedirect<-function(
       if (uriStart<0) stop(sprintf("%s does not appear in %s", uri, redirectLocation))
       if (uriStart+nchar(uri)!=1+nchar(redirectLocation)) stop(sprintf("%s does not come at the end of %s", uri, redirectLocation))
       redirectEndpoint<-substr(redirectLocation, 1, uriStart-1)
-      if (!isRepoRequest) {
-        synapseAuthServiceEndpoint(redirectEndpoint)
-      } else {
+      if (service=="REPO") {
         synapseRepoServiceEndpoint(redirectEndpoint)
+      } else if (service=="AUTH") {
+        synapseAuthServiceEndpoint(redirectEndpoint)
+      } else if (service=="FILE") {
+        synapseFileServiceEndpoint(redirectEndpoint)
       }
     } else {
-      return(result$response$body)
+      return(result)
     }
   }
   stop(sprintf("Exceeded max redirects (%d)", MAX_REDIRECTS))
