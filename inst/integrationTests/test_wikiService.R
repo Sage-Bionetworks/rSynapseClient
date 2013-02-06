@@ -3,7 +3,7 @@ integrationTestWikiService <-
   function()
 {
   # Note we cannot enable this integration test until the wiki service is on Staging
-  if (false) {
+  if (FALSE) {
     # create a Project
     project<-Project()
     project<-createEntity(project)

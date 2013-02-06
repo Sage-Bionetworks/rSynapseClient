@@ -32,7 +32,6 @@
   opts$noprogress <- 0L
   curlPerform(URL=url, writefunction=writeFunction,
     writedata=ext, .opts = opts, curl = curlHandle)
-  #TODO 'readlines(destfile)' should be avoided for large files
-  .checkCurlResponse(curlHandle, readlines(destfile))
+  .checkCurlResponse(curlHandle)
   destfile
 }

@@ -6,8 +6,14 @@
 ###############################################################################
 
 synapseUploadToFileHandle<-function(fileName, curlHandle=getCurlHandle()) {
-  ## TODO check that fileName exists
-  ## TODO check that file is <100MB
+  ## check that fileName exists and can be read
+  if (file.access(fileName, 0)==-1) stop (sprintf("%s does not exist.", fileName))
+  if (file.access(fileName, 4)==-1) stop (sprintf("Read permission required for %s.", fileName))
+  ## check that file is <=100MB
+  MAX_FILE_SIZE <- 100 * 1024 * 1024
+  fileSize <- file.info(fileName)$size
+  if (fileSize > MAX_FILE_SIZE) 
+    stop(sprintf("File %s has size %d which exceeds maximum file size of %d."), fileName, fileSize, MAX_FILE_SIZE)
   
   # check own version, stopping if blacklisted
   checkBlackList()

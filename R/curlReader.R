@@ -32,16 +32,16 @@
   ext <- .curlReaderOpen(srcfile)
   on.exit(.curlReaderClose(ext))
   opts$noprogress <- 0L
-  # I have not idea why, but to get 'curlPerfom' to move a file to another file (see test_curlUploadDownload)
+  # I have not idea why, but to get 'curlPerform' to move a file to another file (see test_curlUploadDownload)
   # it is not sufficient to set customrequestmethod to POST, you also have to set opts$put
   if (method=="PUT") opts$put <- 1L
 
   opts$infilesize <- file.info(srcfile)$size
   responseWriteFunction<-basicTextGatherer()
   if(missing(header)){
-    response <- curlPerform(URL=url, customrequest=method, readfunction=readFunction,readdata=ext, curl=curlHandle, .opts = opts, writefunction=responseWriteFunction$update)
+    curlPerform(URL=url, customrequest=method, readfunction=readFunction,readdata=ext, curl=curlHandle, .opts = opts, writefunction=responseWriteFunction$update)
   }else{
-    response <- curlPerform(URL=url, customrequest=method, readfunction=readFunction,readdata=ext, curl=curlHandle, httpHeader=header, .opts = opts, writefunction=responseWriteFunction$update)
+    curlPerform(URL=url, customrequest=method, readfunction=readFunction,readdata=ext, curl=curlHandle, httpHeader=header, .opts = opts, writefunction=responseWriteFunction$update)
   }
   .checkCurlResponse(curlHandle, responseWriteFunction$value())
   responseWriteFunction$value()

@@ -4,7 +4,7 @@ integrationTestFileHandle <-
   function()
 {
   # Note we cannot enable this integration test until the fileHandle service is on Staging
-  if (false) {
+  if (FALSE) {
     # upload a file and receive the file handle
     filePath<- system.file("NAMESPACE", package = "synapseClient")
     fileHandle<-synapseClient:::synapseUploadToFileHandle(filePath)
