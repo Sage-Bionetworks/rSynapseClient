@@ -59,7 +59,7 @@ synapseUploadToFileHandle<-function(fileName, curlHandle=getCurlHandle()) {
   
   # this object is a list of file handles.  we expect exactly one
   if (is.null(responseObject$list)) stop(sprintf("expected list but found %s", response))
-  if (length(responseObject$list)!=1) stop (sprintf("expected list of length 1 but found %s"), responseObject$list)
+  if (length(responseObject$list)!=1) stop (sprintf("expected list of length 1 but found %s"), length(responseObject$list))
   
   responseObject$list[[1]]
 }
