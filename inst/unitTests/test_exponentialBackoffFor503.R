@@ -8,7 +8,9 @@
 {
   synapseClient:::.setCache("httpRequestCount", 0)
   synapseClient:::.setCache("httpStatus", 200)
-  ## this function will 'time out' the first time but pass the second time
+  synapseClient:::.setCache("permanent.redirects.resolved.REPO", TRUE)
+  synapseClient:::.setCache("permanent.redirects.resolved.FILE", TRUE)
+ ## this function will 'time out' the first time but pass the second time
   myGetUrl <- function(url, 
     customrequest, 
     httpheader, 
@@ -51,6 +53,8 @@
 .tearDown <-
   function()
 {
+  synapseClient:::.setCache("permanent.redirects.resolved.REPO", NULL)
+  synapseClient:::.setCache("permanent.redirects.resolved.FILE", NULL)
   assignInNamespace(".getURLIntern", attr(synapseClient:::.getURLIntern, "origDef"), "synapseClient")
   assignInNamespace(".getCurlInfo", attr(synapseClient:::.getCurlInfo, "origDef"), "synapseClient")
   assignInNamespace("checkBlackList", attr(synapseClient:::checkBlackList, "origDef"), "synapseClient")

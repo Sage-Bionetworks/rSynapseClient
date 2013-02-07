@@ -7,7 +7,7 @@
   function(
     uri, 
     entity, 
-    isRepoRequest, 
+    service, 
     requestMethod, 
     curlHandle = getCurlHandle(), 
     anonymous = FALSE, 
@@ -21,10 +21,14 @@
   if(is.null(uri))
     stop("uri cannot be null")
 
-  if (isRepoRequest) {
-    path = .getRepoEndpointPrefix()
-  } else { # is auth request
-    path = .getAuthEndpointPrefix()
+  if (service=="REPO") {
+    path <- .getRepoEndpointPrefix()
+  } else if (service=="AUTH") {
+    path <- .getAuthEndpointPrefix()
+  } else if (service=="FILE") {
+    path <- .getFileEndpointPrefix()
+  } else {
+    stop(sprintf("Unexpected service: %s.", service))
   }
   
   if(is.null(path))
@@ -86,7 +90,7 @@
   if(is.null(anonymous) || !anonymous) {
     header <- switch(authMode(),
       auth = .stuffHeaderAuth(header),
-      hmac = .stuffHeaderHmac(header, , paste(path, uri, sep="")),
+      hmac = .stuffHeaderHmac(header, paste(path, uri, sep="")),
       stop("Unknown auth mode: %s. Could not build header", authMode())
     )		
   }
@@ -111,9 +115,9 @@
   # check own version, stopping if blacklisted
   checkBlackList()
   
-  response<-getURLFollowingRedirect(
+  response<-synapseRequestFollowingAllRedirects(
     uri,
-    isRepoRequest,
+    service,
     postfields = httpBody,
     customrequest = requestMethod,
     httpheader = header,
