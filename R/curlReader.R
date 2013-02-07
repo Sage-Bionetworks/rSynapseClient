@@ -21,7 +21,7 @@
 }
 
 .curlReaderUpload <-
-  function(url, srcfile, header, curlHandle = getCurlHandle(), readFunction=.getCache('curlReader'), opts = .getCache("curlOpts"))
+  function(url, srcfile, header, method="PUT", curlHandle = getCurlHandle(), readFunction=.getCache('curlReader'), opts = .getCache("curlOpts"))
 {
   parsedUrl <- .ParsedUrl(url)
   if(tolower(parsedUrl@protocol) == "file"){
@@ -32,12 +32,17 @@
   ext <- .curlReaderOpen(srcfile)
   on.exit(.curlReaderClose(ext))
   opts$noprogress <- 0L
-  opts$put <- 1L
+  # I have not idea why, but to get 'curlPerform' to move a file to another file (see test_curlUploadDownload)
+  # it is not sufficient to set customrequestmethod to POST, you also have to set opts$put
+  if (method=="PUT") opts$put <- 1L
+
   opts$infilesize <- file.info(srcfile)$size
+  responseWriteFunction<-basicTextGatherer()
   if(missing(header)){
-    response <- curlPerform(URL=url, readfunction=readFunction,readdata=ext, .opts = opts)
+    curlPerform(URL=url, customrequest=method, readfunction=readFunction,readdata=ext, curl=curlHandle, .opts = opts, writefunction=responseWriteFunction$update)
   }else{
-    response <- curlPerform(URL=url, readfunction=readFunction,readdata=ext, httpHeader=header, .opts = opts)
+    curlPerform(URL=url, customrequest=method, readfunction=readFunction,readdata=ext, curl=curlHandle, httpHeader=header, .opts = opts, writefunction=responseWriteFunction$update)
   }
-  .checkCurlResponse(curlHandle, response)
+  .checkCurlResponse(curlHandle, responseWriteFunction$value())
+  responseWriteFunction$value()
 }

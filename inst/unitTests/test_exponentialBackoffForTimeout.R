@@ -7,6 +7,8 @@
   function()
 {
   synapseClient:::.setCache("exponentialBackoffWillFail", TRUE)
+  synapseClient:::.setCache("permanent.redirects.resolved.REPO", TRUE)
+  synapseClient:::.setCache("permanent.redirects.resolved.FILE", TRUE)
   ## this function will 'time out' the first time but pass the second time
   myGetUrl <- function(url, 
     customrequest, 
@@ -38,6 +40,8 @@
 .tearDown <-
   function()
 {
+  synapseClient:::.setCache("permanent.redirects.resolved.REPO", NULL)
+  synapseClient:::.setCache("permanent.redirects.resolved.FILE", NULL)
   assignInNamespace(".getURLIntern", attr(synapseClient:::.getURLIntern, "origDef"), "synapseClient")
   assignInNamespace("checkBlackList", attr(synapseClient:::checkBlackList, "origDef"), "synapseClient")
   assignInNamespace("checkLatestVersion", attr(synapseClient:::checkLatestVersion, "origDef"), "synapseClient")

@@ -6,7 +6,7 @@
 .synapseGetDelete <- 
   function(
     uri, 
-    isRepoRequest, 
+    service, 
     requestMethod, 
     curlHandle=getCurlHandle(), 
     anonymous = .getCache("anonymous"), 
@@ -19,10 +19,14 @@
   if(is.null(uri))
     stop("uri cannot be null")
 
-  if (isRepoRequest) {
-    path = .getRepoEndpointPrefix()
-  } else { # is auth request
-    path = .getAuthEndpointPrefix()
+  if (service=="REPO") {
+    path <- .getRepoEndpointPrefix()
+  } else if (service=="AUTH") {
+    path <- .getAuthEndpointPrefix()
+  } else if (service=="FILE") {
+    path <- .getFileEndpointPrefix()
+  } else {
+    stop(sprintf("Unexpected service: %s.", service))
   }
   
   if(is.null(path))
@@ -76,9 +80,9 @@
   
   ##curlSetOpt(opts,curl=curlHandle)
   if(is.null(entity)){
-    response<-getURLFollowingRedirect(
+    response<-synapseRequestFollowingAllRedirects(
       uri,
-      isRepoRequest,
+      service,
       postfields = NULL, # the request body
       customrequest = requestMethod,
       httpheader = header,
@@ -98,9 +102,9 @@
       message("REQUEST_BODY: ", httpBody)
     }
     
-    response<-getURLFollowingRedirect(
+    response<-synapseRequestFollowingAllRedirects(
       uri,
-      isRepoRequest,
+      service,
       postfields = httpBody,
       customrequest = requestMethod,
       httpheader = header,

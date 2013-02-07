@@ -49,7 +49,6 @@ unitTestLocalFileDownload <- function(){
   checkEquals(as.character(sourceChecksum), as.character(destChecksum))
 }
 
-
 unitTestLocalFileUpload <- function(){
   url <- paste("file://", gsub("^[A-Z]:", "", tempfile()), sep="")
   d <- matrix(nrow=100, ncol=100, data=1)

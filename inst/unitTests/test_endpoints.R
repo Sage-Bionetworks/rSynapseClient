@@ -11,10 +11,12 @@
   synapseClient:::.setCache('oldHmacKey', synapseClient:::.getCache("hmacSecretKey"))
   synapseClient:::.setCache('oldRepoEndpoint', synapseRepoServiceEndpoint())
   synapseClient:::.setCache('oldAuthEndpoint', synapseAuthServiceEndpoint())
+  synapseClient:::.setCache('oldFileEndpoint', synapseFileServiceEndpoint())
   synapseClient:::.setCache('oldPortalEndpoint', synapsePortalEndpoint())
   synapseClient:::.setCache('oldVersionsEndpoint', synapseClient:::.getVersionsEndpoint())
   synapseClient:::sessionToken(NULL)
   hmacSecretKey(NULL)
+  synapseFileServiceEndpoint("http://shoobar.com")
   synapseAuthServiceEndpoint("http://foobar.com")
   synapseRepoServiceEndpoint("http://boobar.com")
   synapsePortalEndpoint("http://barboo.com")
@@ -24,6 +26,7 @@
 .tearDown <-
   function()
 {
+  synapseFileServiceEndpoint(synapseClient:::.getCache('oldFileEndpoint'))
   synapseAuthServiceEndpoint(synapseClient:::.getCache('oldAuthEndpoint'))
   synapseRepoServiceEndpoint(synapseClient:::.getCache('oldRepoEndpoint'))
   synapseClient:::synapseVersionsServiceEndpoint(synapseClient:::.getCache('oldVersionsEndpoint'))
@@ -47,6 +50,14 @@ unitTestSetAuth <-
   checkEquals(synapseAuthServiceEndpoint(), 'http://authme.com')
   checkTrue(is.null(synapseClient:::.getCache("sessionToken")))
   checkTrue(is.null(synapseClient:::.getCache("hmacSecretKey")))
+}
+
+unitTestSetFile <-
+  function()
+{
+  checkEquals(synapseFileServiceEndpoint(), "http://shoobar.com")
+  synapseFileServiceEndpoint('http://fileme.com')
+  checkEquals(synapseFileServiceEndpoint(), 'http://fileme.com')
 }
 
 unitTestSetRepo <-
@@ -97,12 +108,14 @@ unitTestResetEndpoints <-
   checkEquals(hmacSecretKey(), "5678")
   
   checkEquals(synapsePortalEndpoint(), "http://barboo.com")
+  checkEquals(synapseFileServiceEndpoint(), "http://shoobar.com")
   checkEquals(synapseAuthServiceEndpoint(), "http://foobar.com")
   checkEquals(synapseRepoServiceEndpoint(), "http://boobar.com")	
   
   synapseResetEndpoints()	
   checkEquals(synapseRepoServiceEndpoint(), 'https://repo-prod.sagebase.org/repo/v1')
   checkEquals(synapseAuthServiceEndpoint(), 'https://auth-prod.sagebase.org/auth/v1')
+  checkEquals(synapseFileServiceEndpoint(), 'https://file-prod.sagebase.org/file/v1')
   checkEquals(synapsePortalEndpoint(), 'http://synapse.sagebase.org')
   checkTrue(is.null(synapseClient:::.getCache("sessionToken")))
   checkTrue(is.null(synapseClient:::.getCache("hmacSecretKey")))

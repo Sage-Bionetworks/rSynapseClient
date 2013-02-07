@@ -6,7 +6,7 @@
 synapseDelete <- 
   function(
     uri, 
-    isRepoRequest=TRUE, 
+    service="REPO", 
     entity, 
     curlHandle=getCurlHandle(), 
     anonymous=FALSE, 
@@ -20,7 +20,7 @@ synapseDelete <-
   if(!missing(entity)){
     .synapsePostPut(uri = uri, 
       entity = entity,
-      isRepoRequest = isRepoRequest,
+      service = service,
       requestMethod = kMethod, 
       curlHandle = curlHandle, 
       anonymous = anonymous,  
@@ -29,7 +29,7 @@ synapseDelete <-
   }else{
     .synapseGetDelete(uri = uri, 
       requestMethod = kMethod,
-      isRepoRequest = isRepoRequest,
+      service = service,
       curlHandle = curlHandle, 
       anonymous = anonymous, 
       opts = opts

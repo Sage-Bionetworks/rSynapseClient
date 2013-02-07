@@ -15,6 +15,7 @@ export(
   synapseResetEndpoints, 
   synapseAuthServiceEndpoint, 
   synapseRepoServiceEndpoint,
+  synapseFileServiceEndpoint,
   synapsePortalEndpoint,
   synapseLogin, 
   synapseLogout,  

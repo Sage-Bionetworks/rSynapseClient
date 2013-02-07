@@ -46,7 +46,7 @@ synapseLogin <-
   
   ## Request the secret key
   response <- synapseGet(uri = kService, 
-    isRepoRequest=FALSE,
+    service="AUTH",
     entity = entity, 
     anonymous = FALSE
   )
@@ -147,7 +147,7 @@ synapseLogin <-
   ## Login and check for success
   response <- synapsePost(uri = kService, 
     entity = entity, 
-    isRepoRequest = FALSE,
+    service = "AUTH",
     anonymous = TRUE
   )
   
@@ -190,7 +190,7 @@ synapseLogout <-
   if(!localOnly){
     response <- synapseDelete(uri = kService,
       entity = entity,
-      isRepoRequest=FALSE
+      service="AUTH"
     )
   }
   hmacSecretKey(NULL)
