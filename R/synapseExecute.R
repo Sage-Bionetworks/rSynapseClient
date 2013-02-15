@@ -9,8 +9,9 @@
 # - createUsedEntities recurses on vectors as well as lists
 # - entity name 'scrubbing' converts all illegal characters
 # - TODO code project is an input parameter
+# - TODO unit, integration tests
 
-
+# TODO rGithubClient isn't 'required', need allow synapseExecute to work without it
 require(rGithubClient)
 require(synapseClient)
 require(devtools)
@@ -53,12 +54,24 @@ createUsedEntitiesList <- function(args) {
 # since name uniqueness under a parent is enforced by Synapse
 getOrCreateEntity <- function(name, parentId, entityType) {
   entityId <- synapseQuery(sprintf("select id from entity where entity.parentId =='%s' AND entity.name='%s'", parentId, name))
-  if (is.null(entityId)){
+  if (is.null(entityId)) {
     entity <- do.call(entityType, list(name=name, parentId=parentId))
     storeEntity(entity)
-  }else{
+  } else {
     getEntity(entityId$entity.id)
   }
+}
+
+# Like getOrCreateEntity, but only for projects and does not require a parentId
+getOrCreateProject <- function(name) {
+  entityId <- synapseQuery(sprintf("select id from Project where entity.name='%s'", name))
+  if (is.null(entityId)) {
+    project <- Project(list(name=name))
+    storeEntity(project)
+  } else {
+    getEntity(entityId$entity.id)
+  }
+  
 }
 
 # Entity names may only contain: letters, numbers, spaces, underscores, hypens, periods, plus signs, and parentheses
@@ -67,68 +80,98 @@ scrubEntityName<-function(s) {
   gsub("[^a-zA-Z0-9_.+() -]", "+", s)
 }
 
-createGithubCodeEntity <- function(repoName, sourceFile){
+isGithubClientInstalled<-function() {
+  "rGithubClient" %in% rownames(installed.packages())
+}
+
+#
+# uses this synapse organization:
+#     RootFolder > GitRepoName > CurrentGitCommit > SourceCode
+# creates any entities that don't exist, constructs the URL, 
+# then returns the created or updated Code entity
+#
+# TODO:  allow a default code project, e.g. define a default name and getOrCreate it
+#
+createGithubCodeEntity <- function(repoName, sourceFile, githubCodeProjectId) {
   githubRepo <- getRepo(repository=repoName)
   
-  githubCodeProjectId <- "syn1583141"
+  synapseRepoName <- scrubEntityName(repoName)
+  synapseSourceFile <- scrubEntityName(sourceFile)
   
-  synapseRepoName <- gsub("/", "+", repoName)
-  synapseSourceFile <- gsub("/", "+", sourceFile)
-  
-  ##### is there a standard R client function like getOrCreateEntity?
   repoEntity <- getOrCreateEntity(name=synapseRepoName, parentId=githubCodeProjectId, entityType="Folder")
   commitEntity <- getOrCreateEntity(name=as.character(githubRepo@commit), parentId=repoEntity$properties$id, entityType="Folder")
   sourceFileEntity <- getOrCreateEntity(name=synapseSourceFile, parentId=commitEntity$properties$id, entityType="Code")
   
   githubURL <- paste("https://raw.github.com", githubRepo@user, githubRepo@repo, githubRepo@commit, sourceFile, sep="/")
   
-  ##### need a more robust way of handling Code entities pointing to GitHub
+  # TODO instead of an annotation this should be the location
   sourceFileEntity$annotations$githubURL <- githubURL
+  # TODO delineate code with 'markdown' code tags
   sourceFileEntity$properties$description <- getURLContent(githubURL)
+  # TODO: is new version generated if code changes?
   sourceFileEntity <- storeEntity(sourceFileEntity)
   
   return(sourceFileEntity)
 }
 
+hasRSuffix<-function(fileName) {
+  ".R"==toupper(substr(fileName, nchar(fileName)-1, nchar(fileName)))
+}
 
-synapseExecute <- function(activityFunctionRef, args, resultParentId, resultEntityProperties = NULL, 
-  resultEntityName=NULL, functionResult=NULL){
-#   resultEntityName <- makeProvenanceEntityName(activityFunctionRef, args)
+# TODO finish this
+#
+# executable - what to execute.  choices are:
+#			- Code in github: list(repoName="...", sourceFile="...")  (rGithubClient package required)
+#	    - a file path whose file contains a matching function (exeutable = <folder path>/<function name>.R)
+#			- a function (no Code object created)
+#	args - arguments for the given function
+# resultParentId - ID of the Synapse container (e.g. Project or Folder) where the result shall go
+# resultEntityProperties - annotations to be added to the resulting entity
+# resultEntityName - name of the Data object containing the result
+#
+# Execute the given function with the given arguments. 
+# Store the resulting R object as a new Data object (or a new revision of an existing Data object)
+# having the given name and in the given parent container
+# Set the given properties on the object.
+#
+# Also, store the given function as Code in Synapse and
+# create a provenance record connecting the result to 
+# the executed code and the input arguments.
+#
+synapseExecute <- function(executable, args, resultParentId, resultEntityProperties = NULL,  resultEntityName=NULL) {
+
   usedEntitiesList <- createUsedEntitiesList(args)
   
-  print(paste("Executing function"))
-  
-  #### should probably support activityFunctionRef being a GitHubRepo, a function name (both handled below)
-  #### of a file containing Code, which it would copy to a Synapse Code entity.
-  
-  ##### would be better to use Brian's GitHub client to represent a file and not just a repo so we can check for class of type
-  ##### GithubFile rather than checking for a list #############
-  if (is.list(activityFunctionRef)){
-    executionCodeEntity <- createGithubCodeEntity(repoName = activityFunctionRef$repoName, sourceFile = activityFunctionRef$sourceFile)
+  if (is.list(executable)) {
+    ## check list contents and check that rGithubRepo is there
+    executionCodeEntity <- createGithubCodeEntity(repoName = executable$repoName, sourceFile = executable$sourceFile)
     executionCode <- source_url(executionCodeEntity$annotations$githubURL)
     functionResult <- do.call(executionCode$value, args)
     
     usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=executionCodeEntity$properties$id, wasExecuted=TRUE)
     
-    activity <- Activity(list(name = activityFunctionRef$sourceFile, used = usedEntitiesList))
+    activity <- Activity(list(name = executable$sourceFile, used = usedEntitiesList))
     activity <- createEntity(activity)
     
-  }else if (is.character(activityFunctionRef) || is.function(activityFunctionRef)){
-    
-    functionResult <- do.call(activityFunctionRef, args)
+  } else if (is.character(executable)) {
+    if (!hasRSuffix(executable)) stop(sprintf("executable file %s does have '.R' ending.", executable))
+    fileName <- basename(executable)
+    functionName <- substr(fileName, 1, nchar(fileName)-2)
+    source(executable)
+    functionResult <- do.call(functionName, args)
+  } else if (is.function(executable)) {
+    functionResult <- do.call(executable, args)
+  } else {
+    stop("Unexpected executable type.") # TODO give more information
   }
-#   executionCode <- loadEntity(executionCodeId)
-#   functionResult <- do.call(executionCode$objects[[1]], args)
-  
-  print(paste("Executing of function complete"))
   
   resultEntity <- Data(name=resultEntityName, parentId = resultParentId)
   generatedBy(resultEntity) <- activity
   
   resultEntity <- addObject(resultEntity, functionResult, name="functionResult")
-  resultEntity <- addObject(resultEntity, args, name="functionArgs")
+  # TODO move these to annotations (can an annotation be JSON???) in a separate entity resultEntity <- addObject(resultEntity, args, name="functionArgs")
   if(!is.null(resultEntityProperties)){
-    resultEntity <- addObject(resultEntity, resultEntityProperties)
+  # TODO move these to annotations resultEntity <- addObject(resultEntity, resultEntityProperties)
   }
   
   resultEntity <- storeEntity(resultEntity)
