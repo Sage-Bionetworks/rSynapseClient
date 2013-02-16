@@ -31,7 +31,7 @@ integrationTestEntityFileAccess <-
     # /entity/{enityId}/file
     downloadUri<-sprintf("/entity/%s/file", entity$id)
     # download into a temp file
-    downloadedFile<-synapseClient:::synapseDownloadFromRepoService(downloadUri)
+    downloadedFile<-synapseClient:::synapseDownloadFromRepoServiceToDestination(downloadUri)
     origChecksum<- as.character(tools::md5sum(filePath))
     downloadedChecksum <- as.character(tools::md5sum(downloadedFile))
     checkEquals(origChecksum, downloadedChecksum)
@@ -39,9 +39,6 @@ integrationTestEntityFileAccess <-
     # delete the entity
     deleteEntity(entity$id)
     
-#    # Now delete the wiki page
-#    #/{ownertObjectType}/{ownerObjectId}/wiki/{wikiId}
-#    synapseClient:::synapseDelete(wikiUri)
     
     # delete the file handle
     handleUri<-sprintf("/fileHandle/%s", fileHandle$id)

@@ -3,6 +3,10 @@
 ##
 ## for a wiki page attachment, downloadUri would be:
 ## /{ownerObjectType}/{ownerObjectId}/wiki/{wikiId}/attachment?fileName={attachmentFileName}
+## for a File entity the downloadUri would be:
+## 		/entity/{enityId}/file
+## or if a version is specified:
+## 		/entity/{entityId}/version/{versionNumber}/file
 ##
 ## returns the destfile
 ##
@@ -10,7 +14,20 @@
 ## author:  bruce.hoff@sagebase.org
 ##
 
-synapseDownloadFromRepoService<-function(downloadUri, destfile=tempfile()) {
+## this is the analog of 'synapseDownloadFile', switching to the Repo-file service
+synapseDownloadFromRepoService<-
+  function (downloadUri, curlHandle = getCurlHandle(), cacheDir = synapseCacheDir(), opts = .getCache("curlOpts"), versionId = NULL)
+{
+  if (is.null(cacheDir)) stop(paste("cacheDir is required. synapseCacheDir() returns ", synapseCacheDir()))
+  
+  ## Download the file to the cache
+  destfile <- .generateCacheDestFile(downloadUri, versionId)
+  
+  synapseDownloadFromRepoServiceToDestination(downloadUri=downloadUri, destfile=destfile, curlHandle=curlHandle, opts=opts)
+}
+
+
+synapseDownloadFromRepoServiceToDestination<-function(downloadUri, destfile=tempfile(), curlHandle = getCurlHandle(), opts = .getCache("curlOpts")) {
   # check own version, stopping if blacklisted
   checkBlackList()
   
@@ -41,12 +58,9 @@ synapseDownloadFromRepoService<-function(downloadUri, destfile=tempfile()) {
     stop("Unknown auth mode: %s. Could not build header", authMode())
   )		
   
-  # we start with the common request options...
-  opts <- .getCache("curlOpts")
-  # ...and add the headers
+  # we start with the common request options, then add the headers
   opts$httpheader <- header
   
-  curlHandle<-getCurlHandle()
   destfile <- .curlWriterDownload(url=downloadUrl, destfile=destfile, curlHandle=curlHandle, opts=opts)
   .checkCurlResponse(curlHandle)
   
