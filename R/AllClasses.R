@@ -6,7 +6,7 @@
 
 ##
 ## NOTE: this constructor is defined here because it is used in the definition of
-## the Entity and Locationable classes
+## the Entity, FileEntity and Locationable classes
 ##
 setGeneric(
   name = "SynapseProperties",

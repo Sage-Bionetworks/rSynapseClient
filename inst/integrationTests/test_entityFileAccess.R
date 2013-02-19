@@ -1,14 +1,10 @@
 
 #
-# This code exercises file upload/download to/from an entity
-# Ultimately we may change this to use public methods to manipulate
-# files for entities
+# This code exercises the file services underlying upload/download to/from an entity
 #
 integrationTestEntityFileAccess <-
   function()
 {
-  # Note we cannot enable this integration test until the wiki service is on Staging
-  if (FALSE) {
     # create a Project
     project<-Project()
     project<-createEntity(project)
@@ -46,5 +42,4 @@ integrationTestEntityFileAccess <-
     
     handleUri<-sprintf("/fileHandle/%s", fileHandle$id)
     synapseClient:::synapseDelete(handleUri, service="FILE")
-  }
 }

@@ -1,10 +1,8 @@
 
-
+# this tests the file services underlying storeEntity
 integrationTestFileHandle <-
   function()
 {
-  # Note we cannot enable this integration test until the fileHandle service is on Staging
-  if (FALSE) {
     # upload a file and receive the file handle
     filePath<- system.file("NAMESPACE", package = "synapseClient")
     fileHandle<-synapseClient:::synapseUploadToFileHandle(filePath)
@@ -17,5 +15,4 @@ integrationTestFileHandle <-
     # now we should not be able to get the handle
     fileHandle3<-synapseClient:::synapseGet(handleUri, service="FILE", checkHttpStatus=F)
     checkEquals("The resource you are attempting to access cannot be found", fileHandle3$reason)
-  }
 }

@@ -1,9 +1,9 @@
-
+#
+# this tests the file services underlying the wiki CRUD for entities
+#
 integrationTestWikiService <-
   function()
 {
-  # Note we cannot enable this integration test until the wiki service is on Staging
-  if (FALSE) {
     # create a Project
     project<-Project()
     project<-createEntity(project)
@@ -52,5 +52,4 @@ integrationTestWikiService <-
     
     # Finally, delete the Project
     deleteEntity(project)
-  }
 }

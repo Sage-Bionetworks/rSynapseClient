@@ -290,6 +290,13 @@ setGeneric(
 )
 
 setGeneric(
+  name = "FileEntity",
+  def = function(entity){
+    standardGeneric("FileEntity")
+  }
+)
+
+setGeneric(
   name = "Code",
   def = function(entity, ...){
     standardGeneric("Code")
