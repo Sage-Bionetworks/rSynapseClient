@@ -58,9 +58,11 @@ defineEntityClass <-
   
   implements <- unique(c(entityDef$implements[[1]][[1]], synapseClient:::getImplements(entityDef$implements[[1]][[1]])))
   
-  if("org.sagebionetworks.repo.model.Locationable" %in% implements){
+  if("org.sagebionetworks.repo.model.Locationable" %in% implements) {
     contains <- "Locationable"
-  }else{
+  } else if ("org.sagebionetworks.repo.model.FileEntity" %in% implements) {
+    contains <- "FileEntity"
+  } else{
     contains <- "Entity"
   }
   

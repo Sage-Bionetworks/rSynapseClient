@@ -33,7 +33,7 @@ export(
 export(as.environment.EnhancedEnvironment,as.environment.GlobalCache, as.list.SimplePropertyOwner, 
 as.list.SynapseAnnotations, as.list.TypedPropertyStore, as.environment.EnhancedEnvironment,
 length.EnhancedEnvironment, names.CachingObjectOwner, names.EnhancedEnvironment, names.LocationableWithoutBinaries,
-names.Locationable,getPackageName.EnhancedEnvironment, getPackageName.ArchiveOwner,
+names.Locationable,FileEntity,getPackageName.EnhancedEnvironment, getPackageName.ArchiveOwner,
   as.environment.ArchiveOwner, edit.Code, names.Entity,
   
   names.QueryResult,

@@ -5,15 +5,15 @@
 ## Author:Bruce Hoff <bruce.hoff@sagebase.org>
 ###############################################################################
 
-synapseUploadToFileHandle<-function(fileName, curlHandle=getCurlHandle()) {
-  ## check that fileName exists and can be read
-  if (file.access(fileName, 0)==-1) stop (sprintf("%s does not exist.", fileName))
-  if (file.access(fileName, 4)==-1) stop (sprintf("Read permission required for %s.", fileName))
+synapseUploadToFileHandle<-function(filePath, curlHandle=getCurlHandle()) {
+  ## check that filePath exists and can be read
+  if (file.access(filePath, 0)==-1) stop (sprintf("%s does not exist.", filePath))
+  if (file.access(filePath, 4)==-1) stop (sprintf("Read permission required for %s.", filePath))
   ## check that file is <=100MB
   MAX_FILE_SIZE <- 100 * 1024 * 1024
-  fileSize <- file.info(fileName)$size
+  fileSize <- file.info(filePath)$size
   if (fileSize > MAX_FILE_SIZE) 
-    stop(sprintf("File %s has size %d which exceeds maximum file size of %d."), fileName, fileSize, MAX_FILE_SIZE)
+    stop(sprintf("File %s has size %d which exceeds maximum file size of %d."), filePath, fileSize, MAX_FILE_SIZE)
   
   # check own version, stopping if blacklisted
   checkBlackList()
@@ -45,7 +45,7 @@ synapseUploadToFileHandle<-function(fileName, curlHandle=getCurlHandle()) {
   # to invoke multipart upload the 'style' param is set to 'HTTPPOST'
   # unfortunately it looks like 'postForm' doesn't have an option NOT to raise an error for a non-2xx response status,
   # so we have to catch their error and handle it ourselves
-  response<-tryCatch(postForm(uri=fileHandleUrl, "fileData" = fileUpload(fileName), curl=curlHandle, .opts=opts, style="HTTPPOST"),
+  response<-tryCatch(postForm(uri=fileHandleUrl, "fileData" = fileUpload(filePath), curl=curlHandle, .opts=opts, style="HTTPPOST"),
     HTTPError = function(e) {
       .checkCurlResponse(curlHandle)
     }

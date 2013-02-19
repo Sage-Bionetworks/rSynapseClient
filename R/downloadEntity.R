@@ -1,4 +1,4 @@
-## get an entity from Synapse and download it's files
+## get an entity from Synapse and download its files
 ## 
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################

@@ -32,7 +32,7 @@
   }
 }
 \details{
-  Synapse has the ability to store only a single file for entities that are "locationable", which
+  Synapse has the ability to store only a single file for entities that extend from "FileEntity" and which
   are represented as the LocationOwner class in the Synapse R client. To get around the single file limitation,
   the Synapse R client provides methods for maintaining a "cache" of files that can be zipped into a single 
   archive and uploaded to Synapse by calling the \code{\link{storeEntity}} method.
