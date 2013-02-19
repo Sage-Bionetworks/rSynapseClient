@@ -1,20 +1,18 @@
 Package: synapseClient
 Type: Package
 Title: Synapse R Client from Sage Bionetworks
-Version: 0.20-1
-Date: 2013-01-29
+Version: 0.21
+Date: 2013-02-18
 Author@R: c(
-	person("Matthew", "Furia", email="matt.furia@sagebase.org", role=c("cre","aut")),
-	person("Nicole", "Deflaux", email="nicole.deflaux@sagebase.org", role="aut"),
 	person("Bruce", "Hoff", email="bruce.hoff@sagebase.org", role="aut"),
 	person("Chris", "Bare", email="chris.bare@sagebase.org", role="aut"),
 	person("Martin", "Morgan", email="mtmorgan@fhcrc.org", role="ctb"),
 	person("Brian", "Bot", email="brian.bot@sagebase.org", role="ctb")
 	)
 Author: Matthew Furia <matt.furia@sagebase.org>
-Maintainer: Matthew Furia <matt.furia@sagebase.org>
+Maintainer: Bruce Hoff <bruce.hoff@sagebase.org>
 Depends: methods, R (>= 2.14.1)
-Imports: RJSONIO (>= 1.0-1),RCurl,Biobase,tools,digest,affy
+Imports: RJSONIO (>= 1.0-1),RCurl (>= 1.95),Biobase,tools,digest,affy
 Suggests: RUnit, rJava
 SystemRequirements: zip
 Description: Contains a set of functions for interacting with the Synapse REST services.

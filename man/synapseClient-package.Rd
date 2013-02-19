@@ -12,15 +12,15 @@ A client for interacting with the Synapse web services.
 \tabular{ll}{
 Package: \tab synapseClient\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
-Date: \tab 2011-06-26\cr
+Version: \tab 0.21\cr
+Date: \tab 2013-02-18\cr
 License: \tab What license is it under?\cr
 LazyLoad: \tab yes\cr
 }
 }
 \author{
 Matt Furia and Nicole Deflaux
-Maintainer: Matt Furia <matt.furia@sagebase.org>
+Maintainer: Bruce Hoff <bruce.hoff@sagebase.org>, Chris Bare <chris.bare@sagebase.org>
 }
 \keyword{ package }
 \examples{
