@@ -18,3 +18,12 @@ unitTestIsSynapseId <- function() {
 unitTestScrubEntityName<-function() {
   checkEquals("++++++++++()_-+++++++++++++++.+abc 123+ABC", synapseClient:::scrubEntityName("~`!@#$%^&*()_-+={}[]|\\;:\"'<,>./abc 123'ABC"))
 }
+
+unitTestsplitByLines<-function() {
+  checkEquals(synapseClient:::.splitByLines("foo\r\nbar\r\nbas\r\n\r\nfoo2\n\rfoo3"), c("foo","bar","bas","","foo2","", "foo3"))
+# alternative is: checkTrue(identical(.splitByLines("foo\r\nbar\r\nbas\r\n\r\nfoo2\n\rfoo3"), c("foo","bar","bas","","foo2","", "foo3")))
+}
+
+unitTestIndent<-function() {
+  checkEquals("\tfoo\r\n\tbar\r\n\tbas\r\n\t\r\n\tfoo2\r\n\t\r\n\tfoo3", synapseClient:::.indent("foo\r\nbar\r\nbas\r\n\r\nfoo2\n\rfoo3"))
+}
