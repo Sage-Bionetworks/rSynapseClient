@@ -15,7 +15,7 @@ Author: Matthew Furia <matt.furia@sagebase.org>
 Maintainer: Matthew Furia <matt.furia@sagebase.org>
 Depends: methods, R (>= 2.14.1)
 Imports: RJSONIO (>= 1.0-1),RCurl,Biobase,tools,digest,affy
-Suggests: RUnit, rJava
+Suggests: RUnit, rJava, rGithubClient
 SystemRequirements: zip
 Description: Contains a set of functions for interacting with the Synapse REST services.
 URL: http://www.sagebase.org

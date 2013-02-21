@@ -40,7 +40,8 @@ names.Locationable,getPackageName.EnhancedEnvironment, getPackageName.ArchiveOwn
   length.QueryResult,
   dim.QueryResult,
   as.list.SynapseProperties,
-  names.SynapseProperties)
+  names.SynapseProperties,
+  synapseExecute)
 
 ## S4 convenience methods
 ##exportMethods(getDatasetLayers)

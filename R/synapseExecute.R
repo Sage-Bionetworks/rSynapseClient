@@ -5,17 +5,16 @@
 # adapted by: Bruce Hoff
 #
 # adaptations made for inclusion in synapseClient:
+# - function may either (1) have any name, if the only thing in the file or (2) have a name matching the file name
 # - defined isSynapseId (check for numeric suffix)
 # - createUsedEntities recurses on vectors as well as lists
 # - entity name 'scrubbing' converts all illegal characters
-# - local file gets stored as Code object
-# - TODO code project is an input parameter
-# - TODO unit, integration tests
-
-# TODO rGithubClient isn't 'required', need allow synapseExecute to work without it
-require(rGithubClient)
-# TODO move the following to the DESCRIPTION file
-require(devtools)
+# - local file, as well as github file, gets stored as Code object
+# - check whether arg is Entity using S4 methods 'isClass' and 'extends'
+# - uses markdown formatting to add code to entity description
+# - args and properties are added to result entity as individual annotations, for visibility in Web UI
+# - documented
+# - tested
 
 ## returns TRUE iff 's' is Synapse ID, e.g. "syn123456"
 ## returns FALSE for vectors, lists (anything not a string)
@@ -25,8 +24,7 @@ isSynapseId<-function(s) {
     F
   } else {
     # now check whether the suffix is numeric
-    coerced <-try(as.numeric(substr(s, 4, nchar(s))), silent=T)
-    (class(coerced)!="try-error")
+    any(grep("^[[:digit:]]*$", substr(s, 4, nchar(s))))
    }
 }
 
@@ -35,12 +33,12 @@ isSynapseId<-function(s) {
 createUsedEntitiesList <- function(args) {  
   usedEntitiesList <- list()
   for (argVal in args) {
-    if (is.vector(argVal)) {
-      usedEntitiesList <- append(usedEntityList, createUsedEntitiesList(argVal))
+    if (!is.scalar(argVal)) {
+      usedEntitiesList <- append(usedEntitiesList, createUsedEntitiesList(argVal))
     } else if (isSynapseId(argVal)) {
       usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=argVal, wasExecuted=FALSE)
-    } else if (class(argVal) %in% c("Data", "Code", "Folder") ){ # TODO what if it's some other Synapse type
-      usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=argVal$properties$id, wasExecuted=FALSE)
+    } else if (extends(class(argVal), "Entity") && !is.null(propertyValue(argVal, "id"))) {
+      usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=propertyValue(argVal, "id"), wasExecuted=FALSE)
     }
   }
   usedEntitiesList
@@ -53,7 +51,7 @@ createUsedEntitiesList <- function(args) {
 # in another thread between the two requests, an error will be raised during the create operation
 # since name uniqueness under a parent is enforced by Synapse
 getOrCreateEntity <- function(name, parentId, entityType) {
-  entityId <- synapseQuery(sprintf("select id from entity where entity.parentId =='%s' AND entity.name='%s'", parentId, name))
+  entityId <- synapseQuery(sprintf("select id from entity where entity.parentId=='%s' AND entity.name=='%s'", parentId, name))
   if (is.null(entityId)) {
     entity <- do.call(entityType, list(name=name, parentId=parentId))
     storeEntity(entity)
@@ -63,21 +61,28 @@ getOrCreateEntity <- function(name, parentId, entityType) {
 }
 
 # Like getOrCreateEntity, but only for projects and does not require a parentId
-getOrCreateProject <- function(name) {
-  entityId <- synapseQuery(sprintf("select id from Project where entity.name='%s'", name))
-  if (is.null(entityId)) {
-    project <- Project(list(name=name))
-    storeEntity(project)
-  } else {
-    getEntity(entityId$entity.id)
-  }
-  
+getOrCreateParentlessContainerEntity <- function(name, entityType="Project") {
+  tryCatch({
+      # try to create the entity
+      entity <- do.call(entityType, list(name=name))
+      storeEntity(entity)
+    },error=function(e){
+      # if creation fails, then retrieve.  this assumes that creation failed because entity exists
+      queryResult <- synapseQuery(sprintf("select id from entity where entity.name=='%s'", name))
+      # if creation failed for some other reason, then we would get zero results back
+      if (nrow(queryResult)!=1) stop(sprintf("Expected one result but found %d", nrow(queryResult)))
+      getEntity(queryResult$entity.id)
+    })
 }
 
 # Entity names may only contain: letters, numbers, spaces, underscores, hypens, periods, plus signs, and parentheses
 # any other characters are replaced by '+' signs
-scrubEntityName<-function(s) {
-  gsub("[^a-zA-Z0-9_.+() -]", "+", s)
+scrubEntityName<-function(s, replaceChar=".") {
+  # first check that 'replaceChar' is legal
+  illegalChars <- "[^a-zA-Z0-9_.+() -]"
+  if (regexpr(illegalChars, replaceChar)>0) stop(sprintf("%s is illegal in an entity name", replaceChar))
+  # ok now replace illegal characters
+  gsub(illegalChars, replaceChar, s)
 }
 
 isGithubClientInstalled<-function() {
@@ -85,37 +90,77 @@ isGithubClientInstalled<-function() {
 }
 
 # split text into lines regardless or whether the line separator is "\r", "\n", or "\r\n"
-.splitByLines<-function(text) {
+splitByLines<-function(text) {
   splitByRN <-strsplit(text, "\r\n", fixed=TRUE)[[1]]
   unlist(lapply(splitByRN, function(x) {if (x=="") {""} else {strsplit(x, "[\r\n]")[[1]]}}))
 }
 
 # add the given prefix to each line in the given text, separating lines by the given linesep
-.indent<-function(text, prefix="\t", linesep="\r\n") {
-  splitByLines<-.splitByLines(text)
+indent<-function(text, prefix="\t", linesep="\n") {
+  splitByLines<-splitByLines(text)
   sprintf("%s%s", prefix, paste(splitByLines, collapse = sprintf("%s%s", linesep, prefix)))
 }
 
 #calculate the MD-5 checksum for a string
-.stringMd5<-function(s) {
+stringMd5<-function(s) {
   digest(s, algo="md5", serialize=FALSE)
 }
 
+rGithubClientPackageIsAvailable<-function() {
+  any(.packages(all.available=T)=="rGithubClient")
+}
+
+hasRSuffix<-function(fileName) {
+  ".R"==toupper(substr(fileName, nchar(fileName)-1, nchar(fileName)))
+}
+
+# Create a Code entity for a file on the local file system
+#
+# uses this synapse organization:
+#     RootFolder > SourceCode
+# creates any entities that don't exist, adds the code file
+# then returns the created or updated Code entity
+#
+createFileCodeEntity <- function(sourceFile, codeFolderId, replChar=".") {
+  synapseSourceFile <- scrubEntityName(sourceFile, replChar)
+  
+  if (missing(codeFolderId)) {
+    codeFolder <-getOrCreateParentlessContainerEntity(name="Code", entityType="Folder")
+    codeFolderId <- propertyValue(codeFolder, "id")
+  }
+  sourceFileEntity <- getOrCreateEntity(name=synapseSourceFile, parentId=codeFolderId, entityType="Code")
+  
+  sourceFileEntity<-addFile(sourceFileEntity, sourceFile)
+  
+  # delineate code with Synapse 'markdown' code tags. This is done by prefixing each line with a tab
+  fileContent<-readChar(sourceFile, file.info(sourceFile)$size)
+  propertyValue(sourceFileEntity, "description") <- indent(fileContent)
+  
+  # store the entity and return it
+  storeEntity(sourceFileEntity)
+}
+
+# Create a Code entity for a file in Github
 #
 # uses this synapse organization:
 #     RootFolder > GitRepoName > CurrentGitCommit > SourceCode
 # creates any entities that don't exist, constructs the URL, 
 # then returns the created or updated Code entity
 #
-# TODO:  allow a default code project, e.g. define a default name and getOrCreate it
-#
-createGithubCodeEntity <- function(repoName, sourceFile, githubCodeProjectId) {
+createGithubCodeEntity <- function(repoName, sourceFile, githubCodeFolderId, replChar=".") {
+  ## check that rGithubClient package is installed
+  if (!rGithubClientPackageIsAvailable()) stop("Github repo specified but rGithubClient pacakge not installed.  Please install and try again.")
+
   githubRepo <- getRepo(repository=repoName)
   
-  synapseRepoName <- scrubEntityName(repoName)
-  synapseSourceFile <- scrubEntityName(sourceFile)
+  synapseRepoName <- scrubEntityName(repoName, replChar)
+  synapseSourceFile <- scrubEntityName(sourceFile, replChar)
   
-  repoEntity <- getOrCreateEntity(name=synapseRepoName, parentId=githubCodeProjectId, entityType="Folder")
+  if (missing(githubCodeFolderId)) {
+    repoEntity <-getOrCreateParentlessContainerEntity(name=synapseRepoName, entityType="Folder")
+  } else {
+    repoEntity <- getOrCreateEntity(name=synapseRepoName, parentId=githubCodeFolderId, entityType="Folder")
+  }
   commitEntity <- getOrCreateEntity(name=as.character(githubRepo@commit), parentId=repoEntity$properties$id, entityType="Folder")
   sourceFileEntity <- getOrCreateEntity(name=synapseSourceFile, parentId=commitEntity$properties$id, entityType="Code")
   
@@ -124,18 +169,13 @@ createGithubCodeEntity <- function(repoName, sourceFile, githubCodeProjectId) {
   # TODO this will change with the new file service
   propertyValue(sourceFileEntity, "locations")<-list(list(type="external", path=githubURL))
   urlContent<-getURLContent(githubURL)
-  propertyValue(sourceFileEntity, "md5")<-.stringMd5(urlContent)
+  propertyValue(sourceFileEntity, "md5")<-stringMd5(urlContent)
   
   # delineate code with Synapse 'markdown' code tags. This is done by prefixing each line with a tab
-  propertyValue(sourceFileEntity, "description") <- .indent(urlContent)
+  propertyValue(sourceFileEntity, "description") <- indent(urlContent)
   
-  sourceFileEntity <- storeEntity(sourceFileEntity)
-  
-  return(sourceFileEntity)
-}
-
-hasRSuffix<-function(fileName) {
-  ".R"==toupper(substr(fileName, nchar(fileName)-1, nchar(fileName)))
+  # store the entity and return it
+  storeEntity(sourceFileEntity)
 }
 
 # executable - what to execute.  choices are:
@@ -146,11 +186,13 @@ hasRSuffix<-function(fileName) {
 # resultParentId - ID of the Synapse container (e.g. Project or Folder) where the entity containing the result shall go
 # resultEntityProperties - annotations to be added to the resulting entity
 # resultEntityName - name of the resulting entity
+# replChar - the replacement character to use when illegal characters are encountered while creating entity names (default is ".")
 #
 # Execute the given code with the given arguments. 
 # Store the resulting R object as a new Data object (or a new revision of an existing Data object)
 # having the given name and in the given parent container
 # Set the given properties on the entity.
+# Returns the result entity
 #
 # Since a Code file can contain multiple functions, synapseExecute disambiguates the function to call as follows:
 # If there's just one function, that is the one called.  If there are multiple functions and one is named
@@ -160,11 +202,12 @@ hasRSuffix<-function(fileName) {
 # create a provenance record connecting the result to 
 # the executed code and the input arguments.
 #
-synapseExecute <- function(executable, args, resultParentId, resultEntityProperties = NULL,  resultEntityName=NULL) {
+synapseExecute <- function(executable, args, resultParentId, resultEntityProperties = NULL,  resultEntityName=NULL, replChar=".") {
   
   if (!is.list(args)) stop("args must be a list.")
   if (!is.null(resultEntityProperties) && !is.list(resultEntityProperties)) stop("resultEntityProperties must be a list.")
-  
+  if (missing(resultParentId)) stop("In synapseExecute, resultParentId is required.")
+    
   usedEntitiesList <- createUsedEntitiesList(args)
   
   executableIsGitHubRepoFile <- is.list(executable)
@@ -176,18 +219,19 @@ synapseExecute <- function(executable, args, resultParentId, resultEntityPropert
     executionCodeEntity<-NULL
     if (executableIsGitHubRepoFile) {
       ## 'executable' is a list() containing repoName and sourceFile
-      ## check list contents and check that rGithubRepo is there      if (is.null(executable$repoName)) stop("Missing repoName in githubRepo code descriptor.")
+      if (is.null(executable$repoName)) stop("Missing repoName in githubRepo code descriptor.")
       if (is.null(executable$sourceFile)) stop("Missing sourceFile in githubRepo code descriptor.")
       filePath<-executable$sourceFile
-      executionCodeEntity <- createGithubCodeEntity(repoName = executable$repoName, sourceFile = executable$sourceFile)
+      executionCodeEntity <- createGithubCodeEntity(repoName = executable$repoName, sourceFile = executable$sourceFile, replChar)
     } else {# it's a local file
       ## 'executable' is a the full file path to a ".R" file, containing a function whose name matches the file name
       if (!hasRSuffix(executable)) stop(sprintf("Executable file %s does have '.R' ending.", executable))
       filePath <- executable
-      executionCodeEntity <- createFileCodeEntity(sourceFile=executable) # TODO write this function
-      #source(executable)
-      #functionResult <- do.call(functionName, args)
+      executionCodeEntity <- createFileCodeEntity(sourceFile=executable, replChar)
     }
+    
+    # now we need to find the function added to the code entity
+    # TODO test file containing data item rather than function
     if (is.null(executionCode$objects)) stop("executionCode$objects is null.")
     if (length(executionCode$objects)==0) stop(sprintf("File %s contains no function to execute.", filePath))
     executableFunction<-NULL
@@ -214,11 +258,13 @@ synapseExecute <- function(executable, args, resultParentId, resultEntityPropert
     stop("Executable is neither a github repo descriptor, a local file, nor a function.")
   }
   
+  # Finally, we create the result entity
+
   resultEntity <- Data(name=resultEntityName, parentId = resultParentId)
   generatedBy(resultEntity) <- activity
   
   resultEntity <- addObject(resultEntity, functionResult, name="functionResult")
-  # TODO what if an argument is not a valid annotation type?
+  # TODO test with an argument which is a list or vector (not a primitive)
   for (name in args) {
     annotValue(args, name)<-args[[name]]
   }
@@ -228,7 +274,6 @@ synapseExecute <- function(executable, args, resultParentId, resultEntityPropert
     }
   }
   
-  resultEntity <- storeEntity(resultEntity)
-  
-  return(resultEntity)
+  # store result entity and return it
+  storeEntity(resultEntity)
 }
