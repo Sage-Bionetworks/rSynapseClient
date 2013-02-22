@@ -2,7 +2,7 @@
 # 
 # Author: brucehoff
 ###############################################################################
-
+library(RJSONIO)
 
 
 unitTestIsSynapseId <- function() {
@@ -23,8 +23,8 @@ unitTestCreateUsedEntitiesList <- function() {
 }
 
 unitTestScrubEntityName<-function() {
-  checkEquals("++++++++++()_-+++++++++++++++.+abc 123+ABC", synapseClient:::scrubEntityName("~`!@#$%^&*()_-+={}[]|\\;:\"'<,>./abc 123'ABC"), replChar="+")
-  checkEquals("..........()_-+...............+abc 123+ABC", synapseClient:::scrubEntityName("~`!@#$%^&*()_-+={}[]|\\;:\"'<,>./abc 123'ABC"))
+  checkEquals("++++++++++()_-+++++++++++++++.+abc 123+ABC", synapseClient:::scrubEntityName("~`!@#$%^&*()_-+={}[]|\\;:\"'<,>./abc 123'ABC", replaceChar="+"))
+  checkEquals("..........()_-+................abc 123.ABC", synapseClient:::scrubEntityName("~`!@#$%^&*()_-+={}[]|\\;:\"'<,>./abc 123'ABC"))
 }
 
 unitTestsplitByLines<-function() {
@@ -45,5 +45,32 @@ unitTestHasRSuffix<-function() {
   checkTrue(!synapseClient:::hasRSuffix("function."))
   checkTrue(!synapseClient:::hasRSuffix("."))
   checkTrue(!synapseClient:::hasRSuffix(""))
+}
+
+unitTestConvertAnnotation<-function() {
+  checkTrue(synapseClient:::isScalar(1))
+  checkTrue(synapseClient:::isScalar("abc"))
+  checkTrue(!synapseClient:::isScalar(list(1)))
+  checkTrue(!synapseClient:::isScalar(list("abc")))
+  checkTrue(!synapseClient:::isScalar(c(a=1, b=2)))
+  checkTrue(!synapseClient:::isScalar(list(a=1, b=2)))
+  
+  checkEquals(1, synapseClient:::convertAnnotation(1))
+  checkEquals("abc", synapseClient:::convertAnnotation("abc"))
+  checkEquals("abc", synapseClient:::convertAnnotation("abc"))
+  map<-c(a=1, b=2)
+  checkEquals(toJSON(map), synapseClient:::convertAnnotation(map))
+  map<-list(a=1, b=2)
+  checkEquals(toJSON(map), synapseClient:::convertAnnotation(map))
+  list<-list(1,2)
+  checkEquals(list, synapseClient:::convertAnnotation(list))
+  checkEquals(list, synapseClient:::convertAnnotation(c(1,2)))
+  list<-list(1,map)
+  converted<-list(1, toJSON(map))
+  checkEquals(converted, synapseClient:::convertAnnotation(list))
+  sublist<-c(1,2)
+  list<-list("ab", "cd", sublist)
+  converted<-list("ab", "cd", toJSON(sublist))
+  checkEquals(converted, synapseClient:::convertAnnotation(list))
 }
 

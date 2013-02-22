@@ -50,13 +50,17 @@ createUsedEntitiesList <- function(args) {
 # Note: The query and creation are not in the same transaction.  However, if the object is created
 # in another thread between the two requests, an error will be raised during the create operation
 # since name uniqueness under a parent is enforced by Synapse
-getOrCreateEntity <- function(name, parentId, entityType) {
+getOrCreateEntity <- function(name, parentId, entityType, load=F) {
   queryResult <- synapseQuery(sprintf("select id from entity where entity.parentId=='%s' AND entity.name=='%s'", parentId, name))
   if (is.null(queryResult)) {
     entity <- do.call(entityType, list(name=name, parentId=parentId))
     storeEntity(entity)
   } else {
-    getEntity(queryResult$entity.id)
+    if (load) {
+      loadEntity(queryResult$entity.id)
+    } else {
+      getEntity(queryResult$entity.id)
+    }
   }
 }
 
@@ -97,6 +101,38 @@ rGithubClientPackageIsAvailable<-function() {
 
 hasRSuffix<-function(fileName) {
   ".R"==toupper(substr(fileName, nchar(fileName)-1, nchar(fileName)))
+}
+
+isMap<-function(json) {nchar(json)>0 & substr(json,1,1)=="{"}
+isArray<-function(json) {nchar(json)>0 & substr(json,1,1)=="["}
+isScalar<-function(x) {length(x)<2 & is.null(names(x)) & !is.list(x)}
+
+# ensures that 'a' is a valid Synapse annotation value
+# if a is a primitive (string or number) or an array of primitives, 
+# then a is returned.  Otherwise a is serialized to make it allowable:
+# if a is a map (a named list) then it is serialized
+# if a is an array, then each element that is not a primitive is serialized
+convertAnnotation<-function(a) {
+  if (isScalar(a)) {
+    a
+  } else {
+    jsonA<-toJSON(a)
+    if (isMap(jsonA)) {
+      jsonA
+    } else {
+      # must be an array
+      if (!isArray(jsonA)) stop(sprintf("Expected %s to be a JSON array.", jsonA))
+      convertedArray<-list()
+      for (elem in a) {
+        if (isScalar(elem)) {
+          convertedArray[[length(convertedArray)+1]]<-elem
+        } else {
+          convertedArray[[length(convertedArray)+1]]<-toJSON(elem)
+        }
+      }
+      convertedArray
+    }
+  }
 }
 
 # Create a Code entity for a file on the local file system
@@ -184,6 +220,7 @@ createGithubCodeEntity <- function(repoName, sourceFile, codeFolderId, replChar=
 # create a provenance record connecting the result to 
 # the executed code and the input arguments.
 #
+#
 synapseExecute <- function(executable, args, resultParentId, codeProjectId, resultEntityProperties = NULL,  resultEntityName=NULL, replChar=".") {
   
   if (!is.list(args)) stop("args must be a list.")
@@ -241,18 +278,24 @@ synapseExecute <- function(executable, args, resultParentId, codeProjectId, resu
   }
   
   # Finally, we create the result entity
-
-  resultEntity <- Data(name=resultEntityName, parentId = resultParentId)
+  # If the entity already exists we create a new version
+  resultEntity <- getOrCreateEntity(name=resultEntityName, parentId = resultParentId, "Data", load=T) 
+  
+  # if this is an existing version, then 'rev' it
+  version <- propertyValue(resultEntity, "versionNumber")
+  if (!is.null(version)) propertyValue(resultEntity, "versionNumber")<-(version+1)
+  
   generatedBy(resultEntity) <- activity
   
+  # Adding a new object causes the version to increment upon storage
   resultEntity <- addObject(resultEntity, functionResult, name="functionResult")
 
   for (name in names(args)) {
-    annotValue(resultEntity, name)<-args[[name]]
+    annotValue(resultEntity, name)<-convertAnnotation(args[[name]])
   }
   if(!is.null(resultEntityProperties)){
     for (name in names(resultEntityProperties)) {
-      annotValue(resultEntity, name)<-resultEntityProperties[[name]]
+      annotValue(resultEntity, name)<-convertAnnotation(resultEntityProperties[[name]])
     }
   }
   

@@ -123,7 +123,7 @@ integrationTestCreateGithubCodeEntity<-function() {
   checkEquals(propertyValue(project, "id"), propertyValue(repoEntity, "parentId"))
 }
 
-integrationTestSynapseExecute<-function() {
+integrationTestSynapseExecuteFile<-function() {
   project<-synapseClient:::.getCache("testProject")
   
   # test synapse execute using local file
@@ -135,7 +135,13 @@ integrationTestSynapseExecute<-function() {
   resultParentId <-propertyValue(project, "id")
   codeFolder <-project
   codeFolderId <- propertyValue(codeFolder, "id")
-  resultEntityProperties <-list(foo="bar", bas=1)
+  resultEntityProperties <-list(
+    foo="bar", 
+    bas=1, 
+    foo2 = list("foo", "bar"), 
+    foo3 = c(1, 2, 3), 
+    foo4=list(a="foo", b="bar", c=list("foo", "bar"))
+  )
   resultEntityName <- "output"
   resultEntity<-synapseExecute(executable, 
     args, 
@@ -149,7 +155,8 @@ integrationTestSynapseExecute<-function() {
   queryResult <- synapseQuery(sprintf("select id from entity where entity.parentId=='%s' AND entity.name=='%s'", 
       propertyValue(project, "id"), expectedCodeName))
   checkEquals(1, nrow(queryResult))
-  codeEntity<-getEntity(queryResult$entity.id)
+  codeEntityId <- queryResult$entity.id
+  codeEntity<-getEntity(codeEntityId)
   # we don't have to check that the codeEntity is constructed correctly since that is tested elsewhere
   
   # check that result is correct
@@ -179,11 +186,108 @@ integrationTestSynapseExecute<-function() {
   checkEquals(propertyValue(codeEntity, "id"), used[[1]]$reference$targetId)
   checkEquals(1, used[[1]]$reference$targetVersionNumber)
   
-  # TODO test a revision, i.e. rerun the analysis
+  # test a revision, i.e. rerun the analysis
+  checkTrue(file.copy(system.file("resources/test/testFunction2.R", package = "synapseClient"), filePath, overwrite=T))
+  resultEntity<-synapseExecute(executable, 
+    args, 
+    resultParentId, 
+    codeFolderId, 
+    resultEntityProperties = resultEntityProperties,  
+    resultEntityName=resultEntityName)
+  
+  
+  # there should still be just one code entity, but it's a new version
+  queryResult <- synapseQuery(sprintf("select id from entity where entity.parentId=='%s' AND entity.name=='%s'", 
+      propertyValue(project, "id"), expectedCodeName))
+  checkEquals(1, nrow(queryResult))
+  codeEntityId <- queryResult$entity.id
+  codeEntity<-getEntity(codeEntityId)
+  checkEquals(2, propertyValue(codeEntity, "versionNumber"))
+  
+  # check that result is correct.  Once again we reload
+  resultReload<-loadEntity(propertyValue(resultEntity, "id"))
+  checkEquals(resultEntityName, propertyValue(resultReload, "name"))
+  checkEquals(resultParentId, propertyValue(resultReload, "parentId"))
+  # this time the version should be incremented
+  checkEquals(2, propertyValue(resultReload, "versionNumber"))
+
+  # check the result:  the args specified x=1 and the NEW function computes x+2, so the output is 3
+  # there should be just one object
+  checkEquals(1, length(resultReload$objects))
+  # the value of the object should equal 2
+  checkEquals(3, resultReload$objects[[1]])
+  
+  # check provenance
+  activity<-generatedBy(resultReload)
+  # check content
+  used<-propertyValue(activity, "used")
+  checkEquals(1, length(used))
+  checkTrue(used[[1]]$wasExecuted)
+  checkEquals(propertyValue(codeEntity, "id"), used[[1]]$reference$targetId)
+  # references the new version of the Code object
+  checkEquals(2, used[[1]]$reference$targetVersionNumber)
+  
 }
 
-# TODO call synapseExecute with a function rather than a file
-# TODO test file containing data item rather than or in addition to function
-# TODO test with an argument which is a list or vector (not a primitive)
+# call synapseExecute with a function rather than a file
+integrationTestSynapseExecuteFunction<-function() {
+  project<-synapseClient:::.getCache("testProject")
   
-
+  executable<-function(x){x+1}
+  args<-list(x=1)
+  resultParentId <-propertyValue(project, "id")
+  codeFolder <-project
+  codeFolderId <- propertyValue(codeFolder, "id")
+  resultEntityProperties <-list(
+    foo="bar", 
+    bas=1
+  )
+  resultEntityName <- "output"
+  resultEntity<-synapseExecute(executable, 
+    args, 
+    resultParentId, 
+    codeFolderId, 
+    resultEntityProperties = resultEntityProperties,  
+    resultEntityName=resultEntityName)
+    
+  # check that result is correct
+  resultReload<-loadEntity(propertyValue(resultEntity, "id"))
+  checkEquals(resultEntityName, propertyValue(resultReload, "name"))
+  checkEquals(resultParentId, propertyValue(resultReload, "parentId"))
+  
+  # check the result:  the args specified x=1 and the function computes x+1, so the output is 2
+  # there should be just one object
+  checkEquals(1, length(resultReload$objects))
+  # the value of the object should equal 2
+  checkEquals(2, resultReload$objects[[1]])
+  
+  # check properties
+  checkEquals("bar", annotValue(resultReload, "foo"))
+  checkEquals(1, annotValue(resultReload, "bas"))
+  
+  # check args
+  checkEquals(1, annotValue(resultReload, "x"))
+  
+  
+  # test a revision, i.e. rerun the analysis
+  executable<-function(x){x+2}
+  resultEntity<-synapseExecute(executable, 
+    args, 
+    resultParentId, 
+    codeFolderId, 
+    resultEntityProperties = resultEntityProperties,  
+    resultEntityName=resultEntityName)
+  
+  # check that result is correct.  Once again we reload
+  resultReload<-loadEntity(propertyValue(resultEntity, "id"))
+  checkEquals(resultEntityName, propertyValue(resultReload, "name"))
+  checkEquals(resultParentId, propertyValue(resultReload, "parentId"))
+  # this time the version should be incremented
+  checkEquals(2, propertyValue(resultReload, "versionNumber"))
+  
+  # check the result:  the args specified x=1 and the NEW function computes x+2, so the output is 3
+  # there should be just one object
+  checkEquals(1, length(resultReload$objects))
+  # the value of the object should equal 3
+  checkEquals(3, resultReload$objects[[1]])
+}
