@@ -1,9 +1,12 @@
+library("RCurl")
+library("rGithubClient")
+
 .setUp <-
   function()
 {
   ### create a project
   project <- createEntity(Project())
-  synapseClient:::.setCache("testProject", project)
+  synapseClient:::.setCache("testProject", project)  
 }
 
 .tearDown <- 
@@ -35,24 +38,6 @@ integrationTestGetOrCreateEntity <-
   checkEquals(firstId, secondId)
 }
 
-integrationTestGetOrCreateParentlessContainerEntity <- 
-  function()
-{
-  name<-sprintf("integrationTestGetOrCreateParentlessContainerEntity_%s", format(Sys.time(),"%Y-%m-%dT%H:%M:%OS2", tz="GMT"))
-  name<-synapseClient:::scrubEntityName(name)
-  createdFolder<-synapseClient:::getOrCreateParentlessContainerEntity(name=name, entityType="Folder")
-  synapseClient:::.setCache("testData", createdFolder)
-  checkTrue("Folder"==class(createdFolder))
-  firstId <- propertyValue(createdFolder, "id")
-  checkTrue(!is.null(firstId))
-  checkEquals(name, propertyValue(createdFolder, "name"))
-  # now verify that if we try to get/create another with the same name, we get the same entity, not a new one
-  createdFolder2<-synapseClient:::getOrCreateParentlessContainerEntity(name=name, entityType="Folder")
-  secondId <- propertyValue(createdFolder2, "id")
-  checkEquals(firstId, secondId)
-}
-
-# TODO try omitting the Code folder
 
 integrationTestCreateFileCodeEntity<-function() {
   workingDir<-tempdir()
@@ -99,4 +84,106 @@ integrationTestCreateFileCodeEntity<-function() {
   # run testFunction -- the new code gives a different answer
   checkEquals(3, reloadedTestFunction(1))
 }
+
+
+# test createGithubCodeEntity
+integrationTestCreateGithubCodeEntity<-function() {
+  project<-synapseClient:::.getCache("testProject")
+
+  repoName<-"/brian-bot/rGithubClient"
+  sourceFile<-"R/AllClasses.R"
+  createdEntity <- synapseClient:::createGithubCodeEntity(repoName, sourceFile, propertyValue(project, "id"))
+  
+  # check createdEnity name, url, description
+  checkTrue(!is.null(propertyValue(createdEntity, "id")))
+  checkEquals("R.AllClasses.R", propertyValue(createdEntity, "name"))
+
+  # TODO this will change with the switch to the new file services
+  codeUrl<-propertyValue(createdEntity, "locations")[[1]]["path"]
+  names(codeUrl)<-NULL  # necessary for 'checkEquals' to work, below
+  checkTrue(!is.null(codeUrl))
+  checkEquals("character", class(codeUrl))
+  codeUrlPrefix<-sprintf("https://raw.github.com%s", repoName)
+  codeUrlSuffix<-sourceFile
+  checkEquals(codeUrlPrefix, substr(codeUrl, 1, nchar(codeUrlPrefix)))
+  checkEquals(codeUrlSuffix, substr(codeUrl, nchar(codeUrl)-nchar(codeUrlSuffix)+1, nchar(codeUrl)))
+  
+  # TODO this will change when we introduce the wiki object
+  checkEquals(synapseClient:::indent(getURLContent(codeUrl)), propertyValue(createdEntity, "description"))
+  
+  # retrieve parent (commit)
+  commitEntity<-getEntity(propertyValue(createdEntity, "parentId"))
+  # check parent name.  The SHA1 hash is a 40 char hexadecimal value
+  checkEquals(40, nchar(propertyValue(commitEntity, "name")[[1]]))
+  # retrieve grandparent (repo)
+  repoEntity<-getEntity(propertyValue(commitEntity, "parentId"))
+  # check grandparent name
+  checkEquals(synapseClient:::scrubEntityName(repoName), propertyValue(repoEntity, "name"))
+  # check that grandparent's parent is 'project'
+  checkEquals(propertyValue(project, "id"), propertyValue(repoEntity, "parentId"))
+}
+
+integrationTestSynapseExecute<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  # test synapse execute using local file
+  workingDir<-tempdir()
+  filePath<-paste(workingDir, "testFunction.R", sep="/")
+  checkTrue(file.copy(system.file("resources/test/testFunction.R", package = "synapseClient"), filePath, overwrite=T))
+  executable<-filePath
+  args<-list(x=1)
+  resultParentId <-propertyValue(project, "id")
+  codeFolder <-project
+  codeFolderId <- propertyValue(codeFolder, "id")
+  resultEntityProperties <-list(foo="bar", bas=1)
+  resultEntityName <- "output"
+  resultEntity<-synapseExecute(executable, 
+    args, 
+    resultParentId, 
+    codeFolderId, 
+    resultEntityProperties = resultEntityProperties,  
+    resultEntityName=resultEntityName)
+  
+  # check that code has been created
+  expectedCodeName <- synapseClient:::scrubEntityName(filePath)
+  queryResult <- synapseQuery(sprintf("select id from entity where entity.parentId=='%s' AND entity.name=='%s'", 
+      propertyValue(project, "id"), expectedCodeName))
+  checkEquals(1, nrow(queryResult))
+  codeEntity<-getEntity(queryResult$entity.id)
+  # we don't have to check that the codeEntity is constructed correctly since that is tested elsewhere
+  
+  # check that result is correct
+  resultReload<-loadEntity(propertyValue(resultEntity, "id"))
+  checkEquals(resultEntityName, propertyValue(resultReload, "name"))
+  checkEquals(resultParentId, propertyValue(resultReload, "parentId"))
+ 
+  # check the result:  the args specified x=1 and the function computes x+1, so the output is 2
+  # there should be just one object
+  checkEquals(1, length(resultReload$objects))
+  # the value of the object should equal 2
+  checkEquals(2, resultReload$objects[[1]])
+  
+  # check properties
+  checkEquals("bar", annotValue(resultReload, "foo"))
+  checkEquals(1, annotValue(resultReload, "bas"))
+  
+  # check args
+  checkEquals(1, annotValue(resultReload, "x"))
+
+  # check provenance
+  activity<-generatedBy(resultReload)
+  # check content
+  used<-propertyValue(activity, "used")
+  checkEquals(1, length(used))
+  checkTrue(used[[1]]$wasExecuted)
+  checkEquals(propertyValue(codeEntity, "id"), used[[1]]$reference$targetId)
+  checkEquals(1, used[[1]]$reference$targetVersionNumber)
+  
+  # TODO test a revision, i.e. rerun the analysis
+}
+
+# TODO call synapseExecute with a function rather than a file
+# TODO test file containing data item rather than or in addition to function
+# TODO test with an argument which is a list or vector (not a primitive)
+  
 

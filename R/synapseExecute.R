@@ -51,28 +51,13 @@ createUsedEntitiesList <- function(args) {
 # in another thread between the two requests, an error will be raised during the create operation
 # since name uniqueness under a parent is enforced by Synapse
 getOrCreateEntity <- function(name, parentId, entityType) {
-  entityId <- synapseQuery(sprintf("select id from entity where entity.parentId=='%s' AND entity.name=='%s'", parentId, name))
-  if (is.null(entityId)) {
+  queryResult <- synapseQuery(sprintf("select id from entity where entity.parentId=='%s' AND entity.name=='%s'", parentId, name))
+  if (is.null(queryResult)) {
     entity <- do.call(entityType, list(name=name, parentId=parentId))
     storeEntity(entity)
   } else {
-    getEntity(entityId$entity.id)
+    getEntity(queryResult$entity.id)
   }
-}
-
-# Like getOrCreateEntity, but only for projects and does not require a parentId
-getOrCreateParentlessContainerEntity <- function(name, entityType="Project") {
-  tryCatch({
-      # try to create the entity
-      entity <- do.call(entityType, list(name=name))
-      storeEntity(entity)
-    },error=function(e){
-      # if creation fails, then retrieve.  this assumes that creation failed because entity exists
-      queryResult <- synapseQuery(sprintf("select id from entity where entity.name=='%s'", name))
-      # if creation failed for some other reason, then we would get zero results back
-      if (nrow(queryResult)!=1) stop(sprintf("Expected one result but found %d", nrow(queryResult)))
-      getEntity(queryResult$entity.id)
-    })
 }
 
 # Entity names may only contain: letters, numbers, spaces, underscores, hypens, periods, plus signs, and parentheses
@@ -124,10 +109,6 @@ hasRSuffix<-function(fileName) {
 createFileCodeEntity <- function(sourceFile, codeFolderId, replChar=".") {
   synapseSourceFile <- scrubEntityName(sourceFile, replChar)
   
-  if (missing(codeFolderId)) {
-    codeFolder <-getOrCreateParentlessContainerEntity(name="Code", entityType="Folder")
-    codeFolderId <- propertyValue(codeFolder, "id")
-  }
   sourceFileEntity <- getOrCreateEntity(name=synapseSourceFile, parentId=codeFolderId, entityType="Code")
   
   sourceFileEntity<-addFile(sourceFileEntity, sourceFile)
@@ -147,24 +128,22 @@ createFileCodeEntity <- function(sourceFile, codeFolderId, replChar=".") {
 # creates any entities that don't exist, constructs the URL, 
 # then returns the created or updated Code entity
 #
-createGithubCodeEntity <- function(repoName, sourceFile, githubCodeFolderId, replChar=".") {
+createGithubCodeEntity <- function(repoName, sourceFile, codeFolderId, replChar=".") {
   ## check that rGithubClient package is installed
   if (!rGithubClientPackageIsAvailable()) stop("Github repo specified but rGithubClient pacakge not installed.  Please install and try again.")
 
   githubRepo <- getRepo(repository=repoName)
   
   synapseRepoName <- scrubEntityName(repoName, replChar)
+  synapseCommitName <- scrubEntityName(githubRepo@commit, replChar)
   synapseSourceFile <- scrubEntityName(sourceFile, replChar)
   
-  if (missing(githubCodeFolderId)) {
-    repoEntity <-getOrCreateParentlessContainerEntity(name=synapseRepoName, entityType="Folder")
-  } else {
-    repoEntity <- getOrCreateEntity(name=synapseRepoName, parentId=githubCodeFolderId, entityType="Folder")
-  }
-  commitEntity <- getOrCreateEntity(name=as.character(githubRepo@commit), parentId=repoEntity$properties$id, entityType="Folder")
+  repoEntity <- getOrCreateEntity(name=synapseRepoName, parentId=codeFolderId, entityType="Folder")
+
+  commitEntity <- getOrCreateEntity(name=synapseCommitName, parentId=repoEntity$properties$id, entityType="Folder")
   sourceFileEntity <- getOrCreateEntity(name=synapseSourceFile, parentId=commitEntity$properties$id, entityType="Code")
   
-  githubURL <- paste("https://raw.github.com", githubRepo@user, githubRepo@repo, githubRepo@commit, sourceFile, sep="/")
+  githubURL <- getPermlink(repository=githubRepo, repositoryPath=sourceFile, type="raw")
   
   # TODO this will change with the new file service
   propertyValue(sourceFileEntity, "locations")<-list(list(type="external", path=githubURL))
@@ -172,10 +151,12 @@ createGithubCodeEntity <- function(repoName, sourceFile, githubCodeFolderId, rep
   propertyValue(sourceFileEntity, "md5")<-stringMd5(urlContent)
   
   # delineate code with Synapse 'markdown' code tags. This is done by prefixing each line with a tab
+  # TODO this will change when we introduce the wiki object
   propertyValue(sourceFileEntity, "description") <- indent(urlContent)
   
   # store the entity and return it
-  storeEntity(sourceFileEntity)
+  # NOTE, after setting an external URL you must call 'updateEntity', not 'storeEntity' lest the locations are deleted!!
+  updateEntity(sourceFileEntity)
 }
 
 # executable - what to execute.  choices are:
@@ -184,6 +165,7 @@ createGithubCodeEntity <- function(repoName, sourceFile, githubCodeFolderId, rep
 #			- a function (no Code object created)
 #	args - arguments for the specified function
 # resultParentId - ID of the Synapse container (e.g. Project or Folder) where the entity containing the result shall go
+# codeProjectId - ID of the root container (e.g. Project or Folder) for code
 # resultEntityProperties - annotations to be added to the resulting entity
 # resultEntityName - name of the resulting entity
 # replChar - the replacement character to use when illegal characters are encountered while creating entity names (default is ".")
@@ -202,7 +184,7 @@ createGithubCodeEntity <- function(repoName, sourceFile, githubCodeFolderId, rep
 # create a provenance record connecting the result to 
 # the executed code and the input arguments.
 #
-synapseExecute <- function(executable, args, resultParentId, resultEntityProperties = NULL,  resultEntityName=NULL, replChar=".") {
+synapseExecute <- function(executable, args, resultParentId, codeProjectId, resultEntityProperties = NULL,  resultEntityName=NULL, replChar=".") {
   
   if (!is.list(args)) stop("args must be a list.")
   if (!is.null(resultEntityProperties) && !is.list(resultEntityProperties)) stop("resultEntityProperties must be a list.")
@@ -222,25 +204,25 @@ synapseExecute <- function(executable, args, resultParentId, resultEntityPropert
       if (is.null(executable$repoName)) stop("Missing repoName in githubRepo code descriptor.")
       if (is.null(executable$sourceFile)) stop("Missing sourceFile in githubRepo code descriptor.")
       filePath<-executable$sourceFile
-      executionCodeEntity <- createGithubCodeEntity(repoName = executable$repoName, sourceFile = executable$sourceFile, replChar)
+      executionCodeEntity <- createGithubCodeEntity(repoName = executable$repoName, sourceFile = executable$sourceFile, codeProjectId, replChar)
     } else {# it's a local file
       ## 'executable' is a the full file path to a ".R" file, containing a function whose name matches the file name
       if (!hasRSuffix(executable)) stop(sprintf("Executable file %s does have '.R' ending.", executable))
       filePath <- executable
-      executionCodeEntity <- createFileCodeEntity(sourceFile=executable, replChar)
+      executionCodeEntity <- createFileCodeEntity(sourceFile=executable, codeProjectId, replChar=replChar)
     }
     
     # now we need to find the function added to the code entity
-    # TODO test file containing data item rather than function
-    if (is.null(executionCode$objects)) stop("executionCode$objects is null.")
-    if (length(executionCode$objects)==0) stop(sprintf("File %s contains no function to execute.", filePath))
+    executionCodeEntity<-loadEntity(executionCodeEntity)
+    if (is.null(executionCodeEntity$objects)) stop("executionCode$objects is null.")
+    if (length(executionCodeEntity$objects)==0) stop(sprintf("File %s contains no function to execute.", filePath))
     executableFunction<-NULL
-    if (length(executionCode$objects)==1) {
-      executableFunction <- executionCode$objects[[1]]
+    if (length(executionCodeEntity$objects)==1) {
+      executableFunction <- executionCodeEntity$objects[[1]]
     } else { # more than one function
       fileName <- basename(filePath)
       functionName <- substr(fileName, 1, nchar(fileName)-2)
-      executableFunction <- executionCode$objects[[functionName]]
+      executableFunction <- executionCodeEntity$objects[[functionName]]
       if (is.null(executableFunction)) stop(sprintf("File %s has multiple functions but none named %s", filePath, functionName))
     }
     functionResult <- do.call(executableFunction, args)
@@ -264,9 +246,9 @@ synapseExecute <- function(executable, args, resultParentId, resultEntityPropert
   generatedBy(resultEntity) <- activity
   
   resultEntity <- addObject(resultEntity, functionResult, name="functionResult")
-  # TODO test with an argument which is a list or vector (not a primitive)
-  for (name in args) {
-    annotValue(args, name)<-args[[name]]
+
+  for (name in names(args)) {
+    annotValue(resultEntity, name)<-args[[name]]
   }
   if(!is.null(resultEntityProperties)){
     for (name in names(resultEntityProperties)) {
