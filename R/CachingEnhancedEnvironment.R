@@ -406,12 +406,12 @@ setMethod(
 ##
 setMethod(
   f = ".loadCachedObjects",
-  signature = signature("CachingEnhancedEnvironment"),
-  definition = function(owner){
+  signature = signature("CachingEnhancedEnvironment", "logical"),
+  definition = function(owner, clearEnvironment){
     
     ## first clear out the owner's environment from all existing
     ## objects
-    rm(list= names(owner), envir = as.environment(owner))
+    if (clearEnvironment) rm(list= names(owner), envir = as.environment(owner))
     
     ## get the cached files
     ##files <- file.path(owner@fileCache$getCacheDir(), files(owner))

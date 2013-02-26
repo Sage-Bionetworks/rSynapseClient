@@ -333,7 +333,7 @@ setGeneric(
 
 setGeneric(
   name = "loadObjectsFromFiles",
-  def = function(owner){
+  def = function(owner, clearEnvironment){
     standardGeneric("loadObjectsFromFiles")
   }
 )
@@ -423,7 +423,7 @@ setGeneric(
 
 setGeneric(
   name = ".loadCachedObjects",
-  def = function(owner){
+  def = function(owner, clearEnvironment){
     standardGeneric(".loadCachedObjects")
   }
 )

@@ -44,8 +44,9 @@
     A Code entity is created for the given Code.  If there is an existing Code entity in the target Synapse location (described below), 
     and if the code file differs from the existing, then a new revision of the existing Code entity is created.
     
-    If the Code entity is a file, then then the Code entity created is named using the file path of the code file and
-    is placed in the folder or project given by \code{codeProjectId} parameter.
+    If the Code entity is a file or an in-memory function, then then the Code entity created is placed in the folder or project 
+    given by \code{codeProjectId} parameter.  If the Code entity is a file, then then the Code entity created is named using 
+    the file path of the code file.
     
     If the Code entity is a github reference then an entity hierarchy is created under the folder/project given by \code{codeProjectId} having
     the structure <codeProjectId>/<githubrepo>/<commit>/<filepath>.  

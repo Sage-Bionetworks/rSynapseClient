@@ -135,6 +135,23 @@ convertAnnotation<-function(a) {
   }
 }
 
+# create a Code entity for a function in memory
+# f: the function in memory
+createMemoryCodeEntity <-function(f, codeFolderId, codeEntityName, replChar=".") {
+  synapseEntityName <- scrubEntityName(codeEntityName, replChar)
+  
+  sourceFileEntity <- getOrCreateEntity(name=synapseEntityName, parentId=codeFolderId, entityType="Code")
+  
+  sourceFileEntity<-addObject(sourceFileEntity, f)
+  
+  # delineate code with Synapse 'markdown' code tags. This is done by prefixing each line with a tab
+  functionContent<-paste(format(f), collapse="\n")
+  propertyValue(sourceFileEntity, "description") <- indent(functionContent)
+  
+  # store the entity and return it
+  storeEntity(sourceFileEntity)
+}
+
 # Create a Code entity for a file on the local file system
 #
 # uses this synapse organization:
@@ -233,9 +250,10 @@ synapseExecute <- function(executable, args, resultParentId, codeProjectId, resu
   executableIsLocalFile <- is.character(executable)
   executableIsFunction <- is.function(executable)
   
+  executionCodeEntity <- NULL
+  
   if (executableIsGitHubRepoFile || executableIsLocalFile) {
     filePath<-NULL
-    executionCodeEntity<-NULL
     if (executableIsGitHubRepoFile) {
       ## 'executable' is a list() containing repoName and sourceFile
       if (is.null(executable$repoName)) stop("Missing repoName in githubRepo code descriptor.")
@@ -262,21 +280,27 @@ synapseExecute <- function(executable, args, resultParentId, codeProjectId, resu
       executableFunction <- executionCodeEntity$objects[[functionName]]
       if (is.null(executableFunction)) stop(sprintf("File %s has multiple functions but none named %s", filePath, functionName))
     }
-    functionResult <- do.call(executableFunction, args)
+    activityName<-filePath
     
-    usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=executionCodeEntity, wasExecuted=TRUE)
-    
-    activity <- Activity(list(name = filePath, used = usedEntitiesList))
-    activity <- createEntity(activity)
   } else if (is.function(executable)) {
     ## 'executable' is a function in the workspace, but does not come from a file
-    functionResult <- do.call(executable, args)
-    activity <- Activity(list(used = usedEntitiesList))
-    activity <- createEntity(activity)
+    codeEntityName <- "InMemoryFunction"
+    executionCodeEntity <- createMemoryCodeEntity(executable, codeProjectId, codeEntityName, replChar=replChar)
+    executableFunction <- executable
+    activityName <- NULL
   } else {
     stop("Executable is neither a github repo descriptor, a local file, nor a function.")
   }
   
+  functionResult <- do.call(executableFunction, args)
+  
+  usedEntitiesList[[length(usedEntitiesList)+1]] <- 
+    list(reference=list(targetId=propertyValue(executionCodeEntity, "id"), 
+        targetVersionNumber=propertyValue(executionCodeEntity, "versionNumber")), 
+      wasExecuted=TRUE)
+  
+  activity <- Activity(list(name = activityName, used = usedEntitiesList))
+  activity <- createEntity(activity)
   # Finally, we create the result entity
   # If the entity already exists we create a new version
   resultEntity <- getOrCreateEntity(name=resultEntityName, parentId = resultParentId, "Data", load=T) 

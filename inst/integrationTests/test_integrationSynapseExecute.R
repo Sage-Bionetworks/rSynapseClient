@@ -38,6 +38,28 @@ integrationTestGetOrCreateEntity <-
   checkEquals(firstId, secondId)
 }
 
+integrationTestCreateMemoryCodeEntity<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  incrementFunction<-function(x){x+1}
+  checkEquals(2, incrementFunction(x=1))
+  projectId<-propertyValue(project, "id")
+  createdEntity <- synapseClient:::createMemoryCodeEntity(incrementFunction, projectId, "myFunctionName")
+  id <- propertyValue(createdEntity, "id")
+  checkTrue(!is.null(id))
+  # check that a new entity exists in the given parent folder, with the correct name and type
+  reload<-loadEntity(id)
+  checkEquals(projectId, propertyValue(reload, "parentId"))
+  checkEquals("myFunctionName", propertyValue(reload, "name"))
+  checkTrue("Code"==class(reload))
+  # check that there is a function
+  checkTrue(!is.null(reload$objects))
+  checkEquals(1, length(reload$objects))
+  reloadedTestFunction<-reload$objects[[1]]
+  checkTrue(!is.null(reloadedTestFunction))
+  # run testFunction
+  checkEquals(2, reloadedTestFunction(1))
+  checkEquals(synapseClient:::indent(paste(format(incrementFunction), collapse="\n")), propertyValue(reload, "description"))
+}
 
 integrationTestCreateFileCodeEntity<-function() {
   workingDir<-tempdir()
@@ -268,6 +290,7 @@ integrationTestSynapseExecuteFunction<-function() {
   # check args
   checkEquals(1, annotValue(resultReload, "x"))
   
+  # TODO check the generated Code object
   
   # test a revision, i.e. rerun the analysis
   executable<-function(x){x+2}
@@ -290,4 +313,10 @@ integrationTestSynapseExecuteFunction<-function() {
   checkEquals(1, length(resultReload$objects))
   # the value of the object should equal 3
   checkEquals(3, resultReload$objects[[1]])
+  
+  # TODO check that the Code object is versioned
 }
+
+# TODO test that after rev'ing analysis, the previous result points to the previous input's version
+# TODO add a test that if the Code does NOT change, then a new analysis does NOT rev' the Code object
+
