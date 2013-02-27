@@ -272,6 +272,15 @@ integrationTestSynapseExecuteFunction<-function() {
     resultEntityProperties = resultEntityProperties,  
     resultEntityName=resultEntityName)
     
+  # check that code has been created
+  expectedCodeName <- "InMemoryFunction"
+  queryResult <- synapseQuery(sprintf("select id from entity where entity.parentId=='%s' AND entity.name=='%s'", 
+      propertyValue(project, "id"), expectedCodeName))
+  checkEquals(1, nrow(queryResult))
+  codeEntityId <- queryResult$entity.id
+  codeEntity<-getEntity(codeEntityId)
+  # we don't have to check that the codeEntity is constructed correctly since that is tested elsewhere
+  
   # check that result is correct
   resultReload<-loadEntity(propertyValue(resultEntity, "id"))
   checkEquals(resultEntityName, propertyValue(resultReload, "name"))
@@ -289,9 +298,7 @@ integrationTestSynapseExecuteFunction<-function() {
   
   # check args
   checkEquals(1, annotValue(resultReload, "x"))
-  
-  # TODO check the generated Code object
-  
+    
   # test a revision, i.e. rerun the analysis
   executable<-function(x){x+2}
   resultEntity<-synapseExecute(executable, 
@@ -314,7 +321,9 @@ integrationTestSynapseExecuteFunction<-function() {
   # the value of the object should equal 3
   checkEquals(3, resultReload$objects[[1]])
   
-  # TODO check that the Code object is versioned
+  # check that the Code object is versioned
+  codeEntity<-getEntity(codeEntityId)
+  checkEquals(2, propertyValue(codeEntity, "versionNumber"))
 }
 
 # TODO test that after rev'ing analysis, the previous result points to the previous input's version
