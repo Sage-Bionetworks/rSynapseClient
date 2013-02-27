@@ -37,7 +37,7 @@ unitTestAddObject <-
   save(foo, file=file)
   addFile(own, file)
   checkEquals("matrix", as.character(class(own$objects$foo)))
-  copy <- synapseClient:::loadObjectsFromFiles(own)
+  copy <- synapseClient:::loadObjectsFromFiles(own, T)
   checkEquals("character", as.character(class(own$objects$foo)))
   checkEquals("character", as.character(class(copy$objects$foo)))
 

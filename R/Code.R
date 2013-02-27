@@ -55,6 +55,10 @@ setMethod(
         warning(e)
       }
     )
+    # finally, we load any R binaries for this object
+    entity@objOwn$objects@fileCache <- entity@archOwn@fileCache
+    # note, we tell 'loadObjectsFromFile' NOT to clear the environment before loading!
+    entity@objOwn <- loadObjectsFromFiles(entity@objOwn, clearEnvironment=F)
     entity
   }
 )

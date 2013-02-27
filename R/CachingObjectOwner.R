@@ -151,9 +151,9 @@ setMethod(
 
 setMethod(
   f = "loadObjectsFromFiles",
-  signature = "CachingObjectOwner",
-  definition = function(owner){
-    owner$objects <- .loadCachedObjects(owner$objects)
+  signature = signature("CachingObjectOwner", "logical"),
+  definition = function(owner, clearEnvironment=T){
+    owner$objects <- .loadCachedObjects(owner$objects, clearEnvironment)
     owner
   }
 )

@@ -3,8 +3,6 @@
 # Author: furia
 ###############################################################################
 
-is.scalar<-function(x) {!is.list(x) && (!is.vector(x) || length(x)<2)}
-
 setMethod(
   f = "TypedPropertyStore",
   signature = signature("missing", "missing", "missing"),

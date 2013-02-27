@@ -90,7 +90,7 @@ setMethod(
     lfun <- getMethod("loadEntity", signature("LocationableWithoutBinaries", "missing"))
     entity <- lfun(entity)
     entity@objOwn$objects@fileCache <- entity@archOwn@fileCache
-		entity@objOwn <- loadObjectsFromFiles(entity@objOwn)
+		entity@objOwn <- loadObjectsFromFiles(entity@objOwn, clearEnvironment=TRUE)
 
 		entity
 	}
@@ -111,7 +111,7 @@ setMethod(
     definition = function(entity){
       if(!is.null(entity$properties$id))
         entity <- downloadEntity(entity)
-      entity@archOwn <- loadObjectsFromFiles(entity@archOwn)
+      entity@archOwn <- loadObjectsFromFiles(entity@archOwn, clearEnvironment=TRUE)
       setFetchMethod(entity, "load")
       entity
     }
@@ -127,7 +127,7 @@ setMethod(
     definition = function(entity, versionId){
       ##if(length(entity$files) == 0)
       entity <- downloadEntity(entity, versionId)
-      entity@archOwn <- loadObjectsFromFiles(entity@archOwn)
+      entity@archOwn <- loadObjectsFromFiles(entity@archOwn, clearEnvironment=TRUE)
       setFetchMethod(entity, "load")
       entity
     }
@@ -159,7 +159,7 @@ setMethod(
     lfun <- getMethod("loadEntity", signature("LocationableWithoutBinaries", "character"))
     entity <- lfun(entity, versionId)
     entity@objOwn$objects@fileCache <- entity@archOwn@fileCache
-    entity@objOwn <- loadObjectsFromFiles(entity@objOwn)
+    entity@objOwn <- loadObjectsFromFiles(entity@objOwn, clearEnvironment=TRUE)
 
     entity
   }
@@ -828,7 +828,7 @@ setMethod(
   f = "loadObjectsFromFiles",
   signature = "LocationableWithoutBinaries",
   definition = function(owner){
-    owner@archOwn <- loadObjectsFromFiles(owner@archOwn)
+    owner@archOwn <- loadObjectsFromFiles(owner@archOwn, clearEnvironment=TRUE)
     invisible(owner)
   }
 )
@@ -840,7 +840,7 @@ setMethod(
     ## call the superclass method
     lfun <- getMethod("loadObjectsFromFiles", signature("LocationableWithoutBinaries"))
     owner <- lfun(owner)
-    owner@objOwn <- loadObjectsFromFiles(owner@objOwn)
+    owner@objOwn <- loadObjectsFromFiles(owner@objOwn, clearEnvironment=TRUE)
     invisible(owner)
   }
 )
