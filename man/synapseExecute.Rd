@@ -7,7 +7,7 @@
   Function for executing code, uploading results, and creating a provenance record in Synapse
 }
 \usage{
-  synapseExecute(executable, args, resultParentId, codeProjectId, resultEntityProperties,  resultEntityName, replChar=".")
+  synapseExecute(executable, args, resultParentId, codeParentId, resultEntityProperties,  resultEntityName, replChar=".")
 }
 \arguments{
 	\item{executable}{
@@ -19,7 +19,7 @@
 	\item{resultParentId}{
     the Synapse ID of the project or folder in which the result entity is created
 	}
-	\item{codeProjectId}{
+	\item{codeParentId}{
     the Synapse ID of the project or folder in which the executed code is placed
 	}
 	\item{resultEntityProperties}{
@@ -45,11 +45,11 @@
     and if the code file differs from the existing, then a new revision of the existing Code entity is created.
     
     If the Code entity is a file or an in-memory function, then then the Code entity created is placed in the folder or project 
-    given by \code{codeProjectId} parameter.  If the Code entity is a file, then then the Code entity created is named using 
+    given by \code{codeParentId} parameter.  If the Code entity is a file, then then the Code entity created is named using 
     the file path of the code file.
     
-    If the Code entity is a github reference then an entity hierarchy is created under the folder/project given by \code{codeProjectId} having
-    the structure <codeProjectId>/<githubrepo>/<commit>/<filepath>.  
+    If the Code entity is a github reference then an entity hierarchy is created under the folder/project given by \code{codeParentId} having
+    the structure <codeParentId>/<githubrepo>/<commit>/<filepath>.  
     
     The if the code is in a (local or github) file, the file is loaded.  Since a Code file can contain multiple functions, 
     synapseExecute disambiguates the function to call as follows: If there's just one function, that is the one called.  If 
@@ -75,7 +75,7 @@
   		executable="/path/to/file.R", 
   		args=list(x=1, y="syn102987"), 
   		resultParentId="syn123456", 
-  		codeProjectId="syn987654", 
+  		codeParentId="syn987654", 
   		resultEntityProperties=list(a="foo", b="bar),  
   		resultEntityName="exampleOutput")
   
@@ -84,7 +84,7 @@
   		executable=list(repoName="/githubUser/ProjectRepo", sourceFile="path/to/file.R"), 
   		args=list(x=1, y="syn102987"), 
   		resultParentId="syn123456", 
-  		codeProjectId="syn987654", 
+  		codeParentId="syn987654", 
   		resultEntityProperties=list(a="foo", b="bar),  
   		resultEntityName="exampleOutput")
 }

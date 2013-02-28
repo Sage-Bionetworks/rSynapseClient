@@ -250,7 +250,11 @@ setMethod(
       entity <- createEntity(entity)
     }else{
       method <- synapseClient:::getFetchMethod(entity)
-      entity <- updateEntity(entity)
+      # I think this is redundant, as 'updateEntity' will be called below
+      # so we fix by suppressing the extra call if it's to come shortly
+      if (is.null(getFetchMethod(entity)) || getFetchMethod(entity) != "load"){
+        entity <- updateEntity(entity)
+      }
       if(!is.null(method))
         synapseClient:::setFetchMethod(entity, method)
     }

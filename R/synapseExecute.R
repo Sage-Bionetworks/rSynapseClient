@@ -65,7 +65,7 @@ getOrCreateEntity <- function(name, parentId, entityType, load=F) {
 }
 
 # Entity names may only contain: letters, numbers, spaces, underscores, hypens, periods, plus signs, and parentheses
-# any other characters are replaced by '+' signs
+# any other characters are replaced by <replaceChar>
 scrubEntityName<-function(s, replaceChar=".") {
   # first check that 'replaceChar' is legal
   illegalChars <- "[^a-zA-Z0-9_.+() -]"
@@ -218,7 +218,7 @@ createGithubCodeEntity <- function(repoName, sourceFile, codeFolderId, replChar=
 #			- a function (no Code object created)
 #	args - arguments for the specified function
 # resultParentId - ID of the Synapse container (e.g. Project or Folder) where the entity containing the result shall go
-# codeProjectId - ID of the root container (e.g. Project or Folder) for code
+# codeParentId - ID of the root container (e.g. Project or Folder) for code
 # resultEntityProperties - annotations to be added to the resulting entity
 # resultEntityName - name of the resulting entity
 # replChar - the replacement character to use when illegal characters are encountered while creating entity names (default is ".")
@@ -238,7 +238,7 @@ createGithubCodeEntity <- function(repoName, sourceFile, codeFolderId, replChar=
 # the executed code and the input arguments.
 #
 #
-synapseExecute <- function(executable, args, resultParentId, codeProjectId, resultEntityProperties = NULL,  resultEntityName=NULL, replChar=".") {
+synapseExecute <- function(executable, args, resultParentId, codeParentId, resultEntityProperties = NULL,  resultEntityName=NULL, replChar=".") {
   
   if (!is.list(args)) stop("args must be a list.")
   if (!is.null(resultEntityProperties) && !is.list(resultEntityProperties)) stop("resultEntityProperties must be a list.")
@@ -259,12 +259,12 @@ synapseExecute <- function(executable, args, resultParentId, codeProjectId, resu
       if (is.null(executable$repoName)) stop("Missing repoName in githubRepo code descriptor.")
       if (is.null(executable$sourceFile)) stop("Missing sourceFile in githubRepo code descriptor.")
       filePath<-executable$sourceFile
-      executionCodeEntity <- createGithubCodeEntity(repoName = executable$repoName, sourceFile = executable$sourceFile, codeProjectId, replChar)
+      executionCodeEntity <- createGithubCodeEntity(repoName = executable$repoName, sourceFile = executable$sourceFile, codeParentId, replChar)
     } else {# it's a local file
       ## 'executable' is a the full file path to a ".R" file, containing a function whose name matches the file name
       if (!hasRSuffix(executable)) stop(sprintf("Executable file %s does have '.R' ending.", executable))
       filePath <- executable
-      executionCodeEntity <- createFileCodeEntity(sourceFile=executable, codeProjectId, replChar=replChar)
+      executionCodeEntity <- createFileCodeEntity(sourceFile=executable, codeParentId, replChar=replChar)
     }
     
     # now we need to find the function added to the code entity
@@ -285,7 +285,7 @@ synapseExecute <- function(executable, args, resultParentId, codeProjectId, resu
   } else if (is.function(executable)) {
     ## 'executable' is a function in the workspace, but does not come from a file
     codeEntityName <- "InMemoryFunction"
-    executionCodeEntity <- createMemoryCodeEntity(executable, codeProjectId, codeEntityName, replChar=replChar)
+    executionCodeEntity <- createMemoryCodeEntity(executable, codeParentId, codeEntityName, replChar=replChar)
     executableFunction <- executable
     activityName <- NULL
   } else {
