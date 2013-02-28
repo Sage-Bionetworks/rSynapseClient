@@ -245,7 +245,8 @@ setMethod(
       entity <- createEntity(entity)
     }else{
       method <- synapseClient:::getFetchMethod(entity)
-      entity <- updateEntity(entity)
+      # I think this is redundant, as 'updateEntity' will be called below
+      # entity <- updateEntity(entity)
       if(!is.null(method))
         synapseClient:::setFetchMethod(entity, method)
     }
@@ -258,13 +259,11 @@ setMethod(
         ## upload the archive  file (storeFile also updates the entity)
         file <- file.path(entity@archOwn@fileCache$getCacheRoot(), file)
 
-        ## if the checksum of the archive file has changed, upload it
-        ##checksum <- as.character(md5sum(file))
-        ##if(is.null(entity$properties$md5) | checksum != entity$properties$md5)
+        ## note, this calls 'updateEntity' as a side effect
         entity <- storeFile(entity, file)
       }else{
         if(!is.null(entity$properties$locations)){
-          entity <- deleteProperty(entity, "locations")
+          entity <- deleteProperty(entity, "locations") # this may be the source of the problem described in SYNR-363
           entity <- updateEntity(entity)
         }
       }
