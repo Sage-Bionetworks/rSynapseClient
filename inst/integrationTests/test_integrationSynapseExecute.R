@@ -240,15 +240,75 @@ integrationTestSynapseExecuteFile<-function() {
   checkEquals(3, resultReload$objects[[1]])
   
   # check provenance
-  activity<-generatedBy(resultReload)
+  activityV2<-generatedBy(resultReload)
+  # This should be a distinct 'activity' from the one for the first version
+  checkTrue(propertyValue(activityV2, "id")!=propertyValue(activity, "id"))
   # check content
-  used<-propertyValue(activity, "used")
+  used<-propertyValue(activityV2, "used")
   checkEquals(1, length(used))
   checkTrue(used[[1]]$wasExecuted)
   checkEquals(propertyValue(codeEntity, "id"), used[[1]]$reference$targetId)
   # references the new version of the Code object
   checkEquals(2, used[[1]]$reference$targetVersionNumber)
   
+  # test that after rev'ing analysis, the previous result points to the previous Code version
+  # check that previous version is still intact
+  previousResult <- loadEntity(propertyValue(resultReload, "id"), versionId=1)
+  # check provenance
+  activityOrig<-generatedBy(previousResult)
+  # this should be the original activity
+  checkEquals(propertyValue(activityOrig, "id"), propertyValue(activity, "id"))
+  # check content
+  used<-propertyValue(activityOrig, "used")
+  checkEquals(1, length(used))
+  checkTrue(used[[1]]$wasExecuted)
+  checkEquals(propertyValue(codeEntity, "id"), used[[1]]$reference$targetId)
+  # references the OLD version of the Code object
+  checkEquals(1, used[[1]]$reference$targetVersionNumber)
+
+# TODO: The following doesn't work, since zipped files can have varying MD-5s.  Reenable this test once we stop zipping files up.
+#  # now rerun the analysis WITHOUT changing the code.
+#  # Since the code is the same a new version should NOT be generated
+#  checkTrue(file.copy(system.file("resources/test/testFunction2.R", package = "synapseClient"), filePath, overwrite=T))
+#  resultEntity<-synapseExecute(executable, 
+#    args, 
+#    resultParentId, 
+#    codeFolderId, 
+#    resultEntityProperties = resultEntityProperties,  
+#    resultEntityName=resultEntityName)
+#  
+#  
+#  # there should still be just one code entity, still version *2*
+#  queryResult <- synapseQuery(sprintf("select id from entity where entity.parentId=='%s' AND entity.name=='%s'", 
+#      propertyValue(project, "id"), expectedCodeName))
+#  checkEquals(1, nrow(queryResult))
+#  codeEntityId <- queryResult$entity.id
+#  codeEntity<-getEntity(codeEntityId)
+#  checkEquals(2, propertyValue(codeEntity, "versionNumber")) #<<<< this breaks, it's 3 not 2
+#  
+#  # check that result is correct.  Once again we reload
+#  resultReload<-loadEntity(propertyValue(resultEntity, "id"))
+#  checkEquals(resultEntityName, propertyValue(resultReload, "name"))
+#  checkEquals(resultParentId, propertyValue(resultReload, "parentId"))
+#  # the version should NOT be incremented
+#  checkEquals(2, propertyValue(resultReload, "versionNumber")) #<<<< this breaks, it's 3 not 2
+#  
+#  # check the result:   the output is still 3
+#  # there should be just one object
+#  checkEquals(1, length(resultReload$objects))
+#  # the value of the object should equal 2
+#  checkEquals(3, resultReload$objects[[1]])
+#  
+#  # check provenance
+#  activity<-generatedBy(resultReload)
+#  # check content
+#  used<-propertyValue(activity, "used")
+#  checkEquals(1, length(used))
+#  checkTrue(used[[1]]$wasExecuted)
+#  checkEquals(propertyValue(codeEntity, "id"), used[[1]]$reference$targetId)
+#  # references the latest version of the Code object
+#  checkEquals(2, used[[1]]$reference$targetVersionNumber) #<<<< this breaks, it's 3 not 2
+
 }
 
 # call synapseExecute with a function rather than a file
@@ -324,8 +384,22 @@ integrationTestSynapseExecuteFunction<-function() {
   # check that the Code object is versioned
   codeEntity<-getEntity(codeEntityId)
   checkEquals(2, propertyValue(codeEntity, "versionNumber"))
+  
+  # check that previous version is still intact
+  previousResult <- loadEntity(propertyValue(resultEntity, "id"), versionId=1)
+  checkEquals(1, length(previousResult$objects))
+  # the value of the object should equal 2
+  checkEquals(2, previousResult$objects[[1]])
+  
+  # check provenance
+  activity<-generatedBy(previousResult)
+  # check content
+  used<-propertyValue(activity, "used")
+  checkEquals(1, length(used))
+  checkTrue(used[[1]]$wasExecuted)
+  checkEquals(propertyValue(codeEntity, "id"), used[[1]]$reference$targetId)
+  # references the OLD version of the Code object
+  checkEquals(1, used[[1]]$reference$targetVersionNumber)
 }
 
-# TODO test that after rev'ing analysis, the previous result points to the previous input's version
-# TODO add a test that if the Code does NOT change, then a new analysis does NOT rev' the Code object
 
