@@ -6,9 +6,9 @@
 synapseResetEndpoints <-
   function()
 {
-  synapseAuthServiceEndpoint("https://auth-prod.sagebase.org/auth/v1")
-  synapseRepoServiceEndpoint("https://repo-prod.sagebase.org/repo/v1")
-  synapseFileServiceEndpoint("https://file-prod.sagebase.org/file/v1")
+  synapseAuthServiceEndpoint("https://auth-prod.prod.sagebase.org/auth/v1")
+  synapseRepoServiceEndpoint("https://repo-prod.prod.sagebase.org/repo/v1")
+  synapseFileServiceEndpoint("https://file-prod.prod.sagebase.org/file/v1")
   synapseVersionsServiceEndpoint("http://versions.synapse.sagebase.org/synapseRClient")
   synapsePortalEndpoint("http://synapse.sagebase.org")
 }

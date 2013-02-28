@@ -147,7 +147,7 @@ unitTestLoadCachedObjects <-
   checkEquals(files(ee), synapseClient:::.generateCacheFileRelativePath(ee, "boo"))
 
   ##load from cache and verify values
-  copy <- synapseClient:::.loadCachedObjects(ee)
+  copy <- synapseClient:::.loadCachedObjects(ee, T)
   checkEquals(length(ee), 1L)
   checkEquals(ee$boo, "bar")
 
@@ -178,7 +178,7 @@ unitTestLoadCachedObjects <-
 
 
   ##load from cache and verify values
-  ee <- synapseClient:::.loadCachedObjects(ee)
+  ee <- synapseClient:::.loadCachedObjects(ee, T)
   checkEquals(ee$foo, "boo")
   checkEquals(ee$blah, "bar")
 
@@ -189,7 +189,7 @@ unitTestLoadCachedObjects <-
   checkEquals(length(objects), 1L)
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(ee, "foo")))
   checkTrue(!file.exists(synapseClient:::.generateCacheFileName(ee, "boo")))
-  ee <- synapseClient:::.loadCachedObjects(ee)
+  ee <- synapseClient:::.loadCachedObjects(ee, T)
   checkEquals(length(objects), 1L)
   checkEquals(ee$foo, "bar")
 
