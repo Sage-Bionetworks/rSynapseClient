@@ -12,7 +12,7 @@ Author@R: c(
 	)
 Author: Matthew Furia <matt.furia@sagebase.org>
 Maintainer: Bruce Hoff <bruce.hoff@sagebase.org>
-Depends: methods, R (>= 2.14.1)
+Depends: methods, R (>= 2.15)
 Imports: RJSONIO (>= 1.0-1),RCurl (> 1.95-3),Biobase,tools,digest,affy
 Suggests: RUnit, rJava, rGithubClient
 SystemRequirements: zip
