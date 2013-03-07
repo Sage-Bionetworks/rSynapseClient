@@ -56,7 +56,7 @@ integrationTestCRUDS4Activity <-
   checkTrue(!is.null(used2))
   checkEquals(1, length(used2))
   checkEquals(2, length(used2[[1]]))
-  targetId<-used2[[1]]$reference["targetId"]
+  targetId<-used2[[1]]$reference$targetId
   names(targetId)<-NULL # needed to make the following check work
   checkEquals(propertyValue(testData, "id"), targetId)
   checkEquals(F, used2[[1]]$wasExecuted)
@@ -71,7 +71,7 @@ integrationTestCRUDS4Activity <-
   checkTrue(!is.null(used2))
   checkEquals(1, length(used2))
   checkEquals(2, length(used2[[1]]))
-  targetId<-used2[[1]]$reference["targetId"]
+  targetId<-used2[[1]]$reference$targetId
   names(targetId)<-NULL # needed to make the following check work
   checkEquals(propertyValue(testData, "id"), targetId)
   checkEquals(T, used2[[1]]$wasExecuted)

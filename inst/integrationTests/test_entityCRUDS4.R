@@ -286,7 +286,7 @@ integrationTestUpdateS4EntityWithUsed <-
 	usedList<-used(updatedProject)
 	checkTrue(!is.null(usedList))
 	checkEquals(1, length(usedList))
-	targetId<-usedList[[1]]$reference["targetId"]
+	targetId<-usedList[[1]]$reference$targetId
 	names(targetId)<-NULL # needed to make the following check work
 	checkEquals(propertyValue(createdProject2, "id"), targetId)
 	
@@ -307,7 +307,7 @@ integrationTestUpdateS4EntityWithUsed <-
 	usedList2 <- used(createdProject)
 	checkTrue(!is.null(usedList2))
 	checkEquals(1, length(usedList2))
-	targetId<-usedList2[[1]]$reference["targetId"]
+	targetId<-usedList2[[1]]$reference$targetId
 	names(targetId)<-NULL # needed to make the following check work
 	checkEquals(propertyValue(createdProject2, "id"), targetId)
 	checkEquals(F, usedList2[[1]]$wasExecuted)
