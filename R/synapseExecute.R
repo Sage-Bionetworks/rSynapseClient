@@ -174,6 +174,18 @@ createFileCodeEntity <- function(sourceFile, codeFolderId, replChar=".") {
   storeEntity(sourceFileEntity)
 }
 
+# on some systems RCurl needs an SSL certificate bundle to be passed to make https requests work
+configureRGithubClientCertBundle<-function() {
+  githubCurlOpts<-rGithubClient:::.getGithubCache("opts")
+  if (is.null(githubCurlOpts$cainfo)) {
+    synapseClientCurlOpts<-.getCache("curlOpts")
+    if (!is.null(synapseClientCurlOpts)) {
+      githubCurlOpts$cainfo<-synapseClientCurlOpts$cainfo
+      rGithubClient:::.setGithubCache("opts", githubCurlOpts)
+    }
+  }  
+}
+
 # Create a Code entity for a file in Github
 #
 # uses this synapse organization:
@@ -184,7 +196,8 @@ createFileCodeEntity <- function(sourceFile, codeFolderId, replChar=".") {
 createGithubCodeEntity <- function(repoName, sourceFile, codeFolderId, replChar=".") {
   ## check that rGithubClient package is installed
   if (!rGithubClientPackageIsAvailable()) stop("Github repo specified but rGithubClient pacakge not installed.  Please install and try again.")
-
+  configureRGithubClientCertBundle()
+  
   githubRepo <- getRepo(repository=repoName)
   
   synapseRepoName <- scrubEntityName(repoName, replChar)
