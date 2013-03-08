@@ -213,7 +213,7 @@ createGithubCodeEntity <- function(repoName, sourceFile, codeFolderId, replChar=
   
   # TODO this will change with the new file service
   propertyValue(sourceFileEntity, "locations")<-list(list(type="external", path=githubURL))
-  urlContent<-getURLContent(githubURL)
+  urlContent<-getURLContent(githubURL, .opts=.getCache("curlOpts")) 
   propertyValue(sourceFileEntity, "md5")<-stringMd5(urlContent)
   
   # delineate code with Synapse 'markdown' code tags. This is done by prefixing each line with a tab
