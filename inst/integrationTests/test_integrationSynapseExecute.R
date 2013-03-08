@@ -131,7 +131,7 @@ integrationTestCreateGithubCodeEntity<-function() {
   checkEquals(codeUrlSuffix, substr(codeUrl, nchar(codeUrl)-nchar(codeUrlSuffix)+1, nchar(codeUrl)))
   
   # TODO this will change when we introduce the wiki object
-  checkEquals(synapseClient:::indent(getURLContent(codeUrl)), propertyValue(createdEntity, "description"))
+  checkEquals(synapseClient:::indent(getURLContent(codeUrl, .opts=synapseClient:::.getCache("curlOpts"))), propertyValue(createdEntity, "description"))
   
   # retrieve parent (commit)
   commitEntity<-getEntity(propertyValue(createdEntity, "parentId"))
