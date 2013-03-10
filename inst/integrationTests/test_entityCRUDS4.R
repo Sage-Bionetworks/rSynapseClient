@@ -79,27 +79,80 @@ integrationTestCreateEntityWithAnnotations <-
 }
 
 integrationTestCreateEntityWithGeneratedBy <- 
-		function()
+  function()
 {
-	## Create Project
-	project <- Project()
-	annotValue(project, "annotationKey") <- "projectAnnotationValue"
-	createdProject <- createEntity(project)
-	synapseClient:::.setCache("testProject", createdProject)
-	checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
-	
-	## Create Study
-	study <- Study()
-	propertyValue(study, "name") <- "testStudyName"
-	propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
-	testActivity <-synapseClient:::.getCache("testActivity")
-	checkTrue(!is.null(testActivity))
-	generatedBy(study)<-testActivity
-	createdStudy <- createEntity(study)
-	checkEquals(propertyValue(createdStudy,"name"), propertyValue(study, "name"))
-	checkEquals(propertyValue(createdStudy,"parentId"), propertyValue(createdProject, "id"))
-	checkTrue(!is.null(generatedBy(createdStudy)))
-	checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(createdStudy), "id"))
+  ## Create Project
+  project <- Project()
+  annotValue(project, "annotationKey") <- "projectAnnotationValue"
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
+  
+  ## Create Data
+  data <- Data()
+  propertyValue(data, "name") <- "testDataName"
+  propertyValue(data,"parentId") <- propertyValue(createdProject, "id")
+  testActivity <-synapseClient:::.getCache("testActivity")
+  checkTrue(!is.null(testActivity))
+  generatedBy(data)<-testActivity
+  data <- createEntity(data)
+  createdData<-getEntity(propertyValue(data, "id"))
+  checkEquals(propertyValue(createdData,"name"), propertyValue(data, "name"))
+  checkEquals(propertyValue(createdData,"parentId"), propertyValue(createdProject, "id"))
+  checkTrue(!is.null(generatedBy(createdData)))
+  checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(createdData), "id"))
+}
+
+integrationTestUpdateEntityWithGeneratedBy <- 
+  function()
+{
+  ## Create Project
+  project <- Project()
+  annotValue(project, "annotationKey") <- "projectAnnotationValue"
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
+  
+  ## Create Data
+  data <- Data()
+  propertyValue(data, "name") <- "testDataName"
+  propertyValue(data,"parentId") <- propertyValue(createdProject, "id")
+  data <- createEntity(data)
+  testActivity <-synapseClient:::.getCache("testActivity")
+  checkTrue(!is.null(testActivity))
+  generatedBy(data)<-testActivity
+  data <- updateEntity(data)
+  updatedData<-getEntity(propertyValue(data, "id"))
+  checkEquals(propertyValue(updatedData,"name"), propertyValue(data, "name"))
+  checkEquals(propertyValue(updatedData,"parentId"), propertyValue(createdProject, "id"))
+  checkTrue(!is.null(generatedBy(updatedData)))
+  checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(updatedData), "id"))
+}
+
+integrationTestStoreEntityWithGeneratedBy <- 
+  function()
+{
+  ## Create Project
+  project <- Project()
+  annotValue(project, "annotationKey") <- "projectAnnotationValue"
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
+  
+  ## Create Data
+  data <- Data()
+  propertyValue(data, "name") <- "testDataName"
+  propertyValue(data,"parentId") <- propertyValue(createdProject, "id")
+  data <- createEntity(data)
+  testActivity <-synapseClient:::.getCache("testActivity")
+  checkTrue(!is.null(testActivity))
+  generatedBy(data)<-testActivity
+  data <- storeEntity(data)
+  updatedData<-getEntity(propertyValue(data, "id"))
+  checkEquals(propertyValue(updatedData,"name"), propertyValue(data, "name"))
+  checkEquals(propertyValue(updatedData,"parentId"), propertyValue(createdProject, "id"))
+  checkTrue(!is.null(generatedBy(updatedData)))
+  checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(updatedData), "id"))
 }
 
 integrationTestCreateEntityWithNAAnnotations <- 
