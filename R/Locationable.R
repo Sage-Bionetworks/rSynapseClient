@@ -267,8 +267,8 @@ setMethod(
       }else{
         if(!is.null(entity$properties$locations)){
           entity <- deleteProperty(entity, "locations") # this may be the source of the problem described in SYNR-363
-          entity <- updateEntity(entity)
         }
+        entity <- updateEntity(entity)
       }
     }
     entity
