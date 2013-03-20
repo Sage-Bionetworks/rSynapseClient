@@ -3,7 +3,7 @@ Type: Package
 Title: Synapse R Client from Sage Bionetworks
 Version: 0.21
 ReleaseNotes: This version introduces the 'synapseExecute' function, which creates provenance records while running code.
-Date: 2013-03-01
+Date: 2013-03-20
 Author@R: c(
 	person("Bruce", "Hoff", email="bruce.hoff@sagebase.org", role="aut"),
 	person("Chris", "Bare", email="chris.bare@sagebase.org", role="aut"),
