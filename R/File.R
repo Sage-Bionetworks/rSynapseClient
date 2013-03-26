@@ -1,4 +1,21 @@
 
+setClass(
+  Class = "File",
+  contains = c("Entity"),
+  representation = representation(
+    # fields:
+    # filePath: full path to local file. Before an "external" file is created in Synapse, this is the external URL
+    filePath = "character",
+    # synapseStore: logical T if file is stored in Synapse, F if only the url is stored
+    synapseStore = "logical",
+    # fileHandle (generated from JSON schema, null before entity is created)
+    fileHandle = "list" # TODO:  auto-generate FileHandle from json schema
+  ),
+  prototype = prototype(
+    properties = synapseClient:::SynapseProperties(synapseClient:::getEffectivePropertyTypes("org.sagebionetworks.repo.model.FileEntity"))
+  )
+)
+
 ##
 ## File contructor: path="/path/to/file", synapseStore=T, name="foo", parentId="syn101", ...
 ## TODO: can also take: obj=<obj ref>, synapseStore=T, name="foo", parentId="syn101", ...
@@ -10,7 +27,7 @@ setMethod(
     file <- new("File")
     file@filePath <- filePathParam
     file@synapseStore <- synapseStoreParam
-    file@properties <- ???? # TODO:  finish this
+    file@properties <- NULL # TODO:  finish this
     if (!missing("nameParam")) propertyValue(file, "name")<-nameParam
     if (!missing("parentIdParam")) propertyValue(file, "parentId")<-parentIdParam
     file
@@ -93,12 +110,12 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
   # TODO take care of the provenance info
   activity<-NULL
   if (used!=NULL || executed!=NULL || activityName!=NULL || activityDescription==NULL) {
-    # create the provenance record
+    # create the provenance record and put in entity
   }
   if (is.null(propertyValue(file, "id"))) {
-  #	TODO:	storedFile<-createEntity(file) #  createOrUpdate, forceVersion
+    storedFile<-createEntity(file) #  TODO createOrUpdate
   } else {
-  #	TODO:	storedFile<-updateEntity(file) #  createOrUpdate, forceVersion
+    storedFile<-updateEntity(file, forceVersion) #  forceVersion
   }
   # copy fileHandle into slot of resultant object
   storedFile@filePath<-file@filePath # TODO is this right?

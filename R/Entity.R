@@ -284,14 +284,18 @@ setMethod(
 
 setMethod(
   f = "updateEntity",
-  signature = "Entity",
-  definition = function(entity)
+  signature = signature("Entity", "logical"),
+  definition = function(entity, forceVersion=FALSE)
   {
     if(is.null(entity$properties$id))
       stop("entity ID was null so could not update. use createEntity instead.")
     
     annots <- entity@annotations
     updateUri<-entity$properties$uri
+    
+    if (forceVersion) {
+      updateUri <-sprintf("%s/version", updateUri)
+    }
     
     generatingActivity <- generatedBy(entity)
     if (!is.null(generatingActivity)) {
@@ -377,13 +381,13 @@ setMethod(
 
 setMethod(
   f = "storeEntity",
-  signature= "Entity",
-  definition = function(entity) {
+  signature= signature("Entity", "logical"),
+  definition = function(entity, forceVersion=FALSE) {
     if (is.null(propertyValue(entity, "id"))) {
       entity <- createEntity(entity)
     }
     else {
-      entity <- updateEntity(entity)
+      entity <- updateEntity(entity, forceVersion)
     }
   }
 )

@@ -155,7 +155,7 @@ setGeneric(
 
 setGeneric(
   name = "storeEntity",
-  def = function(entity){
+  def = function(entity, forceVersion){
     standardGeneric("storeEntity")
   }
 )
@@ -190,7 +190,7 @@ setGeneric(
 
 setGeneric(
   name = "updateEntity",
-  def = function(entity){
+  def = function(entity, forceVersion){
     standardGeneric("updateEntity")
   }
 )
