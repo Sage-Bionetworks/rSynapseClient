@@ -116,38 +116,10 @@ setMethod(
 
 setMethod(
   f = "initializeEntity",
-  signature = "FileEntityWithoutBinaries",
+  signature = "FileEntity",
   definition = function(entity){
     ifun <- getMethod("initializeEntity", "Entity")
     entity <- ifun(entity)
-    
-    ## get the cache url for this entity
-    location <- entity$properties$dataFileHandleId
-    if(is.null(location))
-      return(entity)
-    destdir <- .generateCacheDestDir(location, entity$properties$versionNumber)
-    if(!file.exists(destdir))
-      dir.create(destdir, recursive=T)
-    destdir <- normalizePath(path.expand(destdir))
-    
-    ## instantiate the file cache an put the reference in
-    ## the archOwner
-    fc <- getFileCache(destdir)
-    entity@archOwn@fileCache <- fc
-    entity
-  }
-)
-
-setMethod(
-  f = "initializeEntity",
-  signature = "FileEntity",
-  definition = function(entity){
-    ifun <- getMethod("initializeEntity", "FileEntityWithoutBinaries")
-    entity <- ifun(entity)
-    
-    ## instantiate the file cache an put the reference in
-    ## the archOwner
-    entity@objOwn$fileCache <- entity@archOwn@fileCache
     entity
   }
 )

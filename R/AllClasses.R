@@ -471,3 +471,19 @@ setRefClass(
     )
 )
 
+setClass(
+  Class = "File",
+  contains = c("Entity"),
+  representation = representation(
+    # fields:
+    # filePath: full path to local file. Before an "external" file is created in Synapse, this is the external URL
+    filePath = "character",
+    # synapseStore: logical T if file is stored in Synapse, F if only the url is stored
+    synapseStore = "logical",
+    # fileHandle (generated from JSON schema, null before entity is created)
+    fileHandle = "list" # TODO:  auto-generate FileHandle from json schema
+  ),
+  prototype = prototype(
+    properties = synapseClient:::SynapseProperties(synapseClient:::getEffectivePropertyTypes("org.sagebionetworks.repo.model.FileEntity"))
+  )
+)
