@@ -1,8 +1,8 @@
 
 setClass(
   Class = "File",
-  contains = c("Entity"),
   representation = representation(
+    metadata = "Entity",
     # fields:
     # filePath: full path to local file. Before an "external" file is created in Synapse, this is the external URL
     filePath = "character",
@@ -12,7 +12,8 @@ setClass(
     fileHandle = "list" # TODO:  auto-generate FileHandle from json schema
   ),
   prototype = prototype(
-    properties = synapseClient:::SynapseProperties(synapseClient:::getEffectivePropertyTypes("org.sagebionetworks.repo.model.FileEntity"))
+    # TODO initialize 'metadata' to be an Entity of type FileEntity
+    #properties = synapseClient:::SynapseProperties(synapseClient:::getEffectivePropertyTypes("org.sagebionetworks.repo.model.FileEntity"))
   )
 )
 
@@ -22,14 +23,13 @@ setClass(
 ##
 setMethod(
   f = "File",
-  signature = signature("character", "logical", "character", "character", ...),
+  signature = signature("character", "logical", "character", "character"),
   definition = function(filePathParam, synapseStoreParam, nameParam, parentIdParam, ...){
     file <- new("File")
     file@filePath <- filePathParam
     file@synapseStore <- synapseStoreParam
-    file@properties <- NULL # TODO:  finish this
-    if (!missing("nameParam")) propertyValue(file, "name")<-nameParam
-    if (!missing("parentIdParam")) propertyValue(file, "parentId")<-parentIdParam
+    if (!missing("nameParam")) propertyValue(file@metadata, "name")<-nameParam
+    if (!missing("parentIdParam")) propertyValue(file@metadata, "parentId")<-parentIdParam
     file
   }
 )
@@ -87,7 +87,7 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
     }
     #	save fileHandle in slot, put id in entity properties
     file@fileHandle <- fileHandle
-    propertyValue(file, "dataFileHandleId")<-fileHandle$id
+    propertyValue(file@metadata, "dataFileHandleId")<-fileHandle$id
   } else { # fileHandle is not null, i.e. we're updating a Synapse File that's already created
     #	if fileHandle is inconsistent with filePath or synapseStore, raise an exception 
     validdateFile(file)
@@ -112,10 +112,10 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
   if (used!=NULL || executed!=NULL || activityName!=NULL || activityDescription==NULL) {
     # create the provenance record and put in entity
   }
-  if (is.null(propertyValue(file, "id"))) {
-    storedFile<-createEntity(file) #  TODO createOrUpdate
+  if (is.null(propertyValue(file@metadata, "id"))) {
+    storedFile<-createEntity(file@metadata) #  TODO createOrUpdate
   } else {
-    storedFile<-updateEntity(file, forceVersion) #  forceVersion
+    storedFile<-updateEntity(file@metdata, forceVersion) #  forceVersion
   }
   # copy fileHandle into slot of resultant object
   storedFile@filePath<-file@filePath # TODO is this right?

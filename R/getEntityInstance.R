@@ -114,13 +114,3 @@ setMethod(
   }
 )
 
-setMethod(
-  f = "initializeEntity",
-  signature = "FileEntity",
-  definition = function(entity){
-    ifun <- getMethod("initializeEntity", "Entity")
-    entity <- ifun(entity)
-    entity
-  }
-)
-

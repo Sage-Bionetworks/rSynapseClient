@@ -822,4 +822,10 @@ setGeneric(
   }
 )
 
+setGeneric(
+  name="File",
+  def = function(filePathParam, synapseStoreParam, nameParam, parentIdParam, ...){
+    standardGeneric("File")
+  }
+)
 
