@@ -1,8 +1,8 @@
 integrationTestGetEntityByIdExistingFileCache <-
   function()
 {
-  checkEquals("image/jpeg", getMimeTypeForFile("foo.jpg"))
-  checkEquals("image/jpeg", getMimeTypeForFile("foo.jpeg"))
-  checkEquals("text/html", getMimeTypeForFile("this.is.a.file.html"))
-  checkEquals("application/octet-stream", getMimeTypeForFile("FileWithoutExtension"))
+  checkEquals("image/jpeg", synapseClient:::getMimeTypeForFile("foo.jpg"))
+  checkEquals("image/jpeg", synapseClient:::getMimeTypeForFile("foo.jpeg"))
+  checkEquals("text/html", synapseClient:::getMimeTypeForFile("this.is.a.file.html"))
+  checkEquals("application/octet-stream", synapseClient:::getMimeTypeForFile("FileWithoutExtension"))
 }

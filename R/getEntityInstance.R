@@ -19,11 +19,6 @@ setMethod(
         class <- "Locationable"
     }
     
-    if (class == "Entity"){
-      if(!is.null(entity$dataFileHandleId))
-        class <- "FileEntity"
-    }
-    
     ## call the appropriate constructor and pass the list
     ## representation of the entity
     fun <- getMethod(class, signature = "list", where="synapseClient")

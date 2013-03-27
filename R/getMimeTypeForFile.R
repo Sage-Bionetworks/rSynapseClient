@@ -5,10 +5,26 @@
 
 # get the file's extension and then look up the MIME type, if there is no extension, apply a default
 getMimeTypeForFile<-function(fileName) {
-  extension<-file_ext(fileName)
+  extension<-getExtension(fileName)
   if (nchar(extension)==0) return("application/octet-stream") # default mime type
   mimeTypeMap<-getMimeTypeMap()
-  mimeTypeMap[[suffix]]
+  mimeTypeMap[[extension]]
+}
+
+getExtension<-function(fname) {
+  suffix<-fname
+  dot<-0
+  while (dot>=0) {
+    lastDot<-dot
+    suffix<-substr(suffix, dot+1, nchar(suffix))
+    dot<-regexpr(".", suffix, fixed=T)[[1]]
+    if (dot==0) stop("Illegal state, dot==0")
+  }
+  if (lastDot==0) {
+    ""
+  } else {
+    suffix
+  }
 }
 
 # use the global cache to avoid computing the (static) map more than once

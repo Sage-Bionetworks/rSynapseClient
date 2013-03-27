@@ -2,20 +2,32 @@
 setClass(
   Class = "File",
   representation = representation(
-    metadata = "Entity",
     # fields:
+    # metadata:  the Meta-data part of the File (the "entity")
+    metadata = "Entity",
     # filePath: full path to local file. Before an "external" file is created in Synapse, this is the external URL
     filePath = "character",
     # synapseStore: logical T if file is stored in Synapse, F if only the url is stored
     synapseStore = "logical",
     # fileHandle (generated from JSON schema, null before entity is created)
-    fileHandle = "list" # TODO:  auto-generate FileHandle from json schema
+    fileHandle = "list"
   ),
   prototype = prototype(
-    # TODO initialize 'metadata' to be an Entity of type FileEntity
-    #properties = synapseClient:::SynapseProperties(synapseClient:::getEffectivePropertyTypes("org.sagebionetworks.repo.model.FileEntity"))
+    metadata = NULL,
+    filePath = NULL,
+    synapseStore = NULL,
+    fileHandle = NULL
   )
 )
+
+# if name is available, use it, else use the file name part of the file path
+getNameFromParamOrFile<-function(nameParam, filePathParam) {
+  if (!missing(nameParam) && !is.null(nameParam)) {
+    nameParam
+  }
+  if (missing(filePathParam) || is.null(filePathParam)) stop("File path required.")
+  basename(filePathParam)
+}
 
 ##
 ## File contructor: path="/path/to/file", synapseStore=T, name="foo", parentId="syn101", ...
@@ -26,10 +38,13 @@ setMethod(
   signature = signature("character", "logical", "character", "character"),
   definition = function(filePathParam, synapseStoreParam, nameParam, parentIdParam, ...){
     file <- new("File")
+    parentId<-NULL
+    if (!missing("parentIdParam")) parentId=parentIdParam
+    file@metadata<-FileEntity(name=getNameFromParamOrFile(nameParam, filePathParam), parentId=parentId)
+    #TODO put '...' as annotations on file@metadata
     file@filePath <- filePathParam
     file@synapseStore <- synapseStoreParam
-    if (!missing("nameParam")) propertyValue(file@metadata, "name")<-nameParam
-    if (!missing("parentIdParam")) propertyValue(file@metadata, "parentId")<-parentIdParam
+    file@fileHandle<-NULL
     file
   }
 )
@@ -72,7 +87,7 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
     if (is.null(file@filePath)) { # ... and there's no local file staged for upload ...
       stop("filePath is required") # ... then we reject the call to 'synStore'
     } else { # ... we are storing a new file
-      if (synapseStore) { # ... we are storing a new file which we are also uploading
+      if (file@synapseStore) { # ... we are storing a new file which we are also uploading
         lastModified<-lastModifiedTimestamp(file@filePath)
         fileHandle<-synapseUploadToFileHandle(file@filePath)
         if (lastModified!=lastModifiedTimestamp(file@filePath)) stop(sprintf("During upload, %s was modified by another process.", file@filePath))
@@ -87,11 +102,10 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
     }
     #	save fileHandle in slot, put id in entity properties
     file@fileHandle <- fileHandle
-    propertyValue(file@metadata, "dataFileHandleId")<-fileHandle$id
   } else { # fileHandle is not null, i.e. we're updating a Synapse File that's already created
     #	if fileHandle is inconsistent with filePath or synapseStore, raise an exception 
     validdateFile(file)
-    if (synapseStore) {
+    if (file@synapseStore) {
       if (is.null(file@filePath) || localFileUnchanged(file@fileHandle$id, file@filePath)) {
         # since local file matches Synapse file (or was not actually retrieved) nothing to store
       } else {
@@ -101,6 +115,7 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
         fileHandle<-synapseUploadToFileHandle(file@filePath)
         if (lastModified!=lastModifiedTimestamp(file@filePath)) stop(sprintf("During upload, %s was modified by another process.", file@filePath))
         addToCacheMap(fileHandle$id, file@filePath, lastModified)
+        file@fileHandle<-fileHandle
       }
     } else { # synapseStore==F
       # file is considered 'read only' and will not be uploaded
@@ -112,16 +127,13 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
   if (used!=NULL || executed!=NULL || activityName!=NULL || activityDescription==NULL) {
     # create the provenance record and put in entity
   }
+  propertyValue(file@metadata, "dataFileHandleId")<-file@fileHandle$id
   if (is.null(propertyValue(file@metadata, "id"))) {
-    storedFile<-createEntity(file@metadata) #  TODO createOrUpdate
+    storedMetadata<-createEntity(file@metadata) #  TODO createOrUpdate
   } else {
-    storedFile<-updateEntity(file@metdata, forceVersion) #  forceVersion
+    storedMetadata<-updateEntityMethod(file@metdata, forceVersion)
   }
-  # copy fileHandle into slot of resultant object
-  storedFile@filePath<-file@filePath # TODO is this right?
-  storedFile@synapseStore<-file@synapseStore # TODO is this right?
-  storedFile@fileHandle<-file@fileHandle
-  storedFile
+  file
 }
 
 
