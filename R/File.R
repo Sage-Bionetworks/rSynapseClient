@@ -50,6 +50,7 @@ validdateFile<-function(file) {
 }
 
 lastModifiedTimestamp<-function(filePath) {
+  if (!file.exists(filePath)) stop(sprintf("%s does not exist.", filePath))
   file.info(filePath)$mtime
 }
 
@@ -58,21 +59,37 @@ defaultDownloadLocation<-function(fileHandle) {
   sprintf(".synapseCache/%s", fileHandle$id)
 }
 
-addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
-  if (is.null(fileHandleId)) stop("fileHandleId is required")
-  if (is.null(filePath)) stop("filePath is required")
-  if (is.null(timestamp)) timestamp<-lastModifiedTimestamp(filePath)
-  # TODO: add record for fileHandleId->{filePath:timestamp}
+cacheMapFilePath<-function(fileHandleId) {
+  sprintf("%s/.cacheMap", defaultDownloadLocation(fileHandleId))
+}
+
+getCacheMapFileContent<-function(fileHandleId) {
+  cacheMapFile<-cacheMapFilePath(fileHandleId)
+  if (!file.exists(cacheMapFile)) return(list())
+  cacheRecordJson<-readFile(cacheMapFile)
+  fromJSON(cacheRecordJson)
 }
 
 # return the last-modified time stamp for the given fileHandleID and filePath
 # or NULL if there is no entry
 getFromCacheMap<-function(fileHandleId, filePath) {
-  mapForFileHandleId<-list() # TODO retrieve the map {filePath:timestamp} for the given fileHandleId
+  mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
   for (entry in getFromCacheMap(mapForFileHandleId)) {
     if (filePath==entry$filePath) return(entry$timestamp)
   }
   NULL
+}
+
+addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
+  if (is.null(fileHandleId)) stop("fileHandleId is required")
+  if (is.null(filePath)) stop("filePath is required")
+  if (is.null(timestamp)) timestamp<-lastModifiedTimestamp(filePath)
+  cacheMapFile<-cacheMapFilePath(fileHandleId)
+  lockExpiration<-lockFile(cacheMapFile)
+  mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
+  mapForFileHandleId<-modifyList(mapForFileHandleId, list(filePath=timestamp))
+  cacheRecordJson<-toJSON(mapForFileHandleId)
+  writeFileAndUnlock(cacheMapFile, cacheRecordJson, lockExpiration)
 }
 
 # is local file UNchanged

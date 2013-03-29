@@ -40,6 +40,8 @@ integrationTestRoundtrip <-
   checkEquals(filePath, storedFile@filePath)
   checkEquals(synapseStore, storedFile@synapseStore)
   
+  # check that cachemap entry exists
+  
   downloadedFile<-synapseClient:::synGet(id)
   checkEquals(id, propertyValue(downloadedFile@metadata, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile@metadata, "parentId"))
@@ -60,4 +62,16 @@ integrationTestRoundtrip <-
   synapseClient:::synapseDelete(handleUri, service="FILE")
 }
 
-# TODO test synGet / synStore of metadata only
+# TODO test synGet of existing File, (1) to default location, (2) to existing location, (3) to new location
+# TODO test synStore of retrieved entity
+# TODO test storage/retrieval of provenance info, incl. two files having the same activity
+#			what should the default behavior be for 'synStore' if prov' info exists but is not specified:
+#			leave existing info intact or clear info?
+# TODO test update of existing File/Folder
+# TODO test automatic/explicit revision
+# TODO test governance restriction
+# TODO test synGet / synStore of metadata only (i.e. downloadFile==FALSE)
+# TODO test retrieval of specific version
+# TODO test three different 'ifcollision' modes
+# TODO test serialization of binary / deserialization ("load=TRUE")
+

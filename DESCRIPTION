@@ -2,7 +2,7 @@ Package: synapseClient
 Type: Package
 Title: Synapse R Client from Sage Bionetworks
 Version: 0.22
-ReleaseNotes: Support for new File services via the Common Command Set (https://sagebionetworks.jira.com/wiki/pages/viewpage.action?pageId=34373660).
+ReleaseNotes: Upgrade for compliance with Synapse back-end.
 Date: 2013-04-01
 Author@R: c(
 	person("Bruce", "Hoff", email="bruce.hoff@sagebase.org", role="aut"),
