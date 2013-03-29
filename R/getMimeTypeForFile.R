@@ -11,6 +11,8 @@ getMimeTypeForFile<-function(fileName) {
   mimeTypeMap[[extension]]
 }
 
+# get the substring following the LAST "." in fname, or "" if there is no "."
+# this code takes into account that there may be multiple "."s in fname
 getExtension<-function(fname) {
   suffix<-fname
   dot<-0

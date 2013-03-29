@@ -25,12 +25,8 @@ setMethod(
     ee <- fun(entity)
     ee@synapseWebUrl <- .buildSynapseUrl(propertyValue(ee, "id"))
 
-    if(inherits(ee, "Locationable") || inherits(ee, "FileEntity") ) {
-      if (inherits(ee, "Locationable")) {
-        location <- ee$properties$locations[[1]][['path']]
-      } else {
-        location <- ee$properties$dataFileHandleId
-      }
+    if(inherits(ee, "Locationable")) {
+      location <- ee$properties$locations[[1]][['path']]
       if(!is.null(location)){
         ## instantiate the ArchiveOwner
         destfile <- .generateCacheDestFile(location, ee$properties$versionNumber)

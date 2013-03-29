@@ -25,10 +25,3 @@ setMethod(
   }
 )
 
-setMethod(
-  f = "getFileCache",
-  signature = signature("missing", "missing", "FileCacheFactory"),
-  definition = function(factory){
-    getFileCache(tempfile(), "load", factory)
-  }
-)
