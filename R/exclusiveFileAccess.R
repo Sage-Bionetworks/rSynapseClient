@@ -40,7 +40,10 @@ unlockFile<-function(filePath) {
 
 # return content of file
 readFile<-function(filePath) {
-  readChar(filePath, file.info(filePath)$size)
+  connection<-file(filePath)
+  result<-paste(readLines(connection), collapse="\n")
+  close(connection)
+  result
 }
 
 writeFileAndUnlock<-function(filePath, content, lockExpiration) {
@@ -50,7 +53,9 @@ writeFileAndUnlock<-function(filePath, content, lockExpiration) {
     stop(sprintf("File lock exceeded for %s", filePath))
   }
   # write content to filePath
-  writeChar(content, filePath)
+  connection<-file(filePath)
+  writeLines(content, connection)
+  close(connection)
   unlockFile(filePath) # (not critical, just keeps things clean)
   # we should be able to do all this well within the allocated lock time
   if (Sys.time() > lockExpiration) {

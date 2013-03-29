@@ -54,9 +54,9 @@ lastModifiedTimestamp<-function(filePath) {
   file.info(filePath)$mtime
 }
 
-defaultDownloadLocation<-function(fileHandle) {
+defaultDownloadLocation<-function(fileHandleId) {
   # TODO
-  sprintf(".synapseCache/%s", fileHandle$id)
+  sprintf(".synapseCache/%s", fileHandleId)
 }
 
 cacheMapFilePath<-function(fileHandleId) {
@@ -67,10 +67,10 @@ getCacheMapFileContent<-function(fileHandleId) {
   cacheMapFile<-cacheMapFilePath(fileHandleId)
   if (!file.exists(cacheMapFile)) return(list())
   cacheRecordJson<-readFile(cacheMapFile)
-  fromJSON(cacheRecordJson)
+  as.list(fromJSON(cacheRecordJson))
 }
 
-# return the last-modified time stamp for the given fileHandleID and filePath
+# return the last-modified time stamp for the given fileHandleId and filePath
 # or NULL if there is no entry
 getFromCacheMap<-function(fileHandleId, filePath) {
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
@@ -89,6 +89,7 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
   mapForFileHandleId<-modifyList(mapForFileHandleId, list(filePath=timestamp))
   cacheRecordJson<-toJSON(mapForFileHandleId)
+  message()
   writeFileAndUnlock(cacheMapFile, cacheRecordJson, lockExpiration)
 }
 
@@ -218,7 +219,7 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
   
   if (downloadFile) {
     if (is.null(downloadLocation)) {
-      downloadLocation<-defaultDownloadLocation(fileHandle)
+      downloadLocation<-defaultDownloadLocation(fileHandle$id)
     } else {
       if (file.exists(downloadLocation) && !file.info(downloadLocation)$isdir) stop(sprintf("%s is not a folder", downloadLocation))
     }
