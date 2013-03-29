@@ -195,7 +195,10 @@ configureRGithubClientCertBundle<-function() {
 #
 createGithubCodeEntity <- function(repoName, sourceFile, codeFolderId, replChar=".") {
   ## check that rGithubClient package is installed
-  if (!rGithubClientPackageIsAvailable()) stop("Github repo specified but rGithubClient pacakge not installed.  Please install and try again.")
+  if (!rGithubClientPackageIsAvailable() || !require("rGithubClient")) 
+    stop("Github repo specified but rGithubClient package not installed.  Please install and try again.")
+  
+  
   configureRGithubClientCertBundle()
   
   githubRepo <- getRepo(repository=repoName)

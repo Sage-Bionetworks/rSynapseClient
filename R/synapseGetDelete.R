@@ -68,7 +68,7 @@
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
     message("----------------------------------")
-    message("REQUEST: ", requestMethod, " ", url)
+    message("REQUEST: ", requestMethod, " ", uri)
   }
   
   # check own version, stopping if blacklisted

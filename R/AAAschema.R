@@ -60,8 +60,6 @@ defineEntityClass <-
   
   if("org.sagebionetworks.repo.model.Locationable" %in% implements) {
     contains <- "Locationable"
-  } else if ("org.sagebionetworks.repo.model.FileEntity" %in% implements) {
-    contains <- "FileEntity"
   } else{
     contains <- "Entity"
   }
@@ -75,6 +73,16 @@ defineEntityClass <-
       ),
       package=package
   )
+  
+  # now add the new class to the list of defined ones
+  addToEntityTypeMap(className=name, jsonSchemaName=which)
+}
+
+addToEntityTypeMap<-function(className, jsonSchemaName) {
+  synapseEntityTypeMap<-.getCache("synapseEntityTypeMap")
+  if (is.null(synapseEntityTypeMap)) synapseEntityTypeMap<-list()
+  synapseEntityTypeMap[[jsonSchemaName]]<-className
+  .setCache("synapseEntityTypeMap", synapseEntityTypeMap)
 }
 
 defineEntityConstructors <-

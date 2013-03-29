@@ -19,23 +19,14 @@ setMethod(
         class <- "Locationable"
     }
     
-    if (class == "Entity"){
-      if(!is.null(entity$dataFileHandleId))
-        class <- "FileEntity"
-    }
-    
     ## call the appropriate constructor and pass the list
     ## representation of the entity
     fun <- getMethod(class, signature = "list", where="synapseClient")
     ee <- fun(entity)
     ee@synapseWebUrl <- .buildSynapseUrl(propertyValue(ee, "id"))
 
-    if(inherits(ee, "Locationable") || inherits(ee, "FileEntity") ) {
-      if (inherits(ee, "Locationable")) {
-        location <- ee$properties$locations[[1]][['path']]
-      } else {
-        location <- ee$properties$dataFileHandleId
-      }
+    if(inherits(ee, "Locationable")) {
+      location <- ee$properties$locations[[1]][['path']]
       if(!is.null(location)){
         ## instantiate the ArchiveOwner
         destfile <- .generateCacheDestFile(location, ee$properties$versionNumber)
@@ -107,44 +98,6 @@ setMethod(
     ifun <- getMethod("initializeEntity", "LocationableWithoutBinaries")
     entity <- ifun(entity)
 
-    ## instantiate the file cache an put the reference in
-    ## the archOwner
-    entity@objOwn$fileCache <- entity@archOwn@fileCache
-    entity
-  }
-)
-
-setMethod(
-  f = "initializeEntity",
-  signature = "FileEntityWithoutBinaries",
-  definition = function(entity){
-    ifun <- getMethod("initializeEntity", "Entity")
-    entity <- ifun(entity)
-    
-    ## get the cache url for this entity
-    location <- entity$properties$dataFileHandleId
-    if(is.null(location))
-      return(entity)
-    destdir <- .generateCacheDestDir(location, entity$properties$versionNumber)
-    if(!file.exists(destdir))
-      dir.create(destdir, recursive=T)
-    destdir <- normalizePath(path.expand(destdir))
-    
-    ## instantiate the file cache an put the reference in
-    ## the archOwner
-    fc <- getFileCache(destdir)
-    entity@archOwn@fileCache <- fc
-    entity
-  }
-)
-
-setMethod(
-  f = "initializeEntity",
-  signature = "FileEntity",
-  definition = function(entity){
-    ifun <- getMethod("initializeEntity", "FileEntityWithoutBinaries")
-    entity <- ifun(entity)
-    
     ## instantiate the file cache an put the reference in
     ## the archOwner
     entity@objOwn$fileCache <- entity@archOwn@fileCache

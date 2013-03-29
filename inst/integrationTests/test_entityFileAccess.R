@@ -1,3 +1,17 @@
+.setUp <-
+  function()
+{
+  ## create a project to fill with entities
+  project <- createEntity(Project())
+  synapseClient:::.setCache("testProject", project)
+}
+
+.tearDown <-
+  function()
+{
+  ## delete the test project
+  deleteEntity(synapseClient:::.getCache("testProject"))
+}
 
 #
 # This code exercises the file services underlying upload/download to/from an entity
@@ -6,8 +20,8 @@ integrationTestEntityFileAccess <-
   function()
 {
     # create a Project
-    project<-Project()
-    project<-createEntity(project)
+    project <- synapseClient:::.getCache("testProject")
+    checkTrue(!is.null(project))
     
     # create a file attachment which will be used in the wiki page
     # upload a file and receive the file handle
