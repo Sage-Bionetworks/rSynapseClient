@@ -56,7 +56,7 @@ lastModifiedTimestamp<-function(filePath) {
 
 defaultDownloadLocation<-function(fileHandleId) {
   # TODO
-  sprintf(".synapseCache/%s", fileHandleId)
+  sprintf("%s/%s", synapseCacheDir(), fileHandleId)
 }
 
 cacheMapFilePath<-function(fileHandleId) {
