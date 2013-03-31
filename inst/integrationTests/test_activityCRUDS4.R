@@ -42,7 +42,8 @@ integrationTestCRUDS4Activity <-
   description<-"a description of the activity"
   propertyValue(activity, "description")<-description
   testData <-synapseClient:::.getCache("testData")
-  propertyValue(activity, "used")<-list(list(reference=list(targetId=propertyValue(testData, "id")), wasExecuted=F))
+  propertyValue(activity, "used")<-list(list(reference=list(targetId=propertyValue(testData, "id")), 
+      wasExecuted=F, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"))
   activity<-createEntity(activity)
   activityId<-propertyValue(activity, "id")
   checkTrue(!is.null(activityId))
@@ -55,7 +56,7 @@ integrationTestCRUDS4Activity <-
   used2<-propertyValue(act2, "used")
   checkTrue(!is.null(used2))
   checkEquals(1, length(used2))
-  checkEquals(2, length(used2[[1]]))
+  checkEquals(3, length(used2[[1]])) # (1) 'wasExecuted', (2) the reference, (3) the concrete type
   targetId<-used2[[1]]$reference$targetId
   names(targetId)<-NULL # needed to make the following check work
   checkEquals(propertyValue(testData, "id"), targetId)
@@ -64,13 +65,14 @@ integrationTestCRUDS4Activity <-
   # update
   descr2<-"another description"
   propertyValue(act2, "description")<-descr2
-  propertyValue(act2, "used")<-list(list(reference=list(targetId=propertyValue(testData, "id")), wasExecuted=T))
+  propertyValue(act2, "used")<-list(list(reference=list(targetId=propertyValue(testData, "id")), 
+      wasExecuted=T, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"))
   act2<-updateEntity(act2)
   checkEquals(descr2, propertyValue(act2, "description"))
   used2<-propertyValue(act2, "used")
   checkTrue(!is.null(used2))
   checkEquals(1, length(used2))
-  checkEquals(2, length(used2[[1]]))
+  checkEquals(3, length(used2[[1]])) # (1) 'wasExecuted', (2) the reference, (3) the concrete type
   targetId<-used2[[1]]$reference$targetId
   names(targetId)<-NULL # needed to make the following check work
   checkEquals(propertyValue(testData, "id"), targetId)
@@ -90,7 +92,8 @@ integrationTestReferenceConstructor <-
   name<-"testName"
   description<-"a description of the activity"
   testData <-synapseClient:::.getCache("testData")
-  activity<-Activity(list(name=name, description=description, used=list(list(reference=list(targetId=propertyValue(testData, "id")), wasExecuted=F))))
+  activity<-Activity(list(name=name, description=description, used=list(
+        list(reference=list(targetId=propertyValue(testData, "id")), wasExecuted=F, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"))))
   activity<-createEntity(activity)
   activityId<-propertyValue(activity, "id")
   checkTrue(!is.null(activityId))
