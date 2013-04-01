@@ -5,10 +5,13 @@
 
 # get the file's extension and then look up the MIME type, if there is no extension, apply a default
 getMimeTypeForFile<-function(fileName) {
+  defaultMimeType<-"application/octet-stream"
   extension<-getExtension(fileName)
-  if (nchar(extension)==0) return("application/octet-stream") # default mime type
+  if (nchar(extension)==0) return(defaultMimeType) # default mime type
   mimeTypeMap<-getMimeTypeMap()
-  mimeTypeMap[[extension]]
+  mimeType<-mimeTypeMap[[extension]]
+  if (is.null(mimeType)) mimeType<-defaultMimeType
+  mimeType
 }
 
 # get the substring following the LAST "." in fname, or "" if there is no "."

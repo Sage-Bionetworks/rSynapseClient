@@ -63,6 +63,7 @@ cacheMapFilePath<-function(fileHandleId) {
   sprintf("%s/.cacheMap", defaultDownloadLocation(fileHandleId))
 }
 
+# TODO test content, including that record key is file path
 getCacheMapFileContent<-function(fileHandleId) {
   cacheMapFile<-cacheMapFilePath(fileHandleId)
   if (!file.exists(cacheMapFile)) return(list())
@@ -87,9 +88,10 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
   cacheMapFile<-cacheMapFilePath(fileHandleId)
   lockExpiration<-lockFile(cacheMapFile)
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
-  mapForFileHandleId<-modifyList(mapForFileHandleId, list(filePath=as.character(timestamp)))
+  record<-list()
+  record[[filePath]]<-as.character(timestamp)
+  mapForFileHandleId<-modifyList(mapForFileHandleId, list(record))
   cacheRecordJson<-toJSON(mapForFileHandleId)
-  message()
   writeFileAndUnlock(cacheMapFile, cacheRecordJson, lockExpiration)
 }
 
@@ -122,7 +124,7 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
       } else { # ... we are storing a new file which we are linking, but not uploading
         # link external URL in Synapse, get back fileHandle	
         fileName <- basename(file@filePath)
-        mimeTypeMap<-getMimeTypeForFile(fileName)
+        contentType<-getMimeTypeForFile(fileName)
         fileHandle<-synapseLinkExternalFile(file@filePath, fileName, contentType)
         # note, there's no cache map entry to create
       }
