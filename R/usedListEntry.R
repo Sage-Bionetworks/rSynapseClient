@@ -7,7 +7,7 @@ setMethod(
   f="usedListEntry",
   signature = signature("Entity"),
   definition = function(listEntry) {
-    list(reference=getReference(listEntry), wasExecuted=F)
+    list(reference=getReference(listEntry), wasExecuted=F, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
   }
 )
 
@@ -15,7 +15,7 @@ setMethod(
   f="usedListEntry",
   signature = signature("character"),
   definition = function(listEntry) {
-    list(reference=getReference(listEntry), wasExecuted=F)
+    list(reference=getReference(listEntry), wasExecuted=F, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
   }
 )
 
@@ -28,14 +28,14 @@ setMethod(
       listEntry
     } else if (!is.null(listEntry$targetId)) {
       # then the arg is itself a reference
-      list(reference=listEntry, wasExecuted=F)
+      list(reference=listEntry, wasExecuted=F, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
     } else {
       # get the reference and the 'executed' 
       usedEntity<-listEntry$entity
       if (is.null(usedEntity)) stop("Entity required.")
       executed<-listEntry$wasExecuted
       if (is.null(executed)) stop ("Executed required.")
-      list(reference=getReference(usedEntity), wasExecuted=executed)
+      list(reference=getReference(usedEntity), wasExecuted=executed, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
     }
   }
 )

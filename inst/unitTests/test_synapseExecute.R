@@ -19,7 +19,7 @@ unitTestCreateUsedEntitiesList <- function() {
   data<-Data()
   propertyValue(data, "id")<-"syn987"
   args<-list(c("123", "456"), list("syn123", "SYN 456"), data, 1, "my dog has fleas")
-  checkEquals(list(list(entity="syn123", wasExecuted=F), list(entity="syn987", wasExecuted=F)), synapseClient:::createUsedEntitiesList(args))
+  checkEquals(list(list(entity="syn123", wasExecuted=F, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"), list(entity="syn987", wasExecuted=F, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")), synapseClient:::createUsedEntitiesList(args))
 }
 
 unitTestScrubEntityName<-function() {
