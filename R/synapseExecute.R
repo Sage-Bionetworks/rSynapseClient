@@ -36,9 +36,9 @@ createUsedEntitiesList <- function(args) {
     if (!is.scalar(argVal)) {
       usedEntitiesList <- append(usedEntitiesList, createUsedEntitiesList(argVal))
     } else if (isSynapseId(argVal)) {
-      usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=argVal, wasExecuted=FALSE)
+      usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=argVal, wasExecuted=FALSE, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
     } else if (extends(class(argVal), "Entity") && !is.null(propertyValue(argVal, "id"))) {
-      usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=propertyValue(argVal, "id"), wasExecuted=FALSE)
+      usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=propertyValue(argVal, "id"), wasExecuted=FALSE, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
     }
   }
   usedEntitiesList
@@ -195,7 +195,10 @@ configureRGithubClientCertBundle<-function() {
 #
 createGithubCodeEntity <- function(repoName, sourceFile, codeFolderId, replChar=".") {
   ## check that rGithubClient package is installed
-  if (!rGithubClientPackageIsAvailable()) stop("Github repo specified but rGithubClient pacakge not installed.  Please install and try again.")
+  if (!rGithubClientPackageIsAvailable() || !require("rGithubClient")) 
+    stop("Github repo specified but rGithubClient package not installed.  Please install and try again.")
+  
+  
   configureRGithubClientCertBundle()
   
   githubRepo <- getRepo(repository=repoName)
@@ -310,7 +313,7 @@ synapseExecute <- function(executable, args, resultParentId, codeParentId, resul
   usedEntitiesList[[length(usedEntitiesList)+1]] <- 
     list(reference=list(targetId=propertyValue(executionCodeEntity, "id"), 
         targetVersionNumber=propertyValue(executionCodeEntity, "versionNumber")), 
-      wasExecuted=TRUE)
+      wasExecuted=TRUE, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
   
   activity <- Activity(list(name = activityName, used = usedEntitiesList))
   activity <- createEntity(activity)

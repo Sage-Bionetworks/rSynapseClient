@@ -10,6 +10,13 @@ useDynLib(synapseClient)
 
 export(onWeb) ##,attach, detach)
 
+## public methods introduced with v 0.22, ...
+export(
+  File,
+  synGet,
+  synStore
+)
+
 ## S3 utility methods
 export(
   synapseResetEndpoints, 
@@ -33,7 +40,7 @@ export(
 export(as.environment.EnhancedEnvironment,as.environment.GlobalCache, as.list.SimplePropertyOwner, 
 as.list.SynapseAnnotations, as.list.TypedPropertyStore, as.environment.EnhancedEnvironment,
 length.EnhancedEnvironment, names.CachingObjectOwner, names.EnhancedEnvironment, names.LocationableWithoutBinaries,
-names.Locationable,FileEntity,getPackageName.EnhancedEnvironment, getPackageName.ArchiveOwner,
+names.Locationable,File,getPackageName.EnhancedEnvironment, getPackageName.ArchiveOwner,
   as.environment.ArchiveOwner, edit.Code, names.Entity,
   
   names.QueryResult,
