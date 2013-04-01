@@ -29,7 +29,7 @@ integrationTestRoundtrip <-
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
   
   # now store it
-  storedFile<-synapseClient:::synStore(file)
+  storedFile<-synStore(file)
   
   # check that it worked
   metadata<-storedFile@metadata
@@ -42,7 +42,7 @@ integrationTestRoundtrip <-
   
   # check that cachemap entry exists
   
-  downloadedFile<-synapseClient:::synGet(id)
+  downloadedFile<-synGet(id)
   checkEquals(id, propertyValue(downloadedFile@metadata, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile@metadata, "parentId"))
   checkEquals(synapseStore, downloadedFile@synapseStore)

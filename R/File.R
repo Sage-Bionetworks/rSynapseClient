@@ -55,7 +55,7 @@ lastModifiedTimestamp<-function(filePath) {
 }
 
 defaultDownloadLocation<-function(fileHandleId) {
-  # TODO
+  # TODO:  insert an intermediate subfolder?
   sprintf("%s/%s", synapseCacheDir(), fileHandleId)
 }
 
@@ -74,8 +74,8 @@ getCacheMapFileContent<-function(fileHandleId) {
 # or NULL if there is no entry
 getFromCacheMap<-function(fileHandleId, filePath) {
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
-  for (entry in getFromCacheMap(mapForFileHandleId)) {
-    if (filePath==entry$filePath) return(entry$timestamp)
+  for (filePath in names(mapForFileHandleId)) {
+    if (filePath==filePath) return(mapForFileHandleId[[filePath]]) # i.e. return time stamp
   }
   NULL
 }
@@ -87,7 +87,7 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
   cacheMapFile<-cacheMapFilePath(fileHandleId)
   lockExpiration<-lockFile(cacheMapFile)
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
-  mapForFileHandleId<-modifyList(mapForFileHandleId, list(filePath=timestamp))
+  mapForFileHandleId<-modifyList(mapForFileHandleId, list(filePath=as.character(timestamp)))
   cacheRecordJson<-toJSON(mapForFileHandleId)
   message()
   writeFileAndUnlock(cacheMapFile, cacheRecordJson, lockExpiration)
@@ -99,8 +99,8 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
 # and the 'last modified" timestamp for the file equals the value in the Cache Map
 # returns FALSE if the timestamps differ OR if there is no entry in the Cache Map
 localFileUnchanged<-function(fileHandleId, filePath) {
-  cacheMapEntry<-getCacheMapEntry(fileHandleId, filePath)
-  !is.null(cacheMapEntry) && lastModifiedTimestamp(filePath)==cacheMapEntry$lastModified
+  downloadedTimestamp<-getFromCacheMap(fileHandleId, filePath)
+  !is.null(downloadedTimestamp) && lastModifiedTimestamp(filePath)==downloadedTimestamp
 }
 
 uploadAndAddToCacheMap<-function(filePath) {
@@ -179,9 +179,9 @@ generateUniqueFileName<-function(folder, filename) {
   # we're not going to try forever, but we will try a number of times
   for (i in 1:100) {
     filenameVariation<-sprintf("%s(%d)%s",prefix,i,extension)
-    if (fileExists(folder, filenameVariation)) return (filenameVariation)
+    if (!fileExists(folder, filenameVariation)) return(filenameVariation)
   }
-  stop("Cannot generate unique file name variation in folder %s for file %s", folder, filename)
+  stop(sprintf("Cannot generate unique file name variation in folder %s for file %s", folder, filename))
 }
 
 downloadFromSynapseOrExternal<-function(downloadLocation, filePath, synapseStore, downloadUri, externalURL, fileHandle) {

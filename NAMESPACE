@@ -10,6 +10,13 @@ useDynLib(synapseClient)
 
 export(onWeb) ##,attach, detach)
 
+## public methods introduced with v 0.22, ...
+export(
+  File,
+  synGet,
+  synStore
+)
+
 ## S3 utility methods
 export(
   synapseResetEndpoints, 
