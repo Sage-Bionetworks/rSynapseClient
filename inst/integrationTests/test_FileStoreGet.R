@@ -71,6 +71,7 @@ integrationTestRoundtrip <-
 # TODO test automatic/explicit revision
 # TODO test governance restriction
 # TODO test synGet / synStore of metadata only (i.e. downloadFile==FALSE)
+# TODO test synGet / synStore of external link
 # TODO test retrieval of specific version
 # TODO test three different 'ifcollision' modes
 # TODO test serialization of binary / deserialization ("load=TRUE")
