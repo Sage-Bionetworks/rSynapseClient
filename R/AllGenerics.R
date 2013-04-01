@@ -202,13 +202,6 @@ setGeneric(
   }
 )
 
-#setGeneric(
-#  name = "updateEntity",
-#  def = function(entity, forceVersion){
-#    standardGeneric("updateEntity")
-#  }
-#)
-
 setGeneric(
   name = "deleteEntity",
   def = function(entity){

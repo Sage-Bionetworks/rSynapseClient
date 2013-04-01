@@ -328,13 +328,6 @@ updateEntityMethod<-function(entity, forceVersion)
     ee
 }
 
-  
-#setMethod(
-#  f = "updateEntity",
-#  signature = signature("Entity", "logical"),
-#  definition = updateEntityMethod
-#)
-
 setMethod(
   f = "updateEntity",
   signature = signature("Entity"),
@@ -408,13 +401,6 @@ setMethod(
   signature= signature("Entity"),
   definition = function(entity){storeEntityMethod(entity)}
 )
-
-#setMethod(
-#  f = "storeEntity",
-#  signature= signature("Entity", "logical"),
-#  definition = storeEntityMethod
-#)
-
 
 #####
 ## as.list function. Coerce Entity to list by returning annotations
