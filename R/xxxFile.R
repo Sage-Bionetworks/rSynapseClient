@@ -1,27 +1,60 @@
 #
 # class and method definitions for File
 #
+# This error was fixed by renaming "File.R" to "FileX.R"
+#Error in function (classes, fdef, mtable)  : 
+#  unable to find an inherited method for function ‘getFileCache’ for signature ‘"character", "character", "FileCacheFactory"’
+# This error was fixed by renaming "FileX.R" to "xxxFile.R"
+# Error in `$<-`(`*tmp*`, "entityType", value = "org.sagebionetworks.repo.model.FileEntity") : 
+#  no method for assigning subsets of this S4 class
+
+
+
+initializeFileProperties<-function() {
+  synapseType<-"org.sagebionetworks.repo.model.FileEntity"
+  properties<-SynapseProperties(getEffectivePropertyTypes(synapseType))
+  properties$entityType <- synapseType
+  properties
+}
 
 setClass(
   Class = "File",
+  contains = "Entity",
   representation = representation(
     # fields:
-    # metadata
-    metadata = "Entity",
     # filePath: full path to local file. Before an "external" file is created in Synapse, this is the external URL
     filePath = "character",
     # synapseStore: logical T if file is stored in Synapse, F if only the url is stored
     synapseStore = "logical",
     # fileHandle (generated from JSON schema, empty before entity is created)
-    fileHandle = "list"
+    fileHandle = "list",
+    # objects to be serialized/deserialized
+    objects = "list"
+  ),
+  # This is modeled after defineEntityClass in AAAschema
+  prototype = prototype(
+    synapseEntityKind = "File",
+    properties = initializeFileProperties(),
+    synapseStore = TRUE,
+    objects = list()
   )
 )
 
+# need to separate out properties from annotations
+
+synAnnotMethod<-function(object, which, value) {
+  if(any(which==propertyNames(object))) {
+    propertyValue(object, which)<-value
+  } else {
+    annotValue(object, which)<-value
+  }
+  object
+}
+
 fileConstructorMethod<-function(filePathParam, synapseStoreParam, ...) {
   file <- new("File")
-  #TODO need to separate out properties from annotations
   entityParams<-modifyList(list(name=basename(filePathParam)), list(...))
-  file@metadata<-FileEntity(entityParams)
+  for (key in names(entityParams)) file<-synAnnotMethod(file, key, entityParams[[key]])
   file@filePath <- filePathParam
   file@synapseStore <- synapseStoreParam
   file
@@ -34,6 +67,24 @@ setMethod(
   f = "File",
   signature = signature("character", "logical"),
   definition = fileConstructorMethod
+)
+
+# this is the required constructor for a metadata Entity, taking a list of properties
+# the logic is based on definedEntityConstructors in AAAschema
+setMethod(
+  f = "File",
+  signature = signature("list"),
+  definition = function(filePathParam) {
+    # the param is not actually a file path.  Using the same param names in all constructors is an S-4 requirement  
+    propertiesList<-filePathParam   
+    file <- new("File")
+    for (prop in names(propertiesList))
+      propertyValue(file, prop) <- propertiesList[[prop]]
+    
+    propertyValue(file, "entityType") <- "org.sagebionetworks.repo.model.FileEntity"
+
+    file
+  }
 )
 
 isExternalFileHandle<-function(fileHandle) {fileHandle$concreteType=="ExternalFileHandle"}
@@ -152,14 +203,20 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
   if (!is.null(used) || !is.null(executed)) {
     # create the provenance record and put in entity
   }
-  propertyValue(file@metadata, "dataFileHandleId")<-file@fileHandle$id
-  if (is.null(propertyValue(file@metadata, "id"))) {
-    storedMetadata<-createEntity(file@metadata) #  TODO createOrUpdate
+  propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
+  if (is.null(propertyValue(file, "id"))) {
+    # get the superclass createEntity method, which just stores the metadata
+    superCreateEntity<-getMethod("createEntity", "Entity") # TODO createOrUpdate
+    storedFile<-superCreateEntity(file)
   } else {
-    storedMetadata<-updateEntityMethod(file@metdata, forceVersion)
+    storedFile<-updateEntityMethod(file, forceVersion)
   }
-  file@metadata<-storedMetadata
-  file
+  # now copy the class-specific fields into the newly created object
+  storedFile@filePath <- file@filePath
+  storedFile@synapseStore <- file@synapseStore
+  storedFile@fileHandle <- file@fileHandle
+  
+  storedFile
 }
 
 createFilePath<-function(folder, filename) {sprintf("%s/%s", folder, filename)}
@@ -200,11 +257,11 @@ downloadFromSynapseOrExternal<-function(downloadLocation, filePath, synapseStore
 synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
   # first, get the metadata and the fileHandle
   if (is.null(version)) {
-    metadata<-getEntity(id)
+    file<-getEntity(id)
   } else {
-    metadata<-getEntity(id, version=version)
+    file<-getEntity(id, version=version)
   }
-  fileHandleId<-propertyValue(metadata, "dataFileHandleId")
+  fileHandleId<-propertyValue(file, "dataFileHandleId")
   if (is.null(fileHandleId)) stop(sprintf("Entity %s (version %s) is missing its FileHandleId", id, version))
   handleUri<-sprintf("/fileHandle/%s", fileHandleId)
   fileHandle<-synapseGet(handleUri, service="FILE")	
@@ -259,8 +316,8 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }
-  file<-File(filePath, synapseStore, NULL, NULL)
-  file@metadata<-metadata
+  file@filePath<-filePath
+  file@synapseStore<-synapseStore
   file@fileHandle<-fileHandle
   if (load) {
     if(is.null(filePath)) {
@@ -311,7 +368,7 @@ setMethod(
   f = "downloadEntity",
   signature = signature("File","character"),
   definition = function(entity, versionId){
-    # TODO getEntity(entity, versionId)
+      synGet(entity, versionId, downloadFile=T)
   }
 )
 
@@ -319,7 +376,7 @@ setMethod(
   f = "downloadEntity",
   signature = signature("File","numeric"),
   definition = function(entity, versionId){
-  # TODO getEntity(entity, as.character(versionId))
+    downloadEntity(entity, as.character(versionId))
   }
 )
 
@@ -327,7 +384,7 @@ setMethod(
   f = "loadEntity",
   signature = signature("File","missing"),
   definition = function(entity){
-  # TODO getEntity(entity)
+    synGet(file=entity, downloadFile=T, load=T)
   }
 )
 
@@ -335,7 +392,7 @@ setMethod(
   f = "loadEntity",
   signature = signature("File","character"),
   definition = function(entity, versionId){
-  # TODO getEntity(entity, versionId)
+    synGet(file=entity, version=versionId, downloadFile=T, load=T)
   }
 )
 
@@ -343,8 +400,88 @@ setMethod(
   f = "loadEntity",
   signature = signature("File","numeric"),
   definition = function(entity, versionId){
-  # TODO getEntity(entity, as.character(versionId))
+    loadEntity(entity, as.character(versionId))
   }
 )
+
+setMethod(
+  f = "moveFile",
+  signature = signature("File", "character", "character"),
+  definition = function(entity, src, dest){
+    stop("Unsupported operation for Files.")
+  }
+)
+
+setMethod(
+  f = "deleteFile",
+  signature = signature("File", "character"),
+  definition = function(entity, file){
+    stop("Unsupported operation for Files.")
+  }
+)
+
+setMethod(
+  f = "addFile",
+  signature = signature("File", "character", "character"),
+  definition = function(entity, file, path) { # Note 'entity' is a File, not an Entity
+    addFile(entity, sprintf("%s/%s", path, file))
+  }
+)
+
+setMethod(
+  f = "addFile",
+  signature = signature("File", "character", "missing"),
+  definition = function(entity, file) { # Note 'entity' is a File, not an Entity
+    if (length(entity@filePath)>0) stop("A File may only contain a single file.")
+    entity@filePath = file
+    entity
+  }
+)
+
+setMethod(
+  f = "addObject",
+  signature = signature("File", "ANY", "missing", "missing"),
+  definition = function(owner, object) {
+    name <- deparse(substitute(object, env=parent.frame()))
+    name <- gsub("\\\"", "", name)
+    addObject(owner, object, name)
+  }
+)
+
+setMethod(
+  f = "addObject",
+  signature = signature("File", "ANY", "character", "missing"),
+  definition = function(owner, object, name) {
+    owner@objects[[name]]<-object
+    invisible(owner)
+  }
+)
+
+setMethod(
+  f = "deleteObject",
+  signature = signature("File", "character"),
+  definition = function(owner, which) {
+    owner@objects[[which]]<-NULL
+  }
+)
+
+setMethod(
+  f = "getObject",
+  signature = signature("File", "character"),
+  definition = function(owner, which) {
+    owner@objects[[which]]
+  }
+)
+
+setMethod(
+  f = "renameObject",
+  signature = signature("File", "character", "character"),
+  definition = function(owner, which, name) {
+    owner@objects[[name]]<-owner@objects[[which]]
+    owner@objects[[which]]<-NULL
+  }
+)
+
+
 
 
