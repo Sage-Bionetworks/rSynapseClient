@@ -90,7 +90,7 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
   record<-list()
   record[[filePath]]<-as.character(timestamp)
-  mapForFileHandleId<-modifyList(mapForFileHandleId, list(record))
+  mapForFileHandleId<-modifyList(mapForFileHandleId, as.list(record))
   cacheRecordJson<-toJSON(mapForFileHandleId)
   writeFileAndUnlock(cacheMapFile, cacheRecordJson, lockExpiration)
 }
@@ -220,6 +220,15 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
   }
   
   if (downloadFile) {
+    unfulfilledAccessRequirements<-synapseGet(sprintf("/entity/%s/accessRequirementUnfulfilled", id))
+    # if I lack access due to a restriction...
+    if (unfulfilledAccessRequirements$totalNumberOfResults>0) {
+      # ...an error message is displayed which include the 'onweb' command to open the entity page, 
+      # where a user can address the access requirements.
+      message <- sprintf("Please visit the web page for this entity (onWeb(\"%s\")) to review and fulfill its download requirement(s).", id)
+      stop(message)
+    }
+    
     if (is.null(downloadLocation)) {
       downloadLocation<-defaultDownloadLocation(fileHandle$id)
     } else {
@@ -236,8 +245,9 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
         } else if (ifcollision=="keep.local") {
   				# nothing to do
         } else if (ifcollision=="keep.both") {
-          filePath <- generateUniqueFileName(downloadLocation, fileHandle$fileName)
-  				#download file from Synapse to distinct filePath
+          #download file from Synapse to distinct filePath
+          uniqueFileName <- generateUniqueFileName(downloadLocation, fileHandle$fileName)
+          filePath <- sprintf("%s/%s", downloadLocation, uniqueFileName)
           downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, externalURL, fileHandle) 
         } else {
   				stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
@@ -264,4 +274,77 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
   }
   file
 }
+
+
+#
+# Wrappers for legacy functions
+#
+
+setMethod(
+  f = "updateEntity",
+  signature = signature("File"),
+  definition = function(entity) {synStore(file=entity, forceVersion=F)}
+)
+
+setMethod(
+  f = "createEntity",
+  signature = signature("File"),
+  definition = function(entity) {synStore(file=entity, forceVersion=F)}
+)
+
+setMethod(
+  f = "storeEntity",
+  signature = signature("File"),
+  definition = function(entity) {synStore(file=entity, forceVersion=F)}
+)
+
+setMethod(
+  f = "downloadEntity",
+  signature = signature("File","missing"),
+  definition = function(entity){
+    synGet(entity)
+  }
+)
+
+
+setMethod(
+  f = "downloadEntity",
+  signature = signature("File","character"),
+  definition = function(entity, versionId){
+    # TODO getEntity(entity, versionId)
+  }
+)
+
+setMethod(
+  f = "downloadEntity",
+  signature = signature("File","numeric"),
+  definition = function(entity, versionId){
+  # TODO getEntity(entity, as.character(versionId))
+  }
+)
+
+setMethod(
+  f = "loadEntity",
+  signature = signature("File","missing"),
+  definition = function(entity){
+  # TODO getEntity(entity)
+  }
+)
+
+setMethod(
+  f = "loadEntity",
+  signature = signature("File","character"),
+  definition = function(entity, versionId){
+  # TODO getEntity(entity, versionId)
+  }
+)
+
+setMethod(
+  f = "loadEntity",
+  signature = signature("File","numeric"),
+  definition = function(entity, versionId){
+  # TODO getEntity(entity, as.character(versionId))
+  }
+)
+
 
