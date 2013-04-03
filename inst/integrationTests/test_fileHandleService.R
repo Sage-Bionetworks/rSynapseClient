@@ -16,3 +16,15 @@ integrationTestFileHandle <-
     fileHandle3<-synapseClient:::synapseGet(handleUri, service="FILE", checkHttpStatus=F)
     checkEquals("The resource you are attempting to access cannot be found", fileHandle3$reason)
 }
+
+integrationTestExternalFileHandle <- function() {
+  externalURL<-"http://google.com"
+  fileName<-"testFile"
+  contentType<-"text/html"
+  fileHandle <- synapseClient:::synapseLinkExternalFile(externalURL, fileName, contentType)
+  checkTrue(!is.null(fileHandle$id))
+  checkEquals("org.sagebionetworks.repo.model.file.ExternalFileHandle", fileHandle$concreteType)
+  checkEquals(externalURL, fileHandle$externalURL)
+  checkEquals(fileName, fileHandle$fileName)
+  checkEquals(contentType, fileHandle$contentType)
+}

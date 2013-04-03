@@ -282,16 +282,18 @@ setMethod(
   }
 )
 
-setMethod(
-  f = "updateEntity",
-  signature = "Entity",
-  definition = function(entity)
+updateEntityMethod<-function(entity, forceVersion)
   {
     if(is.null(entity$properties$id))
       stop("entity ID was null so could not update. use createEntity instead.")
     
     annots <- entity@annotations
     updateUri<-entity$properties$uri
+    
+    if (missing("forceVersion")) forceVersion=FALSE
+    if (forceVersion) {
+      updateUri <-sprintf("%s/version", updateUri)
+    }
     
     generatingActivity <- generatedBy(entity)
     if (!is.null(generatingActivity)) {
@@ -324,8 +326,16 @@ setMethod(
     cacheEntity(ee)
     
     ee
-  }
+}
+
+setMethod(
+  f = "updateEntity",
+  signature = signature("Entity"),
+#  signature = signature("Entity", "missing"),
+  definition = function(entity) {updateEntityMethod(entity)}
 )
+  
+  
 
 setMethod(
   f = "downloadEntity",
@@ -374,18 +384,22 @@ setMethod(
     getEntity(entity, as.character(versionId))
   }
 )
+
+storeEntityMethod<-function(entity, forceVersion) {
+  if (missing("forceVersion")) forceVersion=FALSE
+  if (is.null(propertyValue(entity, "id"))) {
+    entity <- createEntity(entity)
+  }
+  else {
+    entity <- updateEntityMethod(entity, forceVersion)
+  }
+}
 
 setMethod(
   f = "storeEntity",
-  signature= "Entity",
-  definition = function(entity) {
-    if (is.null(propertyValue(entity, "id"))) {
-      entity <- createEntity(entity)
-    }
-    else {
-      entity <- updateEntity(entity)
-    }
-  }
+#  signature= signature("Entity", "missing"),
+  signature= signature("Entity"),
+  definition = function(entity){storeEntityMethod(entity)}
 )
 
 #####

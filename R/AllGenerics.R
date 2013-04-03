@@ -5,8 +5,15 @@
 
 setGeneric(
   name="Activity",
-  def = function(activity, ...){
+  def = function(activity, ...) {
     standardGeneric("Activity")
+  }
+)
+
+setGeneric(
+  name="File",
+  def = function(filePathParam, synapseStoreParam, ...) {
+    standardGeneric("File")
   }
 )
 
@@ -195,7 +202,6 @@ setGeneric(
   }
 )
 
-
 setGeneric(
   name = "deleteEntity",
   def = function(entity){
@@ -286,13 +292,6 @@ setGeneric(
   name = "Locationable",
   def = function(entity){
     standardGeneric("Locationable")
-  }
-)
-
-setGeneric(
-  name = "FileEntity",
-  def = function(entity){
-    standardGeneric("FileEntity")
   }
 )
 
@@ -821,5 +820,4 @@ setGeneric(
     standardGeneric("usedListEntry")
   }
 )
-
 
