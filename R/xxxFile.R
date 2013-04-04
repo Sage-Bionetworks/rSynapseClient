@@ -29,14 +29,14 @@ setClass(
     # fileHandle (generated from JSON schema, empty before entity is created)
     fileHandle = "list",
     # objects to be serialized/deserialized
-    objects = "list"
+    objects = "environment"
   ),
   # This is modeled after defineEntityClass in AAAschema
   prototype = prototype(
     synapseEntityKind = "File",
     properties = initializeFileProperties(),
     synapseStore = TRUE,
-    objects = list()
+    objects = new.env()
   )
 )
 
@@ -89,7 +89,7 @@ setMethod(
 
 isExternalFileHandle<-function(fileHandle) {fileHandle$concreteType=="ExternalFileHandle"}
 fileHasFileHandleId<-function(file) {!is.null(file@fileHandle$id)}
-fileHasFilePath<-function(file) {length(file@filePath)>0}
+fileHasFilePath<-function(file) {length(file@filePath)>0 && nchar(file@filePath)>0}
 
 # TODO:  shall we allow 'synapseStore' to be switched in an existing File?
 # ensure that fileHandle info is consistent with synapseUpload field
@@ -126,8 +126,8 @@ getCacheMapFileContent<-function(fileHandleId) {
 # or NULL if there is no entry
 getFromCacheMap<-function(fileHandleId, filePath) {
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
-  for (filePath in names(mapForFileHandleId)) {
-    if (filePath==filePath) return(mapForFileHandleId[[filePath]]) # i.e. return time stamp
+  for (key in names(mapForFileHandleId)) {
+    if (key==filePath) return(mapForFileHandleId[[key]]) # i.e. return time stamp
   }
   NULL
 }
@@ -153,7 +153,7 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
 # returns FALSE if the timestamps differ OR if there is no entry in the Cache Map
 localFileUnchanged<-function(fileHandleId, filePath) {
   downloadedTimestamp<-getFromCacheMap(fileHandleId, filePath)
-  !is.null(downloadedTimestamp) && lastModifiedTimestamp(filePath)==downloadedTimestamp
+  !is.null(downloadedTimestamp) && as.character(lastModifiedTimestamp(filePath))==downloadedTimestamp
 }
 
 uploadAndAddToCacheMap<-function(filePath) {
@@ -268,6 +268,7 @@ downloadFromSynapseOrExternal<-function(downloadLocation, filePath, synapseStore
   
 }
 
+# TODO, allow caller to pass File instead of id
 synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
   # first, get the metadata and the fileHandle
   if (is.null(version)) {

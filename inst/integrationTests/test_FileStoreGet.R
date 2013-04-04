@@ -114,10 +114,10 @@ integrationTestAddToNewFILEEntity <-
   checkEquals(storedFile@fileHandle, downloadedFile@fileHandle)
   
   # check that downloading a second time doesn't retrieve again
-  timeStamp<-synapseClient:::lastModifiedTimestamp(downloadedFile@fileHandle)
+  timeStamp<-synapseClient:::lastModifiedTimestamp(downloadedFile@filePath)
   Sys.sleep(1.0)
   downloadedFile<-downloadEntity(id)
-  checkEquals(timeStamp, synapseClient:::lastModifiedTimestamp(downloadedFile@fileHandle))
+  checkEquals(timeStamp, synapseClient:::lastModifiedTimestamp(downloadedFile@filePath))
  
   # delete the file
   deleteEntity(downloadedFile)
@@ -156,13 +156,6 @@ integrationTestReplaceFile<-function() {
     
     checkEquals(newStoredFile@fileHandle, downloadedFile@fileHandle)
     
-    # clean up downloaded file
-    handleUri<-sprintf("/fileHandle/%s", storedFile@fileHandle$id)
-    synapseClient:::synapseDelete(handleUri, service="FILE")
-    # clean up cache
-    file.remove(storedFile@fileHandle)
-    file.remove(dirname(storedFile@fileHandle))
-    
     # delete the file
     deleteEntity(downloadedFile)
     # clean up downloaded file
@@ -185,20 +178,13 @@ integrationTestLoadEntity<-function() {
   file<-addObject(file, dataObject, "dataObjectName")
   storedFile<-createEntity(file)
   
-  loadedEntity<-loadEntity(propertyValue(storedEntity, "id"))
+  loadedEntity<-loadEntity(propertyValue(storedFile, "id"))
   
-  checkEquals(dataObject, getObject(loadedEntity)[["dataObjectName"]])
+  checkEquals(dataObject, getObject(loadedEntity, "dataObjectName"))
   
   # can load from an entity as well as from an ID
-  loadedEntity2<-loadEntity(storedEntity)
-  checkEquals(dataObject, getObject(loadedEntity2)[["dataObjectName"]])
-  
-  # clean up downloaded file
-  handleUri<-sprintf("/fileHandle/%s", loadedEntity2@fileHandle$id)
-  synapseClient:::synapseDelete(handleUri, service="FILE")
-  # clean up cache
-  file.remove(loadedEntity2@fileHandle)
-  file.remove(dirname(loadedEntity2@fileHandle))
+  loadedEntity2<-loadEntity(storedFile)
+  checkEquals(dataObject, getObject(loadedEntity2, "dataObjectName"))
   
   # delete the file
   deleteEntity(loadedEntity)
@@ -212,6 +198,7 @@ integrationTestLoadEntity<-function() {
   file.remove(dirname(loadedEntity2@filePath))
 }
 
+# TODO:  test downloading a specific *version* of a file
 
 # first pass
 # TODO test synGet of existing File, (1) to default location, (2) to existing location, (3) to new location
@@ -219,7 +206,7 @@ integrationTestLoadEntity<-function() {
 # TODO test storage/retrieval of provenance info, incl. two files having the same activity
 #			what should the default behavior be for 'synStore' if prov' info exists but is not specified:
 #			leave existing info intact or clear info?
-# TODO test governance restriction
+# TODO test governance restriction (unfulfilled access requirement)
 # TODO test retrieval of specific version
 # TODO test serialization of binary / deserialization ("load=TRUE")
 
