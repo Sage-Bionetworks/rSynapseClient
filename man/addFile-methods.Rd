@@ -10,16 +10,9 @@
 }
 \section{Methods}{
   \describe{
-    \item{\code{signature(entity = "CachedLocation", file = "character", path = "character")}}{
-      Adds the file to the CachedLocation. This method is not intended to be called by the user. Instead
-      user's should call the addFile methods for the LocationOwner directly which will call this method
-      on their behalf.
-    }
-    \item{\code{signature(entity = "LocationOwner", file = "character", path = "character")}}{
-      Add the file to the entity's cache directory under the subdirectory specified by the path argument.
-    }
-    \item{\code{signature(entity = "LocationOwner", file = "character", path = "missing")}}{
-      Add the file to the root of the entity's cached directory.
+     \item{\code{signature(entity = "File", file = "character", path = "character")}}{
+      Set the physical file associated with the File object to be that given by <path,file>.   Replaces
+      any other file or object associated with the file.
     }
   }
 }
