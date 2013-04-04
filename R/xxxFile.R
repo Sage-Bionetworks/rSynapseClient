@@ -164,8 +164,22 @@ uploadAndAddToCacheMap<-function(filePath) {
   fileHandle
 }
 
+# if File has associated objects, then serialize them into a file
+serializeObjects<-function(file) {
+  if (is.null(file@objects) || length(file@objects)==0) return(file@filePath)
+  if (fileHasFilePath(file)) {
+    filePath<-file@filePath
+  } else {
+    filePath<-sprintf("%s.rbin", tempfile())
+  }
+  # now serialize the content into the file
+  save(objects, file=filePath)
+  filePath
+}
+
 # TODO:  synStore must work for Entity and Record as well as File
-synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T){
+synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T) {
+  file@filePath<-serializeObjects(file)
   if (!fileHasFileHandleId(file)) { # if there's no existing Synapse File associated with this object...
     if (!fileHasFilePath(file)) { # ... and there's no local file staged for upload ...
       stop("filePath is required") # ... then we reject the call to 'synStore'
@@ -327,7 +341,8 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
       # shouldn't reach this statement.  something has gone very wrong.
       stop(sprintf("Cannot load file %s, there is no local file path.", fileHandle$fileName))
     }
-    # TODO source into workspace (different for binary, .R, or text data file)
+    # TODO handle .Rbin, .R, or text data file differently (Use the contentType field in the FileHandle?)
+    load(filePath, envir = as.environment(file@objects))
   }
   file
 }
@@ -359,7 +374,7 @@ setMethod(
   f = "downloadEntity",
   signature = signature("File","missing"),
   definition = function(entity){
-    synGet(entity)
+    synGet(propertyValue(entity, "id")) # TODO:  should we extract the version from the entity and pass that in?
   }
 )
 
@@ -368,7 +383,7 @@ setMethod(
   f = "downloadEntity",
   signature = signature("File","character"),
   definition = function(entity, versionId){
-      synGet(entity, versionId, downloadFile=T)
+      synGet(propertyValue(entity, "id"), versionId, downloadFile=T)
   }
 )
 
@@ -376,7 +391,7 @@ setMethod(
   f = "downloadEntity",
   signature = signature("File","numeric"),
   definition = function(entity, versionId){
-    downloadEntity(entity, as.character(versionId))
+    downloadEntity(entity, as.character(versionId)) # TODO:  should we extract the version from the entity and pass that in?
   }
 )
 
@@ -384,7 +399,7 @@ setMethod(
   f = "loadEntity",
   signature = signature("File","missing"),
   definition = function(entity){
-    synGet(file=entity, downloadFile=T, load=T)
+    synGet(id=propertyValue(entity, "id"), downloadFile=T, load=T) # TODO:  should we extract the version from the entity and pass that in?
   }
 )
 
@@ -392,7 +407,7 @@ setMethod(
   f = "loadEntity",
   signature = signature("File","character"),
   definition = function(entity, versionId){
-    synGet(file=entity, version=versionId, downloadFile=T, load=T)
+    synGet(id=propertyValue(entity, "id"), version=versionId, downloadFile=T, load=T)
   }
 )
 
@@ -434,6 +449,7 @@ setMethod(
   definition = function(entity, file) { # Note 'entity' is a File, not an Entity
     if (length(entity@filePath)>0) stop("A File may only contain a single file.")
     entity@filePath = file
+    if (is.null(propertyValue(entity, "name"))) propertyValue(entity, "name")<-basename(entity@filePath)
     entity
   }
 )
@@ -462,6 +478,7 @@ setMethod(
   signature = signature("File", "character"),
   definition = function(owner, which) {
     owner@objects[[which]]<-NULL
+    invisible(owner)
   }
 )
 
@@ -479,6 +496,7 @@ setMethod(
   definition = function(owner, which, name) {
     owner@objects[[name]]<-owner@objects[[which]]
     owner@objects[[which]]<-NULL
+    invisible(owner)
   }
 )
 
