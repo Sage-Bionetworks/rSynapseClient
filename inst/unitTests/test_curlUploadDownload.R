@@ -23,20 +23,6 @@
   synapseCacheDir(NULL)
 }
 
-## TODO: this test is broken: FIX ME!
-#unitTestBigDownload <- 
-#  function()
-#{
-#  d <- matrix(nrow=1000, ncol=1000, data=1)
-#  for(i in 1:100){
-#    write(d,file = synapseClient:::.getCache("localSourceFile"),ncolumns=1000, sep="\t", append=TRUE)
-#  }
-#  sourceChecksum <- tools::md5sum(synapseClient:::.getCache("localSourceFile"))
-#  synapseClient:::.setCache("destFile", synapseClient:::synapseDownloadFile(url= paste("file://", synapseClient:::.getCache("localSourceFile"), sep="")))
-#  destChecksum <- tools::md5sum(synapseClient:::.getCache("destFile"))
-#  checkEquals(as.character(sourceChecksum), as.character(destChecksum))
-#}
-
 unitTestLocalFileDownload <- function(){
   d <- matrix(nrow=100, ncol=100, data=1)
   checkTrue(!is.null(synapseClient:::.getCache("localSourceFile")))
@@ -98,29 +84,3 @@ unitTestMd5Sum <-
   ## check that the new destfile has the same checksum as the source file
   checkEquals(srcChecksum, as.character(tools::md5sum(newDestFile)))
 }
-
-unitTestZippedDownload <- 
-  function()	
-{
-  ## TODO: implement this test
-}
-
-unitTestDownoad <- 
-  function()
-{
-  ## TODO: implement this test
-}
-
-unitTestInvalidSourceFile <- 
-  function()
-{
-  ## TODO: implement this test	
-}
-
-unitTestInvalidDestDir <- 
-  function()
-{
-  ## TODO: implement this test	
-}
-
-

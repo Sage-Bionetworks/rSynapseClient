@@ -87,6 +87,7 @@ integrationTestRoundtrip <- function()
   cachePath<-sprintf("%s/.cacheMap", synapseClient:::defaultDownloadLocation(storedFile@fileHandle$id))
   checkTrue(file.exists(cachePath))
   
+  # now download it
   downloadedFile<-synGet(id)
   checkEquals(id, propertyValue(downloadedFile, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))

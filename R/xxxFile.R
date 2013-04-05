@@ -123,7 +123,6 @@ cacheMapFilePath<-function(fileHandleId) {
   sprintf("%s/.cacheMap", defaultDownloadLocation(fileHandleId))
 }
 
-# TODO test content, including that record key is file path
 getCacheMapFileContent<-function(fileHandleId) {
   cacheMapFile<-cacheMapFilePath(fileHandleId)
   if (!file.exists(cacheMapFile)) return(list())

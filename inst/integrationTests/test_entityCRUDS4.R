@@ -182,11 +182,8 @@ integrationTestCreateEntityWithNAAnnotations <-
   checkEquals(propertyValue(createdStudy,"name"), propertyValue(study, "name"))
   checkEquals(propertyValue(createdStudy,"parentId"), propertyValue(createdProject, "id"))
   checkEquals(annotValue(createdStudy,"platform"), "HG-U133_Plus_2")
-# TODO this should be a number, not a string
   checkEquals(annotValue(createdStudy,"number_of_samples"), 33)
-# TODO this should be a boolean, not a string
   checkEquals(annotValue(createdStudy,"rawdataavailable"), "TRUE")
-# TODO this should probably be NA instead of NULL
   checkTrue(is.null(annotValue(createdStudy,"contact")[[1]]))
 }
 

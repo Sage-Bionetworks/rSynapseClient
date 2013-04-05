@@ -70,21 +70,11 @@ unitTestProperties <-
   ## test property getters and setters
   entity <- new(Class="Entity")
   
-  ## date valued property
-  #dd <- Sys.Date()
-  ##propertyValue(entity,"date") <- dd
-  
   ## all other property types
   propertyValue(entity,"name") <- "string"
-  #propertyValue(entity,"long") <- 1L
-  #propertyValue(entity,"double") <- 2.0
-  
-  ## TODO: remove the type coersion once getters return properly typed values
-  ##checkEquals(propertyValue(entity,"date"), as.Date(dd))
+
   checkEquals(propertyValue(entity,"name"), "string")
-  #checkEquals(as.integer(propertyValue(entity,"long")), 1L)
-  #checkEquals(as.double(propertyValue(entity,"double")), 2.0)
-}
+ }
 
 unitTestAnnotations <-
   function()
