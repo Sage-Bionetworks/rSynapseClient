@@ -19,22 +19,99 @@
   }
 }
 
+unitTestConstructor<-function() {
+  description<-"this describes my File"
+  versionComment<-"this is the first version"
+  annotName<-"anAnnotation"
+  annotValue<-"assigned annotation value"
+  file<-File(
+    "path/to/file", 
+    TRUE, 
+    description=description, 
+    versionComment=versionComment,
+    anAnnotation=annotValue)
+  
+  checkEquals("path/to/file", file@filePath)
+  checkEquals(TRUE, file@synapseStore)
+  checkEquals(description, propertyValue(file, "description"))
+  checkEquals(description, synapseClient:::synAnnotGetMethod(file, "description"))
+  checkEquals(versionComment, propertyValue(file, "versionComment"))
+  checkEquals("file", propertyValue(file, "name"))
+  checkEquals(annotValue, annotValue(file, annotName))
+  checkEquals(annotValue, synapseClient:::synAnnotGetMethod(file, annotName))
+  checkTrue(!synapseClient:::hasObjects(file))
+  checkEquals("org.sagebionetworks.repo.model.FileEntity", propertyValue(file, "entityType"))
+}
+
+unitTestListConstructor<-function() {
+  description<-"this describes my File"
+  annotValue<-"assigned annotation value"
+  file<-File(list(description=description, anAnnotation=annotValue))
+  checkEquals(description, propertyValue(file, "description"))
+  checkEquals(annotValue, annotValue(file, "anAnnotation"))
+}
+
+unitTestSynAnnotSetMethod<-function() {
+  file<-new("File")
+  description<-"this describes my File"
+  versionComment<-"this is the first version"
+  annotName<-"anAnnotation"
+  annotValue<-"assigned annotation value"
+  file<-synapseClient:::synAnnotSetMethod(file, "description", description)
+  checkEquals(description, synapseClient:::synAnnotGetMethod(file, "description"))
+  file<-synapseClient:::synAnnotSetMethod(file, annotName, annotValue)
+  checkEquals(annotValue, synapseClient:::synAnnotGetMethod(file, annotName))
+}
+
+unitTestFileUtilities<-function() {
+  file<-new("File")
+  file@fileHandle<-list(concreteType="S3FileHandle")
+  checkTrue(!synapseClient:::isExternalFileHandle(file@fileHandle))
+  checkTrue(!synapseClient:::fileHasFileHandleId(file))
+  checkTrue(!synapseClient:::fileHasFilePath(file))
+  file@fileHandle<-list(concreteType="ExternalFileHandle")
+  file@fileHandle$id<-"1234"
+  file@filePath<-"/path/to/file"
+  checkTrue(synapseClient:::isExternalFileHandle(file@fileHandle))
+  checkTrue(synapseClient:::fileHasFileHandleId(file))
+  checkTrue(synapseClient:::fileHasFilePath(file))
+}
+
+unitTestValidateFile<-function() {
+  file<-new("File")
+  
+  synapseClient:::validdateFile(file)
+  file@synapseStore<-FALSE
+  result<-try(synapseClient:::validdateFile(file), silent=T)
+  checkEquals("try-error", class(result))
+  
+  file@fileHandle<-list(concreteType="ExternalFileHandle")
+  file@synapseStore<-TRUE
+  result<-try(synapseClient:::validdateFile(file), silent=T)
+  checkEquals("try-error", class(result))
+}
 
 unitTestAddObject <-
     function()
 {
   own <- new("File")
+  
+  checkTrue(!synapseClient:::hasObjects(own))
 
   foo<-diag(10)
   copy <- addObject(own, foo)
   checkEquals(foo, getObject(copy, "foo"))
+  checkTrue(synapseClient:::hasObjects(copy))
   
   copy<-renameObject(copy, "foo", "boo")
   checkEquals(foo, getObject(copy, "boo"))
-  checkTrue(is.null(getObject(copy, "foo")))
+  result<-try(getObject(copy, "foo"),silent=T)
+  checkTrue(class(result)=="try-error")
   
   deleted<-deleteObject(copy, "boo")
-  checkTrue(is.null(getObject(deleted, "boo")))
+  result<-try(getObject(deleted, "boo"),silent=T)
+  checkTrue(class(result)=="try-error")
+  checkTrue(!synapseClient:::hasObjects(own))
 }
 
 

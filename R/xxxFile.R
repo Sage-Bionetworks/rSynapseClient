@@ -17,6 +17,9 @@ initializeFileProperties<-function() {
   properties
 }
 
+setClassUnion("environmentOrNull", c("environment", "NULL"))
+
+
 setClass(
   Class = "File",
   contains = "Entity",
@@ -29,20 +32,18 @@ setClass(
     # fileHandle (generated from JSON schema, empty before entity is created)
     fileHandle = "list",
     # objects to be serialized/deserialized
-    objects = "environment"
+    objects = "environmentOrNull"
   ),
   # This is modeled after defineEntityClass in AAAschema
   prototype = prototype(
     synapseEntityKind = "File",
     properties = initializeFileProperties(),
     synapseStore = TRUE,
-    objects = new.env()
+    objects = NULL
   )
 )
 
-# need to separate out properties from annotations
-
-synAnnotMethod<-function(object, which, value) {
+synAnnotSetMethod<-function(object, which, value) {
   if(any(which==propertyNames(object))) {
     propertyValue(object, which)<-value
   } else {
@@ -51,10 +52,18 @@ synAnnotMethod<-function(object, which, value) {
   object
 }
 
+synAnnotGetMethod<-function(object, which) {
+  if(any(which==propertyNames(object))) {
+    propertyValue(object, which)
+  } else {
+    annotValue(object, which)
+  }
+}
+
 fileConstructorMethod<-function(filePathParam, synapseStoreParam, ...) {
   file <- new("File")
   entityParams<-modifyList(list(name=basename(filePathParam)), list(...))
-  for (key in names(entityParams)) file<-synAnnotMethod(file, key, entityParams[[key]])
+  for (key in names(entityParams)) file<-synAnnotSetMethod(file, key, entityParams[[key]])
   file@filePath <- filePathParam
   file@synapseStore <- synapseStoreParam
   file
@@ -79,7 +88,7 @@ setMethod(
     propertiesList<-filePathParam   
     file <- new("File")
     for (prop in names(propertiesList))
-      propertyValue(file, prop) <- propertiesList[[prop]]
+      file<-synAnnotSetMethod(file, prop, propertiesList[[prop]])
     
     propertyValue(file, "entityType") <- "org.sagebionetworks.repo.model.FileEntity"
 
@@ -87,7 +96,7 @@ setMethod(
   }
 )
 
-isExternalFileHandle<-function(fileHandle) {fileHandle$concreteType=="ExternalFileHandle"}
+isExternalFileHandle<-function(fileHandle) {length(fileHandle)>0 && fileHandle$concreteType=="ExternalFileHandle"}
 fileHasFileHandleId<-function(file) {!is.null(file@fileHandle$id)}
 fileHasFilePath<-function(file) {length(file@filePath)>0 && nchar(file@filePath)>0}
 
@@ -164,9 +173,10 @@ uploadAndAddToCacheMap<-function(filePath) {
   fileHandle
 }
 
+hasObjects<-function(file) {!is.null(file@objects)}
+
 # if File has associated objects, then serialize them into a file
 serializeObjects<-function(file) {
-  if (is.null(file@objects) || length(file@objects)==0) return(file@filePath)
   if (fileHasFilePath(file)) {
     filePath<-file@filePath
   } else {
@@ -179,7 +189,7 @@ serializeObjects<-function(file) {
 
 # TODO:  synStore must work for Entity and Record as well as File
 synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T) {
-  file@filePath<-serializeObjects(file)
+  if (hasObjects(file)) file@filePath<-serializeObjects(file)
   if (!fileHasFileHandleId(file)) { # if there's no existing Synapse File associated with this object...
     if (!fileHasFilePath(file)) { # ... and there's no local file staged for upload ...
       stop("filePath is required") # ... then we reject the call to 'synStore'
@@ -229,6 +239,7 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
   storedFile@filePath <- file@filePath
   storedFile@synapseStore <- file@synapseStore
   storedFile@fileHandle <- file@fileHandle
+  storedFile@objects <- file@objects
   
   storedFile
 }
@@ -331,7 +342,7 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }
-  file@filePath<-filePath
+  if (downloadFile) file@filePath<-filePath
   file@synapseStore<-synapseStore
   file@fileHandle<-fileHandle
   if (load) {
@@ -343,6 +354,7 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
       stop(sprintf("Cannot load file %s, there is no local file path.", fileHandle$fileName))
     }
     # TODO handle .Rbin, .R, or text data file differently (Use the contentType field in the FileHandle?)
+    if (is.null(file@objects)) file@objects<-new.env(parent=emptyenv())
     load(filePath, envir = as.environment(file@objects))
   }
   file
@@ -469,7 +481,8 @@ setMethod(
   f = "addObject",
   signature = signature("File", "ANY", "character", "missing"),
   definition = function(owner, object, name) {
-    owner@objects[[name]]<-object
+    if (is.null(owner@objects)) owner@objects<-new.env(parent=emptyenv())
+    assign(x=name, value=object, envir=owner@objects)
     invisible(owner)
   }
 )
@@ -478,7 +491,8 @@ setMethod(
   f = "deleteObject",
   signature = signature("File", "character"),
   definition = function(owner, which) {
-    owner@objects[[which]]<-NULL
+    remove(list=which, envir=owner@objects)
+    if (length(owner@objects)==0) owner@objects<-NULL
     invisible(owner)
   }
 )
@@ -487,7 +501,7 @@ setMethod(
   f = "getObject",
   signature = signature("File", "character"),
   definition = function(owner, which) {
-    owner@objects[[which]]
+    get(x=which, envir=owner@objects)
   }
 )
 
@@ -495,8 +509,9 @@ setMethod(
   f = "renameObject",
   signature = signature("File", "character", "character"),
   definition = function(owner, which, name) {
-    owner@objects[[name]]<-owner@objects[[which]]
-    owner@objects[[which]]<-NULL
+    object<-get(x=which, envir=owner@objects)
+    assign(x=name, value=object, envir=owner@objects)
+    remove(list=which, envir=owner@objects)   
     invisible(owner)
   }
 )

@@ -13,11 +13,52 @@
   deleteEntity(synapseClient:::.getCache("testProject"))
 }
 
+integrationTestCacheMapRoundTrip <- function() {
+  fileHandleId<-"TEST_FHID"
+  filePath<- system.file("NAMESPACE", package = "synapseClient")
+  filePath2<- system.file("DESCRIPTION", package = "synapseClient")
+  
+  synapseClient:::addToCacheMap(fileHandleId, filePath)
+  synapseClient:::addToCacheMap(fileHandleId, filePath2)
+  content<-synapseClient:::getCacheMapFileContent(fileHandleId)
+  checkEquals(2, length(content))
+  checkTrue(any(filePath==names(content)))
+  checkTrue(any(filePath2==names(content)))
+  checkEquals(as.character(file.info(filePath)$mtime), synapseClient:::getFromCacheMap(fileHandleId, filePath))
+  checkEquals(as.character(file.info(filePath2)$mtime), synapseClient:::getFromCacheMap(fileHandleId, filePath2))
+  checkTrue(synapseClient:::localFileUnchanged(fileHandleId, filePath))
+  checkTrue(synapseClient:::localFileUnchanged(fileHandleId, filePath2))
+  
+  # now clean up
+  unlink(synapseClient:::defaultDownloadLocation(fileHandleId), recursive=TRUE)
+}
+
+integrationTestMetadataRoundTrip <- function() {
+  # create a Project
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  
+  # create a file to be uploaded
+  filePath<- system.file("NAMESPACE", package = "synapseClient")
+  synapseStore<-TRUE
+  file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
+  checkTrue(!is.null(propertyValue(file, "name")))
+  checkEquals(propertyValue(project, "id"), propertyValue(file, "parentId"))
+  
+  # now store it
+  storedFile<-synStore(file)
+
+  metadataOnly<-synGet(propertyValue(file, "id"),downloadFile=F)
+  metadataOnly<-synapseClient:::synAnnotSetMethod(metadataOnly, "annot", "value")
+  storedMetadata<-synStore(metadataOnly)
+  
+  checkEquals("value", synapseClient:::synAnnotGetMethod(storedMetadata, "annot"))
+}
+
 #
 # This code exercises the file services underlying upload/download to/from an entity
 #
-integrationTestRoundtrip <-
-  function()
+integrationTestRoundtrip <- function()
 {
   # create a Project
   project <- synapseClient:::.getCache("testProject")
@@ -44,7 +85,6 @@ integrationTestRoundtrip <-
   
   # check that cachemap entry exists
   cachePath<-sprintf("%s/.cacheMap", synapseClient:::defaultDownloadLocation(storedFile@fileHandle$id))
-
   checkTrue(file.exists(cachePath))
   
   downloadedFile<-synGet(id)
@@ -99,6 +139,12 @@ integrationTestAddToNewFILEEntity <-
   checkEquals(propertyValue(project, "id"), propertyValue(gotEntity, "parentId"))
   checkEquals(propertyValue(file, "name"), propertyValue(gotEntity, "name"))
   checkTrue(length(gotEntity@filePath)==0) # empty since it hasn't been downloaded
+  
+  # test update of metadata
+  annotValue(gotEntity, "foo")<-"bar"
+  updatedEntity<-updateEntity(gotEntity)
+  gotEntity<-getEntity(updatedEntity)
+  checkEquals("bar", annotValue(gotEntity, "foo"))
   
   downloadedFile<-downloadEntity(id)
   checkEquals(id, propertyValue(downloadedFile, "id"))
