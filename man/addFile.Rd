@@ -32,7 +32,7 @@
   }
 }
 \details{
-  Synapse has the ability to store only a single file for entities that extend from "FileEntity" and which
+  Synapse has the ability to store only a single file for entities that extend from "Entity" and which
   are represented as the LocationOwner class in the Synapse R client. To get around the single file limitation,
   the Synapse R client provides methods for maintaining a "cache" of files that can be zipped into a single 
   archive and uploaded to Synapse by calling the \code{\link{storeEntity}} method.
@@ -46,6 +46,9 @@
   a trailing slash (i.e. "/"), they will be interpreted as a path to the directory in which the file
   specified by the \code{src} argument should be placed. Absent the trailing slash, \code{dest}
   will be interpreted as a path followed by a filename to which the source file \code{src} will be renamed.
+  
+  For File objects, there is no zipping of multiple files.  There is always a single file.  addFile replaces the 
+  current file with the one specified.  deleteFile and moveFile are unsupported.
 }
 \value{
   The modified entity.
