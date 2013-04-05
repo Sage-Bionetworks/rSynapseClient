@@ -48,9 +48,9 @@ integrationTestMetadataRoundTrip <- function() {
   # now store it
   storedFile<-synStore(file)
 
-  metadataOnly<-synGet(propertyValue(file, "id"),downloadFile=F)
+  metadataOnly<-synGet(propertyValue(storedFile, "id"),downloadFile=F)
   metadataOnly<-synapseClient:::synAnnotSetMethod(metadataOnly, "annot", "value")
-  storedMetadata<-synStore(metadataOnly)
+  storedMetadata<-synStore(metadataOnly, forceVersion=F) # TODO check with forceVersion=T
   
   checkEquals("value", synapseClient:::synAnnotGetMethod(storedMetadata, "annot"))
 }
@@ -130,6 +130,7 @@ integrationTestAddToNewFILEEntity <-
   checkEquals(propertyValue(file, "name"), propertyValue(storedFile, "name"))
   checkEquals(filePath, storedFile@filePath)
   checkEquals(TRUE, storedFile@synapseStore) # this is the default
+  checkTrue(!is.null(propertyValue(storedFile, "dataFileHandleId")))
   
   gotEntity<-getEntity(storedFile) # get metadata, don't download file
   
@@ -138,6 +139,7 @@ integrationTestAddToNewFILEEntity <-
   checkTrue(!is.null(id))
   checkEquals(propertyValue(project, "id"), propertyValue(gotEntity, "parentId"))
   checkEquals(propertyValue(file, "name"), propertyValue(gotEntity, "name"))
+  checkTrue(!is.null(propertyValue(gotEntity, "dataFileHandleId")))
   checkTrue(length(gotEntity@filePath)==0) # empty since it hasn't been downloaded
   
   # test update of metadata
@@ -243,8 +245,6 @@ integrationTestLoadEntity<-function() {
   file.remove(sprintf("%s/.cacheMap", dirname(loadedEntity@filePath)))
   file.remove(dirname(loadedEntity2@filePath))
 }
-
-# TODO:  test downloading a specific *version* of a file
 
 # first pass
 # TODO test synGet of existing File, (1) to default location, (2) to existing location, (3) to new location

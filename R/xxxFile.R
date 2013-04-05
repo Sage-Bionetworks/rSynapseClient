@@ -183,7 +183,7 @@ serializeObjects<-function(file) {
     filePath<-sprintf("%s.rbin", tempfile())
   }
   # now serialize the content into the file
-  save(objects, file=filePath)
+  save(list=ls(file@objects), file=filePath, envir=file@objects)
   filePath
 }
 
@@ -192,7 +192,7 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
   if (hasObjects(file)) file@filePath<-serializeObjects(file)
   if (!fileHasFileHandleId(file)) { # if there's no existing Synapse File associated with this object...
     if (!fileHasFilePath(file)) { # ... and there's no local file staged for upload ...
-      stop("filePath is required") # ... then we reject the call to 'synStore'
+      # then we will only be storing the meta data
     } else { # ... we are storing a new file
       if (file@synapseStore) { # ... we are storing a new file which we are also uploading
         fileHandle<-uploadAndAddToCacheMap(file@filePath)
@@ -203,19 +203,21 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
         fileHandle<-synapseLinkExternalFile(file@filePath, fileName, contentType)
         # note, there's no cache map entry to create
       }
+      #	save fileHandle in slot, put id in entity properties
+      file@fileHandle <- fileHandle
+      propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
     }
-    #	save fileHandle in slot, put id in entity properties
-    file@fileHandle <- fileHandle
   } else { # fileHandle is not null, i.e. we're updating a Synapse File that's already created
     #	if fileHandle is inconsistent with filePath or synapseStore, raise an exception 
     validdateFile(file)
     if (file@synapseStore) {
-      if (is.null(file@filePath) || localFileUnchanged(file@fileHandle$id, file@filePath)) {
+      if (!fileHasFilePath(file) || localFileUnchanged(file@fileHandle$id, file@filePath)) {
         # since local file matches Synapse file (or was not actually retrieved) nothing to store
       } else {
         #	load file into Synapse, get back fileHandle (save in slot, put id in properties)
         fileHandle<-uploadAndAddToCacheMap(file@filePath)
         file@fileHandle<-fileHandle
+        propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
       }
     } else { # synapseStore==F
       # file is considered 'read only' and will not be uploaded
@@ -227,7 +229,6 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
   if (!is.null(used) || !is.null(executed)) {
     # create the provenance record and put in entity
   }
-  propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
   if (is.null(propertyValue(file, "id"))) {
     # get the superclass createEntity method, which just stores the metadata
     superCreateEntity<-getMethod("createEntity", "Entity") # TODO createOrUpdate
@@ -236,7 +237,7 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
     storedFile<-updateEntityMethod(file, forceVersion)
   }
   # now copy the class-specific fields into the newly created object
-  storedFile@filePath <- file@filePath
+  if (fileHasFilePath(file)) storedFile@filePath <- file@filePath
   storedFile@synapseStore <- file@synapseStore
   storedFile@fileHandle <- file@fileHandle
   storedFile@objects <- file@objects
@@ -355,7 +356,7 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
     }
     # TODO handle .Rbin, .R, or text data file differently (Use the contentType field in the FileHandle?)
     if (is.null(file@objects)) file@objects<-new.env(parent=emptyenv())
-    load(filePath, envir = as.environment(file@objects))
+    load(file=filePath, envir = as.environment(file@objects))
   }
   file
 }
