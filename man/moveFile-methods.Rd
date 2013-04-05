@@ -14,6 +14,10 @@
 Move the file
 }
 
+\item{\code{signature(entity = "File")}}{
+Unsupported operation.
+}
+
 \item{\code{signature(entity = "SynapseLocationOwner")}}{
 Move the file
 }

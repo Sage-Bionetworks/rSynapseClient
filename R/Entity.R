@@ -1,4 +1,4 @@
-# TODO: Add comment
+#
 # 
 # Author: furia
 ###############################################################################
@@ -331,12 +331,9 @@ updateEntityMethod<-function(entity, forceVersion)
 setMethod(
   f = "updateEntity",
   signature = signature("Entity"),
-#  signature = signature("Entity", "missing"),
   definition = function(entity) {updateEntityMethod(entity)}
 )
-  
-  
-
+ 
 setMethod(
   f = "downloadEntity",
   signature = signature("Entity","missing"),

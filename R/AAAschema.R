@@ -1,4 +1,4 @@
-# TODO: Add comment
+#
 # 
 # Author: mfuria
 ###############################################################################
@@ -22,9 +22,14 @@ entitiesToLoad <-
 {
   paths <- NULL
   
+  classesToSkip<-c("org.sagebionetworks.repo.model.FileEntity")
+  
   for(i in 1:length(resources$entityTypes)){
     thisOne <- resources$entityTypes[[i]]
-    paths <- unique(c(paths, thisOne$validParentTypes, thisOne$entityType))
+    # We skip FileEntity, see .onLoad in zzz.R
+    if (!any(thisOne$entityType==classesToSkip)) {
+      paths <- unique(c(paths, thisOne$validParentTypes, thisOne$entityType))
+    }
   }
   
   setdiff(paths, "DEFAULT")

@@ -13,8 +13,7 @@ lockdirPath<-function(filePath) {sprintf("%s.lock", filePath)}
 lockFile<-function(filePath, maxWaitSeconds=10) {
   lockdirPath <- lockdirPath(filePath)
   startTime<-Sys.time()
-  ageTimeoutSeconds<-3.0
-  agePaddingSeconds <- 2.0 # extra time to wait after expiration before breaking the lock
+  ageTimeoutSeconds<-5.0
   while ((Sys.time()-startTime) < maxWaitSeconds) {
     success<-dir.create(lockdirPath, showWarnings=FALSE, recursive=TRUE)
     if (success) return(lastModifiedTimestamp(lockdirPath)+ageTimeoutSeconds)
@@ -24,7 +23,7 @@ lockFile<-function(filePath, maxWaitSeconds=10) {
     if (!is.na(lockdirTimestamp)) { # the directory is there already...is the lock stale?
       modifiedAgeSeconds<-Sys.time()-lockdirTimestamp
       # if the lock is stale -- and has been for a while -- break the lock
-      if (modifiedAgeSeconds > ageTimeoutSeconds + agePaddingSeconds) {
+      if (modifiedAgeSeconds > ageTimeoutSeconds) {
         unlockFile(filePath)
       }
     }
@@ -50,7 +49,10 @@ readFile<-function(filePath) {
 
 writeFileAndUnlock<-function(filePath, content, lockExpiration) {
   # if I don't actually have the lock, then release it
-  if (Sys.time() > lockExpiration) {
+  # This check should really be unnecessary.  In practice the client should call
+  # this method immediately after obtaining the lock and so should have LOTS of
+  # time left before expiration.
+  if (Sys.time() >= lockExpiration) {
     unlockFile(filePath) # (not critical, just keeps things clean)
     stop(sprintf("File lock exceeded for %s", filePath))
   }
@@ -60,7 +62,7 @@ writeFileAndUnlock<-function(filePath, content, lockExpiration) {
   close(connection)
   unlockFile(filePath) # (not critical, just keeps things clean)
   # we should be able to do all this well within the allocated lock time
-  if (Sys.time() > lockExpiration) {
+  if (Sys.time() >= lockExpiration) {
     warning("Warning, file write operation exceeded file lock.  To ensure exclusive access, longer file lock should be used.")
   }
 }

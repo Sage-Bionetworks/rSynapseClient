@@ -1,4 +1,4 @@
-# TODO: Add comment
+#
 # 
 # Author: furia
 ###############################################################################
@@ -12,15 +12,6 @@
 ## class
 ##
 
-## delegate addObject calls to the enclosed EnhancedEnvironment class
-#setMethod(
-#  f = "addObject",
-#  signature = signature("CachingObjectOwner", "ANY", "character", "missing"),
-#  definition = function(owner, object, name){
-#    owner$objects <- addObject(owner$objects, object, name)
-#    invisible(owner)
-#  }
-#)
 
 setMethod(
   f = "files",
