@@ -24,8 +24,8 @@ integrationTestCacheMapRoundTrip <- function() {
   checkEquals(2, length(content))
   checkTrue(any(filePath==names(content)))
   checkTrue(any(filePath2==names(content)))
-  checkEquals(as.character(file.info(filePath)$mtime), synapseClient:::getFromCacheMap(fileHandleId, filePath))
-  checkEquals(as.character(file.info(filePath2)$mtime), synapseClient:::getFromCacheMap(fileHandleId, filePath2))
+  checkEquals(synapseClient:::.formatAsISO8601(file.info(filePath)$mtime), synapseClient:::getFromCacheMap(fileHandleId, filePath))
+  checkEquals(synapseClient:::.formatAsISO8601(file.info(filePath2)$mtime), synapseClient:::getFromCacheMap(fileHandleId, filePath2))
   checkTrue(synapseClient:::localFileUnchanged(fileHandleId, filePath))
   checkTrue(synapseClient:::localFileUnchanged(fileHandleId, filePath2))
   

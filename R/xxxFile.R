@@ -154,7 +154,7 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
   lockExpiration<-lockFile(cacheMapFile)
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
   record<-list()
-  record[[filePath]]<-as.character(timestamp)
+  record[[filePath]]<-.formatAsISO8601(timestamp)
   mapForFileHandleId<-modifyList(mapForFileHandleId, as.list(record))
   cacheRecordJson<-toJSON(mapForFileHandleId)
   writeFileAndUnlock(cacheMapFile, cacheRecordJson, lockExpiration)
@@ -167,7 +167,7 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
 # returns FALSE if the timestamps differ OR if there is no entry in the Cache Map
 localFileUnchanged<-function(fileHandleId, filePath) {
   downloadedTimestamp<-getFromCacheMap(fileHandleId, filePath)
-  !is.null(downloadedTimestamp) && as.character(lastModifiedTimestamp(filePath))==downloadedTimestamp
+  !is.null(downloadedTimestamp) && .formatAsISO8601(lastModifiedTimestamp(filePath))==downloadedTimestamp
 }
 
 uploadAndAddToCacheMap<-function(filePath) {
