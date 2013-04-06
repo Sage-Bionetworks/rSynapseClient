@@ -60,12 +60,16 @@ synAnnotGetMethod<-function(object, which) {
   }
 }
 
-fileConstructorMethod<-function(filePathParam, synapseStoreParam, ...) {
+fileConstructorMethod<-function(path, ...) {
+  File(path=path, synapseStore=TRUE, ...)
+}
+
+fileConstructorMethod<-function(path, synapseStore, ...) {
   file <- new("File")
-  entityParams<-modifyList(list(name=basename(filePathParam)), list(...))
+  entityParams<-modifyList(list(name=basename(path)), list(...))
   for (key in names(entityParams)) file<-synAnnotSetMethod(file, key, entityParams[[key]])
-  file@filePath <- filePathParam
-  file@synapseStore <- synapseStoreParam
+  file@filePath <- path
+  file@synapseStore <- synapseStore
   file
 }
 ##
@@ -83,9 +87,9 @@ setMethod(
 setMethod(
   f = "File",
   signature = signature("list"),
-  definition = function(filePathParam) {
+  definition = function(path) {
     # the param is not actually a file path.  Using the same param names in all constructors is an S-4 requirement  
-    propertiesList<-filePathParam   
+    propertiesList<-path   
     file <- new("File")
     for (prop in names(propertiesList))
       file<-synAnnotSetMethod(file, prop, propertiesList[[prop]])
@@ -279,18 +283,37 @@ downloadFromSynapseOrExternal<-function(downloadLocation, filePath, synapseStore
   
 }
 
-# TODO, allow caller to pass File instead of id
 synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
-  # first, get the metadata and the fileHandle
   if (is.null(version)) {
     file<-getEntity(id)
   } else {
     file<-getEntity(id, version=version)
+  }   
+  synGetWithFileParam(file, downloadFile, downloadLocation, ifcollision, load)
+}
+
+getFileHandle<-function(entity) {
+  handlesUri<-sprintf(
+    "/entity/%s/version/%s/filehandles", 
+    propertyValue(entity, "id"),
+    propertyValue(entity, "versionNumber"))
+  fileHandlesArray<-synapseGet(handlesUri, service="REPO")
+  fileHandles<-fileHandlesArray[[1]] # not sure why it's wrapped in an extra layer of array, just an artifact of the JSON structure
+  fileHandleId<-propertyValue(entity, "dataFileHandleId")
+  for (fileHandle in fileHandles) {
+    if (fileHandle$id==fileHandleId) return(fileHandle)
   }
+  stop(sprintf("Could not find file handle for entity %s, fileHandleId %s", propertyValue(entity, "id"), fileHandleId))
+}
+
+synGetWithFileParam<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
+  id<-propertyValue(file, "id")
   fileHandleId<-propertyValue(file, "dataFileHandleId")
-  if (is.null(fileHandleId)) stop(sprintf("Entity %s (version %s) is missing its FileHandleId", id, version))
-  handleUri<-sprintf("/fileHandle/%s", fileHandleId)
-  fileHandle<-synapseGet(handleUri, service="FILE")	
+  if (is.null(fileHandleId)) stop(sprintf("Entity %s (version %s) is missing its FileHandleId", id, propertyValue(file, "version")))
+  #handleUri<-sprintf("/fileHandle/%s", fileHandleId)
+  #fileHandle<-synapseGet(handleUri, service="FILE")	
+  # NOTE:  Only do the following for Files (not Folders or other entities)
+  fileHandle<-getFileHandle(file)
 
   if (isExternalFileHandle(fileHandle)) {
     synapseStore<-FALSE

@@ -12,7 +12,7 @@ setGeneric(
 
 setGeneric(
   name="File",
-  def = function(filePathParam, synapseStoreParam, ...) {
+  def = function(path, synapseStore, ...) {
     standardGeneric("File")
   }
 )
