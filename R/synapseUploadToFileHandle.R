@@ -45,7 +45,12 @@ synapseUploadToFileHandle<-function(filePath, curlHandle=getCurlHandle()) {
   # to invoke multipart upload the 'style' param is set to 'HTTPPOST'
   # unfortunately it looks like 'postForm' doesn't have an option NOT to raise an error for a non-2xx response status,
   # so we have to catch their error and handle it ourselves
-  response<-tryCatch(postForm(uri=fileHandleUrl, "fileData" = fileUpload(filePath), curl=curlHandle, .opts=opts, style="HTTPPOST"),
+  response<-tryCatch(postForm(
+      uri=fileHandleUrl, 
+      "fileData" = fileUpload(filename=filePath, contentType=getMimeTypeForFile(filePath)), 
+      curl=curlHandle, 
+      .opts=opts, 
+      style="HTTPPOST"),
     HTTPError = function(e) {
       .checkCurlResponse(curlHandle)
     }
