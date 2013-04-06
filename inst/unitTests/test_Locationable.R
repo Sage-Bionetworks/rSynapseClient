@@ -242,21 +242,6 @@ unitTestShow <-
 ##
 ##
 
-
-unitTestNoArgConstructor <-
-    function()
-{
-  options(warn=1)
-  warning("not yet implemented")
-}
-
-unitTestConstructorArchivePath <-
-    function()
-{
-  options(warn=1)
-  warning("not yet implemented")
-}
-
 unitTestAddFile <-
     function()
 {

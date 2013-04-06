@@ -60,10 +60,6 @@ synAnnotGetMethod<-function(object, which) {
   }
 }
 
-fileConstructorMethod<-function(path, ...) {
-  File(path=path, synapseStore=TRUE, ...)
-}
-
 fileConstructorMethod<-function(path, synapseStore, ...) {
   file <- new("File")
   entityParams<-modifyList(list(name=basename(path)), list(...))
@@ -76,6 +72,12 @@ fileConstructorMethod<-function(path, synapseStore, ...) {
 ## File contructor: path="/path/to/file", synapseStore=T, name="foo", ...
 ## TODO: can also take: obj=<obj ref>, synapseStore=T, ...
 ##
+setMethod(
+  f = "File",
+  signature = signature("character", "missing"),
+  definition = function(path, ...) {fileConstructorMethod(path, synapseStore=TRUE, ...)}
+)
+
 setMethod(
   f = "File",
   signature = signature("character", "logical"),
@@ -410,11 +412,14 @@ setMethod(
   f = "downloadEntity",
   signature = signature("File","missing"),
   definition = function(entity){
-    synGet(propertyValue(entity, "id")) # TODO:  should we extract the version from the entity and pass that in?
+    synGetWithFileParam(entity)
   }
 )
 
-
+# This is a weird legacy method in which the caller may specify a version
+# different than the one in the 'entity'.  So instead of calling 'synGetWithFileParam'
+# we extract the id, combine it with the specified version, and call 'synGet'
+# to download the metadata anew.
 setMethod(
   f = "downloadEntity",
   signature = signature("File","character"),
@@ -427,7 +432,7 @@ setMethod(
   f = "downloadEntity",
   signature = signature("File","numeric"),
   definition = function(entity, versionId){
-    downloadEntity(entity, as.character(versionId)) # TODO:  should we extract the version from the entity and pass that in?
+    downloadEntity(entity, as.character(versionId))
   }
 )
 
@@ -435,10 +440,14 @@ setMethod(
   f = "loadEntity",
   signature = signature("File","missing"),
   definition = function(entity){
-    synGet(id=propertyValue(entity, "id"), downloadFile=T, load=T) # TODO:  should we extract the version from the entity and pass that in?
+    synGetWithFileParam(entity, downloadFile=T, load=T)
   }
 )
 
+# This is a weird legacy method in which the caller may specify a version
+# different than the one in the 'entity'.  So instead of calling 'synGetWithFileParam'
+# we extract the id, combine it with the specified version, and call 'synGet'
+# to download the metadata anew.
 setMethod(
   f = "loadEntity",
   signature = signature("File","character"),

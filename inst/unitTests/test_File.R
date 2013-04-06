@@ -26,7 +26,7 @@ unitTestSimpleConstructor<-function() {
   # now check that S4 is not confused by annotation parameters
   file<-File("/path/to/file", annotName=FALSE)
   checkTrue(file@synapseStore) # this is the default and S4 should mistake 'annotName' for 'synapseStore'
-  checkEquals(FALSE, annotValue(file, "annotName")) # the extra param should become an annotation on the file
+  checkEquals("FALSE", annotValue(file, "annotName")) # the extra param should become an annotation on the file
 }
 
 unitTestConstructor<-function() {
@@ -41,7 +41,7 @@ unitTestConstructor<-function() {
     versionComment=versionComment,
     anAnnotation=annotValue)
   
-  checkEquals("path/to/file", file@filePath)
+  checkEquals("/path/to/file", file@filePath)
   checkEquals(TRUE, file@synapseStore)
   checkEquals(description, propertyValue(file, "description"))
   checkEquals(description, synapseClient:::synAnnotGetMethod(file, "description"))

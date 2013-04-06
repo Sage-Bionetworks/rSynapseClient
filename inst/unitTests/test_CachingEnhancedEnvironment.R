@@ -223,21 +223,6 @@ unitTestCachingAddListWithFcn <-
   checkEquals(copy$bar$one, 1L)
 }
 
-
-unitTestRenameCatchException <-
-  function()
-  {
-    ## need to test that rename puts things back in the event of failure
-    warning("not yet implemented")
-  }
-
-unitTestAddObjectOverwriteCatchException <-
-  function()
-{
-  ## need to test that overwriting add puts things back in the event of failure
-  warning("not yet implemented")
-}
-
 ##
 ##
 ## Testing that basic EnhancedEnvironment functionality all works for
@@ -759,34 +744,4 @@ unitTestPackageName <-
   checkTrue(grepl("^CachingEnhancedEnvironment.+", getPackageName(ee)))
   setPackageName("foobar", ee)
   checkEquals(getPackageName(ee), "foobar")
-}
-
-unitTestNoZip <-
-  function()
-{
-  ## need to write tests to verify the behavior of the CachingEnhancedEnvironment
-  ## when zip is not installed.
-  ##
-  ## 1) only a single object can be managed when zip is not installed. if a
-  ## the caller attempts to add a second object, an exception should be thrown
-  ## and an informative error message should be provided. The object should
-  ## be identical before and after the failed call
-  ##
-  ## 2) By default, this class sets it's "cachePrefix" member variable to
-  ## ".R_OBJECTS/". When zip is not installed, this prefix should instead
-  ## be set to ".R_OBJECTS_" so that the files will be stored in the root
-  ## of the archive.
-  ##
-  ## 3) The loadObjects method should have an optional flag that repairs
-  ## an archive that was built on a system without zip. The repair involves
-  ## dropping the ".R_OBJECTS_" prefix, and moving the single rbin file
-  ## into the "R_OBJECTS" subdirectory. The cacheDir should be modified
-  ## to reflect the change and the archiveFile should be changed back to
-  ## the default value
-  ##
-  ## 4) If, on a system with zip, the addObject method is called for an
-  ## archive built on a system without zip, the archive should automatically
-  ## be "repaired" and an informative warning message should be printed.
-
-  warning("not yet implemented")
 }

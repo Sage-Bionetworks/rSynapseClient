@@ -116,17 +116,5 @@ unitTestDeleteProperty <-
   
 }
 
-unitTestConstructors <-
-  function()
-{
-  warning("need tests for PropertyStore Constructors")
-}
-
-unitTestPassByCopy <-
-  function()
-{
-  warning("need tests for PropertyStore Pass by copy")
-}
-
 
 
