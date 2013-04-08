@@ -9,10 +9,10 @@
 }
 
 .formatAsISO8601<-function(t) {
-  format(t, "%Y-%m-%dT%H:%M:%S.000Z")
+  format(as.POSIXlt(t, 'UTC'), "%Y-%m-%dT%H:%M:%S.000Z")
 }
 
 # All dates sent to Synapse as strings should be formatted as ISO8601 dates in timezone UTC
 .nowAsString <- function() {
-  .formatAsISO8601(.now())
+  .formatAsISO8601(Sys.time())
 }

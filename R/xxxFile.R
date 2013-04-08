@@ -192,7 +192,7 @@ serializeObjects<-function(file) {
   filePath
 }
 
-# TODO:  synStore must work for Entity and Record as well as File
+# TODO:  synStore must work for Record
 synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T) {
   if (hasObjects(file)) file@filePath<-serializeObjects(file)
   if (!fileHasFileHandleId(file)) { # if there's no existing Synapse File associated with this object...
