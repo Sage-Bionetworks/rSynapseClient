@@ -11,6 +11,13 @@
 .tearDown <- function() {
   ## delete the test project
   deleteEntity(synapseClient:::.getCache("testProject"))
+  
+  ## in the case that we have 'mocked' hasUnfulfilledAccessRequirements, this restores the original function
+  if (!is.null(synapseClient:::.getCache("hasUnfulfilledAccessRequirementsIsOverRidden"))) {
+    assignInNamespace("hasUnfulfilledAccessRequirements", attr(synapseClient:::hasUnfulfilledAccessRequirements, "origDef"), "synapseClient")
+    synapseClient:::.setCache("hasUnfulfilledAccessRequirementsIsOverRidden", NULL)
+  }
+  
 }
 
 integrationTestCacheMapRoundTrip <- function() {
@@ -61,6 +68,45 @@ integrationTestMetadataRoundTrip <- function() {
   
   retrievedMetadata<-synGet(propertyValue(storedFile, "id"),downloadFile=F)
   checkEquals(2, propertyValue(retrievedMetadata, "versionNumber"))
+  
+  # of course we should still be able to get the original version
+  originalVersion<-synGet(propertyValue(storedFile, "id"), version=1, downloadFile=F)
+  checkEquals(1, propertyValue(originalVersion, "versionNumber"))
+  # ...whether or not we download the file
+  originalVersion<-synGet(propertyValue(storedFile, "id"), version=1, downloadFile=T)
+  checkEquals(1, propertyValue(originalVersion, "versionNumber"))
+  
+}
+
+integrationTestGovernanceRestriction <- function() {
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  
+  # create a File
+  filePath<- tempfile()
+  file.copy(system.file("NAMESPACE", package = "synapseClient"), filePath)
+  synapseStore<-TRUE
+  file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
+  storedFile<-synStore(file)
+  id<-propertyValue(storedFile, "id")
+  
+  # mock Governance restriction
+  myHasUnfulfilledAccessRequirements<-function(id) {TRUE} # return TRUE, i.e. yes, there are unfulfilled access requiremens
+  attr(myHasUnfulfilledAccessRequirements, "origDef") <- synapseClient:::hasUnfulfilledAccessRequirements
+  assignInNamespace("hasUnfulfilledAccessRequirements", myHasUnfulfilledAccessRequirements, "synapseClient")
+  synapseClient:::.setCache("hasUnfulfilledAccessRequirementsIsOverRidden", TRUE)
+  
+  # try synGet with downloadFile=F, load=F, should be OK
+  synGet(id, downloadFile=F, load=F)
+  
+  # try synGet with downloadFile=T, should NOT be OK
+  result<-try(synGet(id, downloadFile=T, load=F))
+  checkEquals("try-error", class(result))
+  
+  # try synGet with load=T, should NOT be OK
+  result<-try(synGet(id, downloadFile=F, load=T))
+  checkEquals("try-error", class(result))
+
 }
 
 #
@@ -118,12 +164,14 @@ integrationTestRoundtrip <- function()
   modifiedTimeStamp<-synapseClient:::getFromCacheMap(fileHandleId, downloadedFilePathInCache)
   checkTrue(!is.null(modifiedTimeStamp))
   Sys.sleep(1.0)
-  updatedFile <-synStore(downloadedFile)
+  updatedFile <-synStore(downloadedFile, forceVersion=F)
   # the file handle should be the same
   checkEquals(fileHandleId, propertyValue(updatedFile, "dataFileHandleId"))
   # there should be no change in the time stamp.
   checkEquals(modifiedTimeStamp, synapseClient:::getFromCacheMap(fileHandleId, downloadedFilePathInCache))
-  
+  # we are still on version 1
+  checkEquals(1, propertyValue(updatedFile, "versionNumber"))
+
   #  test synStore of retrieved entity, after changing file
   # modify the file
   connection<-file(downloadedFilePathInCache)
@@ -139,6 +187,16 @@ integrationTestRoundtrip <- function()
   updatedFile2 <-synStore(updatedFile, forceVersion=F)
   # fileHandleId is changed
   checkTrue(fileHandleId!=propertyValue(updatedFile2, "dataFileHandleId"))
+  # we are now on version 2
+  checkEquals(2, propertyValue(updatedFile2, "versionNumber"))
+  
+  # of course we should still be able to get the original version
+  originalVersion<-synGet(propertyValue(storedFile, "id"), version=1, downloadFile=F)
+  checkEquals(1, propertyValue(originalVersion, "versionNumber"))
+  # ...whether or not we download the file
+  originalVersion<-synGet(propertyValue(storedFile, "id"), version=1, downloadFile=T)
+  checkEquals(1, propertyValue(originalVersion, "versionNumber"))
+  
   
   # delete the file
   deleteEntity(downloadedFile)
