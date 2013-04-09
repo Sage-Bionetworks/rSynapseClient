@@ -115,8 +115,8 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
   }
   
-  # we override FileEntity with our own class.  See also entitiesToLoad() in AAAschema.R
-  addToEntityTypeMap(className="File", jsonSchemaName="org.sagebionetworks.repo.model.FileEntity")
+  # we override FileEntity with our own class constructor.  See also entitiesToLoad() in AAAschema.R
+  addToEntityTypeMap(className="FileListConstructor", jsonSchemaName="org.sagebionetworks.repo.model.FileEntity")
 }
 
 

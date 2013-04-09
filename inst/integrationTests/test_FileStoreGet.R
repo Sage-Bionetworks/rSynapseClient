@@ -100,11 +100,11 @@ integrationTestGovernanceRestriction <- function() {
   synGet(id, downloadFile=F, load=F)
   
   # try synGet with downloadFile=T, should NOT be OK
-  result<-try(synGet(id, downloadFile=T, load=F))
+  result<-try(synGet(id, downloadFile=T, load=F), silent=TRUE)
   checkEquals("try-error", class(result))
   
   # try synGet with load=T, should NOT be OK
-  result<-try(synGet(id, downloadFile=F, load=T))
+  result<-try(synGet(id, downloadFile=F, load=T), silent=TRUE)
   checkEquals("try-error", class(result))
 
 }
@@ -218,7 +218,7 @@ integrationTestAddToNewFILEEntity <-
 {
   project <- synapseClient:::.getCache("testProject")
   filePath<- system.file("NAMESPACE", package = "synapseClient")
-  file<-File(list(parentId=propertyValue(project, "id")))
+  file<-FileListConstructor(list(parentId=propertyValue(project, "id")))
   file<-addFile(file, filePath)
   storedFile<-storeEntity(file)
   
@@ -273,9 +273,7 @@ integrationTestAddToNewFILEEntity <-
   synapseClient:::synapseDelete(handleUri, service="FILE")
   
   # clean up cache
-  file.remove(downloadedFile@filePath)
-  file.remove(sprintf("%s/.cacheMap", dirname(downloadedFile@filePath)))
-  file.remove(dirname(downloadedFile@filePath))
+  unlink(dirname(downloadedFile@filePath), recursive=TRUE)
   
 }
 
@@ -283,7 +281,7 @@ integrationTestAddToNewFILEEntity <-
 integrationTestReplaceFile<-function() {
     project <- synapseClient:::.getCache("testProject")
     filePath<- system.file("NAMESPACE", package = "synapseClient")
-    file<-File(list(parentId=propertyValue(project, "id")))
+    file<-FileListConstructor(list(parentId=propertyValue(project, "id")))
     file<-addFile(file, filePath)
     # replace storeEntity with createEntity
     storedFile<-createEntity(file)
@@ -310,17 +308,15 @@ integrationTestReplaceFile<-function() {
     synapseClient:::synapseDelete(handleUri, service="FILE")
     
     # clean up cache
-    file.remove(downloadedFile@filePath)
-    file.remove(sprintf("%s/.cacheMap", dirname(downloadedFile@filePath)))
-    file.remove(dirname(downloadedFile@filePath))
-}
+    unlink(dirname(downloadedFile@filePath), recursive=TRUE)
+  }
 
 
 
 integrationTestLoadEntity<-function() {
   project <- synapseClient:::.getCache("testProject")
   filePath<- system.file("NAMESPACE", package = "synapseClient")
-  file<-File(list(parentId=propertyValue(project, "id")))
+  file<-FileListConstructor(list(parentId=propertyValue(project, "id")))
   dataObject<-list(a="A", b="B", c="C")
   file<-addObject(file, dataObject, "dataObjectName")
   storedFile<-createEntity(file)
@@ -340,8 +336,43 @@ integrationTestLoadEntity<-function() {
   synapseClient:::synapseDelete(handleUri, service="FILE")
   
   # clean up cache
-  file.remove(loadedEntity@filePath)
-  file.remove(sprintf("%s/.cacheMap", dirname(loadedEntity@filePath)))
-  file.remove(dirname(loadedEntity2@filePath))
+  unlink(dirname(loadedEntity2@filePath), recursive=TRUE)
+  
+}
+
+integrationTestSerialization<-function() {
+  project <- synapseClient:::.getCache("testProject")
+  myData<-list(foo="bar", foo2="bas")
+  file<-File(myData)
+  # note, it does NOT currently work to call file<-File(data, parentId=<pid>)
+  propertyValue(file, "parentId")<-propertyValue(project, "id")
+  storedFile<-synStore(file)
+  checkTrue(!is.null(storedFile@filePath))
+  id<-propertyValue(storedFile, "id")
+  checkTrue(!is.null(id))
+  retrievedFile<-synGet(id, load=T)
+  checkTrue(synapseClient:::hasObjects(retrievedFile))
+  retrievedObject<-getObject(retrievedFile, "myData")
+  checkEquals(myData, retrievedObject)
+  
+  # clean up file cache
+  unlink(dirname(retrievedFile@filePath), recursive=TRUE)
+  
+}
+
+integrationTestNonFile<-function() {
+  project <- synapseClient:::.getCache("testProject")
+  folder<-Folder(name="test folder", parentId=propertyValue(project, "id"))
+  folder<-synapseClient:::synAnnotSetMethod(folder, "annot", "value")
+  storedFolder<-synStore(folder)
+  id<-propertyValue(storedFolder, "id")
+  checkTrue(!is.null(id))
+  
+  retrievedFolder<-synGet(id)
+  checkEquals(propertyValue(project, "id"), propertyValue(retrievedFolder, "parentId"))
+  checkEquals("value", synapseClient:::synAnnotGetMethod(retrievedFolder, "annot"))
+  
+  # TODO test provenance
+  # TODO test createORUpdate
 }
 

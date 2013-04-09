@@ -2,8 +2,8 @@
 # class and method definitions for File
 #
 # This error was fixed by renaming "File.R" to "FileX.R"
-#Error in function (classes, fdef, mtable)  : 
-#  unable to find an inherited method for function ‘getFileCache’ for signature ‘"character", "character", "FileCacheFactory"’
+#  Error in function (classes, fdef, mtable)  : 
+#    unable to find an inherited method for function ‘getFileCache’ for signature ‘"character", "character", "FileCacheFactory"’
 # This error was fixed by renaming "FileX.R" to "xxxFile.R"
 # Error in `$<-`(`*tmp*`, "entityType", value = "org.sagebionetworks.repo.model.FileEntity") : 
 #  no method for assigning subsets of this S4 class
@@ -68,9 +68,10 @@ fileConstructorMethod<-function(path, synapseStore, ...) {
   file@synapseStore <- synapseStore
   file
 }
+
 ##
 ## File contructor: path="/path/to/file", synapseStore=T, name="foo", ...
-## TODO: can also take: obj=<obj ref>, synapseStore=T, ...
+
 ##
 setMethod(
   f = "File",
@@ -84,14 +85,33 @@ setMethod(
   definition = fileConstructorMethod
 )
 
+## File contructor: obj=<obj ref>, ...
+setMethod(
+  f = "File",
+  signature = signature("ANY", "missing"),
+  definition = function(path, synapseStore) {
+    file <- new("File")
+    
+    name <- deparse(substitute(path, env=parent.frame()))
+    name <- gsub("\\\"", "", name)
+    file<-addObjectMethod(file, path, name)
+    
+#    entityParams<-list(...)
+#    for (key in names(entityParams)) file<-synAnnotSetMethod(file, key, entityParams[[key]])
+    file@synapseStore <- TRUE
+    
+    file
+  }
+)
+
 # this is the required constructor for a metadata Entity, taking a list of properties
 # the logic is based on definedEntityConstructors in AAAschema
 setMethod(
-  f = "File",
+  f = "FileListConstructor",
   signature = signature("list"),
-  definition = function(path) {
+  definition = function(propertiesList) {
     # the param is not actually a file path.  Using the same param names in all constructors is an S-4 requirement  
-    propertiesList<-path   
+    #propertiesList<-path   
     file <- new("File")
     for (prop in names(propertiesList))
       file<-synAnnotSetMethod(file, prop, propertiesList[[prop]])
@@ -192,8 +212,35 @@ serializeObjects<-function(file) {
   filePath
 }
 
-# TODO:  synStore must work for Record
-synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T) {
+synStore <- function(entity, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T) {  
+  if (class(entity)=="File" || class(entity)=="Record") {
+    entity<-synStoreFile(file=entity, createOrUpdate, forceVersion)
+    # TODO: Handle Record
+  }
+  # Now save the metadata
+  # TODO take care of the provenance info
+  activity<-NULL
+  if (!is.null(used) || !is.null(executed)) {
+    # create the provenance record and put in entity
+  }
+  if (is.null(propertyValue(entity, "id"))) {
+    # get the superclass createEntity method, which just stores the metadata
+    superCreateEntity<-getMethod("createEntity", "Entity") # TODO createOrUpdate
+    storedEntity<-superCreateEntity(entity)
+  } else {
+    storedEntity<-updateEntityMethod(entity, forceVersion)
+  }
+  if (class(entity)=="File" || class(entity)=="Record") {
+    # now copy the class-specific fields into the newly created object
+    if (fileHasFilePath(entity)) storedEntity@filePath <- entity@filePath
+    storedEntity@synapseStore <- entity@synapseStore
+    storedEntity@fileHandle <- entity@fileHandle
+    storedEntity@objects <- entity@objects
+  }
+  storedEntity
+}
+
+synStoreFile <- function(file, createOrUpdate=T, forceVersion=T) {
   if (hasObjects(file)) file@filePath<-serializeObjects(file)
   if (!fileHasFileHandleId(file)) { # if there's no existing Synapse File associated with this object...
     if (!fileHasFilePath(file)) { # ... and there's no local file staged for upload ...
@@ -228,26 +275,7 @@ synStore <- function(file, used=NULL, executed=NULL, activityName=NULL, activity
       # file is considered 'read only' and will not be uploaded
     }
   }
-  # Now save the metadata
-  # TODO take care of the provenance info
-  activity<-NULL
-  if (!is.null(used) || !is.null(executed)) {
-    # create the provenance record and put in entity
-  }
-  if (is.null(propertyValue(file, "id"))) {
-    # get the superclass createEntity method, which just stores the metadata
-    superCreateEntity<-getMethod("createEntity", "Entity") # TODO createOrUpdate
-    storedFile<-superCreateEntity(file)
-  } else {
-    storedFile<-updateEntityMethod(file, forceVersion)
-  }
-  # now copy the class-specific fields into the newly created object
-  if (fileHasFilePath(file)) storedFile@filePath <- file@filePath
-  storedFile@synapseStore <- file@synapseStore
-  storedFile@fileHandle <- file@fileHandle
-  storedFile@objects <- file@objects
-  
-  storedFile
+  file
 }
 
 createFilePath<-function(folder, filename) {sprintf("%s/%s", folder, filename)}
@@ -292,7 +320,7 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
     file<-getEntity(id, version=version)
   }   
   if ((class(file)=="File" || class(file)=="Record") && (downloadFile || load)) {
-    synGetWithFileParam(file, downloadFile, downloadLocation, ifcollision, load)
+    synGetFile(file, downloadFile, downloadLocation, ifcollision, load)
     # TODO: Handle Record
   } else {
     file
@@ -315,15 +343,15 @@ getFileHandle<-function(entity) {
 }
 
 # return TRUE iff there are unfulfilled access requirements
-# Note this is 'broken out' from 'synGetWithFileParam' to allow mocking 
+# Note this is 'broken out' from 'synGetFile' to allow mocking 
 # during integration test
 hasUnfulfilledAccessRequirements<-function(id) {
   unfulfilledAccessRequirements<-synapseGet(sprintf("/entity/%s/accessRequirementUnfulfilled", id))
   unfulfilledAccessRequirements$totalNumberOfResults>0
 }
 
-synGetWithFileParam<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
-  if (class(file)!="File") stop("'synGetWithFileParam' may only be invoked with a File parameter.")
+synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
+  if (class(file)!="File") stop("'synGetFile' may only be invoked with a File parameter.")
   id<-propertyValue(file, "id")
   
   # if I lack access due to a restriction...
@@ -403,19 +431,19 @@ synGetWithFileParam<-function(file, downloadFile=T, downloadLocation=NULL, ifcol
 setMethod(
   f = "updateEntity",
   signature = signature("File"),
-  definition = function(entity) {synStore(file=entity, forceVersion=F)}
+  definition = function(entity) {synStore(entity, forceVersion=F)}
 )
 
 setMethod(
   f = "createEntity",
   signature = signature("File"),
-  definition = function(entity) {synStore(file=entity, forceVersion=F)}
+  definition = function(entity) {synStore(entity, forceVersion=F)}
 )
 
 setMethod(
   f = "storeEntity",
   signature = signature("File"),
-  definition = function(entity) {synStore(file=entity, forceVersion=F)}
+  definition = function(entity) {synStore(entity, forceVersion=F)}
 )
 
 setMethod(
@@ -509,23 +537,28 @@ setMethod(
   }
 )
 
+addObjectMethod<-function(owner, object, name) {
+  if (is.null(owner@objects)) owner@objects<-new.env(parent=emptyenv())
+  assign(x=name, value=object, envir=owner@objects)
+  invisible(owner)
+}
+
 setMethod(
   f = "addObject",
   signature = signature("File", "ANY", "missing", "missing"),
   definition = function(owner, object) {
     name <- deparse(substitute(object, env=parent.frame()))
     name <- gsub("\\\"", "", name)
-    addObject(owner, object, name)
+    addObjectMethod(owner, object, name)
   }
 )
+
 
 setMethod(
   f = "addObject",
   signature = signature("File", "ANY", "character", "missing"),
   definition = function(owner, object, name) {
-    if (is.null(owner@objects)) owner@objects<-new.env(parent=emptyenv())
-    assign(x=name, value=object, envir=owner@objects)
-    invisible(owner)
+    addObjectMethod(owner, object, name)
   }
 )
 
