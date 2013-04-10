@@ -110,8 +110,6 @@ setMethod(
   f = "FileListConstructor",
   signature = signature("list"),
   definition = function(propertiesList) {
-    # the param is not actually a file path.  Using the same param names in all constructors is an S-4 requirement  
-    #propertiesList<-path   
     file <- new("File")
     for (prop in names(propertiesList))
       file<-synAnnotSetMethod(file, prop, propertiesList[[prop]])
