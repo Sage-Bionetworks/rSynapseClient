@@ -18,6 +18,13 @@ setGeneric(
 )
 
 setGeneric(
+  name="FileListConstructor",
+  def = function(propertiesList) {
+    standardGeneric("FileListConstructor")
+  }
+)
+
+setGeneric(
   name = "cacheEntity",
   def = function(entity){
     standardGeneric("cacheEntity")
@@ -816,7 +823,7 @@ setGeneric(
 
 setGeneric(
   name="usedListEntry",
-  def = function(listEntry) {
+  def = function(listEntry, ...) {
     standardGeneric("usedListEntry")
   }
 )

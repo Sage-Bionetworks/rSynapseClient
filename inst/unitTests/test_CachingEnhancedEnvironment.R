@@ -92,36 +92,6 @@ unitTestCachingDeleteObject <-
 
 }
 
-unitTestListFiles <-
-  function()
-{
-  warning("Not Yet Implemented")
-}
-
-unitTestDeleteObjectFileDeleteFails <-
-  function()
-{
-  warning("Not Yet Implemented")
-}
-
-unitTestAddObjectFileCreateFails <-
-  function()
-{
-  warning("Not Yet Implemented")
-}
-
-unitTestCachingObjectCRUDVerifyPersistentMetaData <-
-  function()
-{
-  warning("Not Yet Implemented")
-}
-
-unitTestNoZip <-
-  function()
-{
-  ## need to check behavior when zip is not installed
-  warning("Not Yet Implemented")
-}
 
 unitTestLoadCachedObjects <-
   function()

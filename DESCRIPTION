@@ -1,7 +1,7 @@
 Package: synapseClient
 Type: Package
 Title: Synapse R Client from Sage Bionetworks
-Version: 0.23
+Version: 0.23-1
 ReleaseNotes: Support for File objects.
 Date: 2013-04-05
 Author@R: c(
