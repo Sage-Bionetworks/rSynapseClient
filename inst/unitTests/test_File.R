@@ -29,6 +29,21 @@ unitTestSimpleConstructor<-function() {
   checkEquals("FALSE", annotValue(file, "annotName")) # the extra param should become an annotation on the file
 }
 
+unitTestObjectConstructor<-function() {
+  anObject<-list(foo="bar")
+  file<-File(anObject)
+  checkTrue(synapseClient:::hasObjects(file))
+  checkEquals(anObject, getObject(file, "anObject"))
+  
+# TODO this does NOT work, as including the ellipsis in the method signature
+# causes parent.frame() not to work in File("ANY")
+#   file<-File(anObject, parentId="syn124", annotName="annot value")
+#   checkTrue(synapseClient:::hasObjects(file))
+#   checkEquals(anObject, getObject(file, "anObject"))
+#   checkEquals("syn124", propertyValue(file, "parentId"))
+#   checkEquals("annot value", annotValue(file, "annotName"))
+ }
+
 unitTestConstructor<-function() {
   description<-"this describes my File"
   versionComment<-"this is the first version"
@@ -56,7 +71,7 @@ unitTestConstructor<-function() {
 unitTestListConstructor<-function() {
   description<-"this describes my File"
   annotValue<-"assigned annotation value"
-  file<-File(list(description=description, anAnnotation=annotValue))
+  file<-FileListConstructor(list(description=description, anAnnotation=annotValue))
   checkEquals(description, propertyValue(file, "description"))
   checkEquals(annotValue, annotValue(file, "anAnnotation"))
 }
