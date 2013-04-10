@@ -197,6 +197,13 @@ integrationTestRoundtrip <- function()
   originalVersion<-synGet(propertyValue(storedFile, "id"), version=1, downloadFile=T)
   checkEquals(1, propertyValue(originalVersion, "versionNumber"))
   
+  # get the current version of the file, but download it to a specified location
+  # (make the location unique)
+  specifiedLocation<-file.path(tempdir(), "subdir")
+  checkTrue(dir.create(specifiedLocation))
+  downloadedToSpecified<-synGet(id)
+  checkTrue(file.exists(file.path(specifiedLocation, "NAMESPACE")))
+  TODO
   
   # delete the file
   deleteEntity(downloadedFile)
