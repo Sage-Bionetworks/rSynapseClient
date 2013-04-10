@@ -65,12 +65,6 @@ setMethod(
       executed<-listEntry$wasExecuted
       if (is.null(executed)) stop ("Executed required.")
       list(reference=getReference(usedEntity), wasExecuted=executed, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
-    } else if (!is.null(listEntry$url)) {
-      # get the URL and the 'executed' 
-      usedURL<-listEntry$entity
-      executed<-listEntry$wasExecuted
-      if (is.null(executed)) stop ("Executed required.")
-      list(url=usedURL, wasExecuted=executed, concreteType="org.sagebionetworks.repo.model.provenance.UsedURL")
     } else {
       stop ("Entity, ID or URL required.")
     }
