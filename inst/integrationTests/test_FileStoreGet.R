@@ -372,7 +372,118 @@ integrationTestNonFile<-function() {
   checkEquals(propertyValue(project, "id"), propertyValue(retrievedFolder, "parentId"))
   checkEquals("value", synapseClient:::synAnnotGetMethod(retrievedFolder, "annot"))
   
-  # TODO test provenance
   # TODO test createORUpdate
+}
+
+# this tests synStore in which the activity name, description, used, and executed param's are passed in
+integrationTestProvenance<-function() {
+  project <- synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  executed<-Folder(name="executed", parentId=pid)
+  executed<-synStore(executed)
+  
+  folder<-Folder(name="test folder", parentId=pid)
+  # this tests (1) linking a URL, (2) passing a list, (3) passing a single entity, (4) passing an entity ID
+  storedFolder<-synStore(folder, used=list("http://foo.bar.com", project), executed=propertyValue(executed, "id"), 
+    activityName="activity name", activityDescription="activity description")
+  id<-propertyValue(storedFolder, "id")
+  checkTrue(!is.null(id))
+  
+  retrievedFolder<-synGet(id)
+  checkEquals(propertyValue(project, "id"), propertyValue(retrievedFolder, "parentId"))
+  activity<-generatedBy(retrievedFolder)
+  checkEquals("activity name", propertyValue(activity, "name"))
+  checkEquals("activity description", propertyValue(activity, "description"))
+  
+  # now check the 'used' list
+  used<-propertyValue(activity, "used")
+  checkEquals(3, length(used))
+  foundURL<-F
+  foundProject<-F
+  foundExecuted<-F
+  for (u in used) {
+    if (u$concreteType=="org.sagebionetworks.repo.model.provenance.UsedURL") {
+      checkEquals(FALSE, u$wasExecuted)
+      checkEquals("http://foo.bar.com", u$url)
+      foundURL<-T
+    } else {
+      checkEquals(u$concreteType, "org.sagebionetworks.repo.model.provenance.UsedEntity")
+      if (u$wasExecuted) {
+        checkEquals(u$reference$targetId, propertyValue(executed, "id"))
+        checkEquals(u$reference$targetVersionNumber, 1)
+        foundExecuted<- T
+      } else {
+        checkEquals(u$reference$targetId, propertyValue(project, "id"))
+        checkEquals(u$reference$targetVersionNumber, 1)
+        foundProject<- T
+      }
+    }
+  }
+  checkTrue(foundURL)
+  checkTrue(foundProject)
+  checkTrue(foundExecuted)
+}
+
+# this tests synStore where an Activity is constructed separately, then passed in
+integrationTestProvenance2<-function() {
+  project <- synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  executed<-Folder(name="executed", parentId=pid)
+  executed<-synStore(executed)
+  
+  folder<-Folder(name="test folder", parentId=pid)
+  # this tests (1) linking a URL, (2) passing a list, (3) passing a single entity, (4) passing an entity ID
+  activity<-Activity(
+    list(name="activity name", description="activity description",
+            used=list(
+              list(url="http://foo.bar.com", wasExecuted=F),
+              list(entity=pid, wasExecuted=F),
+              list(entity=propertyValue(executed, "id"), wasExecuted=T)
+          )
+      )
+  )
+  
+  storedFolder<-synStore(folder, activity=activity)
+  id<-propertyValue(storedFolder, "id")
+  checkTrue(!is.null(id))
+  
+  # make sure that using an Activity elsewhere doesn't cause a problem
+  anotherFolder<-Folder(name="another folder", parentId=pid)
+  anotherFolder<-synStore(anotherFolder, activity=activity)
+  
+  # now retrieve the first folder and check the provenance
+  retrievedFolder<-synGet(id)
+  checkEquals(propertyValue(project, "id"), propertyValue(retrievedFolder, "parentId"))
+  activity<-generatedBy(retrievedFolder)
+  checkEquals("activity name", propertyValue(activity, "name"))
+  checkEquals("activity description", propertyValue(activity, "description"))
+  
+  # now check the 'used' list
+  used<-propertyValue(activity, "used")
+  checkEquals(3, length(used))
+  foundURL<-F
+  foundProject<-F
+  foundExecuted<-F
+  for (u in used) {
+    if (u$concreteType=="org.sagebionetworks.repo.model.provenance.UsedURL") {
+      checkEquals(FALSE, u$wasExecuted)
+      checkEquals("http://foo.bar.com", u$url)
+      foundURL<-T
+    } else {
+      checkEquals(u$concreteType, "org.sagebionetworks.repo.model.provenance.UsedEntity")
+      if (u$wasExecuted) {
+        checkEquals(u$reference$targetId, propertyValue(executed, "id"))
+        checkEquals(u$reference$targetVersionNumber, 1)
+        foundExecuted<- T
+      } else {
+        checkEquals(u$reference$targetId, propertyValue(project, "id"))
+        checkEquals(u$reference$targetVersionNumber, 1)
+        foundProject<- T
+      }
+    }
+  }
+  checkTrue(foundURL)
+  checkTrue(foundProject)
+  checkTrue(foundExecuted)
 }
 

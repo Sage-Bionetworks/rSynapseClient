@@ -823,7 +823,7 @@ setGeneric(
 
 setGeneric(
   name="usedListEntry",
-  def = function(listEntry) {
+  def = function(listEntry, ...) {
     standardGeneric("usedListEntry")
   }
 )

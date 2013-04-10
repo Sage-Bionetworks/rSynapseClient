@@ -212,16 +212,21 @@ serializeObjects<-function(file) {
   filePath
 }
 
-synStore <- function(entity, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T) {  
+synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T) {  
   if (class(entity)=="File" || class(entity)=="Record") {
     entity<-synStoreFile(file=entity, createOrUpdate, forceVersion)
     # TODO: Handle Record
   }
   # Now save the metadata
-  # TODO take care of the provenance info
-  activity<-NULL
-  if (!is.null(used) || !is.null(executed)) {
-    # create the provenance record and put in entity
+  if (!is.null(activity)) {
+    generatedBy(entity)<-activity
+  } else if (!is.null(used) || !is.null(executed)) {
+    activity<-Activity(list(name=activityName, description=activityDescription))
+    usedAndExecuted<-list()
+    if (!is.null(used)) usedAndExecuted<-c(usedAndExecuted, lapply(X=used, FUN=usedListEntry, wasExecuted=F))
+    if (!is.null(executed)) usedAndExecuted<-c(usedAndExecuted, lapply(X=executed, FUN=usedListEntry, wasExecuted=T))
+    if (length(usedAndExecuted)>0) propertyValue(activity, "used") <- usedAndExecuted
+    generatedBy(entity)<-activity
   }
   if (is.null(propertyValue(entity, "id"))) {
     # get the superclass createEntity method, which just stores the metadata
