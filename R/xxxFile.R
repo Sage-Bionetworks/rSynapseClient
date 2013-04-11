@@ -120,7 +120,7 @@ setMethod(
   }
 )
 
-isExternalFileHandle<-function(fileHandle) {length(fileHandle)>0 && fileHandle$concreteType=="ExternalFileHandle"}
+isExternalFileHandle<-function(fileHandle) {length(fileHandle)>0 && fileHandle$concreteType=="org.sagebionetworks.repo.model.file.ExternalFileHandle"}
 fileHasFileHandleId<-function(file) {!is.null(file@fileHandle$id)}
 fileHasFilePath<-function(file) {length(file@filePath)>0 && nchar(file@filePath)>0}
 
@@ -140,7 +140,7 @@ lastModifiedTimestamp<-function(filePath) {
 
 defaultDownloadLocation<-function(fileHandleId) {
   # TODO:  insert an intermediate subfolder?
-  sprintf("%s/%s", synapseCacheDir(), fileHandleId)
+  file.path(synapseCacheDir(), fileHandleId)
 }
 
 cacheMapFilePath<-function(fileHandleId) {
@@ -158,6 +158,8 @@ getCacheMapFileContent<-function(fileHandleId) {
 # or NULL if there is no entry
 getFromCacheMap<-function(fileHandleId, filePath) {
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
+  # this is necessary to allow Windows paths to work with toJSON/fromJSON
+  filePath<-normalizePath(filePath, winslash="/")
   for (key in names(mapForFileHandleId)) {
     if (key==filePath) return(mapForFileHandleId[[key]]) # i.e. return time stamp
   }
@@ -172,6 +174,8 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
   lockExpiration<-lockFile(cacheMapFile)
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
   record<-list()
+  # this is necessary to allow Windows paths to work with toJSON/fromJSON
+  filePath<-normalizePath(filePath, winslash="/")
   record[[filePath]]<-.formatAsISO8601(timestamp)
   mapForFileHandleId<-modifyList(mapForFileHandleId, as.list(record))
   cacheRecordJson<-toJSON(mapForFileHandleId)
@@ -281,10 +285,8 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T) {
   file
 }
 
-createFilePath<-function(folder, filename) {sprintf("%s/%s", folder, filename)}
-
 fileExists<-function(folder, filename) {
-  file.exists(createFilePath(folder, filename))
+  file.exists(file.path(folder, filename))
 }
 
 generateUniqueFileName<-function(folder, filename) {
@@ -323,7 +325,7 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
     file<-getEntity(id, version=version)
   }   
   if ((class(file)=="File" || class(file)=="Record") && (downloadFile || load)) {
-    synGetFile(file, downloadFile, downloadLocation, ifcollision, load)
+    file<-synGetFile(file, downloadFile, downloadLocation, ifcollision, load)
     # TODO: Handle Record
   } else {
     file
@@ -338,9 +340,9 @@ getFileHandle<-function(entity) {
     propertyValue(entity, "id"),
     propertyValue(entity, "versionNumber"))
   fileHandlesArray<-synapseGet(handlesUri, service="REPO")
-  fileHandles<-fileHandlesArray[[1]] # not sure why it's wrapped in an extra layer of array, just an artifact of the JSON structure
+  fileHandles<-fileHandlesArray$list
   for (fileHandle in fileHandles) {
-    if (fileHandle$id==fileHandleId) return(fileHandle)
+    if (fileHandle['id']==fileHandleId) return(as.list(fileHandle))
   }
   stop(sprintf("Could not find file handle for entity %s, fileHandleId %s", propertyValue(entity, "id"), fileHandleId))
 }
@@ -383,20 +385,26 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
     } else {
       if (file.exists(downloadLocation) && !file.info(downloadLocation)$isdir) stop(sprintf("%s is not a folder", downloadLocation))
     }
-    filePath<-createFilePath(downloadLocation, fileHandle$fileName)
+    filePath<-file.path(downloadLocation, fileHandle$fileName)
     if (file.exists(filePath)) {
       if (localFileUnchanged(fileHandle$id, filePath)) {
         # no need to download, 'filePath' is now the path to the local copy of the file
       } else {
   			if (ifcollision=="overwrite.local") {
   				# download file from Synapse to downloadLocation
-          downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, externalURL, fileHandle) 
+          # we first capture the existing file.  If the download fails, we'll move it back
+          temp<-tempfile()
+          if (!file.rename(filePath, temp)) stop(sprintf("Failed to back up %s before downloading new version.", filePath))
+          tryCatch(
+            downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, externalURL, fileHandle),
+            error = function(e) {file.rename(temp, filePath); stop(e)}
+          )
         } else if (ifcollision=="keep.local") {
   				# nothing to do
         } else if (ifcollision=="keep.both") {
           #download file from Synapse to distinct filePath
           uniqueFileName <- generateUniqueFileName(downloadLocation, fileHandle$fileName)
-          filePath <- sprintf("%s/%s", downloadLocation, uniqueFileName)
+          filePath <- file.path(downloadLocation, uniqueFileName)
           downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, externalURL, fileHandle) 
         } else {
   				stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
@@ -421,6 +429,7 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
     }
     # TODO handle .Rbin, .R, or text data file differently (Use the contentType field in the FileHandle?)
     if (is.null(file@objects)) file@objects<-new.env(parent=emptyenv())
+    # Note: the following only works if 'path' is a file system path, not a URL
     load(file=filePath, envir = as.environment(file@objects))
   }
   file

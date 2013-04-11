@@ -35,7 +35,8 @@ lockFile<-function(filePath, maxWaitSeconds=10) {
 unlockFile<-function(filePath) {
   lockdirPath <- lockdirPath(filePath)
   file.remove(lockdirPath)
-  # the above doesn't work on cygwin
+  # the above doesn't work on cygwin, but one of these should
+  if (file.exists(lockdirPath)) unlink(lockdirPath)
   if (file.exists(lockdirPath)) system(sprintf("rm -r %s", lockdirPath))
 }
 

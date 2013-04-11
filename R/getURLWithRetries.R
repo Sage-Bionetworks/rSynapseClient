@@ -7,7 +7,7 @@ getURLWithRetries<-function(url,
   debugfunction = NULL,
   opts
 ) {
-  # for exponential retries, used for 503 errors and timeouts (see SYNR-296)
+  # for exponential retries, used for 502, 503 errors and timeouts (see SYNR-296)
   INITIAL_BACKOFF_SECONDS <- 1
   BACKOFF_MULTIPLIER <- 2 # i.e. the back off time is (initial)*[multiplier^(# retries)]
   
@@ -56,7 +56,7 @@ getURLWithRetries<-function(url,
       }
     } else {
       httpStatus<-.getCurlInfo(curl)$response.code
-      if (httpStatus==503) {
+      if (httpStatus==503 || httpStatus==502) {
         # then we retry
         Sys.sleep(backoff)
         backoff <- backoff * BACKOFF_MULTIPLIER
@@ -70,7 +70,7 @@ getURLWithRetries<-function(url,
     stop(rawResponse[[1]])
   }
   
-  # note, if we continue to get 503s after max exponential retries, then we just return the 503 result
+  # note, if we continue to get 502s or 503s after max exponential retries, then we just return the 502 or 503 result
 
   #message(rawResponse)
   response<-parseHttpResponse(rawResponse)
