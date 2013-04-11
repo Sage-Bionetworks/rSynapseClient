@@ -1,16 +1,26 @@
 #
-# 
+# Integration tests for synGet, synStore and related functions
 #
 
 .setUp <- function() {
   ## create a project to fill with entities
   project <- createEntity(Project())
   synapseClient:::.setCache("testProject", project)
+  # initialize this list
+  synapseClient:::.setCache("foldersToDelete", list())
 }
 
 .tearDown <- function() {
   ## delete the test project
   deleteEntity(synapseClient:::.getCache("testProject"))
+  
+  foldersToDelete<-synapseClient:::.getCache("foldersToDelete")
+  for (folder in foldersToDelete) {
+    if (file.exists(folder)) {
+      unlink(folder, recursive=TRUE)
+    }
+  }
+  synapseClient:::.setCache("foldersToDelete", list())
   
   ## in the case that we have 'mocked' hasUnfulfilledAccessRequirements, this restores the original function
   if (!is.null(synapseClient:::.getCache("hasUnfulfilledAccessRequirementsIsOverRidden"))) {
@@ -37,7 +47,18 @@ integrationTestCacheMapRoundTrip <- function() {
   checkTrue(synapseClient:::localFileUnchanged(fileHandleId, filePath2))
   
   # now clean up
-  unlink(synapseClient:::defaultDownloadLocation(fileHandleId), recursive=TRUE)
+  scheduleCacheFolderForDeletion(fileHandleId)
+}
+
+scheduleFolderForDeletion<-function(folder) {
+  folderList<-synapseClient:::.getCache("foldersToDelete")
+  folderList[[length(folderList)+1]]<-folder
+  synapseClient:::.setCache("foldersToDelete", folderList)
+}
+
+scheduleCacheFolderForDeletion<-function(fileHandleId) {
+  if (is.null(fileHandleId)) stop("In scheduleCacheFolderForDeletion fileHandleId must not be null")
+  scheduleFolderForDeletion(synapseClient:::defaultDownloadLocation(fileHandleId))
 }
 
 integrationTestMetadataRoundTrip <- function() {
@@ -54,7 +75,8 @@ integrationTestMetadataRoundTrip <- function() {
   
   # now store it
   storedFile<-synStore(file)
-
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
+  
   metadataOnly<-synGet(propertyValue(storedFile, "id"),downloadFile=F)
   metadataOnly<-synapseClient:::synAnnotSetMethod(metadataOnly, "annot", "value")
   storedMetadata<-synStore(metadataOnly, forceVersion=F)
@@ -75,7 +97,6 @@ integrationTestMetadataRoundTrip <- function() {
   # ...whether or not we download the file
   originalVersion<-synGet(propertyValue(storedFile, "id"), version=1, downloadFile=T)
   checkEquals(1, propertyValue(originalVersion, "versionNumber"))
-  
 }
 
 integrationTestGovernanceRestriction <- function() {
@@ -89,6 +110,7 @@ integrationTestGovernanceRestriction <- function() {
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
   storedFile<-synStore(file)
   id<-propertyValue(storedFile, "id")
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
   
   # mock Governance restriction
   myHasUnfulfilledAccessRequirements<-function(id) {TRUE} # return TRUE, i.e. yes, there are unfulfilled access requiremens
@@ -144,6 +166,7 @@ integrationTestRoundtrip <- function()
   
   # now store it
   storedFile<-synStore(file)
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
   
   # check that it worked
   checkTrue(!is.null(storedFile))
@@ -201,6 +224,7 @@ integrationTestRoundtrip <- function()
   touchFile(downloadedFilePathInCache)
   
   updatedFile2 <-synStore(updatedFile, forceVersion=F)
+  scheduleCacheFolderForDeletion(updatedFile2@fileHandle$id)
   # fileHandleId is changed
   checkTrue(fileHandleId!=propertyValue(updatedFile2, "dataFileHandleId"))
   # we are now on version 2
@@ -217,6 +241,7 @@ integrationTestRoundtrip <- function()
   # (make the location unique)
   specifiedLocation<-file.path(tempdir(), "subdir")
   checkTrue(dir.create(specifiedLocation))
+  scheduleFolderForDeletion(specifiedLocation)
   downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation)
   checkEquals(specifiedLocation, dirname(downloadedToSpecified@filePath))
   fp<-downloadedToSpecified@filePath
@@ -255,10 +280,6 @@ integrationTestRoundtrip <- function()
   synapseClient:::synapseDelete(handleUri, service="FILE")
   handleUri<-sprintf("/fileHandle/%s", updatedFile2@fileHandle$id)
   synapseClient:::synapseDelete(handleUri, service="FILE")
-
-  # clean up cache
-  unlink(dirname(downloadedFile@filePath), recursive=TRUE)
-  unlink(dirname(updatedFile2@filePath), recursive=TRUE)
 }
 
 
@@ -271,6 +292,7 @@ integrationTestAddToNewFILEEntity <-
   file<-FileListConstructor(list(parentId=propertyValue(project, "id")))
   file<-addFile(file, filePath)
   storedFile<-storeEntity(file)
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
   
   checkTrue(!is.null(storedFile))
   id<-propertyValue(storedFile, "id")
@@ -321,10 +343,6 @@ integrationTestAddToNewFILEEntity <-
   # clean up downloaded file
   handleUri<-sprintf("/fileHandle/%s", storedFile@fileHandle$id)
   synapseClient:::synapseDelete(handleUri, service="FILE")
-  
-  # clean up cache
-  unlink(dirname(downloadedFile@filePath), recursive=TRUE)
-  
 }
 
 # test that legacy *Entity based methods work on File objects, cont.
@@ -335,12 +353,14 @@ integrationTestReplaceFile<-function() {
     file<-addFile(file, filePath)
     # replace storeEntity with createEntity
     storedFile<-createEntity(file)
+    scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
     
     # now getEntity, add a different file, store, retrieve
     gotEntity<-getEntity(storedFile) # get metadata, don't download file
     newFile<-system.file("DESCRIPTION", package = "synapseClient")
     gotEntity<-addFile(gotEntity, newFile)
     newStoredFile<-storeEntity(gotEntity)
+    scheduleCacheFolderForDeletion(newStoredFile@fileHandle$id)
     
     downloadedFile<-downloadEntity(newStoredFile)
  
@@ -356,9 +376,6 @@ integrationTestReplaceFile<-function() {
     # clean up downloaded file
     handleUri<-sprintf("/fileHandle/%s", newStoredFile@fileHandle$id)
     synapseClient:::synapseDelete(handleUri, service="FILE")
-    
-    # clean up cache
-    unlink(dirname(downloadedFile@filePath), recursive=TRUE)
   }
 
 
@@ -370,6 +387,7 @@ integrationTestLoadEntity<-function() {
   dataObject<-list(a="A", b="B", c="C")
   file<-addObject(file, dataObject, "dataObjectName")
   storedFile<-createEntity(file)
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
   
   loadedEntity<-loadEntity(propertyValue(storedFile, "id"))
   
@@ -384,10 +402,6 @@ integrationTestLoadEntity<-function() {
   # clean up downloaded file
   handleUri<-sprintf("/fileHandle/%s", loadedEntity2@fileHandle$id)
   synapseClient:::synapseDelete(handleUri, service="FILE")
-  
-  # clean up cache
-  unlink(dirname(loadedEntity2@filePath), recursive=TRUE)
-  
 }
 
 integrationTestSerialization<-function() {
@@ -397,6 +411,7 @@ integrationTestSerialization<-function() {
   # note, it does NOT currently work to call file<-File(data, parentId=<pid>)
   propertyValue(file, "parentId")<-propertyValue(project, "id")
   storedFile<-synStore(file)
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
   checkTrue(!is.null(storedFile@filePath))
   id<-propertyValue(storedFile, "id")
   checkTrue(!is.null(id))
@@ -404,10 +419,6 @@ integrationTestSerialization<-function() {
   checkTrue(synapseClient:::hasObjects(retrievedFile))
   retrievedObject<-getObject(retrievedFile, "myData")
   checkEquals(myData, retrievedObject)
-  
-  # clean up file cache
-  unlink(dirname(retrievedFile@filePath), recursive=TRUE)
-  
 }
 
 integrationTestNonFile<-function() {
@@ -557,19 +568,19 @@ integrationTestExternalLink<-function() {
   checkEquals(filePath, storedFile@filePath)
   checkEquals(synapseStore, storedFile@synapseStore)
   
-  # check that cachemap entry does NOT
+  # check that cachemap entry does NOT exist
   fileHandleId<-storedFile@fileHandle$id
   cachePath<-sprintf("%s/.cacheMap", synapseClient:::defaultDownloadLocation(fileHandleId))
   checkTrue(!file.exists(cachePath))
   
   # now download it.  This will pull a copy into the cache
   downloadedFile<-synGet(id)
-  downloadedFilePathInCache<-downloadedFile@filePath
+  scheduleCacheFolderForDeletion(downloadedFile@fileHandle$id)
+  
   checkEquals(id, propertyValue(downloadedFile, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))
   checkEquals(synapseStore, downloadedFile@synapseStore)
   checkTrue(!is.null(downloadedFile@filePath))
   checkEquals(filePath, downloadedFile@fileHandle$externalURL)
-  
 }
 
