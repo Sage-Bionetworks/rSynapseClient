@@ -159,7 +159,11 @@ integrationTestRoundtrip <- function()
   cachePath<-sprintf("%s/.cacheMap", synapseClient:::defaultDownloadLocation(fileHandleId))
   checkTrue(file.exists(cachePath))
   modifiedTimeStamp<-synapseClient:::getFromCacheMap(fileHandleId, filePath)
-  checkTrue(!is.null(modifiedTimeStamp))
+  checkTrue(!is.null(modifiedTimeStamp), 
+    msg=sprintf("1. Looked up %s in .cacheMap file %s and found %s.  Content is\n============\n%s\n============", 
+      filePath, synapseClient:::cacheMapFilePath(fileHandleId), modifiedTimeStamp, 
+      synapseClient:::getCacheMapFileContent(fileHandleId))
+  )
   
   # now download it.  This will pull a new copy into the cache
   downloadedFile<-synGet(id)
@@ -178,7 +182,11 @@ integrationTestRoundtrip <- function()
   
   # test synStore of retrieved entity, no change to file
   modifiedTimeStamp<-synapseClient:::getFromCacheMap(fileHandleId, downloadedFilePathInCache)
-  checkTrue(!is.null(modifiedTimeStamp))
+  checkTrue(!is.null(modifiedTimeStamp), 
+    msg=sprintf("2. Looked up %s in .cacheMap file %s and found %s.  Content is\n============\n%s\n============", 
+      downloadedFilePathInCache, synapseClient:::cacheMapFilePath(fileHandleId), modifiedTimeStamp, 
+      synapseClient:::getCacheMapFileContent(fileHandleId))
+  )
   Sys.sleep(1.0)
   updatedFile <-synStore(downloadedFile, forceVersion=F)
   # the file handle should be the same
