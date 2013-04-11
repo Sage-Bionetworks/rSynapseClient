@@ -158,6 +158,8 @@ getCacheMapFileContent<-function(fileHandleId) {
 # or NULL if there is no entry
 getFromCacheMap<-function(fileHandleId, filePath) {
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
+  # this is necessary to allow Windows paths to work with toJSON/fromJSON
+  filePath<-normalizePath(filePath, winslash="/")
   for (key in names(mapForFileHandleId)) {
     if (key==filePath) return(mapForFileHandleId[[key]]) # i.e. return time stamp
   }
@@ -172,6 +174,8 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
   lockExpiration<-lockFile(cacheMapFile)
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
   record<-list()
+  # this is necessary to allow Windows paths to work with toJSON/fromJSON
+  filePath<-normalizePath(filePath, winslash="/")
   record[[filePath]]<-.formatAsISO8601(timestamp)
   mapForFileHandleId<-modifyList(mapForFileHandleId, as.list(record))
   cacheRecordJson<-toJSON(mapForFileHandleId)

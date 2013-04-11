@@ -35,12 +35,13 @@ integrationTestCacheMapRoundTrip <- function() {
   filePath<- system.file("NAMESPACE", package = "synapseClient")
   filePath2<- system.file("DESCRIPTION", package = "synapseClient")
   
+ 
   synapseClient:::addToCacheMap(fileHandleId, filePath)
   synapseClient:::addToCacheMap(fileHandleId, filePath2)
   content<-synapseClient:::getCacheMapFileContent(fileHandleId)
   checkEquals(2, length(content))
-  checkTrue(any(filePath==names(content)))
-  checkTrue(any(filePath2==names(content)))
+  checkTrue(any(normalizePath(filePath, winslash="/")==names(content)))
+  checkTrue(any(normalizePath(filePath2, winslash="/")==names(content)))
   checkEquals(synapseClient:::.formatAsISO8601(file.info(filePath)$mtime), synapseClient:::getFromCacheMap(fileHandleId, filePath))
   checkEquals(synapseClient:::.formatAsISO8601(file.info(filePath2)$mtime), synapseClient:::getFromCacheMap(fileHandleId, filePath2))
   checkTrue(synapseClient:::localFileUnchanged(fileHandleId, filePath))
@@ -182,12 +183,6 @@ integrationTestRoundtrip <- function()
   cachePath<-sprintf("%s/.cacheMap", synapseClient:::defaultDownloadLocation(fileHandleId))
   checkTrue(file.exists(cachePath))
   modifiedTimeStamp<-synapseClient:::getFromCacheMap(fileHandleId, filePath)
-  if (is.null(modifiedTimeStamp)) {
-    message(sprintf("1. Looked up %s in .cacheMap file %s and found %s.  Content is\n============\n%s\n============", 
-      filePath, synapseClient:::cacheMapFilePath(fileHandleId), modifiedTimeStamp, 
-      synapseClient:::getCacheMapFileContent(fileHandleId)))
-    
-  }
   checkTrue(!is.null(modifiedTimeStamp))
   
   # now download it.  This will pull a new copy into the cache
@@ -207,12 +202,6 @@ integrationTestRoundtrip <- function()
   
   # test synStore of retrieved entity, no change to file
   modifiedTimeStamp<-synapseClient:::getFromCacheMap(fileHandleId, downloadedFilePathInCache)
-  if (is.null(modifiedTimeStamp)) {
-    message(sprintf("2. Looked up %s in .cacheMap file %s and found %s.  Content is\n============\n%s\n============", 
-        downloadedFilePathInCache, synapseClient:::cacheMapFilePath(fileHandleId), modifiedTimeStamp, 
-        synapseClient:::getCacheMapFileContent(fileHandleId)))
-    
-  }
   checkTrue(!is.null(modifiedTimeStamp))
   Sys.sleep(1.0)
   updatedFile <-synStore(downloadedFile, forceVersion=F)
