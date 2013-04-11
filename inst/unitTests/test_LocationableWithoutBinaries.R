@@ -1,4 +1,4 @@
-# TODO: Add comment
+#
 #
 # Author: furia
 ###############################################################################
@@ -18,21 +18,6 @@
     detach(name, character.only = TRUE)
     synapseClient:::.deleteCache('detachMe')
   }
-}
-
-
-unitTestNoArgConstructor <-
-  function()
-{
-  options(warn=1)
-  warning("not yet implemented")
-}
-
-unitTestConstructorArchivePath <-
-    function()
-{
-  options(warn=1)
-  warning("not yet implemented")
 }
 
 unitTestAddFile <-

@@ -1,4 +1,4 @@
-# TODO: Add comment
+#
 # 
 # Author: furia
 ###############################################################################
@@ -293,6 +293,13 @@ updateEntityMethod<-function(entity, forceVersion)
     if (missing("forceVersion")) forceVersion=FALSE
     if (forceVersion) {
       updateUri <-sprintf("%s/version", updateUri)
+      # make sure the version label changes!
+      versionLabel<-propertyValue(entity, "versionLabel")
+      # if the version is the string version of the numeric version field...
+      if (propertyValue(entity,"versionNumber")==versionLabel) {
+        # ... then increment it
+        propertyValue(entity, "versionLabel") <- sprintf("%d", 1+as.numeric(versionLabel))
+      }
     }
     
     generatingActivity <- generatedBy(entity)
@@ -331,12 +338,9 @@ updateEntityMethod<-function(entity, forceVersion)
 setMethod(
   f = "updateEntity",
   signature = signature("Entity"),
-#  signature = signature("Entity", "missing"),
   definition = function(entity) {updateEntityMethod(entity)}
 )
-  
-  
-
+ 
 setMethod(
   f = "downloadEntity",
   signature = signature("Entity","missing"),

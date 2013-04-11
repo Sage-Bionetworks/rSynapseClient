@@ -1,4 +1,4 @@
-# TODO: Add comment
+#
 #
 # Author: mfuria
 ###############################################################################
@@ -213,49 +213,11 @@ unitTestAddFile <-
   checkTrue(all(own$files %in% c(basename(file), "foo.bar")))
 }
 
-
-unitTestLoadObjectsFromDisk <-
-    function()
-{
-  options(warn=1)
-  warning("notYetImplemented")
-}
-
-unitTestLoadObjectsMaskedByFileObjects <-
-    function()
-{
-  options(warn=1)
-  warning("notYetImplemented")
-}
-
-unitTestShow <-
-    function()
-{
-  options(warn=1)
-  warning("notYetImplemented")
-}
-
-
 ##
 ##
 ## Double check that super-class methods all still work
 ##
 ##
-
-
-unitTestNoArgConstructor <-
-    function()
-{
-  options(warn=1)
-  warning("not yet implemented")
-}
-
-unitTestConstructorArchivePath <-
-    function()
-{
-  options(warn=1)
-  warning("not yet implemented")
-}
 
 unitTestAddFile <-
     function()

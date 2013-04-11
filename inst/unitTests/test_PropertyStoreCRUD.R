@@ -1,4 +1,4 @@
-# TODO: Add comment
+#
 # 
 # Author: furia
 ###############################################################################
@@ -114,18 +114,6 @@ unitTestDeleteProperty <-
   checkEquals(length(synapseClient:::propertyNames(ps)), 2L)
   checkTrue(all(c("aProp", "aProp2") %in% synapseClient:::propertyNames(ps)))
   
-}
-
-unitTestConstructors <-
-  function()
-{
-  warning("need tests for PropertyStore Constructors")
-}
-
-unitTestPassByCopy <-
-  function()
-{
-  warning("need tests for PropertyStore Pass by copy")
 }
 
 

@@ -1,4 +1,4 @@
-# TODO: Add comment
+#
 #
 # Author: furia
 ###############################################################################
@@ -12,8 +12,15 @@ setGeneric(
 
 setGeneric(
   name="File",
-  def = function(filePathParam, synapseStoreParam, ...) {
+  def = function(path, synapseStore, ...) {
     standardGeneric("File")
+  }
+)
+
+setGeneric(
+  name="FileListConstructor",
+  def = function(propertiesList) {
+    standardGeneric("FileListConstructor")
   }
 )
 
@@ -816,7 +823,7 @@ setGeneric(
 
 setGeneric(
   name="usedListEntry",
-  def = function(listEntry) {
+  def = function(listEntry, ...) {
     standardGeneric("usedListEntry")
   }
 )

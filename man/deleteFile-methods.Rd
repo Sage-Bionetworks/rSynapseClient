@@ -18,5 +18,11 @@ Delete the specified file from the FileCache
 Delete the specified file from the SynapseLocationOwner
 }
 
+\item{\code{signature(entity = "File", file = "character")}}{
+unsupported
+}
+
+
+
 }}
 \keyword{methods}
