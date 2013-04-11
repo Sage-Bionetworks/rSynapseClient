@@ -109,6 +109,22 @@ integrationTestGovernanceRestriction <- function() {
 
 }
 
+# TODO This can fail for binary files so change 'readLines','writeLines' to something else
+# utility to change the timestamp on a file
+touchFile<-function(location) {
+  orginalTimestamp<-synapseClient:::lastModifiedTimestamp(location)
+  Sys.sleep(1.0) # make sure new timestamp will be different from original
+  connection<-file(location)
+  result<-paste(readLines(connection), collapse="\n")
+  close(connection)
+  connection<-file(location)
+  writeLines(result, connection)
+  close(connection)  
+  # check that we indeed modified the time stamp on the file
+  newTimestamp<-synapseClient:::lastModifiedTimestamp(location)
+  checkTrue(newTimestamp!=orginalTimestamp)
+}
+
 #
 # This code exercises the file services underlying upload/download to/from an entity
 #
@@ -174,15 +190,7 @@ integrationTestRoundtrip <- function()
 
   #  test synStore of retrieved entity, after changing file
   # modify the file
-  connection<-file(downloadedFilePathInCache)
-  result<-paste(readLines(connection), collapse="\n")
-  close(connection)
-  connection<-file(downloadedFilePathInCache)
-  writeLines(result, connection)
-  close(connection)  
-  # check that we indeed modified the time stamp on the file
-  newTimestamp<-synapseClient:::.formatAsISO8601(synapseClient:::lastModifiedTimestamp(downloadedFilePathInCache))
-  checkTrue(newTimestamp!=modifiedTimeStamp)
+  touchFile(downloadedFilePathInCache)
   
   updatedFile2 <-synStore(updatedFile, forceVersion=F)
   # fileHandleId is changed
@@ -201,11 +209,38 @@ integrationTestRoundtrip <- function()
   # (make the location unique)
   specifiedLocation<-file.path(tempdir(), "subdir")
   checkTrue(dir.create(specifiedLocation))
-  downloadedToSpecified<-synGet(id)
-  checkTrue(file.exists(file.path(specifiedLocation, "NAMESPACE")))
-  TODO
+  downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation)
+  checkEquals(specifiedLocation, dirname(downloadedToSpecified@filePath))
+  fp<-downloadedToSpecified@filePath
+  checkEquals(fp, file.path(specifiedLocation, basename(filePath)))
+  checkTrue(file.exists(fp))
+  touchFile(fp)
+
+  timestamp<-synapseClient:::lastModifiedTimestamp(fp)
   
-  # delete the file
+  # download again with the 'keep.local' choice
+  downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation, ifcollision="keep.local")
+  # file path is the same, timestamp should not change
+  Sys.sleep(1.0)
+  checkEquals(downloadedToSpecified@filePath, fp)
+  checkEquals(timestamp, synapseClient:::lastModifiedTimestamp(fp))
+  
+  # download again with the 'overwrite' choice
+  downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation, ifcollision="overwrite.local")
+  checkEquals(downloadedToSpecified@filePath, fp)
+  # timestamp SHOULD change
+  checkTrue(timestamp!=synapseClient:::lastModifiedTimestamp(fp)) 
+
+  touchFile(fp)
+  Sys.sleep(1.0)
+  # download with the 'keep both' choice (the default)
+  downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation)
+  # there should be a second file
+  checkTrue(downloadedToSpecified@filePath!=fp)
+  # it IS in the specified directory
+  checkEquals(specifiedLocation, dirname(downloadedToSpecified@filePath))
+  
+  # delete the cached file
   deleteEntity(downloadedFile)
   # clean up downloaded file
   handleUri<-sprintf("/fileHandle/%s", storedFile@fileHandle$id)
@@ -492,5 +527,41 @@ integrationTestProvenance2<-function() {
   checkTrue(foundURL)
   checkTrue(foundProject)
   checkTrue(foundExecuted)
+}
+
+integrationTestExternalLink<-function() {
+  project <- synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  
+  # create a file to be uploaded
+  synapseStore<-FALSE
+  filePath<-"http://dilbert.com/index.html"
+  file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
+  
+  # now store it
+  storedFile<-synStore(file)
+  
+  # check that it worked
+  checkTrue(!is.null(storedFile))
+  id<-propertyValue(storedFile, "id")
+  checkTrue(!is.null(id))
+  checkEquals(propertyValue(project, "id"), propertyValue(storedFile, "parentId"))
+  checkEquals(filePath, storedFile@filePath)
+  checkEquals(synapseStore, storedFile@synapseStore)
+  
+  # check that cachemap entry does NOT
+  fileHandleId<-storedFile@fileHandle$id
+  cachePath<-sprintf("%s/.cacheMap", synapseClient:::defaultDownloadLocation(fileHandleId))
+  checkTrue(!file.exists(cachePath))
+  
+  # now download it.  This will pull a copy into the cache
+  downloadedFile<-synGet(id)
+  downloadedFilePathInCache<-downloadedFile@filePath
+  checkEquals(id, propertyValue(downloadedFile, "id"))
+  checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))
+  checkEquals(synapseStore, downloadedFile@synapseStore)
+  checkTrue(!is.null(downloadedFile@filePath))
+  checkEquals(filePath, downloadedFile@fileHandle$externalURL)
+  
 }
 
