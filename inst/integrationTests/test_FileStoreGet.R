@@ -148,6 +148,10 @@ touchFile<-function(location) {
   checkTrue(newTimestamp!=orginalTimestamp)
 }
 
+checkFilesEqual<-function(file1, file2) {
+  checkEquals(normalizePath(file1, winslash="/"), normalizePath(file2, winslash="/"))
+}
+
 #
 # This code exercises the file services underlying upload/download to/from an entity
 #
@@ -236,7 +240,7 @@ integrationTestRoundtrip <- function()
   checkTrue(dir.create(specifiedLocation))
   scheduleFolderForDeletion(specifiedLocation)
   downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation)
-  checkEquals(specifiedLocation, dirname(downloadedToSpecified@filePath))
+  checkFilesEqual(specifiedLocation, dirname(downloadedToSpecified@filePath))
   fp<-downloadedToSpecified@filePath
   checkEquals(fp, file.path(specifiedLocation, basename(filePath)))
   checkTrue(file.exists(fp))
@@ -264,7 +268,7 @@ integrationTestRoundtrip <- function()
   # there should be a second file
   checkTrue(downloadedToSpecified@filePath!=fp)
   # it IS in the specified directory
-  checkEquals(specifiedLocation, dirname(downloadedToSpecified@filePath))
+  checkFilesEqual(specifiedLocation, dirname(downloadedToSpecified@filePath))
   
   # delete the cached file
   deleteEntity(downloadedFile)

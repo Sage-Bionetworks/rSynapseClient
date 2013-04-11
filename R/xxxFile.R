@@ -140,7 +140,7 @@ lastModifiedTimestamp<-function(filePath) {
 
 defaultDownloadLocation<-function(fileHandleId) {
   # TODO:  insert an intermediate subfolder?
-  sprintf("%s/%s", synapseCacheDir(), fileHandleId)
+  file.path(synapseCacheDir(), fileHandleId)
 }
 
 cacheMapFilePath<-function(fileHandleId) {
@@ -285,10 +285,8 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T) {
   file
 }
 
-createFilePath<-function(folder, filename) {sprintf("%s/%s", folder, filename)}
-
 fileExists<-function(folder, filename) {
-  file.exists(createFilePath(folder, filename))
+  file.exists(file.path(folder, filename))
 }
 
 generateUniqueFileName<-function(folder, filename) {
@@ -387,7 +385,7 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
     } else {
       if (file.exists(downloadLocation) && !file.info(downloadLocation)$isdir) stop(sprintf("%s is not a folder", downloadLocation))
     }
-    filePath<-createFilePath(downloadLocation, fileHandle$fileName)
+    filePath<-file.path(downloadLocation, fileHandle$fileName)
     if (file.exists(filePath)) {
       if (localFileUnchanged(fileHandle$id, filePath)) {
         # no need to download, 'filePath' is now the path to the local copy of the file
