@@ -94,7 +94,7 @@ unitTestFileUtilities<-function() {
   checkTrue(!synapseClient:::isExternalFileHandle(file@fileHandle))
   checkTrue(!synapseClient:::fileHasFileHandleId(file))
   checkTrue(!synapseClient:::fileHasFilePath(file))
-  file@fileHandle<-list(concreteType="ExternalFileHandle")
+  file@fileHandle<-list(concreteType="org.sagebionetworks.repo.model.file.ExternalFileHandle")
   file@fileHandle$id<-"1234"
   file@filePath<-"/path/to/file"
   checkTrue(synapseClient:::isExternalFileHandle(file@fileHandle))
@@ -110,7 +110,7 @@ unitTestValidateFile<-function() {
   result<-try(synapseClient:::validdateFile(file), silent=T)
   checkEquals("try-error", class(result))
   
-  file@fileHandle<-list(concreteType="ExternalFileHandle")
+  file@fileHandle<-list(concreteType="org.sagebionetworks.repo.model.file.ExternalFileHandle")
   file@synapseStore<-TRUE
   result<-try(synapseClient:::validdateFile(file), silent=T)
   checkEquals("try-error", class(result))
