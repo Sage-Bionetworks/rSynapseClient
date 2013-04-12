@@ -500,6 +500,7 @@ integrationTestProvenance2<-function() {
           )
       )
   )
+  activity<-storeEntity(activity)
   
   storedFolder<-synStore(folder, activity=activity)
   id<-propertyValue(storedFolder, "id")
@@ -508,6 +509,8 @@ integrationTestProvenance2<-function() {
   # make sure that using an Activity elsewhere doesn't cause a problem
   anotherFolder<-Folder(name="another folder", parentId=pid)
   anotherFolder<-synStore(anotherFolder, activity=activity)
+  
+  checkEquals(propertyValue(generatedBy(storedFolder), "id"), propertyValue(generatedBy(anotherFolder), "id"))
   
   # now retrieve the first folder and check the provenance
   retrievedFolder<-synGet(id)

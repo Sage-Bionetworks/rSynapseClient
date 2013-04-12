@@ -368,6 +368,28 @@ integrationTestUpdateS4EntityWithUsed <-
 	checkTrue(is.null(used(updatedProject)))
 }
 
+# this is the test to show that SYNR-327 is fixed
+# use the same activity in two different entities
+integrationTestTwoEntitiesOneActivity<-function() {
+  ## Create Project
+  project <- Project()
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  pid<-propertyValue(createdProject, "id")
+  foo<-Folder(name="foo", parentId=pid)
+  foo<-storeEntity(foo)
+  bar<-Folder(name="bar", parentId=pid)
+  bar<-storeEntity(bar)
+  
+  activity<-Activity(list(name="foobarActivity"))
+  activity<-storeEntity(activity)
+
+  generatedBy(foo)<-activity
+  generatedBy(bar)<-activity
+  foo<-storeEntity(foo)
+  bar<-storeEntity(bar) 
+}
+
 integrationTestDeleteEntity <- 
   function()
 {
