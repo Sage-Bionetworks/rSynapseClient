@@ -193,7 +193,9 @@ setMethod(
     createUri = "/entity"
     generatingActivity <- generatedBy(entity)
     if (!is.null(generatingActivity)) {
-      generatingActivity <- storeEntity(generatingActivity)
+      if(is.null(propertyValue(generatingActivity, "id"))) {
+        generatingActivity <-createEntity(generatingActivity)
+      }
       createUri <- sprintf("%s?generatedBy=%s", createUri, propertyValue(generatingActivity, "id"))
     }
     
@@ -304,7 +306,9 @@ updateEntityMethod<-function(entity, forceVersion)
     
     generatingActivity <- generatedBy(entity)
     if (!is.null(generatingActivity)) {
-      generatingActivity <-storeEntity(generatingActivity)
+      if(is.null(propertyValue(generatingActivity, "id"))) {
+        generatingActivity <-createEntity(generatingActivity)
+      }
       updateUri <- sprintf("%s?generatedBy=%s", updateUri, propertyValue(generatingActivity, "id"))
     }
     
