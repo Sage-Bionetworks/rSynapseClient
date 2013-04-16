@@ -462,3 +462,21 @@ integrationTestReplaceAnnotations <-
   checkTrue(all(c("annotation3", "annotation4", "annotation5") %in% annotationNames(createdProject)))
 }
 
+integrationTestFindExistingEntity <- function(){
+  ## Create Project
+  project <- Project(name="integrationTestFindExistingEntity")
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  pid<-propertyValue(createdProject, "id")
+  
+  folder<-Folder(name="testName", parentId=pid)
+  folder<-synStore(folder)
+  
+  result<-synapseClient:::findExistingEntity("integrationTestFindExistingEntity")
+  checkEquals(pid, result$id)
+  
+  result<-synapseClient:::findExistingEntity(name="testName", parentId=pid)
+  checkEquals(propertyValue(folder, "id"), result$id)
+  
+}
+

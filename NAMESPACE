@@ -8,14 +8,16 @@ importFrom(utils, edit, compareVersion)
 ## package has a dynamic library
 useDynLib(synapseClient)
 
-export(onWeb) ##,attach, detach)
-
-## public methods introduced with v 0.22, ...
+## add'l commands defined in C-4
 export(
   File,
   synGet,
-  synStore
+  synStore,
+  getFileLocation
 )
+
+export(onWeb)
+
 
 ## S3 utility methods
 export(

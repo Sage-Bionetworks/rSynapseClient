@@ -91,6 +91,8 @@ integrationTestMetadataRoundTrip <- function() {
   
   retrievedMetadata<-synGet(propertyValue(storedFile, "id"),downloadFile=F)
   checkEquals(2, propertyValue(retrievedMetadata, "versionNumber"))
+  # no file location since we haven't downloaded anything
+  checkEquals(character(0), getFileLocation(retrievedMetadata))
   
   # of course we should still be able to get the original version
   originalVersion<-synGet(propertyValue(storedFile, "id"), version=1, downloadFile=F)
@@ -98,6 +100,8 @@ integrationTestMetadataRoundTrip <- function() {
   # ...whether or not we download the file
   originalVersion<-synGet(propertyValue(storedFile, "id"), version=1, downloadFile=T)
   checkEquals(1, propertyValue(originalVersion, "versionNumber"))
+  # file location is NOT missing
+  checkTrue(length(getFileLocation(originalVersion))>0)
 }
 
 integrationTestGovernanceRestriction <- function() {
@@ -119,8 +123,9 @@ integrationTestGovernanceRestriction <- function() {
   assignInNamespace("hasUnfulfilledAccessRequirements", myHasUnfulfilledAccessRequirements, "synapseClient")
   synapseClient:::.setCache("hasUnfulfilledAccessRequirementsIsOverRidden", TRUE)
   
+  # TODO need to resolve the case in which downloadFile=F and load=F but is an external link, so we need the URL
   # try synGet with downloadFile=F, load=F, should be OK
-  synGet(id, downloadFile=F, load=F)
+  # synGet(id, downloadFile=F, load=F)
   
   # try synGet with downloadFile=T, should NOT be OK
   result<-try(synGet(id, downloadFile=T, load=F), silent=TRUE)
@@ -132,20 +137,25 @@ integrationTestGovernanceRestriction <- function() {
 
 }
 
-# TODO This can fail for binary files so change 'readLines','writeLines' to something else
 # utility to change the timestamp on a file
 touchFile<-function(location) {
   orginalTimestamp<-synapseClient:::lastModifiedTimestamp(location)
   Sys.sleep(1.0) # make sure new timestamp will be different from original
   connection<-file(location)
-  result<-paste(readLines(connection), collapse="\n")
+  # result<-paste(readLines(connection), collapse="\n")
+  originalSize<-file.info(location)$size
+  originalMD5<-tools::md5sum(location)
+  result<-readChar(connection, originalSize+1)
   close(connection)
   connection<-file(location)
-  writeLines(result, connection)
+  # writeLines(result, connection)
+  writeChar(result, connection, eos=NULL)
   close(connection)  
   # check that we indeed modified the time stamp on the file
   newTimestamp<-synapseClient:::lastModifiedTimestamp(location)
   checkTrue(newTimestamp!=orginalTimestamp)
+  # check that the file has not been changed
+  checkEquals(originalMD5, tools::md5sum(location))
 }
 
 checkFilesEqual<-function(file1, file2) {
@@ -160,7 +170,10 @@ integrationTestRoundtrip <- function()
   # create a Project
   project <- synapseClient:::.getCache("testProject")
   checkTrue(!is.null(project))
-  
+  roundTripIntern(project)
+}
+
+roundTripIntern<-function(project) {  
   # create a file to be uploaded
   filePath<- tempfile()
   file.copy(system.file("NAMESPACE", package = "synapseClient"), filePath)
@@ -179,7 +192,7 @@ integrationTestRoundtrip <- function()
   checkTrue(!is.null(id))
   checkEquals(propertyValue(project, "id"), propertyValue(storedFile, "parentId"))
   checkEquals(propertyValue(file, "name"), propertyValue(storedFile, "name"))
-  checkEquals(filePath, storedFile@filePath)
+  checkEquals(filePath, getFileLocation(storedFile))
   checkEquals(synapseStore, storedFile@synapseStore)
   
   # check that cachemap entry exists
@@ -191,15 +204,15 @@ integrationTestRoundtrip <- function()
   
   # now download it.  This will pull a new copy into the cache
   downloadedFile<-synGet(id)
-  downloadedFilePathInCache<-downloadedFile@filePath
+  downloadedFilePathInCache<-getFileLocation(downloadedFile)
   checkEquals(id, propertyValue(downloadedFile, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))
   checkEquals(synapseStore, downloadedFile@synapseStore)
-  checkTrue(!is.null(downloadedFile@filePath))
+  checkTrue(length(getFileLocation(downloadedFile))>0)
   
   # compare MD-5 checksum of filePath and downloadedFile@filePath
   origChecksum<- as.character(tools::md5sum(filePath))
-  downloadedChecksum <- as.character(tools::md5sum(downloadedFile@filePath))
+  downloadedChecksum <- as.character(tools::md5sum(getFileLocation(downloadedFile)))
   checkEquals(origChecksum, downloadedChecksum)
   
   checkEquals(storedFile@fileHandle, downloadedFile@fileHandle)
@@ -240,8 +253,8 @@ integrationTestRoundtrip <- function()
   checkTrue(dir.create(specifiedLocation))
   scheduleFolderForDeletion(specifiedLocation)
   downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation)
-  checkFilesEqual(specifiedLocation, dirname(downloadedToSpecified@filePath))
-  fp<-downloadedToSpecified@filePath
+  checkFilesEqual(specifiedLocation, dirname(getFileLocation(downloadedToSpecified)))
+  fp<-getFileLocation(downloadedToSpecified)
   checkEquals(fp, file.path(specifiedLocation, basename(filePath)))
   checkTrue(file.exists(fp))
   touchFile(fp)
@@ -252,12 +265,12 @@ integrationTestRoundtrip <- function()
   downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation, ifcollision="keep.local")
   # file path is the same, timestamp should not change
   Sys.sleep(1.0)
-  checkEquals(downloadedToSpecified@filePath, fp)
+  checkEquals(getFileLocation(downloadedToSpecified), fp)
   checkEquals(timestamp, synapseClient:::lastModifiedTimestamp(fp))
   
   # download again with the 'overwrite' choice
   downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation, ifcollision="overwrite.local")
-  checkEquals(downloadedToSpecified@filePath, fp)
+  checkEquals(getFileLocation(downloadedToSpecified), fp)
   # timestamp SHOULD change
   checkTrue(timestamp!=synapseClient:::lastModifiedTimestamp(fp)) 
 
@@ -266,9 +279,9 @@ integrationTestRoundtrip <- function()
   # download with the 'keep both' choice (the default)
   downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation)
   # there should be a second file
-  checkTrue(downloadedToSpecified@filePath!=fp)
+  checkTrue(getFileLocation(downloadedToSpecified)!=fp)
   # it IS in the specified directory
-  checkFilesEqual(specifiedLocation, dirname(downloadedToSpecified@filePath))
+  checkFilesEqual(specifiedLocation, dirname(getFileLocation(downloadedToSpecified)))
   
   # delete the cached file
   deleteEntity(downloadedFile)
@@ -296,7 +309,7 @@ integrationTestAddToNewFILEEntity <-
   checkTrue(!is.null(id))
   checkEquals(propertyValue(project, "id"), propertyValue(storedFile, "parentId"))
   checkEquals(propertyValue(file, "name"), propertyValue(storedFile, "name"))
-  checkEquals(filePath, storedFile@filePath)
+  checkEquals(filePath, getFileLocation(storedFile))
   checkEquals(TRUE, storedFile@synapseStore) # this is the default
   checkTrue(!is.null(propertyValue(storedFile, "dataFileHandleId")))
   
@@ -308,7 +321,7 @@ integrationTestAddToNewFILEEntity <-
   checkEquals(propertyValue(project, "id"), propertyValue(gotEntity, "parentId"))
   checkEquals(propertyValue(file, "name"), propertyValue(gotEntity, "name"))
   checkTrue(!is.null(propertyValue(gotEntity, "dataFileHandleId")))
-  checkTrue(length(gotEntity@filePath)==0) # empty since it hasn't been downloaded
+  checkTrue(length(getFileLocation(gotEntity))==0) # empty since it hasn't been downloaded
   
   # test update of metadata
   annotValue(gotEntity, "foo")<-"bar"
@@ -320,20 +333,20 @@ integrationTestAddToNewFILEEntity <-
   checkEquals(id, propertyValue(downloadedFile, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))
   checkEquals(TRUE, downloadedFile@synapseStore) # this is the default
-  checkTrue(!is.null(downloadedFile@filePath))
+  checkTrue(!is.null(getFileLocation(downloadedFile)))
   
   # compare MD-5 checksum of filePath and downloadedFile@filePath
   origChecksum<- as.character(tools::md5sum(filePath))
-  downloadedChecksum <- as.character(tools::md5sum(downloadedFile@filePath))
+  downloadedChecksum <- as.character(tools::md5sum(getFileLocation(downloadedFile)))
   checkEquals(origChecksum, downloadedChecksum)
   
   checkEquals(storedFile@fileHandle, downloadedFile@fileHandle)
   
   # check that downloading a second time doesn't retrieve again
-  timeStamp<-synapseClient:::lastModifiedTimestamp(downloadedFile@filePath)
+  timeStamp<-synapseClient:::lastModifiedTimestamp(getFileLocation(downloadedFile))
   Sys.sleep(1.0)
   downloadedFile<-downloadEntity(id)
-  checkEquals(timeStamp, synapseClient:::lastModifiedTimestamp(downloadedFile@filePath))
+  checkEquals(timeStamp, synapseClient:::lastModifiedTimestamp(getFileLocation(downloadedFile)))
  
   # delete the file
   deleteEntity(downloadedFile)
@@ -363,7 +376,7 @@ integrationTestReplaceFile<-function() {
  
     # compare MD-5 checksum of filePath and downloadedFile@filePath
     origChecksum<- as.character(tools::md5sum(newFile))
-    downloadedChecksum <- as.character(tools::md5sum(downloadedFile@filePath))
+    downloadedChecksum <- as.character(tools::md5sum(getFileLocation(downloadedFile)))
     checkEquals(origChecksum, downloadedChecksum)
     
     checkEquals(newStoredFile@fileHandle, downloadedFile@fileHandle)
@@ -409,7 +422,7 @@ integrationTestSerialization<-function() {
   propertyValue(file, "parentId")<-propertyValue(project, "id")
   storedFile<-synStore(file)
   scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
-  checkTrue(!is.null(storedFile@filePath))
+  checkTrue(!is.null(getFileLocation(storedFile)))
   id<-propertyValue(storedFile, "id")
   checkTrue(!is.null(id))
   retrievedFile<-synGet(id, load=T)
@@ -565,13 +578,18 @@ integrationTestExternalLink<-function() {
   id<-propertyValue(storedFile, "id")
   checkTrue(!is.null(id))
   checkEquals(propertyValue(project, "id"), propertyValue(storedFile, "parentId"))
-  checkEquals(filePath, storedFile@filePath)
+  checkEquals(filePath, getFileLocation(storedFile))
   checkEquals(synapseStore, storedFile@synapseStore)
   
   # check that cachemap entry does NOT exist
   fileHandleId<-storedFile@fileHandle$id
   cachePath<-sprintf("%s/.cacheMap", synapseClient:::defaultDownloadLocation(fileHandleId))
   checkTrue(!file.exists(cachePath))
+  
+  # retrieve the metadata (no download)
+  metadataOnly<-synGet(id, downloadFile=FALSE)
+  # no file path when retrieving only metadata
+  checkEquals(character(0), getFileLocation(metadataOnly))
   
   # now download it.  This will pull a copy into the cache
   downloadedFile<-synGet(id)
@@ -580,7 +598,8 @@ integrationTestExternalLink<-function() {
   checkEquals(id, propertyValue(downloadedFile, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))
   checkEquals(synapseStore, downloadedFile@synapseStore)
-  checkTrue(!is.null(downloadedFile@filePath))
+  # no file path when retrieving only metadata
+  checkEquals(character(0), getFileLocation(metadataOnly))
   checkEquals(filePath, downloadedFile@fileHandle$externalURL)
 }
 

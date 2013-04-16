@@ -10,7 +10,8 @@ synapseDelete <-
     entity, 
     curlHandle=getCurlHandle(), 
     anonymous=FALSE, 
-    opts = .getCache("curlOpts")
+    opts = .getCache("curlOpts"),
+    checkHttpStatus=T
 )
 {
   ## constants
@@ -24,7 +25,8 @@ synapseDelete <-
       requestMethod = kMethod, 
       curlHandle = curlHandle, 
       anonymous = anonymous,  
-      opts = opts
+      opts = opts,
+      httpStatus
     )
   }else{
     .synapseGetDelete(uri = uri, 
@@ -32,7 +34,8 @@ synapseDelete <-
       service = service,
       curlHandle = curlHandle, 
       anonymous = anonymous, 
-      opts = opts
+      opts = opts,
+      checkHttpStatus=checkHttpStatus
     )
   }
 }

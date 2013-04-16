@@ -187,44 +187,79 @@ setMethod(
 setMethod(
   f = "createEntity",
   signature = "Entity",
-  definition = function(entity){
-    oldAnnots <- entity@annotations
-    
-    createUri = "/entity"
-    generatingActivity <- generatedBy(entity)
-    if (!is.null(generatingActivity)) {
-      if(is.null(propertyValue(generatingActivity, "id"))) {
-        generatingActivity <-createEntity(generatingActivity)
-      }
-      createUri <- sprintf("%s?generatedBy=%s", createUri, propertyValue(generatingActivity, "id"))
-    }
-    
-    entity <- as.list.SimplePropertyOwner(entity)
-    entity <- getEntityInstance(synapsePost(createUri, entity))
-    # create the entity in Synapse and get back the id
-    annots <- getAnnotations(entity$properties$id)
-    
-    # merge annotations from input variable into 'annots'
-    for (n in annotationNames(oldAnnots)) {
-      annotValue(annots, n) <- annotValue(oldAnnots, n)
-    }
-    
-    if(length(annotationNames(annots)) > 0L){
-      annots <- updateEntity(annots)
-      propertyValue(annots, "id") <- entity$properties$id
-    }
-    entity$properties$etag <- propertyValue(annots, "etag")
-    
-    ## store the annotations
-    entity@annotations <- annots
-    entity@generatedBy <- generatingActivity
-    
-    ## store the updated entity to the file cache
-    cacheEntity(entity)
-    
-    entity
-  }
+  definition = function(entity){createEntityMethod(entity)}
 )
+
+# return the metadata (as a list) for the existing entity having the 
+# given name and parentId where parentId may be null
+# error is thrown if zero or if more than one entity are returned
+findExistingEntity<-function(name, parentId=NULL) {
+  if (is.null(parentId))  parentId<-"syn4489"
+  result<-synapseQuery(sprintf("select id from entity where name==\"%s\" and parentId==\"%s\"", name, parentId))
+  if (is.null(result)) stop(sprintf("Cannot find entity with name %s and parent %s.", name, parentId))
+  if (nrow(result)>1) stop(sprintf("Expected one but found %d entities with name %s and parent %s.", nrow(result), name, parentId))
+  entityId<-result[1,1]
+  synapseGet(.generateEntityUri(entityId))
+}
+
+createEntityMethod<-function(entity, createOrUpdate) {
+  if (missing("createOrUpdate")) createOrUpdate<-FALSE
+  
+  oldAnnots <- entity@annotations
+  
+  createUri = "/entity"
+  generatingActivity <- generatedBy(entity)
+  if (!is.null(generatingActivity)) {
+    if(is.null(propertyValue(generatingActivity, "id"))) {
+      generatingActivity <-createEntity(generatingActivity)
+    }
+    createUri <- sprintf("%s?generatedBy=%s", createUri, propertyValue(generatingActivity, "id"))
+  }
+  
+  entity <- as.list.SimplePropertyOwner(entity)
+
+  if (createOrUpdate) {
+    curlHandle=getCurlHandle()
+    entityAsList<-synapsePost(createUri, entity, curlHandle=curlHandle)
+    # is it a 409 response?  If so, the entity already exists
+    curlInfo <- .getCurlInfo(curlHandle)
+    if (curlInfo$response.code==409) {
+      # retrieve the object
+      existingObject<-findExistingEntity(entity$id, entity$parentId)
+      # apply certain properties
+      # TODO would it be better to specify the omit-list rather than the include-list?
+      propertiesToTransfer<-c("description")
+      for (propName in propertiesToTransfer) {
+        entityProp<-propertyValue(entity, propName)
+        if (!is.null(entityProp)) propertyValue(existingEntity, propName)<-entityProp
+      }
+    } else {
+      .checkCurlResponse(curlHandle)
+    }
+  } else {
+    entityAsList<-synapsePost(createUri, entity)
+  }
+  entity <- getEntityInstance(entityAsList)
+  # create the entity in Synapse and get back the id
+  annots <- getAnnotations(entity$properties$id)
+  
+  # merge annotations from input variable into 'annots'
+  for (n in annotationNames(oldAnnots)) {
+    annotValue(annots, n) <- annotValue(oldAnnots, n)
+  }
+  
+  if(length(annotationNames(annots)) > 0L){
+    annots <- updateEntity(annots)
+    propertyValue(annots, "id") <- entity$properties$id
+  }
+  entity$properties$etag <- propertyValue(annots, "etag")
+  
+  ## store the annotations
+  entity@annotations <- annots
+  entity@generatedBy <- generatingActivity
+  
+  entity
+}
 
 setMethod(
     f = "deleteEntity",
@@ -333,8 +368,6 @@ updateEntityMethod<-function(entity, forceVersion)
       propertyValue(ee, "etag")<-updatedEtagEntity$etag
     }
     generatedBy(ee)<-generatingActivity
-    
-    cacheEntity(ee)
     
     ee
 }
@@ -695,14 +728,6 @@ setMethod(
     if(is.null(id))
       stop("entity id cannot be null")
     getAnnotations(id)
-  }
-)
-
-setMethod(
-  f = "cacheEntity",
-  signature = "Entity",
-  definition = function(entity){
-    ##warning('not implemented')
   }
 )
 
