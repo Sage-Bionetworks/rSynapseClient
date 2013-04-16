@@ -85,6 +85,12 @@ integrationTestCRUDS4Activity <-
   checkTrue(class(shouldBeError)=="try-error")
 }
 
+integrationTestReferenceConstructorNoWasExceuted<-function() {
+  activity<-Activity(list(name="name", description="description", used=list(
+        list(reference=list(targetId="syn1234"), concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"))))
+  
+}
+
 integrationTestReferenceConstructor <- 
   function()
 {
@@ -98,6 +104,9 @@ integrationTestReferenceConstructor <-
   activityId<-propertyValue(activity, "id")
   checkTrue(!is.null(activityId))
   synapseClient:::.setCache("testActivity", activity)
+  
+  # check that it can be retrieved
+  getActivity(activityId)
   
   # delete
   deleteEntity(activity)	

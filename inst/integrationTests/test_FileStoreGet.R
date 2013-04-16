@@ -123,9 +123,8 @@ integrationTestGovernanceRestriction <- function() {
   assignInNamespace("hasUnfulfilledAccessRequirements", myHasUnfulfilledAccessRequirements, "synapseClient")
   synapseClient:::.setCache("hasUnfulfilledAccessRequirementsIsOverRidden", TRUE)
   
-  # TODO need to resolve the case in which downloadFile=F and load=F but is an external link, so we need the URL
   # try synGet with downloadFile=F, load=F, should be OK
-  # synGet(id, downloadFile=F, load=F)
+  synGet(id, downloadFile=F, load=F)
   
   # try synGet with downloadFile=T, should NOT be OK
   result<-try(synGet(id, downloadFile=T, load=F), silent=TRUE)
