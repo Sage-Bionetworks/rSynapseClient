@@ -10,8 +10,12 @@ integrationTestWikiService <-
     
     # create a file attachment which will be used in the wiki page
     # upload a file and receive the file handle
-    fileName<-"NAMESPACE"
-    filePath<- system.file(fileName, package = "synapseClient")
+    filePath<- tempfile()
+    fileName<-basename(filePath)
+    connection<-file(filePath)
+    writeChar("this is a test", connection, eos=NULL)
+    close(connection)  
+  
     fileHandle<-synapseClient:::synapseUploadToFileHandle(filePath)
     
     # create a wiki page
