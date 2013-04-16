@@ -9,7 +9,8 @@ synapsePost <-
     service="REPO", 
     curlHandle=getCurlHandle(), 
     anonymous = FALSE, 
-   opts = .getCache("curlOpts")
+   opts = .getCache("curlOpts"),
+   checkHttpStatus=T
 )
 {
   ## constants
@@ -22,6 +23,7 @@ synapsePost <-
     requestMethod = kMethod,  
     curlHandle = curlHandle, 
     anonymous = anonymous, 
-    opts = opts
+    opts = opts,
+    checkHttpStatus=checkHttpStatus
   )
 }

@@ -25,13 +25,6 @@ setGeneric(
 )
 
 setGeneric(
-  name = "cacheEntity",
-  def = function(entity){
-    standardGeneric("cacheEntity")
-  }
-)
-
-setGeneric(
   name = "purgeCache",
   def = function(entity){
     standardGeneric("purgeCache")

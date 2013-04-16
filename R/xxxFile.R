@@ -43,6 +43,8 @@ setClass(
   )
 )
 
+getFileLocation<-function(file) {file@filePath}
+
 synAnnotSetMethod<-function(object, which, value) {
   if(any(which==propertyNames(object))) {
     propertyValue(object, which)<-value
@@ -231,9 +233,7 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
     generatedBy(entity)<-activity
   }
   if (is.null(propertyValue(entity, "id"))) {
-    # get the superclass createEntity method, which just stores the metadata
-    superCreateEntity<-getMethod("createEntity", "Entity") # TODO createOrUpdate
-    storedEntity<-superCreateEntity(entity)
+    storedEntity<-createEntityMethod(entity, createOrUpdate)
   } else {
     storedEntity<-updateEntityMethod(entity, forceVersion)
   }
@@ -416,7 +416,7 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }
-  if (downloadFile) file@filePath<-filePath
+  if (!is.null(filePath)) file@filePath<-filePath
   file@synapseStore<-synapseStore
   file@fileHandle<-fileHandle
   if (load) {

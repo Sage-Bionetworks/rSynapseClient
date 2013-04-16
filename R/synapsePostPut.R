@@ -11,7 +11,8 @@
     requestMethod, 
     curlHandle = getCurlHandle(), 
     anonymous = FALSE, 
-    opts = .getCache("curlOpts")
+    opts = .getCache("curlOpts"),
+    checkHttpStatus=T
 )
 {
   ## constants
@@ -130,7 +131,7 @@
     message("RESPONSE_BODY:: ", response)
   }
   
-  .checkCurlResponse(curlHandle, response)
+  if (checkHttpStatus) .checkCurlResponse(curlHandle, response)
   
   ## Parse response and prepare return value
   tryCatch(
