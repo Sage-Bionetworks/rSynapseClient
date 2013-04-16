@@ -30,10 +30,18 @@
   
 }
 
+createFile<-function() {
+  filePath<- tempfile()
+  connection<-file(filePath)
+  writeChar("this is a test", connection, eos=NULL)
+  close(connection)  
+  filePath
+}
+
 integrationTestCacheMapRoundTrip <- function() {
   fileHandleId<-"TEST_FHID"
-  filePath<- system.file("NAMESPACE", package = "synapseClient")
-  filePath2<- system.file("DESCRIPTION", package = "synapseClient")
+  filePath<- createFile()
+  filePath2<- createFile()
   
  
   synapseClient:::addToCacheMap(fileHandleId, filePath)
@@ -68,7 +76,7 @@ integrationTestMetadataRoundTrip <- function() {
   checkTrue(!is.null(project))
   
   # create a file to be uploaded
-  filePath<- system.file("NAMESPACE", package = "synapseClient")
+  filePath<- createFile()
   synapseStore<-TRUE
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
   checkTrue(!is.null(propertyValue(file, "name")))
@@ -109,8 +117,7 @@ integrationTestGovernanceRestriction <- function() {
   checkTrue(!is.null(project))
   
   # create a File
-  filePath<- tempfile()
-  file.copy(system.file("NAMESPACE", package = "synapseClient"), filePath)
+  filePath<- createFile()
   synapseStore<-TRUE
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
   storedFile<-synStore(file)
@@ -174,8 +181,7 @@ integrationTestRoundtrip <- function()
 
 roundTripIntern<-function(project) {  
   # create a file to be uploaded
-  filePath<- tempfile()
-  file.copy(system.file("NAMESPACE", package = "synapseClient"), filePath)
+  filePath<- createFile()
   synapseStore<-TRUE
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
   checkTrue(!is.null(propertyValue(file, "name")))
@@ -297,7 +303,7 @@ integrationTestAddToNewFILEEntity <-
   function()
 {
   project <- synapseClient:::.getCache("testProject")
-  filePath<- system.file("NAMESPACE", package = "synapseClient")
+  filePath<- createFile()
   file<-FileListConstructor(list(parentId=propertyValue(project, "id")))
   file<-addFile(file, filePath)
   storedFile<-storeEntity(file)
@@ -357,7 +363,7 @@ integrationTestAddToNewFILEEntity <-
 # test that legacy *Entity based methods work on File objects, cont.
 integrationTestReplaceFile<-function() {
     project <- synapseClient:::.getCache("testProject")
-    filePath<- system.file("NAMESPACE", package = "synapseClient")
+    filePath<- createFile()
     file<-FileListConstructor(list(parentId=propertyValue(project, "id")))
     file<-addFile(file, filePath)
     # replace storeEntity with createEntity
@@ -391,7 +397,7 @@ integrationTestReplaceFile<-function() {
 
 integrationTestLoadEntity<-function() {
   project <- synapseClient:::.getCache("testProject")
-  filePath<- system.file("NAMESPACE", package = "synapseClient")
+  filePath<- createFile()
   file<-FileListConstructor(list(parentId=propertyValue(project, "id")))
   dataObject<-list(a="A", b="B", c="C")
   file<-addObject(file, dataObject, "dataObjectName")

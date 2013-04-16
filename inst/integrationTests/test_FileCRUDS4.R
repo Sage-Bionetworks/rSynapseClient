@@ -29,7 +29,10 @@
 }
 
 createFileInMemory<-function(project) {
-  filePath<- system.file("NAMESPACE", package = "synapseClient")
+  filePath<- tempfile()
+  connection<-file(filePath)
+  writeChar("this is a test", connection, eos=NULL)
+  close(connection)  
   synapseStore<-TRUE
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
   file

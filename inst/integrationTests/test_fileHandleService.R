@@ -4,10 +4,13 @@ integrationTestFileHandle <-
   function()
 {
     # upload a file and receive the file handle
-    filePath<- system.file("NAMESPACE", package = "synapseClient")
+    filePath<- tempfile()
+    connection<-file(filePath)
+    writeChar("this is a test", connection, eos=NULL)
+    close(connection)  
     fileHandle<-synapseClient:::synapseUploadToFileHandle(filePath)
-    checkEquals("NAMESPACE", fileHandle$fileName)
-    checkEquals(synapseClient:::getMimeTypeForFile("NAMESPACE"), fileHandle$contentType)
+    checkEquals(basename(filePath), fileHandle$fileName)
+    checkEquals(synapseClient:::getMimeTypeForFile(basename(filePath)), fileHandle$contentType)
     # now try to retrieve the file handle given the id
     handleUri<-sprintf("/fileHandle/%s", fileHandle$id)
     fileHandle2<-synapseClient:::synapseGet(handleUri, service="FILE")
