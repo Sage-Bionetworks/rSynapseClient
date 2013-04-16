@@ -10,10 +10,10 @@ lockdirPath<-function(filePath) {sprintf("%s.lock", filePath)}
 # they have exclusive access to the file
 # Note: It is possible, and in fact proper, to lock a file that doesn't exist yet
 # This gives the caller exclusive access for creating the file.
-lockFile<-function(filePath, maxWaitSeconds=10) {
+lockFile<-function(filePath, maxWaitSeconds=20) {
   lockdirPath <- lockdirPath(filePath)
   startTime<-Sys.time()
-  ageTimeoutSeconds<-5.0
+  ageTimeoutSeconds<-10.0
   while ((Sys.time()-startTime) < maxWaitSeconds) {
     success<-dir.create(lockdirPath, showWarnings=FALSE, recursive=TRUE)
     if (success) return(lastModifiedTimestamp(lockdirPath)+ageTimeoutSeconds)

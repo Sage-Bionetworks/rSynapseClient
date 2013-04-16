@@ -42,7 +42,14 @@ setMethod(
   definition = function(listEntry, ...) {
     if (!is.null(listEntry$reference)) {
       # the list is itself a UsedEntity
-      if (is.null(listEntry$wasExecuted)) stop("'wasExecuted' required.")
+      if (is.null(listEntry$wasExecuted)) {
+        otherParams<-list(...)
+        if (is.null(otherParams$wasExecuted)) {
+          listEntry$wasExecuted=F
+        } else {
+          listEntry$wasExecuted<-otherParams$wasExecuted
+        }
+      }
       if (is.null(listEntry$concreteType)) listEntry$concreteType<-"org.sagebionetworks.repo.model.provenance.UsedEntity"
       listEntry
     } else if (!is.null(listEntry$url)) {

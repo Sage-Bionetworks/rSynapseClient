@@ -39,9 +39,6 @@ setMethod(
     ## !!!! retrieving the entity, otherwise on the subsequent call to  !!!!
     ## !!!! storeEntity the link will be lost !!!!
     ee@generatedBy <- getGeneratedBy(ee)
-
-    ## cache the entity to disk
-    cacheEntity(ee)
 	
     ee
   }

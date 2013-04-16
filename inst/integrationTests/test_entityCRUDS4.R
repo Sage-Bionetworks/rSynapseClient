@@ -368,6 +368,28 @@ integrationTestUpdateS4EntityWithUsed <-
 	checkTrue(is.null(used(updatedProject)))
 }
 
+# this is the test to show that SYNR-327 is fixed
+# use the same activity in two different entities
+integrationTestTwoEntitiesOneActivity<-function() {
+  ## Create Project
+  project <- Project()
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  pid<-propertyValue(createdProject, "id")
+  foo<-Folder(name="foo", parentId=pid)
+  foo<-storeEntity(foo)
+  bar<-Folder(name="bar", parentId=pid)
+  bar<-storeEntity(bar)
+  
+  activity<-Activity(list(name="foobarActivity"))
+  activity<-storeEntity(activity)
+
+  generatedBy(foo)<-activity
+  generatedBy(bar)<-activity
+  foo<-storeEntity(foo)
+  bar<-storeEntity(bar) 
+}
+
 integrationTestDeleteEntity <- 
   function()
 {
@@ -438,5 +460,23 @@ integrationTestReplaceAnnotations <-
   
   checkEquals(length(annotationNames(createdProject)), 3L)
   checkTrue(all(c("annotation3", "annotation4", "annotation5") %in% annotationNames(createdProject)))
+}
+
+integrationTestFindExistingEntity <- function(){
+  ## Create Project
+  project <- Project(name="integrationTestFindExistingEntity")
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  pid<-propertyValue(createdProject, "id")
+  
+  folder<-Folder(name="testName", parentId=pid)
+  folder<-synStore(folder)
+  
+  result<-synapseClient:::findExistingEntity("integrationTestFindExistingEntity")
+  checkEquals(pid, result$id)
+  
+  result<-synapseClient:::findExistingEntity(name="testName", parentId=pid)
+  checkEquals(propertyValue(folder, "id"), result$id)
+  
 }
 

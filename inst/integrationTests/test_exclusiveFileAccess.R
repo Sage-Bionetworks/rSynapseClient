@@ -17,8 +17,8 @@ integrationTestHappyPath <-
   filePath<-sprintf("%s/eaftest.txt", dir)
   lockExpirationTimeStamp<-synapseClient:::lockFile(filePath, maxWaitSeconds=2)
   checkTrue(!is.na(lockExpirationTimeStamp))
-  # expiration is in a second, so should be less than five seconds from now
-  checkTrue(lockExpirationTimeStamp<Sys.time()+5)
+  # expiration is in 10 seconds, so should be less than 15 seconds from now
+  checkTrue(lockExpirationTimeStamp<Sys.time()+15)
   checkTrue(file.exists(sprintf("%s.lock", filePath)))
   # write file
   content<-"my dog has fleas!"

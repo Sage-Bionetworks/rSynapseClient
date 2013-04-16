@@ -27,6 +27,7 @@ unitTestSimpleConstructor<-function() {
   file<-File("/path/to/file", annotName=FALSE)
   checkTrue(file@synapseStore) # this is the default and S4 should mistake 'annotName' for 'synapseStore'
   checkEquals("FALSE", annotValue(file, "annotName")) # the extra param should become an annotation on the file
+  checkEquals("/path/to/file", getFileLocation(file))
 }
 
 unitTestObjectConstructor<-function() {
@@ -34,6 +35,8 @@ unitTestObjectConstructor<-function() {
   file<-File(anObject)
   checkTrue(synapseClient:::hasObjects(file))
   checkEquals(anObject, getObject(file, "anObject"))
+  checkEquals(character(0), getFileLocation(file))
+  
   
 # TODO this does NOT work, as including the ellipsis in the method signature
 # causes parent.frame() not to work in File("ANY")
@@ -58,6 +61,7 @@ unitTestConstructor<-function() {
   
   checkEquals("/path/to/file", file@filePath)
   checkEquals(TRUE, file@synapseStore)
+  checkEquals("/path/to/file", getFileLocation(file))
   checkEquals(description, propertyValue(file, "description"))
   checkEquals(description, synapseClient:::synAnnotGetMethod(file, "description"))
   checkEquals(versionComment, propertyValue(file, "versionComment"))
