@@ -144,7 +144,7 @@ touchFile<-function(location) {
   # result<-paste(readLines(connection), collapse="\n")
   originalSize<-file.info(location)$size
   originalMD5<-tools::md5sum(location)
-  result<-readChar(connection, originalSize+1)
+  result<-readChar(connection, originalSize)
   close(connection)
   connection<-file(location)
   # writeLines(result, connection)
