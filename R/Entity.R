@@ -184,12 +184,6 @@ setMethod(
   }
 )
 
-setMethod(
-  f = "createEntity",
-  signature = "Entity",
-  definition = createEntityMethod
-)
-
 # return the metadata (as a list) for the existing entity having the 
 # given name and parentId where parentId may be null
 # error is thrown if zero or if more than one entity are returned
@@ -262,6 +256,13 @@ createEntityMethod<-function(entity, createOrUpdate) {
   
   entity
 }
+
+setMethod(
+  f = "createEntity",
+  signature = "Entity",
+  # without the wrapper I get this errorin R 2.15: methods can add arguments to the generic ÔcreateEntityÕ only if '...' is an argument to the generic
+  definition = function(entity){createEntityMethod(entity=entity, createOrUpdate=FALSE)}
+)
 
 setMethod(
     f = "deleteEntity",
@@ -377,7 +378,7 @@ updateEntityMethod<-function(entity, forceVersion)
 setMethod(
   f = "updateEntity",
   signature = signature("Entity"),
-  definition = updateEntityMethod
+  definition = function(entity){updateEntityMethod(entity=entity, forceVersion=FALSE)}
 )
  
 setMethod(
@@ -440,9 +441,8 @@ storeEntityMethod<-function(entity, forceVersion) {
 
 setMethod(
   f = "storeEntity",
-#  signature= signature("Entity", "missing"),
   signature= signature("Entity"),
-  definition = function(entity){storeEntityMethod(entity)}
+  definition = function(entity){storeEntityMethod(entity=entity, forceVersion=FALSE)}
 )
 
 #####
