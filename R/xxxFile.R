@@ -233,9 +233,7 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
     generatedBy(entity)<-activity
   }
   if (is.null(propertyValue(entity, "id"))) {
-    # get the superclass createEntity method, which just stores the metadata
-    superCreateEntity<-getMethod("createEntity", "Entity") # TODO createOrUpdate
-    storedEntity<-superCreateEntity(entity)
+    storedEntity<-createEntityMethod(entity, createOrUpdate)
   } else {
     storedEntity<-updateEntityMethod(entity, forceVersion)
   }

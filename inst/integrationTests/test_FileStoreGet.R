@@ -168,6 +168,42 @@ checkFilesEqual<-function(file1, file2) {
   checkEquals(normalizePath(file1, winslash="/"), normalizePath(file2, winslash="/"))
 }
 
+integrationTestCreateOrUpdate<-function() {
+  # create a Project
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  createOrUpdateIntern(project)
+  
+}
+
+createOrUpdateIntern<-function(project) {
+  filePath<- createFile()
+  name<-"createOrUpdateTest"
+  pid<-propertyValue(project, "id")
+  file<-File(filePath, name=name, parentId=pid)
+  file<-synStore(file)
+  
+  filePath2<- createFile()
+  file2<-File(filePath2, name=name, parentId=pid)
+  # since createOrUpdate=T is the default, this should update 'file' rather than create a new one
+  file2<-synStore(file2)
+  checkEquals(propertyValue(file, "id"), propertyValue(file2, "id"))
+  
+  filePath3 <- createFile()
+  file3<-File(filePath3, name=name, parentId=pid)
+  result<-try(synStore(file3, createOrUpdate=F), silent=T)
+  checkEquals("try-error", class(result))
+  
+  # check an entity with no parent
+  project2<-Project(name=propertyValue(project, "name"))
+  project2<-synStore(project2)
+  checkEquals(propertyValue(project2, "id"), pid)
+  
+  project3<-Project(name=propertyValue(project, "name"))
+  result<-try(synStore(project3, createOrUpdate=F), silent=T)
+  checkEquals("try-error", class(result))
+}
+
 #
 # This code exercises the file services underlying upload/download to/from an entity
 #

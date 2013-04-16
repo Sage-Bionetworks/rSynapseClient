@@ -26,7 +26,7 @@ synapseDelete <-
       curlHandle = curlHandle, 
       anonymous = anonymous,  
       opts = opts,
-      httpStatus
+      checkHttpStatus=checkHttpStatus
     )
   }else{
     .synapseGetDelete(uri = uri, 

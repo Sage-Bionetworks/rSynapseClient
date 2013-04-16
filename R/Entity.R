@@ -187,15 +187,18 @@ setMethod(
 setMethod(
   f = "createEntity",
   signature = "Entity",
-  definition = function(entity){createEntityMethod(entity)}
+  #  definition = function(entity){createEntityMethod(entity)}
+  definition = createEntityMethod
 )
 
 # return the metadata (as a list) for the existing entity having the 
 # given name and parentId where parentId may be null
 # error is thrown if zero or if more than one entity are returned
 findExistingEntity<-function(name, parentId=NULL) {
+  if (is.null(name)) stop("'name' parameter is required")
   if (is.null(parentId))  parentId<-"syn4489"
-  result<-synapseQuery(sprintf("select id from entity where name==\"%s\" and parentId==\"%s\"", name, parentId))
+  queryString<-sprintf("select id from entity where name==\"%s\" and parentId==\"%s\"", name, parentId)
+  result<-synapseQuery(queryString)
   if (is.null(result)) stop(sprintf("Cannot find entity with name %s and parent %s.", name, parentId))
   if (nrow(result)>1) stop(sprintf("Expected one but found %d entities with name %s and parent %s.", nrow(result), name, parentId))
   entityId<-result[1,1]
@@ -220,18 +223,18 @@ createEntityMethod<-function(entity, createOrUpdate) {
 
   if (createOrUpdate) {
     curlHandle=getCurlHandle()
-    entityAsList<-synapsePost(createUri, entity, curlHandle=curlHandle)
+    entityAsList<-synapsePost(createUri, entity, curlHandle=curlHandle, checkHttpStatus=FALSE)
     # is it a 409 response?  If so, the entity already exists
     curlInfo <- .getCurlInfo(curlHandle)
     if (curlInfo$response.code==409) {
       # retrieve the object
-      existingObject<-findExistingEntity(entity$id, entity$parentId)
+      entityAsList<-findExistingEntity(entity$name, entity$parentId)
       # apply certain properties
       # TODO would it be better to specify the omit-list rather than the include-list?
       propertiesToTransfer<-c("description")
       for (propName in propertiesToTransfer) {
-        entityProp<-propertyValue(entity, propName)
-        if (!is.null(entityProp)) propertyValue(existingEntity, propName)<-entityProp
+        entityProp<-entity$propName
+        if (!is.null(entityProp)) propertyValue(entityAsList, propName)<-entityProp
       }
     } else {
       .checkCurlResponse(curlHandle)
@@ -375,7 +378,8 @@ updateEntityMethod<-function(entity, forceVersion)
 setMethod(
   f = "updateEntity",
   signature = signature("Entity"),
-  definition = function(entity) {updateEntityMethod(entity)}
+  # definition = function(entity) {updateEntityMethod(entity)}
+  definition = updateEntityMethod
 )
  
 setMethod(
