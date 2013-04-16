@@ -187,7 +187,6 @@ setMethod(
 setMethod(
   f = "createEntity",
   signature = "Entity",
-  #  definition = function(entity){createEntityMethod(entity)}
   definition = createEntityMethod
 )
 
@@ -378,7 +377,6 @@ updateEntityMethod<-function(entity, forceVersion)
 setMethod(
   f = "updateEntity",
   signature = signature("Entity"),
-  # definition = function(entity) {updateEntityMethod(entity)}
   definition = updateEntityMethod
 )
  
