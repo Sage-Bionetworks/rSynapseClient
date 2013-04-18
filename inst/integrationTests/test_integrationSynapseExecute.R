@@ -1,5 +1,5 @@
 library("RCurl")
-#library("rGithubClient")  # TEMPORARILY DISABLING use of rGithubClient
+library("rGithubClient")
 
 .setUp <-
   function()
@@ -109,7 +109,7 @@ integrationTestCreateFileCodeEntity<-function() {
 
 
 # test createGithubCodeEntity
-integrationXXXXCreateGithubCodeEntity<-function() { # TEMPORARILY DISABLING use of rGithubClient
+integrationTestCreateGithubCodeEntity<-function() {
   project<-synapseClient:::.getCache("testProject")
 
   repoName<-"/brian-bot/rGithubClient"
