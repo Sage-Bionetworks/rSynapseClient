@@ -273,7 +273,7 @@ integrationTestUpdateS4FileWithGeneratedBy <-
 	generatedBy(file) <- testActivity
 	createdFile <- createEntity(file)
 	checkTrue(!is.null(generatedBy(createdFile)))
-	synapseClient:::.setCache("testProject", createdFile)
+
 	testActivity <- generatedBy(createdFile)
 	# since storing the entity also stores the activity, we need to update the cached value
 	synapseClient:::.setCache("testActivity", testActivity)
