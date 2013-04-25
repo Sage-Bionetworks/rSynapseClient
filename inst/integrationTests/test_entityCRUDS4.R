@@ -463,8 +463,8 @@ integrationTestReplaceAnnotations <-
 }
 
 integrationTestFindExistingEntity <- function(){
-  ## Create Project
-  project <- Project(name="integrationTestFindExistingEntity")
+  ## Create Project, append a random integer to make it unique
+  project <- Project(name=sprintf("integrationTestFindExistingEntity_%d", sample(1000,1)))
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
   pid<-propertyValue(createdProject, "id")
