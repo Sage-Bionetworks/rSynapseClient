@@ -339,8 +339,11 @@ integrationTestAddToNewFILEEntity <-
   function()
 {
   project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  pid <- propertyValue(project, "id")
+  checkTrue(!is.null(pid))
   filePath<- createFile()
-  file<-FileListConstructor(list(parentId=propertyValue(project, "id")))
+  file<-synapseClient:::FileListConstructor(list(parentId=pid))
   file<-addFile(file, filePath)
   storedFile<-storeEntity(file)
   scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
@@ -348,7 +351,7 @@ integrationTestAddToNewFILEEntity <-
   checkTrue(!is.null(storedFile))
   id<-propertyValue(storedFile, "id")
   checkTrue(!is.null(id))
-  checkEquals(propertyValue(project, "id"), propertyValue(storedFile, "parentId"))
+  checkEquals(pid, propertyValue(storedFile, "parentId"))
   checkEquals(propertyValue(file, "name"), propertyValue(storedFile, "name"))
   checkEquals(filePath, getFileLocation(storedFile))
   checkEquals(TRUE, storedFile@synapseStore) # this is the default
@@ -359,7 +362,7 @@ integrationTestAddToNewFILEEntity <-
   checkTrue(!is.null(gotEntity))
   id<-propertyValue(gotEntity, "id")
   checkTrue(!is.null(id))
-  checkEquals(propertyValue(project, "id"), propertyValue(gotEntity, "parentId"))
+  checkEquals(pid, propertyValue(gotEntity, "parentId"))
   checkEquals(propertyValue(file, "name"), propertyValue(gotEntity, "name"))
   checkTrue(!is.null(propertyValue(gotEntity, "dataFileHandleId")))
   checkTrue(length(getFileLocation(gotEntity))==0) # empty since it hasn't been downloaded
@@ -372,7 +375,7 @@ integrationTestAddToNewFILEEntity <-
   
   downloadedFile<-downloadEntity(id)
   checkEquals(id, propertyValue(downloadedFile, "id"))
-  checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))
+  checkEquals(pid, propertyValue(downloadedFile, "parentId"))
   checkEquals(TRUE, downloadedFile@synapseStore) # this is the default
   checkTrue(!is.null(getFileLocation(downloadedFile)))
   
@@ -400,7 +403,7 @@ integrationTestAddToNewFILEEntity <-
 integrationTestReplaceFile<-function() {
     project <- synapseClient:::.getCache("testProject")
     filePath<- createFile()
-    file<-FileListConstructor(list(parentId=propertyValue(project, "id")))
+    file<-synapseClient:::FileListConstructor(list(parentId=propertyValue(project, "id")))
     file<-addFile(file, filePath)
     # replace storeEntity with createEntity
     storedFile<-createEntity(file)
@@ -434,7 +437,7 @@ integrationTestReplaceFile<-function() {
 integrationTestLoadEntity<-function() {
   project <- synapseClient:::.getCache("testProject")
   filePath<- createFile()
-  file<-FileListConstructor(list(parentId=propertyValue(project, "id")))
+  file<-synapseClient:::FileListConstructor(list(parentId=propertyValue(project, "id")))
   dataObject<-list(a="A", b="B", c="C")
   file<-addObject(file, dataObject, "dataObjectName")
   storedFile<-createEntity(file)
@@ -458,9 +461,10 @@ integrationTestLoadEntity<-function() {
 integrationTestSerialization<-function() {
   project <- synapseClient:::.getCache("testProject")
   myData<-list(foo="bar", foo2="bas")
-  file<-File(myData)
-  # note, it does NOT currently work to call file<-File(data, parentId=<pid>)
-  propertyValue(file, "parentId")<-propertyValue(project, "id")
+  file<-File(parentId=propertyValue(project, "id"))
+  result<-try(synStore(file), silent=TRUE) # try storing before adding anything. Should be an error
+  checkEquals("try-error", class(result))
+  file<-addObject(file, myData)
   storedFile<-synStore(file)
   scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
   checkTrue(!is.null(getFileLocation(storedFile)))
@@ -470,6 +474,41 @@ integrationTestSerialization<-function() {
   checkTrue(synapseClient:::hasObjects(retrievedFile))
   retrievedObject<-getObject(retrievedFile, "myData")
   checkEquals(myData, retrievedObject)
+  
+  # check that I can add more data and save again
+  newData<-diag(10)
+  retrievedFile<-addObject(retrievedFile, newData)
+  retrievedFile<-synStore(file)
+}
+
+integrationTestSerializeToEmptyFile<-function() {
+  # Random, non-existent file
+  filePath<-sprintf("%s/integrationTestSerializeToEmptyFile_%d", tempdir(), sample(1000,1))
+  project <- synapseClient:::.getCache("testProject")
+  myData<-list(foo="bar", foo2="bas")
+  file<-File(path=filePath, parentId=propertyValue(project, "id"))
+  file<-addObject(file, myData)
+  storedFile<-synStore(file)
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
+  # check that data was written into file
+  checkTrue(file.exists(filePath))
+  checkTrue(file.info(filePath)$size>0)
+}
+
+integrationTestOverwriteProtection<-function() {
+  # Random, non-existent file
+  filePath<-sprintf("%s/integrationTestOverwriteProtection_%d", tempdir(), sample(1000,1))
+  
+  connection<-file(filePath)
+  writeLines("some text data, not serialized R object", connection)
+  close(connection)
+  
+  project <- synapseClient:::.getCache("testProject")
+  myData<-list(foo="bar", foo2="bas")
+  file<-File(path=filePath, parentId=propertyValue(project, "id"))
+  file<-addObject(file, myData)
+  # if you try to store in-memory data to Synapse, and the intermediate file containing non-binary data, then stop, to prevent overwriting
+  checkEquals("try-error", class(try(synStore(file), silent=TRUE)))
 }
 
 integrationTestNonFile<-function() {
@@ -600,6 +639,17 @@ integrationTestProvenance2<-function() {
   checkTrue(foundURL)
   checkTrue(foundProject)
   checkTrue(foundExecuted)
+}
+
+# cannot store a missing external link
+integrationTestExternalLinkNoFile<-function() {
+  project <- synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  
+  # create a file to be uploaded
+  file<-File(synapseStore=FALSE, parentId=propertyValue(project, "id"))
+  
+  checkEquals("try-error", class(try(synStore(file), silent=TRUE)))
 }
 
 integrationTestExternalLink<-function() {

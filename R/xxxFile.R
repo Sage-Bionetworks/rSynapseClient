@@ -62,64 +62,38 @@ synAnnotGetMethod<-function(object, which) {
   }
 }
 
-fileConstructorMethod<-function(path, synapseStore, ...) {
+##
+## File contructor: path="/path/to/file", synapseStore=T, name="foo", ...
+File<-function(path, synapseStore=T, ...) {
   file <- new("File")
-  entityParams<-modifyList(list(name=basename(path)), list(...))
+  if (is.null(list(...)$parentId)) {
+    stop("parentId is required.")
+  }
+  if (missing("path")) {
+    entityParams<-list(...)
+  } else {
+    entityParams<-modifyList(list(name=basename(path)), list(...))
+    file@filePath <- path
+  }
   for (key in names(entityParams)) file<-synAnnotSetMethod(file, key, entityParams[[key]])
-  file@filePath <- path
   file@synapseStore <- synapseStore
   file
 }
 
-##
-## File contructor: path="/path/to/file", synapseStore=T, name="foo", ...
-
-##
-setMethod(
-  f = "File",
-  signature = signature("character", "missing"),
-  definition = function(path, ...) {fileConstructorMethod(path, synapseStore=TRUE, ...)}
-)
-
-setMethod(
-  f = "File",
-  signature = signature("character", "logical"),
-  definition = fileConstructorMethod
-)
-
-## File contructor: obj=<obj ref>, ...
-setMethod(
-  f = "File",
-  signature = signature("ANY", "missing"),
-  definition = function(path, synapseStore) {
-    file <- new("File")
-    
-    name <- deparse(substitute(path, env=parent.frame()))
-    name <- gsub("\\\"", "", name)
-    file<-addObjectMethod(file, path, name)
-    
-#    entityParams<-list(...)
-#    for (key in names(entityParams)) file<-synAnnotSetMethod(file, key, entityParams[[key]])
-    file@synapseStore <- TRUE
-    
-    file
-  }
-)
-
 # this is the required constructor for a metadata Entity, taking a list of properties
 # the logic is based on definedEntityConstructors in AAAschema
 setMethod(
-  f = "FileListConstructor",
-  signature = signature("list"),
-  definition = function(propertiesList) {
-    file <- new("File")
-    for (prop in names(propertiesList))
-      file<-synAnnotSetMethod(file, prop, propertiesList[[prop]])
-    
-    propertyValue(file, "entityType") <- "org.sagebionetworks.repo.model.FileEntity"
-
-    file
-  }
+    f = "FileListConstructor",
+    signature = signature("list"),
+    definition = function(propertiesList) {
+        file <- new("File")
+        for (prop in names(propertiesList))
+          file<-synAnnotSetMethod(file, prop, propertiesList[[prop]])
+        
+        propertyValue(file, "entityType") <- "org.sagebionetworks.repo.model.FileEntity"
+        
+        file
+      }
 )
 
 isExternalFileHandle<-function(fileHandle) {length(fileHandle)>0 && fileHandle$concreteType=="org.sagebionetworks.repo.model.file.ExternalFileHandle"}
@@ -204,12 +178,35 @@ uploadAndAddToCacheMap<-function(filePath) {
 
 hasObjects<-function(file) {!is.null(file@objects)}
 
+# returns TRUE iff the file can be loaded.  
+# Would be ideal to answer the question WITHOUT loading what might be a large file,
+# but there isn't a well-defined way to do so
+isLoadable<-function(filePath) {
+  tempenv<-new.env(parent=emptyenv())
+  originalWarnLevel<-options()$warn
+  options(warn=2)
+  loadable<-TRUE
+  tryCatch(
+    load(file=filePath, envir = tempenv),
+    error = function(e) {
+      loadable<<-FALSE
+    }
+  )
+  options(warn=originalWarnLevel)
+  loadable
+}
+
+
 # if File has associated objects, then serialize them into a file
 serializeObjects<-function(file) {
   if (fileHasFilePath(file)) {
     filePath<-file@filePath
+    # Check that either (1) file does not exist or (2) file is already has binary data (and therefore is being updated)
+    if (file.exists(filePath)) {
+      if (!isLoadable(filePath)) stop(sprintf("File contains in-memory objects, but %s is not a serialized object file.", filePath))
+    }
   } else {
-    filePath<-sprintf("%s.rbin", tempfile())
+    filePath<-tempfile(fileext=".rbin")
   }
   # now serialize the content into the file
   save(list=ls(file@objects), file=filePath, envir=file@objects)
@@ -251,7 +248,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T) {
   if (hasObjects(file)) file@filePath<-serializeObjects(file)
   if (!fileHasFileHandleId(file)) { # if there's no existing Synapse File associated with this object...
     if (!fileHasFilePath(file)) { # ... and there's no local file staged for upload ...
-      # then we will only be storing the meta data
+      # meta data only
     } else { # ... we are storing a new file
       if (file@synapseStore) { # ... we are storing a new file which we are also uploading
         fileHandle<-uploadAndAddToCacheMap(file@filePath)
