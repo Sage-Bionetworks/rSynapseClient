@@ -6,18 +6,22 @@
 
 
 synRestGET<-function(uri, endpoint=synapseServiceEndpoint("REPO")) {
-  synapseGet(uri, endpoint)
+  if (class(endpoint)=="list") endpointObject<-endpoint else endpointObject<-parseEndpoint(endpoint)
+  synapseGet(uri, endpointObject)
 }
 
 synRestDELETE<-function(uri, endpoint=synapseServiceEndpoint("REPO")) {
-  synapseDelete(uri, endpoint)
+  if (class(endpoint)=="list") endpointObject<-endpoint else endpointObject<-parseEndpoint(endpoint)
+  synapseDelete(uri, endpointObject)
 }
 
 synRestPOST<-function(uri, body, endpoint=synapseServiceEndpoint("REPO")) {
-  synapsePost(uri=uri, entity=body, endpoint=endpoint)
+  if (class(endpoint)=="list") endpointObject<-endpoint else endpointObject<-parseEndpoint(endpoint)
+  synapsePost(uri=uri, entity=body, endpoint=endpointObject)
 } 
 
 synRestPUT<-function(uri, body, endpoint=synapseServiceEndpoint("REPO")) {
-  synapsePut(uri=uri, entity=body, endpoint=endpoint)
+  if (class(endpoint)=="list") endpointObject<-endpoint else endpointObject<-parseEndpoint(endpoint)
+  synapsePut(uri=uri, entity=body, endpoint=endpointObject)
 } 
 

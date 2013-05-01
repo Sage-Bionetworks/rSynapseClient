@@ -11,7 +11,7 @@ resolvePermanentRedirects<-function(endpoint) {
   # we need to related permanent redirects to some service (e.g. REPO, AUTH, FILE)
   # if no service is specified then we use the 'host' portion of the endpoint as a proxy
   if (is.null(endpoint$service)) {
-    endpoint$service<-endpoint$host
+    endpoint$service<-endpoint$endpointHost
   }
   
   # need to make sure that permanent redirects have been resolved:
