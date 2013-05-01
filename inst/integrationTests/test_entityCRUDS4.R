@@ -463,8 +463,9 @@ integrationTestReplaceAnnotations <-
 }
 
 integrationTestFindExistingEntity <- function(){
-  ## Create Project
-  project <- Project(name="integrationTestFindExistingEntity")
+  ## Create Project, append a random integer to make it unique
+  projectName<-sprintf("integrationTestFindExistingEntity_%d", sample(1000,1))
+  project <- Project(name=projectName)
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
   pid<-propertyValue(createdProject, "id")
@@ -472,7 +473,7 @@ integrationTestFindExistingEntity <- function(){
   folder<-Folder(name="testName", parentId=pid)
   folder<-synStore(folder)
   
-  result<-synapseClient:::findExistingEntity("integrationTestFindExistingEntity")
+  result<-synapseClient:::findExistingEntity(projectName)
   checkEquals(pid, result$id)
   
   result<-synapseClient:::findExistingEntity(name="testName", parentId=pid)

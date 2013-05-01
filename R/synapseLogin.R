@@ -46,7 +46,7 @@ synapseLogin <-
   
   ## Request the secret key
   response <- synapseGet(uri = kService, 
-    service="AUTH",
+    endpoint=synapseServiceEndpoint("AUTH"),
     entity = entity, 
     anonymous = FALSE
   )
@@ -134,8 +134,8 @@ synapseLogin <-
   
   
   ## get auth service endpoint and prefix from memory cache
-  host <- .getAuthEndpointLocation()
-  path <- .getAuthEndpointPrefix()
+  host <- getEndpointLocationForService("AUTH")
+  path <- getEndpointPrefixForService("AUTH")
   
   entity <- list()
   entity$email <- credentials$username
@@ -147,7 +147,7 @@ synapseLogin <-
   ## Login and check for success
   response <- synapsePost(uri = kService, 
     entity = entity, 
-    service = "AUTH",
+    endpoint = synapseServiceEndpoint("AUTH"),
     anonymous = TRUE
   )
   
@@ -182,15 +182,15 @@ synapseLogout <-
   ## end constants
   
   ## get auth service endpoint and prefix from memory cache
-  host = .getAuthEndpointLocation()
-  path = .getAuthEndpointPrefix()
+  host <- getEndpointLocationForService("AUTH")
+  path <- getEndpointPrefixForService("AUTH")
   
   entity <- list(sessionToken = sessionToken())
   
   if(!localOnly){
     response <- synapseDelete(uri = kService,
       entity = entity,
-      service="AUTH"
+      endpoint=synapseServiceEndpoint("AUTH")
     )
   }
   hmacSecretKey(NULL)

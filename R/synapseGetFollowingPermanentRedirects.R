@@ -22,7 +22,7 @@
 
 synapseGetFollowingPermanentRedirects<-function(
   uri, # omitting the endpoint
-  service="REPO", # one of REPO, AUTH, FILE
+  endpoint=synapseServiceEndpoint(service="REPO"), # REPO, AUTH, or FILE
   httpheader, # the headers
   curl, # the curl handle
   debugfunction = NULL,
@@ -34,16 +34,13 @@ synapseGetFollowingPermanentRedirects<-function(
   MAX_REDIRECTS<-.getCache("webRequestMaxRedirects")
   if (is.null(MAX_REDIRECTS) || MAX_REDIRECTS<1) stop(sprintf("Illegal value for MAX_REDIRECTS %d.", MAX_REDIRECTS))
   
+  # initialize the global cache entry for the service
+  if (is.null(endpoint$service)) stop("Service field is required.")
+  synapseServiceEndpoint(endpoint$service, endpoint$endpoint)
+  
   for (redirs in 1:MAX_REDIRECTS) { 
-    if (service=="REPO") {
-      url <- paste(synapseRepoServiceEndpoint(), uri, sep="")
-    } else if (service=="AUTH") {
-      url <- paste(synapseAuthServiceEndpoint(), uri, sep="")
-    } else if (service=="FILE") {
-      url <- paste(synapseFileServiceEndpoint(), uri, sep="")
-    } else {
-      stop(sprintf("Unexpected service: %s.", service))
-    }
+    
+    url<-paste(endpoint$endpoint, uri, sep="")
     
     result<-getURLWithRetries(url,
       NULL, # the request body
@@ -53,8 +50,6 @@ synapseGetFollowingPermanentRedirects<-function(
       debugfunction,
       opts=noRedirOpts)
     
-    # message(sprintf("synapseGetFollowingPermanentRedirects: got status %d for url %s and service %s.", result$httpStatus, url, service))
-    
     if (result$httpStatus==301) {
       redirectLocation<-result$response$headers[["Location"]]
       if (is.null(redirectLocation)) stop("received redirect status but no redirect location")
@@ -63,13 +58,7 @@ synapseGetFollowingPermanentRedirects<-function(
       if (uriStart<0) stop(sprintf("%s does not appear in %s", uri, redirectLocation))
       if (uriStart+nchar(uri)!=1+nchar(redirectLocation)) stop(sprintf("%s does not come at the end of %s", uri, redirectLocation))
       redirectEndpoint<-substr(redirectLocation, 1, uriStart-1)
-      if (service=="REPO") {
-        synapseRepoServiceEndpoint(redirectEndpoint)
-      } else if (service=="AUTH") {
-        synapseAuthServiceEndpoint(redirectEndpoint)
-      } else if (service=="FILE") {
-        synapseFileServiceEndpoint(redirectEndpoint)
-      }
+      synapseServiceEndpoint(endpoint$service, redirectEndpoint)
     } else {
       return(result)
     }

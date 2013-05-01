@@ -9,7 +9,7 @@
 
 synapseRequestFollowingAllRedirects<-function(
   uri, # omitting the endpoint
-  service="REPO", # one of REPO, AUTH, FILE
+  endpoint=synapseServiceEndpoint("REPO"), # one of REPO, AUTH, FILE
   postfields = NULL, # the request body
   customrequest, # the request method
   httpheader, # the headers
@@ -17,22 +17,13 @@ synapseRequestFollowingAllRedirects<-function(
   debugfunction = NULL,
   .opts) {
   
-  # need to make sure that permanent redirects have been resolved:
-  resolvePermanentRedirects(service)
+  endpoint<-resolvePermanentRedirects(endpoint)
     
   followRedirOpts<-.opts
   followRedirOpts$followlocation<-T # DO include 'followlocation'
   followRedirOpts$header<-TRUE
   
-  if (service=="REPO") {
-    url <- paste(synapseRepoServiceEndpoint(), uri, sep="")
-  } else if (service=="AUTH") {
-    url <- paste(synapseAuthServiceEndpoint(), uri, sep="")
-  } else if (service=="FILE") {
-    url <- paste(synapseFileServiceEndpoint(), uri, sep="")
-  } else {
-    stop(sprintf("Unexpected service: %s.", service))
-  }
+  url <- paste(endpoint$endpoint, uri, sep="")
   
   result<-getURLWithRetries(url,
     postfields, # the request body

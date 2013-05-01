@@ -11,20 +11,6 @@ setGeneric(
 )
 
 setGeneric(
-  name="File",
-  def = function(path, synapseStore, ...) {
-    standardGeneric("File")
-  }
-)
-
-setGeneric(
-  name="FileListConstructor",
-  def = function(propertiesList) {
-    standardGeneric("FileListConstructor")
-  }
-)
-
-setGeneric(
   name = "purgeCache",
   def = function(entity){
     standardGeneric("purgeCache")
@@ -821,3 +807,9 @@ setGeneric(
   }
 )
 
+setGeneric(
+   name="FileListConstructor",
+    def = function(propertiesList) {
+     standardGeneric("FileListConstructor")
+    }
+)
