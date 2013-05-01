@@ -7,7 +7,7 @@
   function(
     uri, 
     entity, 
-    service, 
+    endpoint, 
     requestMethod, 
     curlHandle = getCurlHandle(), 
     anonymous = FALSE, 
@@ -22,15 +22,7 @@
   if(is.null(uri))
     stop("uri cannot be null")
 
-  if (service=="REPO") {
-    path <- .getRepoEndpointPrefix()
-  } else if (service=="AUTH") {
-    path <- .getAuthEndpointPrefix()
-  } else if (service=="FILE") {
-    path <- .getFileEndpointPrefix()
-  } else {
-    stop(sprintf("Unexpected service: %s.", service))
-  }
+  path<-endpoint$endpointPrefix
   
   if(is.null(path))
     stop("path cannot be null")
@@ -118,7 +110,7 @@
   
   response<-synapseRequestFollowingAllRedirects(
     uri,
-    service,
+    endpoint,
     postfields = httpBody,
     customrequest = requestMethod,
     httpheader = header,

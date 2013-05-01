@@ -2,6 +2,6 @@
 	function(id, version) 
 {
 	uri <- .generateEntityUri(id, version)
-	url <- .ParsedUrl(url=synapseRepoServiceEndpoint())
+	url <- .ParsedUrl(url=synapseRepoServiceEndpoint()$endpoint)
 	paste(url@authority, url@path, uri, sep="")
 }
