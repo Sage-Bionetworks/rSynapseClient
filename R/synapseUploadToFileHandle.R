@@ -19,11 +19,11 @@ synapseUploadToFileHandle<-function(filePath, curlHandle=getCurlHandle()) {
   checkBlackList()
   
   # make sure permanent redirects have been resolved
-  resolvePermanentRedirects("FILE")
+  resolvePermanentRedirects(synapseFileServiceEndpoint())
   
   # the url for the fileHandle service
   fileHandleUri<-"/fileHandle"
-  fileHandleUrl<-sprintf("%s%s", synapseFileServiceEndpoint(), fileHandleUri)
+  fileHandleUrl<-sprintf("%s%s", synapseFileServiceEndpoint()$endpoint, fileHandleUri)
   
   # we start with the common header info, as used for other requests
   header <- .getCache("curlHeader")

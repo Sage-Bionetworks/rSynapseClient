@@ -6,7 +6,7 @@
 .synapseGetDelete <- 
   function(
     uri, 
-    service, 
+    endpoint, 
     requestMethod, 
     curlHandle=getCurlHandle(), 
     anonymous = .getCache("anonymous"), 
@@ -19,15 +19,7 @@
   if(is.null(uri))
     stop("uri cannot be null")
 
-  if (service=="REPO") {
-    path <- .getRepoEndpointPrefix()
-  } else if (service=="AUTH") {
-    path <- .getAuthEndpointPrefix()
-  } else if (service=="FILE") {
-    path <- .getFileEndpointPrefix()
-  } else {
-    stop(sprintf("Unexpected service: %s.", service))
-  }
+  path<-endpoint$endpointPrefix
   
   if(is.null(path))
     stop("path cannot be null")
@@ -82,7 +74,7 @@
   if(is.null(entity)){
     response<-synapseRequestFollowingAllRedirects(
       uri,
-      service,
+      endpoint,
       postfields = NULL, # the request body
       customrequest = requestMethod,
       httpheader = header,
@@ -104,7 +96,7 @@
     
     response<-synapseRequestFollowingAllRedirects(
       uri,
-      service,
+      endpoint,
       postfields = httpBody,
       customrequest = requestMethod,
       httpheader = header,

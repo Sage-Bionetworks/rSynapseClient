@@ -336,7 +336,7 @@ getFileHandle<-function(entity) {
     "/entity/%s/version/%s/filehandles", 
     propertyValue(entity, "id"),
     propertyValue(entity, "versionNumber"))
-  fileHandlesArray<-synapseGet(handlesUri, service="REPO")
+  fileHandlesArray<-synapseGet(handlesUri)
   fileHandles<-fileHandlesArray$list
   for (fileHandle in fileHandles) {
     if (fileHandle['id']==fileHandleId) return(as.list(fileHandle))

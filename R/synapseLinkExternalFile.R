@@ -9,5 +9,5 @@
 synapseLinkExternalFile<-function(externalURL, fileName, contentType) {
   uri<- "/externalFileHandle"
   body<-list(externalURL=externalURL, fileName=fileName, contentType=contentType, concreteType="org.sagebionetworks.repo.model.file.ExternalFileHandle")
-  synapsePost(uri, body, service="FILE")
+  synapsePost(uri, body, endpoint=synapseFileServiceEndpoint())
 }

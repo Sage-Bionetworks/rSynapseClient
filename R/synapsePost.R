@@ -6,7 +6,7 @@
 synapsePost <- 
   function(uri,
     entity, 
-    service="REPO", 
+    endpoint=synapseServiceEndpoint("REPO"), 
     curlHandle=getCurlHandle(), 
     anonymous = FALSE, 
    opts = .getCache("curlOpts"),
@@ -19,7 +19,7 @@ synapsePost <-
   
   .synapsePostPut(uri = uri, 
     entity = entity, 
-    service = service,
+    endpoint = endpoint,
     requestMethod = kMethod,  
     curlHandle = curlHandle, 
     anonymous = anonymous, 

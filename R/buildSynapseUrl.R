@@ -7,5 +7,5 @@
 .buildSynapseUrl <- 
   function(entity)
 {
-  url <- sprintf("%s/#Synapse:%s", synapsePortalEndpoint(), entity)
+  url <- sprintf("%s/#Synapse:%s", synapsePortalEndpoint()$endpoint, entity)
 }

@@ -52,7 +52,7 @@ integrationTestWikiService <-
     
     # delete the file handle
     handleUri<-sprintf("/fileHandle/%s", fileHandle$id)
-    synapseClient:::synapseDelete(handleUri, service="FILE")
+    synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
     
     # Finally, delete the Project
     deleteEntity(project)

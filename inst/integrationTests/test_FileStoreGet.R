@@ -291,6 +291,7 @@ roundTripIntern<-function(project) {
   # get the current version of the file, but download it to a specified location
   # (make the location unique)
   specifiedLocation<-file.path(tempdir(), "subdir")
+  if (file.exists(specifiedLocation)) unlink(specifiedLocation, recursive=T) # in case it already exists
   checkTrue(dir.create(specifiedLocation))
   scheduleFolderForDeletion(specifiedLocation)
   downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation)
@@ -328,9 +329,9 @@ roundTripIntern<-function(project) {
   deleteEntity(downloadedFile)
   # clean up downloaded file
   handleUri<-sprintf("/fileHandle/%s", storedFile@fileHandle$id)
-  synapseClient:::synapseDelete(handleUri, service="FILE")
+  synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
   handleUri<-sprintf("/fileHandle/%s", updatedFile2@fileHandle$id)
-  synapseClient:::synapseDelete(handleUri, service="FILE")
+  synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
 }
 
 
@@ -396,7 +397,7 @@ integrationTestAddToNewFILEEntity <-
   deleteEntity(downloadedFile)
   # clean up downloaded file
   handleUri<-sprintf("/fileHandle/%s", storedFile@fileHandle$id)
-  synapseClient:::synapseDelete(handleUri, service="FILE")
+  synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
 }
 
 # test that legacy *Entity based methods work on File objects, cont.
@@ -429,7 +430,7 @@ integrationTestReplaceFile<-function() {
     deleteEntity(downloadedFile)
     # clean up downloaded file
     handleUri<-sprintf("/fileHandle/%s", newStoredFile@fileHandle$id)
-    synapseClient:::synapseDelete(handleUri, service="FILE")
+    synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
   }
 
 
@@ -455,7 +456,7 @@ integrationTestLoadEntity<-function() {
   deleteEntity(loadedEntity)
   # clean up downloaded file
   handleUri<-sprintf("/fileHandle/%s", loadedEntity2@fileHandle$id)
-  synapseClient:::synapseDelete(handleUri, service="FILE")
+  synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
 }
 
 integrationTestSerialization<-function() {

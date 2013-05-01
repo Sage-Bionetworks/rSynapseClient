@@ -3,20 +3,25 @@
 ##
 ## resolve the permanent redirects for a service endpoint
 ##
-## 'service' is REPO, AUTH, or FILE
 ##
 ####################################################################
 
-resolvePermanentRedirects<-function(service) {
+resolvePermanentRedirects<-function(endpoint) {
+  
+  # we need to related permanent redirects to some service (e.g. REPO, AUTH, FILE)
+  # if no service is specified then we use the 'host' portion of the endpoint as a proxy
+  if (is.null(endpoint$service)) {
+    endpoint$service<-endpoint$host
+  }
   
   # need to make sure that permanent redirects have been resolved:
-  redirectResolvedKey <- sprintf("permanent.redirects.resolved.%s", service)
+  redirectResolvedKey <- sprintf("permanent.redirects.resolved.%s", endpoint$service)
   redirectResolvedStatus <- .getCache(redirectResolvedKey)
   if (is.null(redirectResolvedStatus)) {
     # this will follow redirects and update the service endpoint globally
     redirectResult<-synapseGetFollowingPermanentRedirects(
       uri="/nonexistentservice", # non-existent service, just to trigger the redirect
-      service=service,
+      endpoint=endpoint,
       httpheader=.getCache("curlHeader"),
       curl=getCurlHandle(),
       debugfunction = NULL,
@@ -28,4 +33,6 @@ resolvePermanentRedirects<-function(service) {
     .setCache(redirectResolvedKey, TRUE)
   }
   
+  # return the up-to-date endpoint
+  synapseServiceEndpoint(endpoint$service)
 }

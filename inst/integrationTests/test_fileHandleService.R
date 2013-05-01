@@ -13,12 +13,12 @@ integrationTestFileHandle <-
     checkEquals(synapseClient:::getMimeTypeForFile(basename(filePath)), fileHandle$contentType)
     # now try to retrieve the file handle given the id
     handleUri<-sprintf("/fileHandle/%s", fileHandle$id)
-    fileHandle2<-synapseClient:::synapseGet(handleUri, service="FILE")
+    fileHandle2<-synapseClient:::synapseGet(handleUri, endpoint=synapseFileServiceEndpoint())
     checkEquals(fileHandle, fileHandle2)
     # now delete the handle
-    synapseClient:::synapseDelete(handleUri, service="FILE")
+    synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
     # now we should not be able to get the handle
-    fileHandle3<-synapseClient:::synapseGet(handleUri, service="FILE", checkHttpStatus=F)
+    fileHandle3<-synapseClient:::synapseGet(handleUri, endpoint=synapseFileServiceEndpoint(), checkHttpStatus=F)
     checkEquals("The resource you are attempting to access cannot be found", fileHandle3$reason)
 }
 
