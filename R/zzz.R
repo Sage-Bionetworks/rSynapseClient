@@ -110,7 +110,15 @@ kSupportedDataLocationTypes <- c("external", "awss3")
 
 
   entities <- synapseClient:::entitiesToLoad()
-  for(ee in entities){
+  nonEntities<-list(
+    "org.sagebionetworks.repo.model.UserProfile",
+    "org.sagebionetworks.evaluation.model.Evaluation",
+    "org.sagebionetworks.evaluation.model.Submission",
+    "org.sagebionetworks.evaluation.model.SubmissionStatus",
+    "org.sagebionetworks.evaluation.model.SubmissionBundle"
+    )
+  
+  for(ee in c(entities, nonEntities)){ 
     synapseClient:::defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
     synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
   }
