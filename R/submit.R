@@ -12,8 +12,13 @@ submit<-function(evaluation, entity, submissionName) {
     if (is.null(entityVersion)) stop("Entity version is required.")
     etag<-propertyValue(entity, "etag")
     if (is.null(etag)) stop("Entity is missing etag.")
+    # if it's an old version we have to retrieve the latest to get the etag
+    if (etag=="00000000-0000-0000-0000-000000000000") {
+      latestEntity<-synGet(entityId, downloadFile=F)
+      etag<-propertyValue(latestEntity, "etag")
+    }
   } else {
-    stop("You must provide an entity or and entity ID.")
+    stop("You must provide an entity.")
   }
   if (missing(evaluation)) stop ("evaluation is required.")
   if (is(evaluation, "Evaluation")) {

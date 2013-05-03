@@ -47,6 +47,31 @@ integrationTest_submit <- function() {
   
   # delete the submission
   synRestDELETE(submissionURI)
+  
+  # rev the entity
+  file<-addObject(file, c(4,5,6))
+  file<-synStore(file)
+  # changing the file automatically increments the version
+  checkEquals(2, propertyValue(file, "versionNumber"))
+  
+  # now submit the old version
+  oldFile<-synGet(propertyValue(file, "id"), version=1, downloadFile=F)
+  checkEquals(1, propertyValue(oldFile, "versionNumber"))
+  submission2<-submit(evaluation, oldFile)
+  
+  checkEquals(propertyValue(oldFile, "id"), propertyValue(submission2, "entityId"))
+  checkEquals(propertyValue(oldFile, "versionNumber"), propertyValue(submission2, "versionNumber"))
+  checkEquals(eid, propertyValue(submission2, "evaluationId"))
+  checkEquals(propertyValue(oldFile, "name"), propertyValue(submission2, "name"))
+  
+  # retrieve the submission
+  submissionURI<-sprintf("/evaluation/submission/%s", propertyValue(submission2, "id"))
+  submission3<-Submission(synRestGET(submissionURI))
+  checkEquals(submission2, submission3)
+  
+  # delete the submission
+  synRestDELETE(submissionURI)
+  
 }
   
 
