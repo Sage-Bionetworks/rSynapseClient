@@ -39,3 +39,28 @@ integrationTestCRUD <- function() {
   error<-try(synRestGET(sprintf("/entity/%s", id)), silent=T)
   checkEquals("try-error", class(error))
 }
+
+integrationTestObjectCRUD <- function() {
+  project <- synapseClient:::.getCache("testProject")
+  # create something
+  pid<-propertyValue(project, "id")
+  folder<-Folder(list(entityType="org.sagebionetworks.repo.model.Folder", parentId=pid, name="foo"))
+  result<-Folder(synRestPOST("/entity", folder))
+  id<-propertyValue(result, "id")
+  checkTrue(!is.null(id))
+  # get it
+  result2<-Folder(synRestGET(sprintf("/entity/%s", id)))
+  checkEquals(result2, result)
+  # update it
+  propertyValue(result2, "name")<-"bar"
+  result<-Folder(synRestPUT(sprintf("/entity/%s", id), result2))
+  # get it, check that it's right
+  result2<-Folder(synRestGET(sprintf("/entity/%s", id)))
+  checkEquals(result2, result)
+  # delete it
+  synRestDELETE(sprintf("/entity/%s", id))
+  # check that it's deleted
+  error<-try(synRestGET(sprintf("/entity/%s", id)), silent=T)
+  checkEquals("try-error", class(error))
+}
+
