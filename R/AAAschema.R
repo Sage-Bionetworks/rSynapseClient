@@ -7,6 +7,7 @@ TYPEMAP <- list(
   string = "character",
   integer = "integer",
   float = "numeric",
+  number = "numeric",
   object = "character",
   array = "character"
 )
@@ -63,10 +64,12 @@ defineEntityClass <-
   
   implements <- unique(c(entityDef$implements[[1]][[1]], synapseClient:::getImplements(entityDef$implements[[1]][[1]])))
   
-  if("org.sagebionetworks.repo.model.Locationable" %in% implements) {
+  if ("org.sagebionetworks.repo.model.Locationable" %in% implements) {
     contains <- "Locationable"
-  } else{
+  } else if ("org.sagebionetworks.repo.model.Entity" %in% implements) {
     contains <- "Entity"
+  } else {
+    contains <- "SimplePropertyOwner"
   }
   
   setClass(
@@ -126,7 +129,7 @@ defineEntityConstructors <-
         ee <- new(classType)
         for(prop in names(entity))
           propertyValue(ee, prop) <- entity[[prop]]
-        propertyValue(ee, "entityType") <- synapseType
+        if (is(ee, "Entity")) propertyValue(ee, "entityType") <- synapseType
         ee
       },
       where = where
