@@ -13,7 +13,12 @@ export(
   File,
   synGet,
   synStore,
-  getFileLocation
+  getFileLocation,
+  submit,
+  synRestGET,
+  synRestDELETE,
+  synRestPOST,
+  synRestPUT
 )
 
 export(onWeb)

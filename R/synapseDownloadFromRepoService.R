@@ -32,10 +32,10 @@ synapseDownloadFromRepoServiceToDestination<-function(downloadUri, destfile=temp
   checkBlackList()
   
   # make sure permanent redirects have been resolved
-  resolvePermanentRedirects("REPO")
+  resolvePermanentRedirects(synapseRepoServiceEndpoint())
   
   # the url for the repo service
-  downloadUrl<-sprintf("%s%s", synapseRepoServiceEndpoint(), downloadUri)
+  downloadUrl<-sprintf("%s%s", synapseRepoServiceEndpoint()$endpoint, downloadUri)
   paramIndex<-regexpr("?", downloadUri, fixed=T)
   if(paramIndex>0) {
     downloadUriWithoutParams<-substr(downloadUri, 1, paramIndex-nchar("?"))
@@ -54,7 +54,7 @@ synapseDownloadFromRepoServiceToDestination<-function(downloadUri, destfile=temp
   # we add in the authentication info
   header <- switch(authMode(),
     auth = .stuffHeaderAuth(header),
-    hmac = .stuffHeaderHmac(header, sprintf("%s%s", .getRepoEndpointPrefix(), downloadUriWithoutParams)),
+    hmac = .stuffHeaderHmac(header, sprintf("%s%s", getEndpointPrefixForService("REPO"), downloadUriWithoutParams)),
     stop("Unknown auth mode: %s. Could not build header", authMode())
   )		
   

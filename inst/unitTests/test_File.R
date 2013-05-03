@@ -20,31 +20,44 @@
 }
 
 unitTestSimpleConstructor<-function() {
-  # test that it works to give ONLY a file path
-  file<-File("/path/to/file")
+  # test that it works to give just a file path and parentId
+  file<-File("/path/to/file", parentId="syn1234")
   
   # now check that S4 is not confused by annotation parameters
-  file<-File("/path/to/file", annotName=FALSE)
+  file<-File("/path/to/file", parentId="syn1234", annotName=FALSE)
   checkTrue(file@synapseStore) # this is the default and S4 should mistake 'annotName' for 'synapseStore'
   checkEquals("FALSE", annotValue(file, "annotName")) # the extra param should become an annotation on the file
   checkEquals("/path/to/file", getFileLocation(file))
+  
+  # now check that S4 is not confused by annotation parameters WHEN FILE PATH IS OMITTED
+  file<-File(parentId="syn1234", annotName=FALSE)
+  checkTrue(file@synapseStore) # this is the default and S4 should mistake 'annotName' for 'synapseStore'
+  checkEquals("FALSE", annotValue(file, "annotName")) # the extra param should become an annotation on the file
+  checkEquals(character(0), getFileLocation(file))
+}
+
+unitTestParentIdRequired<-function() {
+  # this is OK...
+  File("/path/to/file", parentId="syn101")
+  # ... but check that there's an error if parentId is ommitted
+  checkEquals("try-error", class(try(File("/path/to/file"), silent=T)))
 }
 
 unitTestObjectConstructor<-function() {
   anObject<-list(foo="bar")
-  file<-File(anObject)
+  file<-File(parentId="syn1234")
+  file<-addObject(file, anObject)
   checkTrue(synapseClient:::hasObjects(file))
   checkEquals(anObject, getObject(file, "anObject"))
   checkEquals(character(0), getFileLocation(file))
   
   
-# TODO this does NOT work, as including the ellipsis in the method signature
-# causes parent.frame() not to work in File("ANY")
-#   file<-File(anObject, parentId="syn124", annotName="annot value")
-#   checkTrue(synapseClient:::hasObjects(file))
-#   checkEquals(anObject, getObject(file, "anObject"))
-#   checkEquals("syn124", propertyValue(file, "parentId"))
-#   checkEquals("annot value", annotValue(file, "annotName"))
+   file<-File(parentId="syn124", annotName="annot value")
+   file<-addObject(file, anObject)
+   checkTrue(synapseClient:::hasObjects(file))
+   checkEquals(anObject, getObject(file, "anObject"))
+   checkEquals("syn124", propertyValue(file, "parentId"))
+   checkEquals("annot value", annotValue(file, "annotName"))
  }
 
 unitTestConstructor<-function() {
@@ -55,6 +68,7 @@ unitTestConstructor<-function() {
   file<-File(
     "/path/to/file", 
     TRUE, 
+    parentId="syn1234",
     description=description, 
     versionComment=versionComment,
     anAnnotation=annotValue)
@@ -75,7 +89,7 @@ unitTestConstructor<-function() {
 unitTestListConstructor<-function() {
   description<-"this describes my File"
   annotValue<-"assigned annotation value"
-  file<-FileListConstructor(list(description=description, anAnnotation=annotValue))
+  file<-synapseClient:::FileListConstructor(list(description=description, anAnnotation=annotValue))
   checkEquals(description, propertyValue(file, "description"))
   checkEquals(annotValue, annotValue(file, "anAnnotation"))
 }
@@ -153,4 +167,21 @@ unitTestGetObject <-
   checkEquals(getObject(own, "foo"), "boo")
 }
 
+unitTestIsLoadable <- function() {
+  foo<-diag(10)
+  filePath<-tempfile()
+  save(foo, file=filePath)
+  checkTrue(file.exists(filePath))
+  origWarn<-options()$warn
+  checkTrue(synapseClient:::isLoadable(filePath))
+  checkEquals(origWarn, options()$warn) # make sure options("warn") is restored
+  
+  connection<-file(filePath)
+  writeLines("My dog has fleas", connection)
+  close(connection)
 
+  checkTrue(file.exists(filePath))
+  origWarn<-options()$warn
+  checkTrue(!synapseClient:::isLoadable(filePath))
+  checkEquals(origWarn, options()$warn) # make sure options("warn") is restored
+}
