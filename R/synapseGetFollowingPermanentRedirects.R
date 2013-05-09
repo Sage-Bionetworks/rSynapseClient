@@ -59,6 +59,7 @@ synapseGetFollowingPermanentRedirects<-function(
       if (uriStart+nchar(uri)!=1+nchar(redirectLocation)) stop(sprintf("%s does not come at the end of %s", uri, redirectLocation))
       redirectEndpoint<-substr(redirectLocation, 1, uriStart-1)
       synapseServiceEndpoint(endpoint$service, redirectEndpoint)
+      endpoint<-synapseServiceEndpoint(endpoint$service)
     } else {
       return(result)
     }
