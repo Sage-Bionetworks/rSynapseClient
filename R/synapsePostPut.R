@@ -74,6 +74,12 @@
   if(pathIndex>0) {
     uri<-substr(uri, pathIndex+nchar(path), nchar(uri))
   }
+  paramIndex<-regexpr("?", uri, fixed=T)
+  if(paramIndex>0) {
+    uriWithoutParams<-substr(uri, 1, paramIndex-nchar("?"))
+  } else {
+    uriWithoutParams<-uri
+  }
   
   
   
@@ -83,7 +89,7 @@
   if(is.null(anonymous) || !anonymous) {
     header <- switch(authMode(),
       auth = .stuffHeaderAuth(header),
-      hmac = .stuffHeaderHmac(header, paste(path, uri, sep="")),
+      hmac = .stuffHeaderHmac(header, paste(path, uriWithoutParams, sep="")),
       stop("Unknown auth mode: %s. Could not build header", authMode())
     )		
   }

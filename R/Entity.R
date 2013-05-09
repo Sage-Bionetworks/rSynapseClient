@@ -198,7 +198,7 @@ findExistingEntity<-function(name, parentId=NULL) {
   synapseGet(.generateEntityUri(entityId))
 }
 
-createEntityMethod<-function(entity, createOrUpdate) {
+createEntityMethod<-function(entity, createOrUpdate, forceVersion) {
   if (missing("createOrUpdate")) createOrUpdate<-FALSE
   
   oldAnnots <- entity@annotations
@@ -222,13 +222,29 @@ createEntityMethod<-function(entity, createOrUpdate) {
     if (curlInfo$response.code==409) {
       # retrieve the object
       entityAsList<-findExistingEntity(entity$name, entity$parentId)
-      # apply certain properties
-      # TODO would it be better to specify the omit-list rather than the include-list?
-      propertiesToTransfer<-c("description")
-      for (propName in propertiesToTransfer) {
-        entityProp<-entity$propName
-        if (!is.null(entityProp)) propertyValue(entityAsList, propName)<-entityProp
+      # apply the properties of the new entity
+      propertiesNOTtoTransfer<-c("etag")
+      for (propName in names(entity)) {
+        if (!any(propName==propertiesNOTtoTransfer)) {
+          entityAsList[[propName]]<-entity[[propName]]
+        }
       }
+      entity<-entityAsList
+      # now update the existing entity
+      updateUri<-sprintf("/entity/%s", entity$id)
+      if (missing("forceVersion")) forceVersion=FALSE
+      # only do the following for versionable entities
+      if (forceVersion && any("versionNumber"==names(entity))) {
+        updateUri <-sprintf("%s/version", updateUri)
+        # make sure the version label changes!
+        versionLabel<-entity$versionLabel
+        # if the version is the string version of the numeric version field...
+        if (!is.null(versionLabel) && !is.null(entity$versionNumber) && entity$versionNumber==versionLabel) {
+          # ... then increment it
+        entity$versionLabel <- sprintf("%d", 1+as.numeric(versionLabel))
+        }
+      }
+      entityAsList<-synapsePut(updateUri, entity)
     } else {
       .checkCurlResponse(curlHandle)
     }
@@ -260,8 +276,8 @@ createEntityMethod<-function(entity, createOrUpdate) {
 setMethod(
   f = "createEntity",
   signature = "Entity",
-  # without the wrapper I get this errorin R 2.15: methods can add arguments to the generic ÔcreateEntityÕ only if '...' is an argument to the generic
-  definition = function(entity){createEntityMethod(entity=entity, createOrUpdate=FALSE)}
+  # without the wrapper I get this error in R 2.15: methods can add arguments to the generic ÔcreateEntityÕ only if '...' is an argument to the generic
+  definition = function(entity){createEntityMethod(entity=entity, createOrUpdate=FALSE, forceVersion=FALSE)}
 )
 
 setMethod(
@@ -331,7 +347,9 @@ updateEntityMethod<-function(entity, forceVersion)
     updateUri<-entity$properties$uri
     
     if (missing("forceVersion")) forceVersion=FALSE
-    if (forceVersion) {
+    
+    # only do the following for versionable entities
+    if (forceVersion && any("versionNumber"==propertyNames(entity))) {
       updateUri <-sprintf("%s/version", updateUri)
       # make sure the version label changes!
       versionLabel<-propertyValue(entity, "versionLabel")
