@@ -30,8 +30,7 @@ submit<-function(evaluation, entity, submissionName) {
     stop("You must provide an evaluation or and evaluation ID.")
   }
   if (missing(submissionName)) submissionName<-propertyValue(entity, "name")
-  submission<-list(evaluationId=evaluationId, entityId=entityId, versionNumber=entityVersion, name=submissionName)
-  listResult<-synRestPOST(sprintf("/evaluation/submission?etag=%s", etag), submission)
-  Submission(listResult)
+  submission<-Submission(evaluationId=evaluationId, entityId=entityId, versionNumber=entityVersion, name=submissionName)
+  synCreateSubmission(submission, entityEtag=etag)
 }
 

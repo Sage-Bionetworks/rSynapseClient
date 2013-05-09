@@ -470,3 +470,11 @@ setRefClass(
         }
     )
 )
+
+setClass(
+  Class="PaginatedResults",
+  representation = list(
+    totalNumberOfResults="integer",
+    results = "list"
+    )
+)

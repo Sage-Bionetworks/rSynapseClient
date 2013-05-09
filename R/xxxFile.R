@@ -69,7 +69,7 @@ File<-function(path, synapseStore=T, ...) {
   if (is.null(list(...)$parentId)) {
     stop("parentId is required.")
   }
-  if (missing("path")) {
+  if (missing(path)) {
     entityParams<-list(...)
   } else {
     entityParams<-modifyList(list(name=basename(path)), list(...))
@@ -214,34 +214,38 @@ serializeObjects<-function(file) {
 }
 
 synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T) {  
-  if (class(entity)=="File" || class(entity)=="Record") {
-    entity<-synStoreFile(file=entity, createOrUpdate, forceVersion)
-    # TODO: Handle Record
-  }
-  # Now save the metadata
-  if (!is.null(activity)) {
-    generatedBy(entity)<-activity
-  } else if (!is.null(used) || !is.null(executed)) {
-    activity<-Activity(list(name=activityName, description=activityDescription))
-    usedAndExecuted<-list()
-    if (!is.null(used)) usedAndExecuted<-c(usedAndExecuted, lapply(X=used, FUN=usedListEntry, wasExecuted=F))
-    if (!is.null(executed)) usedAndExecuted<-c(usedAndExecuted, lapply(X=executed, FUN=usedListEntry, wasExecuted=T))
-    if (length(usedAndExecuted)>0) propertyValue(activity, "used") <- usedAndExecuted
-    generatedBy(entity)<-activity
-  }
-  if (is.null(propertyValue(entity, "id"))) {
-    storedEntity<-createEntityMethod(entity, createOrUpdate)
+  if (is(entity, "Entity")) {
+    if (class(entity)=="File" || class(entity)=="Record") {
+      entity<-synStoreFile(file=entity, createOrUpdate, forceVersion)
+      # TODO: Handle Record
+    }
+    # Now save the metadata
+    if (!is.null(activity)) {
+      generatedBy(entity)<-activity
+    } else if (!is.null(used) || !is.null(executed)) {
+      activity<-Activity(list(name=activityName, description=activityDescription))
+      usedAndExecuted<-list()
+      if (!is.null(used)) usedAndExecuted<-c(usedAndExecuted, lapply(X=used, FUN=usedListEntry, wasExecuted=F))
+      if (!is.null(executed)) usedAndExecuted<-c(usedAndExecuted, lapply(X=executed, FUN=usedListEntry, wasExecuted=T))
+      if (length(usedAndExecuted)>0) propertyValue(activity, "used") <- usedAndExecuted
+      generatedBy(entity)<-activity
+    }
+    if (is.null(propertyValue(entity, "id"))) {
+      storedEntity<-createEntityMethod(entity, createOrUpdate)
+    } else {
+      storedEntity<-updateEntityMethod(entity, forceVersion)
+    }
+    if (class(entity)=="File" || class(entity)=="Record") {
+      # now copy the class-specific fields into the newly created object
+      if (fileHasFilePath(entity)) storedEntity@filePath <- entity@filePath
+      storedEntity@synapseStore <- entity@synapseStore
+      storedEntity@fileHandle <- entity@fileHandle
+      storedEntity@objects <- entity@objects
+    }
+    storedEntity
   } else {
-    storedEntity<-updateEntityMethod(entity, forceVersion)
+    synStoreNonEntityObject(entity)
   }
-  if (class(entity)=="File" || class(entity)=="Record") {
-    # now copy the class-specific fields into the newly created object
-    if (fileHasFilePath(entity)) storedEntity@filePath <- entity@filePath
-    storedEntity@synapseStore <- entity@synapseStore
-    storedEntity@fileHandle <- entity@fileHandle
-    storedEntity@objects <- entity@objects
-  }
-  storedEntity
 }
 
 synStoreFile <- function(file, createOrUpdate=T, forceVersion=T) {
@@ -315,17 +319,22 @@ downloadFromSynapseOrExternal<-function(downloadLocation, filePath, synapseStore
   
 }
 
+# TODO since this is now addresses more than just entities, should move to a different .R file
 synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
-  if (is.null(version)) {
-    file<-getEntity(id)
+  if (isSynapseId(id)) {
+    if (is.null(version)) {
+      file<-getEntity(id)
+    } else {
+      file<-getEntity(id, version=version)
+    }   
+    if ((class(file)=="File" || class(file)=="Record") && (downloadFile || load)) {
+      file<-synGetFile(file, downloadFile, downloadLocation, ifcollision, load)
+      # TODO: Handle Record
+    } else {
+      file
+    }
   } else {
-    file<-getEntity(id, version=version)
-  }   
-  if ((class(file)=="File" || class(file)=="Record") && (downloadFile || load)) {
-    file<-synGetFile(file, downloadFile, downloadLocation, ifcollision, load)
-    # TODO: Handle Record
-  } else {
-    file
+    synGetNonEntityObject(id)
   }
 }
 

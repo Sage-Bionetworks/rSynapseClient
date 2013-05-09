@@ -110,20 +110,27 @@ kSupportedDataLocationTypes <- c("external", "awss3")
 
 
   entities <- synapseClient:::entitiesToLoad()
-  nonEntities<-list(
-    "org.sagebionetworks.repo.model.UserProfile",
-    "org.sagebionetworks.evaluation.model.Evaluation",
-    "org.sagebionetworks.evaluation.model.Submission",
-    "org.sagebionetworks.evaluation.model.SubmissionStatus",
-    "org.sagebionetworks.evaluation.model.SubmissionBundle"
+    for(ee in entities){ 
+      synapseClient:::defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+      synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+    }
+    
+    nonEntities<-list(
+      "org.sagebionetworks.repo.model.UserProfile",
+      "org.sagebionetworks.evaluation.model.Evaluation",
+      "org.sagebionetworks.evaluation.model.Submission",
+      "org.sagebionetworks.evaluation.model.SubmissionStatus",
+      "org.sagebionetworks.evaluation.model.SubmissionBundle",
+      "org.sagebionetworks.evaluation.model.Participant"#,
+      #"org.sagebionetworks.repo.model.wiki.WikiPage"
     )
-  
-  for(ee in c(entities, nonEntities)){ 
-    synapseClient:::defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
-    synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
-  }
-  
-  # we override FileEntity with our own class constructor.  See also entitiesToLoad() in AAAschema.R
+    
+    for(ee in nonEntities){ 
+      synapseClient:::defineNONEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+      synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+    }
+    
+    # we override FileEntity with our own class constructor.  See also entitiesToLoad() in AAAschema.R
   addToEntityTypeMap(className="FileListConstructor", jsonSchemaName="org.sagebionetworks.repo.model.FileEntity")
 }
 
