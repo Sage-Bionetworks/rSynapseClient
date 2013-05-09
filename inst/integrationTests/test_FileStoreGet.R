@@ -524,8 +524,32 @@ integrationTestNonFile<-function() {
   retrievedFolder<-synGet(id)
   checkEquals(propertyValue(project, "id"), propertyValue(retrievedFolder, "parentId"))
   checkEquals("value", synapseClient:::synAnnotGetMethod(retrievedFolder, "annot"))
+ 
+  # now test updating
+  retrievedFolder<-synapseClient:::synAnnotSetMethod(retrievedFolder, "annot", "value2")
+  retrievedFolder<-synStore(retrievedFolder)
   
-  # TODO test createORUpdate
+  retrievedFolder<-synGet(id)
+  checkEquals(propertyValue(project, "id"), propertyValue(retrievedFolder, "parentId"))
+  # verify that updated value was persisted
+  checkEquals("value2", synapseClient:::synAnnotGetMethod(retrievedFolder, "annot"))
+  
+  
+  # test createORUpdate=T
+  folder<-Folder(name="test folder", parentId=propertyValue(project, "id"))
+  folder<-synapseClient:::synAnnotSetMethod(folder, "annot", "value3")
+  storedFolder<-synStore(folder)
+  # check that the id is the same as before (i.e. the previous folder was updated)
+  checkEquals(id, propertyValue(storedFolder, "id"))
+  
+  retrievedFolder<-synGet(id)
+  checkEquals(propertyValue(project, "id"), propertyValue(retrievedFolder, "parentId"))
+  checkEquals("value3", synapseClient:::synAnnotGetMethod(retrievedFolder, "annot"))
+  
+  # test createORUpdate=FALSE
+  folder<-Folder(name="test folder", parentId=propertyValue(project, "id"))
+  checkException(synStore(folder, createOrUpdate=FALSE), silent=TRUE)
+  
 }
 
 # this tests synStore in which the activity name, description, used, and executed param's are passed in
