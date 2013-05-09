@@ -188,6 +188,7 @@ createOrUpdateIntern<-function(project) {
   # since createOrUpdate=T is the default, this should update 'file' rather than create a new one
   file2<-synStore(file2)
   checkEquals(propertyValue(file, "id"), propertyValue(file2, "id"))
+  checkEquals(2, propertyValue(file2, "versionNumber")) # this is the test for SYNR-429
   
   filePath3 <- createFile()
   file3<-File(filePath3, name=name, parentId=pid)
