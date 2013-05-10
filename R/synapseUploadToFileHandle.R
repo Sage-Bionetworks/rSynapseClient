@@ -30,7 +30,7 @@ synapseUploadToFileHandle<-function(filePath, curlHandle=getCurlHandle()) {
   # we add in the authentication info
   header <- switch(authMode(),
       auth = .stuffHeaderAuth(header),
-      hmac = .stuffHeaderHmac(header, sprintf("%s%s", .getFileEndpointPrefix(), fileHandleUri)),
+      hmac = .stuffHeaderHmac(header, sprintf("%s%s", getEndpointPrefixForService("FILE"), fileHandleUri)),
       stop("Unknown auth mode: %s. Could not build header", authMode())
     )		
   # file upload to /fileHandle is a 'multipart' request

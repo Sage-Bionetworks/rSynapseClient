@@ -1,9 +1,9 @@
 Package: synapseClient
 Type: Package
 Title: Synapse R Client from Sage Bionetworks
-Version: 0.24
-ReleaseNotes: Support for File objects.
-Date: 2013-05-01
+Version: 0.25
+ReleaseNotes: Fix for HMAC signature problem (SYNR-428), File update issue (SYNR-429), redirect following issue (SYNR-430).
+Date: 2013-05-10
 Author@R: c(
 	person("Bruce", "Hoff", email="bruce.hoff@sagebase.org", role="aut"),
 	person("Chris", "Bare", email="chris.bare@sagebase.org", role="aut"),

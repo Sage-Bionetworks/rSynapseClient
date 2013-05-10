@@ -1,3 +1,5 @@
 src-*
 src/*.o
 src/*.so
+.project
+.settings/*

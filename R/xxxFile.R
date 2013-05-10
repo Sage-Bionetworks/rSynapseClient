@@ -230,7 +230,7 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
     generatedBy(entity)<-activity
   }
   if (is.null(propertyValue(entity, "id"))) {
-    storedEntity<-createEntityMethod(entity, createOrUpdate)
+    storedEntity<-createEntityMethod(entity, createOrUpdate, forceVersion)
   } else {
     storedEntity<-updateEntityMethod(entity, forceVersion)
   }
