@@ -38,6 +38,110 @@ createFile<-function() {
   filePath
 }
 
+integrationTestUpdateProvenance <- function() {
+  # create a Project
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  updateProvenanceIntern(project)
+}
+
+# this embodies the use case crafted by D. Burdick: https://github.com/Sage-Bionetworks/Synapse-Repository-Services/blob/develop/tools/provenance/Provenance_wiki_example.R
+updateProvenanceIntern<-function(project) {
+  projectId <- propertyValue(project, "id")
+  
+  # create some resources to use
+  myAnnotationFilePath<-createFile() # replaces "/tmp/myAnnotationFile.txt"
+  myAnnotationFile <- synStore(File(myAnnotationFilePath, name="myAnnotationFile.txt", parentId=projectId))
+  myRawDataFilePath<-createFile() # replaces "/tmp/myRawDataFile.txt"
+  myRawDataFile <- synStore(File(myRawDataFilePath, name="myRawDataFile.txt", parentId=projectId))
+  myScriptFilePath <- createFile() # replaces "/tmp/myScript.txt"
+  myScript <- synStore(File(myScriptFilePath, name="myScript.txt", parentId=projectId))
+  
+  ## Example 1
+  # Here we explicitly define an "Activity" object, then we create the myOutputFile
+  # entity and use the activity to describe how it was made.
+  
+  activity<-createEntity(Activity(list(name="Manual Curation")))
+  myOutputFilePath<-createFile() # replaces "/tmp/myOutputFile.txt"
+  myOutputFile <- synStore(File(myOutputFilePath, name="myOutputFile.txt", parentId=projectId), activity)
+    
+  ## Example 2
+  # Create an activity implicitly by describing it in the synStore call for myOutputFile.
+  # Here the combination of myAnnotationFile and myRawDataFile are used to generate myOutputFile.
+  
+  myOutputFile <- synStore(File(myOutputFilePath, name="myOutputFile.txt", parentId=projectId),
+  used=list(myAnnotationFile, myRawDataFile),
+    activityName="Manual Annotation of Raw Data",
+    activityDescription="...")
+  
+  # the File should be a new version
+  checkEquals(2, propertyValue(myOutputFile, "versionNumber"))
+  
+  # verify that the provenance can be retrieved
+  retrievedFile<-synGet(propertyValue(myOutputFile, "id"), downloadFile=FALSE)
+  gb<-generatedBy(retrievedFile)
+  checkEquals("Manual Annotation of Raw Data", propertyValue(gb, "name"))
+  checkEquals("...", propertyValue(gb, "description"))
+  used<-propertyValue(gb, "used")
+  checkEquals("org.sagebionetworks.repo.model.provenance.UsedEntity", used[[1]]$concreteType)
+  checkEquals(FALSE, used[[1]]$wasExecuted)
+  targetIds<-c(used[[1]]$reference$targetId, used[[2]]$reference$targetId)
+  checkTrue(any(propertyValue(myAnnotationFile, "id")==targetIds))
+  checkEquals("org.sagebionetworks.repo.model.provenance.UsedEntity", used[[2]]$concreteType)
+  checkEquals(FALSE, used[[2]]$wasExecuted)
+  checkTrue(any(propertyValue(myRawDataFile, "id")==targetIds))
+  
+  ## Example 3
+  # Create a provenance record for myOutputFile that uses resources external to Synapse.
+  # Here we are describing the execution of Script.py (stored in GitHub)
+  # where myAnnotationFile and a raw data file from GEO are used as inputs
+  # to generate myOutputFile with the "used" list
+  
+  myOutputFile <- synStore(File(myOutputFilePath, name="myOutputFile.txt", parentId=projectId), 
+    used=list(list(name="Script.py", url="https://raw.github.com/.../Script.py", wasExecuted=T),
+      list(entity=myAnnotationFile, wasExecuted=F),
+      list(name="GSM349870.CEL", url="http://www.ncbi.nlm.nih.gov/geo/download/...", wasExecuted=F)),
+    activityName="Scripted Annotation of Raw Data",
+    activityDescription="To execute run: python Script.py [Annotation] [CEL]")
+  
+  # the File should be a new version
+  checkEquals(3, propertyValue(myOutputFile, "versionNumber"))
+
+  # verify that the provenance can be retrieved
+  retrievedFile<-synGet(propertyValue(myOutputFile, "id"), downloadFile=FALSE)
+  gb<-generatedBy(retrievedFile)
+  checkEquals("Scripted Annotation of Raw Data", propertyValue(gb, "name"))
+  checkEquals("To execute run: python Script.py [Annotation] [CEL]", propertyValue(gb, "description"))
+  used<-propertyValue(gb, "used")
+  checkEquals(3, length(used))
+  
+  
+  ## Example 4
+  # Create an activity describing the execution of myScript with myRawDataFile as the input
+  
+  activity<-createEntity(Activity(list(name="Process data and plot",
+        used=list(list(entity=myScript, wasExecuted=T),
+          list(entity=myRawDataFile, wasExecuted=F)))))
+  
+  # Record that the script's execution generated two output files, and upload those files
+  
+  myOutputFile <- synStore(File(myOutputFilePath, name="myOutputFile.txt", parentId=projectId), activity)
+  
+  # the File should be a new version
+  checkEquals(4, propertyValue(myOutputFile, "versionNumber"))
+  
+  # create another output created by the same activity
+  myPlotFilePath <-createFile() # replaces "/tmp/myPlot.png"
+  myPlot <- synStore(File(myPlotFilePath, name="myPlot.png", parentId=projectId), activity)
+  
+  # verify that the provenance can be retrieved
+  retrievedFile<-synGet(propertyValue(myOutputFile, "id"), downloadFile=FALSE)
+  gb<-generatedBy(retrievedFile)
+  checkEquals("Process data and plot", propertyValue(gb, "name"))
+  used<-propertyValue(gb, "used")
+  checkEquals(2, length(used))
+}
+
 integrationTestCacheMapRoundTrip <- function() {
   fileHandleId<-"TEST_FHID"
   filePath<- createFile()

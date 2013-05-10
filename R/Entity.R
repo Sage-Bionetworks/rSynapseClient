@@ -244,6 +244,9 @@ createEntityMethod<-function(entity, createOrUpdate, forceVersion) {
         entity$versionLabel <- sprintf("%d", 1+as.numeric(versionLabel))
         }
       }
+      if (!is.null(generatingActivity)) {
+        updateUri<-sprintf("%s?generatedBy=%s", updateUri, propertyValue(generatingActivity, "id"))
+      }
       entityAsList<-synapsePut(updateUri, entity)
     } else {
       .checkCurlResponse(curlHandle)
