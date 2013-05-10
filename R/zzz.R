@@ -121,8 +121,8 @@ kSupportedDataLocationTypes <- c("external", "awss3")
       "org.sagebionetworks.evaluation.model.Submission",
       "org.sagebionetworks.evaluation.model.SubmissionStatus",
       "org.sagebionetworks.evaluation.model.SubmissionBundle",
-      "org.sagebionetworks.evaluation.model.Participant"#,
-      #"org.sagebionetworks.repo.model.wiki.WikiPage"
+      "org.sagebionetworks.evaluation.model.Participant",
+      "org.sagebionetworks.repo.model.wiki.WikiHeader"
     )
     
     for(ee in nonEntities){ 
