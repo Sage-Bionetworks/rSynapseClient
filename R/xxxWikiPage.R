@@ -1,4 +1,4 @@
-# Class definition and methods for WikiPages
+# Class definition and methods for WikiPage
 # 
 # Author: brucehoff
 ###############################################################################
@@ -16,32 +16,32 @@ setClass(
   representation = representation(
     # fields:
     createUri = "character",
+    updateUri = "character",
     # filePaths: full paths to local files.
-    filePaths = "list",
-    # fileHandle (generated from JSON schema, empty before entity is created)
-    fileHandles = "list"
+    attachments = "list"
   ),
   # This is modeled after defineEntityClass in AAAschema
   prototype = prototype(
-    properties = initializeFileProperties()
+    properties = initializeWikiProperties()
   )
 )
 
 ##
 ## WikiPage constructor
-WikiPage<-function(parent, title, markdown, files) {
+WikiPage<-function(parent, title, markdown, attachments, parentWikiId) {
   wikiPage <- new("WikiPage")
   if (missing(parent)) {
     stop("parent is required.")
   }
-  wikiPage@createUri<-childWikiUri(parent)
-  if (!missing(files)) wikiPage@files<-files
+  wikiPage@createUri<-createWikiUri(parent)
+  if (!missing(attachments)) wikiPage@attachments<-attachments
   if (!missing(title)) propertyValue(wikiPage, "title")<-title
   if (!missing(markdown)) propertyValue(wikiPage, "markdown")<-markdown
+  if (!missing(parentWikiId)) propertyValue(wikiPage, "parentWikiId")<-parentWikiId
   wikiPage
 }
 
-childWikiUri<-function(parent) {
+createWikiUri<-function(parent) {
   if (is(parent, "Entity")) {
     sprintf("/entity/%s/wiki", propertyValue(parent, "id"))
   } else if (is(parent, "Evaluation")){
@@ -51,20 +51,62 @@ childWikiUri<-function(parent) {
   }
 }
 
+populateWikiPage<-function(createUri, listContent) {
+  result<-new("WikiPage")
+  result@createUri<-createUri
+  result@updateUri<-sprintf("%s/%s", createUri, listContent$id)
+  # initialize attachmentFileHandleIds to be an empty list
+  propertyValues(result)<-listContent
+  if (0==length(propertyValue(result, "attachmentFileHandleIds"))) {
+    propertyValue(result, "attachmentFileHandleIds")<-list()
+  }
+  result
+}
+
 synCreateWiki<-function(wikiPage) {
-  createUri<-childWikiUri(wikiPage@parent)  # TODO add parent field to wiki
-  # TODO add 'files' slot to WikiPage
-  # TODO convert 'files' list to file handles
-  result<-WikiPage(synRestPOST(createUri, wikiPage))
-  result@updateUri<-sprintf("%s/%s", createUri, propertyValue(result, "id"))
+  createUri<-wikiPage@createUri
+  # convert 'attachments' list to file handles
+  fileHandleIdList<-list()
+  for (attachment in wikiPage@attachments) {
+    fileHandle<-uploadAndAddToCacheMap(attachment)
+    fileHandleIdList[[length(fileHandleIdList)+1]]<-fileHandle$id
+  }
+  propertyValue(wikiPage, "attachmentFileHandleIds")<-fileHandleIdList
+  listResult<-synRestPOST(createUri, wikiPage)
+  populateWikiPage(createUri, listResult)
 }
 
-synGetWiki<-function(parent) {
-  getUri<-childWikiUri(parent)
-  result<-WikiPage(synRestGET(getUri))
-  result@updateUri<-sprintf("%s/%s", getUri, propertyValue(result, "id"))
-  
+# if id is null then we get the root page
+synGetWiki<-function(parent, id) {
+  createUri<-createWikiUri(parent)
+  if (missing(id)) {
+    getUri<-createUri
+  } else {
+    getUri<-sprintf("%s/%s", createUri, id)
+  }
+  populateWikiPage(createUri, synRestGET(getUri))
 }
 
+synUpdateWiki<-function(wikiPage) {
+  listResult<-synRestPUT(wikiPage@updateUri, wikiPage)
+  populateWikiPage(wikiPage@createUri, listResult)
+}
 
+wikiHeadersUri<-function(parent) {
+  if (is(parent, "Entity")) {
+    sprintf("/entity/%s/wikiheadertree", propertyValue(parent, "id"))
+  } else if (is(parent, "Evaluation")){
+    sprintf("/evaluation/%s/wikiheadertree", propertyValue(parent, "id"))
+  } else {
+    stop(sprintf("Unsupported %s", class(parent)))
+  }
+}
 
+synGetWikiHeaders<-function(parent) {
+  uri<-wikiHeadersUri(parent)
+  result<-list()
+  for (entry in synRestGET(uri)) {
+    result[[length(result)+1]]<-WikiHeader(entry)
+  }
+  result
+}
