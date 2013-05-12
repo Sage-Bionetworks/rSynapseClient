@@ -7,7 +7,7 @@
   project <- createEntity(Project())
   synapseClient:::.setCache("testProject", project)
   
-  evaluation<-Evaluation(name=sprintf("test_submit_%d", sample(100,1)), status="OPEN", contentSource="")
+  evaluation<-Evaluation(name=sprintf("test_submit_%d", sample(10000,1)), status="OPEN", contentSource="")
   evaluation<-Evaluation(synRestPOST("/evaluation", evaluation))
   synapseClient:::.setCache("testEvaluation", evaluation)
 }

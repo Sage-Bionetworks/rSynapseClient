@@ -199,7 +199,7 @@ findExistingEntity<-function(name, parentId=NULL) {
 }
 
 createEntityMethod<-function(entity, createOrUpdate, forceVersion) {
-  if (missing("createOrUpdate")) createOrUpdate<-FALSE
+  if (missing(createOrUpdate)) createOrUpdate<-FALSE
   
   oldAnnots <- entity@annotations
   
@@ -349,8 +349,7 @@ updateEntityMethod<-function(entity, forceVersion)
     annots <- entity@annotations
     updateUri<-entity$properties$uri
     
-    if (missing("forceVersion")) forceVersion=FALSE
-    
+    if (missing(forceVersion)) forceVersion=FALSE
     # only do the following for versionable entities
     if (forceVersion && any("versionNumber"==propertyNames(entity))) {
       updateUri <-sprintf("%s/version", updateUri)
@@ -451,7 +450,7 @@ setMethod(
 )
 
 storeEntityMethod<-function(entity, forceVersion) {
-  if (missing("forceVersion")) forceVersion=FALSE
+  if (missing(forceVersion)) forceVersion=FALSE
   if (is.null(propertyValue(entity, "id"))) {
     entity <- createEntity(entity)
   }
