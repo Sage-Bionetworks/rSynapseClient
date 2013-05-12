@@ -10,12 +10,16 @@ integrationTestUserProfile<-function() {
   
   propertyValue(profile, "summary")<-"test summary text"
   profile2<-synStore(profile)
-  checkEquals(profile2, profile)
+  propertyValue(profile, "etag")<-propertyValue(profile2, "etag")
+  checkEquals(properties(profile2), properties(profile))
+  checkEquals(profile2@updateUri, profile@updateUri)
+  
   profile3<-synGetUserProfile()
-  checkEquals(profile3, profile)
+  checkEquals(properties(profile3), properties(profile))
+  checkEquals(profile3@updateUri, profile@updateUri)
   
   profile4<-synGetUserProfile(propertyValue(profile, "ownerId"))
-  checkEquals(profile4, profile)
+  checkEquals(properties(profile4), properties(profile))
   
   # restore to original settings
   propertyValue(profile, "summary")<-origSummary
