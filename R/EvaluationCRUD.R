@@ -46,7 +46,7 @@ newSubmissionPaginatedResults<-function(content) {
   paginatedResults@totalNumberOfResults<-as.integer(content$totalNumberOfResults)
   for (s in content$results) {
     n<-length(paginatedResults@results)
-    paginatedResults@results[[n+1]]<-newSubmission(s)
+    paginatedResults@results[[n+1]]<-newSubmission(as.list(s))
   }
   paginatedResults
 }
@@ -57,7 +57,7 @@ newParticipantPaginatedResults<-function(content) {
   paginatedResults@totalNumberOfResults<-as.integer(content$totalNumberOfResults)
   for (s in content$results) {
     n<-length(paginatedResults@results)
-    paginatedResults@results[[n+1]]<-Participant(s)
+    paginatedResults@results[[n+1]]<-Participant(as.list(s))
   }
   paginatedResults
 }

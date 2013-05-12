@@ -105,8 +105,8 @@ wikiHeadersUri<-function(parent) {
 synGetWikiHeaders<-function(parent) {
   uri<-wikiHeadersUri(parent)
   result<-list()
-  for (entry in synRestGET(uri)) {
-    result[[length(result)+1]]<-WikiHeader(entry)
+  for (entry in synRestGET(uri)$results) {
+    result[[length(result)+1]]<-WikiHeader(as.list(entry))
   }
   result
 }

@@ -88,7 +88,7 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
       file
     }
   } else {
-    synGetNonEntityObject(id)
+    stop(sprintf("%s is not a Synapse ID.", id))
   }
 }
 
