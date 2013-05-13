@@ -99,7 +99,9 @@ defineNONEntityClass <-
   setClass(
     Class = name,
     contains = "SimplePropertyOwner",
-    slots=c(updateUri="character"),
+    representation = representation(
+      updateUri="character"
+    ),
     prototype = prototype(
       synapseEntityKind = name,
       properties = SynapseProperties(getEffectivePropertyTypes(which))
