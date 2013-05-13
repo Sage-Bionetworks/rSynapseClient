@@ -7,8 +7,8 @@
   project <- createEntity(Project())
   synapseClient:::.setCache("testProject", project)
   
-  evaluation<-Evaluation(name=sprintf("test_submit_%d", sample(100,1)), status="OPEN", contentSource="")
-  evaluation<-Evaluation(synRestPOST("/evaluation", evaluation))
+  evaluation<-Evaluation(name=sprintf("test_submit_%d", sample(10000,1)), status="OPEN", contentSource="")
+  evaluation<-synStore(evaluation)
   synapseClient:::.setCache("testEvaluation", evaluation)
 }
 
@@ -16,7 +16,7 @@
   deleteEntity(synapseClient:::.getCache("testProject"))
   
   evaluation<-synapseClient:::.getCache("testEvaluation")
-  synRestDELETE(sprintf("/evaluation/%s", propertyValue(evaluation, "id")))
+  synDelete(evaluation)
 }
 
 integrationTest_submit <- function() {
@@ -28,7 +28,7 @@ integrationTest_submit <- function() {
   file<-synStore(file)
   
   # join the evaluation
-  myOwnId<-propertyValue(UserProfile(synRestGET("/userProfile")), "ownerId")
+  myOwnId<-propertyValue(synGetUserProfile(), "ownerId")
   evaluation<-synapseClient:::.getCache("testEvaluation")
   eid<-propertyValue(evaluation, "id")
   synRestPOST(sprintf("/evaluation/%s/participant/%s", eid, myOwnId), list())
@@ -41,12 +41,11 @@ integrationTest_submit <- function() {
   checkEquals(propertyValue(file, "name"), propertyValue(submission, "name"))
   
   # retrieve the submission
-  submissionURI<-sprintf("/evaluation/submission/%s", propertyValue(submission, "id"))
-  submission2<-Submission(synRestGET(submissionURI))
+  submission2<-synGetSubmission(propertyValue(submission, "id"))
   checkEquals(submission, submission2)
   
   # delete the submission
-  synRestDELETE(submissionURI)
+  synDelete(submission)
   
   # rev the entity
   file<-addObject(file, c(4,5,6))
@@ -65,12 +64,11 @@ integrationTest_submit <- function() {
   checkEquals(propertyValue(oldFile, "name"), propertyValue(submission2, "name"))
   
   # retrieve the submission
-  submissionURI<-sprintf("/evaluation/submission/%s", propertyValue(submission2, "id"))
-  submission3<-Submission(synRestGET(submissionURI))
+  submission3<-synGetSubmission(propertyValue(submission2, "id"))
   checkEquals(submission2, submission3)
   
   # delete the submission
-  synRestDELETE(submissionURI)
+  synDelete(submission3)
   
 }
   
