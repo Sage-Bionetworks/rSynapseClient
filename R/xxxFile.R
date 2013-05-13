@@ -545,6 +545,19 @@ setMethod(
 )
 
 setMethod(
+  f = "getObject",
+  signature = signature("File", "missing"),
+  definition = function(owner) {
+    # TODO get(x=which, envir=owner@objects)
+    if (is.null(owner@objects)) stop("File contains no objects.")
+    numberOfObjects<-length(ls(owner@objects))
+    if (numberOfObjects>1) stop(sprintf("File contains %s objects.  Use 'getObject(file,objectName)' to select one.",numberOfObjects))
+    objectName<-ls(owner@objects)[1]
+    get(x=objectName, envir=owner@objects)
+  }
+)
+
+setMethod(
   f = "renameObject",
   signature = signature("File", "character", "character"),
   definition = function(owner, which, name) {
@@ -554,6 +567,16 @@ setMethod(
     invisible(owner)
   }
 )
+
+listObjects<-function(file) {
+  if (is.null(file@objects)) {
+    list()
+  } else {
+    ls(file@objects)
+  }
+}
+
+
 
 
 

@@ -29,7 +29,8 @@ export(
   synGetOwnSubmissions,
   synGetParticipants,
   synGetWikiHeaders,
-  synDelete
+  synDelete,
+  listObjects
 )
 
 export(onWeb)

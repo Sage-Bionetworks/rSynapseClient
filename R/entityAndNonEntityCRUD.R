@@ -16,8 +16,14 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
     } else if (!is.null(used) || !is.null(executed)) {
       activity<-Activity(list(name=activityName, description=activityDescription))
       usedAndExecuted<-list()
-      if (!is.null(used)) usedAndExecuted<-c(usedAndExecuted, lapply(X=used, FUN=usedListEntry, wasExecuted=F))
-      if (!is.null(executed)) usedAndExecuted<-c(usedAndExecuted, lapply(X=executed, FUN=usedListEntry, wasExecuted=T))
+      if (!is.null(used)) {
+        if (!is(used, "list")) used<-list(used)
+        usedAndExecuted<-c(usedAndExecuted, lapply(X=used, FUN=usedListEntry, wasExecuted=F))
+      }
+      if (!is.null(executed)) {
+        if (!is(executed, "list")) executed<-list(executed)
+        usedAndExecuted<-c(usedAndExecuted, lapply(X=executed, FUN=usedListEntry, wasExecuted=T))
+      }
       if (length(usedAndExecuted)>0) propertyValue(activity, "used") <- usedAndExecuted
       generatedBy(entity)<-activity
     }
