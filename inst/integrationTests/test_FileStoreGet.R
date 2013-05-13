@@ -557,6 +557,12 @@ integrationTestLoadEntity<-function() {
   loadedEntity2<-loadEntity(storedFile)
   checkEquals(dataObject, getObject(loadedEntity2, "dataObjectName"))
   
+  checkEquals("dataObjectName", listObjects(loadedEntity2))
+  
+  # check getObject(owner) function
+  checkEquals(getObject(loadedEntity2), getObject(loadedEntity2, "dataObjectName"))
+  
+  
   # delete the file
   deleteEntity(loadedEntity)
   # clean up downloaded file
@@ -701,6 +707,48 @@ integrationTestProvenance<-function() {
     }
   }
   checkTrue(foundURL)
+  checkTrue(foundProject)
+  checkTrue(foundExecuted)
+}
+
+# this tests synStore in which used and executed param's are passed, not as lists
+integrationTestProvenanceNonList<-function() {
+  project <- synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  executed<-Folder(name="executed", parentId=pid)
+  executed<-synStore(executed)
+  
+  folder<-Folder(name="test folder", parentId=pid)
+  # this tests (1) linking a URL, (2) passing a list, (3) passing a single entity, (4) passing an entity ID
+  storedFolder<-synStore(folder, used=project, executed=executed, 
+    activityName="activity name", activityDescription="activity description")
+  id<-propertyValue(storedFolder, "id")
+  checkTrue(!is.null(id))
+  
+  retrievedFolder<-synGet(id)
+  checkEquals(propertyValue(project, "id"), propertyValue(retrievedFolder, "parentId"))
+  activity<-generatedBy(retrievedFolder)
+  checkEquals("activity name", propertyValue(activity, "name"))
+  checkEquals("activity description", propertyValue(activity, "description"))
+  
+  # now check the 'used' list
+  used<-propertyValue(activity, "used")
+  checkEquals(2, length(used))
+  foundProject<-F
+  foundExecuted<-F
+  for (u in used) {
+    if (u$concreteType=="org.sagebionetworks.repo.model.provenance.UsedEntity") {
+      if (u$wasExecuted) {
+        checkEquals(u$reference$targetId, propertyValue(executed, "id"))
+        checkEquals(u$reference$targetVersionNumber, 1)
+        foundExecuted<- T
+      } else {
+        checkEquals(u$reference$targetId, propertyValue(project, "id"))
+        checkEquals(u$reference$targetVersionNumber, 1)
+        foundProject<- T
+      }
+    }
+  }
   checkTrue(foundProject)
   checkTrue(foundExecuted)
 }

@@ -52,10 +52,10 @@ readEntityDef <-
 }
 
 defineEntityClass <- 
-    function(which, name, where = parent.frame(), package)
+  function(which, name, where = parent.frame(), package)
 {
   entityDef <- readEntityDef(which)
-
+  
   if(missing(name))
     name <- gsub("^.+[\\.]", "", which)
   
@@ -69,17 +69,42 @@ defineEntityClass <-
   } else if ("org.sagebionetworks.repo.model.Entity" %in% implements) {
     contains <- "Entity"
   } else {
-    contains <- "SimplePropertyOwner"
+    stop(sprintf("%s must contain Entity or Locationable", name))
   }
   
   setClass(
-      Class = name,
-      contains = contains,
-      prototype = prototype(
-          synapseEntityKind = name,
-          properties = SynapseProperties(getEffectivePropertyTypes(which))
-      ),
-      package=package
+    Class = name,
+    contains = contains,
+    prototype = prototype(
+      synapseEntityKind = name,
+      properties = SynapseProperties(getEffectivePropertyTypes(which))
+    ),
+    package=package
+  )
+  
+  # now add the new class to the list of defined ones
+  addToEntityTypeMap(className=name, jsonSchemaName=which)
+}
+
+# this could be eliminated (just using 'defineEntityClass' instead) if object received from server had a 'uri' field
+defineNONEntityClass <- 
+  function(which, name, where = parent.frame(), package)
+{
+  if(missing(name))
+    name <- gsub("^.+[\\.]", "", which)
+  
+  if(is.null(name) | name == "")
+    stop("name must not be null")
+  
+  setClass(
+    Class = name,
+    contains = "SimplePropertyOwner",
+    slots=c(updateUri="character"),
+    prototype = prototype(
+      synapseEntityKind = name,
+      properties = SynapseProperties(getEffectivePropertyTypes(which))
+    ),
+    package=package
   )
   
   # now add the new class to the list of defined ones

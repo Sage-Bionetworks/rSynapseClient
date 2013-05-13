@@ -9,7 +9,7 @@ submit<-function(evaluation, entity, submissionName) {
     entityId<-propertyValue(entity, "id")
     if (is.null(entityId)) stop("The entity provided does not have an ID.")
     entityVersion<-propertyValue(entity, "versionNumber")
-    if (is.null(entityVersion)) stop("Entity version is required.")
+    if (is.null(entityVersion)) entityVersion<-"1" # takes care of non-versioned entities
     etag<-propertyValue(entity, "etag")
     if (is.null(etag)) stop("Entity is missing etag.")
     # if it's an old version we have to retrieve the latest to get the etag
@@ -30,8 +30,7 @@ submit<-function(evaluation, entity, submissionName) {
     stop("You must provide an evaluation or and evaluation ID.")
   }
   if (missing(submissionName)) submissionName<-propertyValue(entity, "name")
-  submission<-list(evaluationId=evaluationId, entityId=entityId, versionNumber=entityVersion, name=submissionName)
-  listResult<-synRestPOST(sprintf("/evaluation/submission?etag=%s", etag), submission)
-  Submission(listResult)
+  submission<-Submission(evaluationId=evaluationId, entityId=entityId, versionNumber=entityVersion, name=submissionName)
+  synCreateSubmission(submission, entityEtag=etag)
 }
 
