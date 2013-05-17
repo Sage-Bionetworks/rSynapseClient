@@ -59,13 +59,20 @@ setMethod(
     cat("Activity Id   : ", properties(object)$id, "\n", sep="")
     cat("Description   : ", properties(object)$description, "\n", sep="")
     cat("--------------------\n")
+    
+    ## DISPLAY USED LIST
     if( !is.null(properties(object)$used) ){
       cat("USED:\n")
       for( i in 1:length(properties(object)$used) ){
         thisUsed <- object$properties$used[[i]]
-        cat("id          : ", thisUsed$reference$targetId, "\n", sep="")
-        cat("version     : ", thisUsed$reference$targetVersionNumber, "\n", sep="")
-        cat("wasExecuted : ", thisUsed$wasExecuted, "\n\n", sep="")
+        if( thisUsed$concreteType == "org.sagebionetworks.repo.model.provenance.UsedEntity" ){
+          cat("id          : ", thisUsed$reference$targetId, "\n", sep="")
+          cat("version     : ", thisUsed$reference$targetVersionNumber, "\n", sep="")
+          cat("wasExecuted : ", thisUsed$wasExecuted, "\n\n", sep="")
+        } else if( thisUsed$concreteType == "org.sagebionetworks.repo.model.provenance.UsedURL" ){
+          cat("url         : ", thisUsed$url, "\n", sep="")
+          cat("wasExecuted : ", thisUsed$wasExecuted, "\n\n", sep="")
+        }
       }
     }
   }
