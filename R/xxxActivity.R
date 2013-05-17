@@ -50,17 +50,24 @@ setMethod(
 ## Activity "show" method
 #####
 setMethod(
-  f = "showEntity",
+  f = "show",
   signature = signature("Activity"),
-  definition = function(activity){
-    cat('An object of class "', class(activity), '"\n', sep="")
+  definition = function(object){
+    cat('An object of class "', class(object), '"\n', sep="")
     
-    if (!is.null(properties(object)$name))
-      cat("Activity Name : ", properties(object)$name, "\n", sep="")
-    if (!is.null(properties(object)$id))
-      cat("Activity Id : ", properties(object)$id, "\n", sep="")
-    if (!is.null(properties(object)$description))
-      cat("Activity Description  : ", properties(object)$id, "\n", sep="")
+    cat("Activity Name : ", properties(object)$name, "\n", sep="")
+    cat("Activity Id   : ", properties(object)$id, "\n", sep="")
+    cat("Description   : ", properties(object)$description, "\n", sep="")
+    cat("--------------------\n")
+    if( !is.null(properties(object)$used) ){
+      cat("USED:\n")
+      for( i in 1:length(properties(object)$used) ){
+        thisUsed <- object$properties$used[[i]]
+        cat("id          : ", thisUsed$reference$targetId, "\n", sep="")
+        cat("version     : ", thisUsed$reference$targetVersionNumber, "\n", sep="")
+        cat("wasExecuted : ", thisUsed$wasExecuted, "\n\n", sep="")
+      }
+    }
   }
 )
 
