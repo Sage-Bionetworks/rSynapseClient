@@ -30,10 +30,11 @@
   
 }
 
-createFile<-function() {
+createFile<-function(content) {
+  if (missing(content)) content<-"this is a test"
   filePath<- tempfile()
   connection<-file(filePath)
-  writeChar("this is a test", connection, eos=NULL)
+  writeChar(content, connection, eos=NULL)
   close(connection)  
   filePath
 }
@@ -322,7 +323,8 @@ integrationTestRoundtrip <- function()
 
 roundTripIntern<-function(project) {  
   # create a file to be uploaded
-  filePath<- createFile()
+  filePath<- createFile("Some content")
+  md5_version_1<- as.character(tools::md5sum(filePath))
   synapseStore<-TRUE
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
   checkTrue(!is.null(propertyValue(file, "name")))
@@ -357,9 +359,8 @@ roundTripIntern<-function(project) {
   checkTrue(length(getFileLocation(downloadedFile))>0)
   
   # compare MD-5 checksum of filePath and downloadedFile@filePath
-  origChecksum<- as.character(tools::md5sum(filePath))
-  downloadedChecksum <- as.character(tools::md5sum(getFileLocation(downloadedFile)))
-  checkEquals(origChecksum, downloadedChecksum)
+  md5_version_1_retrieved <- as.character(tools::md5sum(getFileLocation(downloadedFile)))
+  checkEquals(md5_version_1, md5_version_1_retrieved)
   
   checkEquals(storedFile@fileHandle, downloadedFile@fileHandle)
   
@@ -376,8 +377,10 @@ roundTripIntern<-function(project) {
   checkEquals(1, propertyValue(updatedFile, "versionNumber"))
 
   #  test synStore of retrieved entity, after changing file
-  # modify the file
-  touchFile(downloadedFilePathInCache)
+  # modify the file, byt making a new one then copying it over
+  file.rename(createFile("Some other content"), downloadedFilePathInCache)
+  md5_version_2<- as.character(tools::md5sum(downloadedFilePathInCache))
+  checkTrue(md5_version_1!=md5_version_2)
   
   updatedFile2 <-synStore(updatedFile, forceVersion=F)
   scheduleCacheFolderForDeletion(updatedFile2@fileHandle$id)
@@ -392,6 +395,9 @@ roundTripIntern<-function(project) {
   # ...whether or not we download the file
   originalVersion<-synGet(propertyValue(storedFile, "id"), version=1, downloadFile=T)
   checkEquals(1, propertyValue(originalVersion, "versionNumber"))
+  md5_version_1_retrieved_again <- as.character(tools::md5sum(getFileLocation(originalVersion)))
+  # make sure the right version was retrieved (SYNR-447)
+  checkEquals(md5_version_1, md5_version_1_retrieved_again)
   
   # get the current version of the file, but download it to a specified location
   # (make the location unique)
@@ -404,6 +410,7 @@ roundTripIntern<-function(project) {
   fp<-getFileLocation(downloadedToSpecified)
   checkEquals(fp, file.path(specifiedLocation, basename(filePath)))
   checkTrue(file.exists(fp))
+  checkEquals(md5_version_2, as.character(tools::md5sum(fp)))
   touchFile(fp)
 
   timestamp<-synapseClient:::lastModifiedTimestamp(fp)
