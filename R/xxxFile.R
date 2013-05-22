@@ -328,7 +328,11 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   } else {
     synapseStore<-TRUE
     externalURL<-NULL
-    downloadUri<-sprintf("/entity/%s/file", id) # /entity/{enityId}/file
+    if (is.null(propertyValue(file, "versionNumber"))) {
+      downloadUri<-sprintf("/entity/%s/file", id)
+    } else {
+      downloadUri<-sprintf("/entity/%s/version/%s/file", id, propertyValue(file, "versionNumber"))
+    }
   }
   
   if (downloadFile) {
