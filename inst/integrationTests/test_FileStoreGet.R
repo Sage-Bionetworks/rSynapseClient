@@ -30,9 +30,9 @@
   
 }
 
-createFile<-function(content) {
+createFile<-function(content, filePath) {
   if (missing(content)) content<-"this is a test"
-  filePath<- tempfile()
+  if (missing(filePath)) filePath<- tempfile()
   connection<-file(filePath)
   writeChar(content, connection, eos=NULL)
   close(connection)  
@@ -323,7 +323,7 @@ integrationTestRoundtrip <- function()
 
 roundTripIntern<-function(project) {  
   # create a file to be uploaded
-  filePath<- createFile("Some content")
+  filePath<- createFile(content="Some content")
   md5_version_1<- as.character(tools::md5sum(filePath))
   synapseStore<-TRUE
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
@@ -378,7 +378,7 @@ roundTripIntern<-function(project) {
 
   #  test synStore of retrieved entity, after changing file
   # modify the file, byt making a new one then copying it over
-  file.rename(createFile("Some other content"), downloadedFilePathInCache)
+  createFile(content="Some other content", filePath=downloadedFilePathInCache)
   md5_version_2<- as.character(tools::md5sum(downloadedFilePathInCache))
   checkTrue(md5_version_1!=md5_version_2)
   
