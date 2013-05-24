@@ -30,10 +30,11 @@
   
 }
 
-createFile<-function() {
-  filePath<- tempfile()
+createFile<-function(content, filePath) {
+  if (missing(content)) content<-"this is a test"
+  if (missing(filePath)) filePath<- tempfile()
   connection<-file(filePath)
-  writeChar("this is a test", connection, eos=NULL)
+  writeChar(content, connection, eos=NULL)
   close(connection)  
   filePath
 }
@@ -322,7 +323,8 @@ integrationTestRoundtrip <- function()
 
 roundTripIntern<-function(project) {  
   # create a file to be uploaded
-  filePath<- createFile()
+  filePath<- createFile(content="Some content")
+  md5_version_1<- as.character(tools::md5sum(filePath))
   synapseStore<-TRUE
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
   checkTrue(!is.null(propertyValue(file, "name")))
@@ -357,9 +359,8 @@ roundTripIntern<-function(project) {
   checkTrue(length(getFileLocation(downloadedFile))>0)
   
   # compare MD-5 checksum of filePath and downloadedFile@filePath
-  origChecksum<- as.character(tools::md5sum(filePath))
-  downloadedChecksum <- as.character(tools::md5sum(getFileLocation(downloadedFile)))
-  checkEquals(origChecksum, downloadedChecksum)
+  md5_version_1_retrieved <- as.character(tools::md5sum(getFileLocation(downloadedFile)))
+  checkEquals(md5_version_1, md5_version_1_retrieved)
   
   checkEquals(storedFile@fileHandle, downloadedFile@fileHandle)
   
@@ -376,8 +377,10 @@ roundTripIntern<-function(project) {
   checkEquals(1, propertyValue(updatedFile, "versionNumber"))
 
   #  test synStore of retrieved entity, after changing file
-  # modify the file
-  touchFile(downloadedFilePathInCache)
+  # modify the file, byt making a new one then copying it over
+  createFile(content="Some other content", filePath=downloadedFilePathInCache)
+  md5_version_2<- as.character(tools::md5sum(downloadedFilePathInCache))
+  checkTrue(md5_version_1!=md5_version_2)
   
   updatedFile2 <-synStore(updatedFile, forceVersion=F)
   scheduleCacheFolderForDeletion(updatedFile2@fileHandle$id)
@@ -392,6 +395,9 @@ roundTripIntern<-function(project) {
   # ...whether or not we download the file
   originalVersion<-synGet(propertyValue(storedFile, "id"), version=1, downloadFile=T)
   checkEquals(1, propertyValue(originalVersion, "versionNumber"))
+  md5_version_1_retrieved_again <- as.character(tools::md5sum(getFileLocation(originalVersion)))
+  # make sure the right version was retrieved (SYNR-447)
+  checkEquals(md5_version_1, md5_version_1_retrieved_again)
   
   # get the current version of the file, but download it to a specified location
   # (make the location unique)
@@ -404,6 +410,7 @@ roundTripIntern<-function(project) {
   fp<-getFileLocation(downloadedToSpecified)
   checkEquals(fp, file.path(specifiedLocation, basename(filePath)))
   checkTrue(file.exists(fp))
+  checkEquals(md5_version_2, as.character(tools::md5sum(fp)))
   touchFile(fp)
 
   timestamp<-synapseClient:::lastModifiedTimestamp(fp)
@@ -557,6 +564,12 @@ integrationTestLoadEntity<-function() {
   loadedEntity2<-loadEntity(storedFile)
   checkEquals(dataObject, getObject(loadedEntity2, "dataObjectName"))
   
+  checkEquals("dataObjectName", listObjects(loadedEntity2))
+  
+  # check getObject(owner) function
+  checkEquals(getObject(loadedEntity2), getObject(loadedEntity2, "dataObjectName"))
+  
+  
   # delete the file
   deleteEntity(loadedEntity)
   # clean up downloaded file
@@ -701,6 +714,48 @@ integrationTestProvenance<-function() {
     }
   }
   checkTrue(foundURL)
+  checkTrue(foundProject)
+  checkTrue(foundExecuted)
+}
+
+# this tests synStore in which used and executed param's are passed, not as lists
+integrationTestProvenanceNonList<-function() {
+  project <- synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  executed<-Folder(name="executed", parentId=pid)
+  executed<-synStore(executed)
+  
+  folder<-Folder(name="test folder", parentId=pid)
+  # this tests (1) linking a URL, (2) passing a list, (3) passing a single entity, (4) passing an entity ID
+  storedFolder<-synStore(folder, used=project, executed=executed, 
+    activityName="activity name", activityDescription="activity description")
+  id<-propertyValue(storedFolder, "id")
+  checkTrue(!is.null(id))
+  
+  retrievedFolder<-synGet(id)
+  checkEquals(propertyValue(project, "id"), propertyValue(retrievedFolder, "parentId"))
+  activity<-generatedBy(retrievedFolder)
+  checkEquals("activity name", propertyValue(activity, "name"))
+  checkEquals("activity description", propertyValue(activity, "description"))
+  
+  # now check the 'used' list
+  used<-propertyValue(activity, "used")
+  checkEquals(2, length(used))
+  foundProject<-F
+  foundExecuted<-F
+  for (u in used) {
+    if (u$concreteType=="org.sagebionetworks.repo.model.provenance.UsedEntity") {
+      if (u$wasExecuted) {
+        checkEquals(u$reference$targetId, propertyValue(executed, "id"))
+        checkEquals(u$reference$targetVersionNumber, 1)
+        foundExecuted<- T
+      } else {
+        checkEquals(u$reference$targetId, propertyValue(project, "id"))
+        checkEquals(u$reference$targetVersionNumber, 1)
+        foundProject<- T
+      }
+    }
+  }
   checkTrue(foundProject)
   checkTrue(foundExecuted)
 }

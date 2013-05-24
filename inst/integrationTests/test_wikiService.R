@@ -1,21 +1,41 @@
 #
+#  integration tests for services around Wikis
+#
+
+.setUp <- function() {
+  ## create a project to fill with entities
+  project <- createEntity(Project())
+  synapseClient:::.setCache("testProject", project)
+}
+
+.tearDown <- function() {
+  ## delete the test project
+  deleteEntity(synapseClient:::.getCache("testProject"))  
+}
+
+createFile<-function() {
+  filePath<- tempfile()
+  fileName<-basename(filePath)
+  connection<-file(filePath)
+  writeChar("this is a test", connection, eos=NULL)
+  close(connection) 
+  filePath
+}
+
+
+
+#
 # this tests the file services underlying the wiki CRUD for entities
 #
 integrationTestWikiService <-
   function()
 {
-    # create a Project
-    project<-Project()
-    project<-createEntity(project)
+    project <- synapseClient:::.getCache("testProject")
+    checkTrue(!is.null(project))
     
     # create a file attachment which will be used in the wiki page
-    # upload a file and receive the file handle
-    filePath<- tempfile()
+    filePath<-createFile()
     fileName<-basename(filePath)
-    connection<-file(filePath)
-    writeChar("this is a test", connection, eos=NULL)
-    close(connection)  
-  
     fileHandle<-synapseClient:::synapseUploadToFileHandle(filePath)
     
     # create a wiki page
@@ -53,7 +73,44 @@ integrationTestWikiService <-
     # delete the file handle
     handleUri<-sprintf("/fileHandle/%s", fileHandle$id)
     synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
+}
+
+# This repeats the basic CRUD of the previous test but using WikiPage, synStore, etc.
+integrationTestWikiCRUD <-
+  function()
+{
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  
+  # create file attachments which will be used in the wiki page
+  filePath1<-createFile()
+  filePath2<-createFile()
+  
+  wikiPage<-WikiPage(
+    parent=project, 
+    title="wiki title", 
+    markdown="some stuff", 
+    attachments=list(filePath1, filePath2)
+  )
+  
+  wikiPage<-synStore(wikiPage)
     
-    # Finally, delete the Project
-    deleteEntity(project)
+  # see if we can get the wiki from its parent
+  wikiPage2<-synGetWiki(project)
+  
+  checkEquals(wikiPage, wikiPage2)
+  
+  # check that fileHandle is in the wiki
+  fileHandleIds<-propertyValue(wikiPage2, "attachmentFileHandleIds")
+  checkEquals(2, length(fileHandleIds))
+  
+  # Now delete the wiki page
+  #/{ownertObjectType}/{ownerObjectId}/wiki/{wikiId}
+  synDelete(wikiPage2)
+  
+  # delete the file handles
+  for (fileHandleId in fileHandleIds) {
+    handleUri<-sprintf("/fileHandle/%s", fileHandleId)
+    synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
+  }
 }

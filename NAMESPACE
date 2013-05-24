@@ -18,7 +18,19 @@ export(
   synRestGET,
   synRestDELETE,
   synRestPOST,
-  synRestPUT
+  synRestPUT,
+  WikiPage,
+  synGetWiki,
+  synGetUserProfile,
+  synGetSubmission,
+  synGetSubmissionStatus,
+  synGetEvaluation,
+  synGetSubmissions,
+  synGetOwnSubmissions,
+  synGetParticipants,
+  synGetWikiHeaders,
+  synDelete,
+  listObjects
 )
 
 export(onWeb)
