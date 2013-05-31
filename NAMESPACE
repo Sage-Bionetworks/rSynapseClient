@@ -30,7 +30,9 @@ export(
   synGetParticipants,
   synGetWikiHeaders,
   synDelete,
-  listObjects
+  listObjects,
+  synGetActivity,
+  "synSetActivity<-"
 )
 
 export(onWeb)

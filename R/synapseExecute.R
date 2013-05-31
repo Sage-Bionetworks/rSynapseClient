@@ -36,9 +36,9 @@ createUsedEntitiesList <- function(args) {
     if (!is.scalar(argVal)) {
       usedEntitiesList <- append(usedEntitiesList, createUsedEntitiesList(argVal))
     } else if (isSynapseId(argVal)) {
-      usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=argVal, wasExecuted=FALSE, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
+      usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=argVal, wasExecuted=FALSE)
     } else if (extends(class(argVal), "Entity") && !is.null(propertyValue(argVal, "id"))) {
-      usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=propertyValue(argVal, "id"), wasExecuted=FALSE, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
+      usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=propertyValue(argVal, "id"), wasExecuted=FALSE)
     }
   }
   usedEntitiesList
@@ -313,7 +313,7 @@ synapseExecute <- function(executable, args, resultParentId, codeParentId, resul
   usedEntitiesList[[length(usedEntitiesList)+1]] <- 
     list(reference=list(targetId=propertyValue(executionCodeEntity, "id"), 
         targetVersionNumber=propertyValue(executionCodeEntity, "versionNumber")), 
-      wasExecuted=TRUE, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
+      wasExecuted=TRUE)
   
   activity <- Activity(list(name = activityName, used = usedEntitiesList))
   activity <- createEntity(activity)

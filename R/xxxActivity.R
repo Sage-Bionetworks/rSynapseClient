@@ -31,9 +31,104 @@ setMethod(
   definition = function(...){
     ## GRAB NAMED ARGUMENTS AND ADD TO ENTITY LIST
     entity <- list(...)
-    do.call("Activity", list(entity))
+    # we 'intercept the 'used' and 'executed' fields and process them specially
+    entity$used<-combineUsedAndExecutedLists(entity$used, entity$executed)
+    entity$executed<-NULL
+    activity<-do.call("Activity", list(entity))
+    activity
   }
 )
+
+
+combineUsedAndExecutedLists<-function(used, executed) {
+  usedAndExecuted<-list()
+  if (!missing(used) && !is.null(used)) {
+    if (!is(used, "list")) used<-list(used)
+    usedAndExecuted<-c(usedAndExecuted, lapply(X=used, FUN=usedListEntry, wasExecuted=F))
+  }
+  if (!missing(executed) && !is.null(executed)) {
+    if (!is(executed, "list")) executed<-list(executed)
+    usedAndExecuted<-c(usedAndExecuted, lapply(X=executed, FUN=usedListEntry, wasExecuted=T))
+  }
+  usedAndExecuted
+}
+
+setUsedMethod<-function(activity, referenceList, wasExecuted) {
+  if (is.null(referenceList)) {
+    usedList<-NULL
+  } else {
+    usedList <- lapply(X=referenceList, FUN=usedListEntry, wasExecuted=wasExecuted)
+  }
+  # combine the new 'used' list with the old 'executed' list
+  usedList <- c(usedList, selectUsed(activity, wasExecuted=(!wasExecuted)))
+  propertyValue(activity, "used") <- usedList
+  activity
+}
+
+setMethod(
+  f = "used<-",
+  signature = signature("Activity", "list"),
+  definition = function(entity, value) {
+    setUsedMethod(entity, value, FALSE)
+  }
+
+)
+
+setMethod(
+  f = "used<-",
+  signature = signature("Activity", "NULL"),
+  definition = function(entity, value) {
+    setUsedMethod(entity, NULL, FALSE)
+  }
+)
+
+setMethod(
+  f = "used",
+  signature = signature("Activity"),
+  definition = function(entity) {
+    selectUsed(entity, FALSE)
+  }
+)
+
+setMethod(
+  f = "executed<-",
+  signature = signature("Activity", "list"),
+  definition = function(entity, value) {
+    setUsedMethod(entity, value, TRUE)
+  }
+
+)
+
+setMethod(
+  f = "executed<-",
+  signature = signature("Activity", "NULL"),
+  definition = function(entity, value) {
+    setUsedMethod(entity, NULL, TRUE)
+  }
+)
+
+setMethod(
+  f = "executed",
+  signature = signature("Activity"),
+  definition = function(entity) {
+    selectUsed(entity, TRUE)
+  }
+)
+
+
+# given the 'used' list from an Activity, return just the ones which match 
+# the logical 'wasExecuted'
+selectUsed<-function(activity, wasExecuted) {
+  ans <- list()
+  for (entry in propertyValue(activity, "used")) {
+    entryWasExecuted <- entry$wasExecuted
+    if (is.null(entryWasExecuted)) stop(sprintf("'wasExecuted' is not specified for a 'used' item in Activity %s", propertyValue(activity, "name")))
+    if (entryWasExecuted==wasExecuted) ans[[length(ans)+1]]<-entry
+  }
+  ans
+}
+
+
 
 #####
 ## constructor that takes a serialized JSON object
@@ -122,6 +217,36 @@ setMethod(
   }
 )
 
+setMethod(
+  f = "synGetActivity",
+  signature = signature("character", "missing"),
+  definition = function(entity){
+    getGeneratedBy(synGet(entity, downloadFile=FALSE))
+  }
+)
+
+setMethod(
+  f = "synGetActivity",
+  signature = signature("Entity", "missing"),
+  definition = function(entity){
+    getGeneratedBy(entity)
+  }
+)
+
+setMethod(
+  f = "synGetActivity",
+  signature = signature("character", "character"),
+  definition = function(entity, version){
+    getGeneratedBy(synGet(entity, version=version, downloadFile=FALSE))
+  }
+)
+
+setMethod(
+  f = "synSetActivity<-",
+  signature=signature("Entity", "Activity"),
+  definition = function(entity, activity) {
+    generatedBy(entity)<-activity
+  })
 
 setMethod(
   f = "createEntity",

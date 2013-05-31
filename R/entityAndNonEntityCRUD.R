@@ -14,17 +14,7 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
     if (!is.null(activity)) {
       generatedBy(entity)<-activity
     } else if (!is.null(used) || !is.null(executed)) {
-      activity<-Activity(list(name=activityName, description=activityDescription))
-      usedAndExecuted<-list()
-      if (!is.null(used)) {
-        if (!is(used, "list")) used<-list(used)
-        usedAndExecuted<-c(usedAndExecuted, lapply(X=used, FUN=usedListEntry, wasExecuted=F))
-      }
-      if (!is.null(executed)) {
-        if (!is(executed, "list")) executed<-list(executed)
-        usedAndExecuted<-c(usedAndExecuted, lapply(X=executed, FUN=usedListEntry, wasExecuted=T))
-      }
-      if (length(usedAndExecuted)>0) propertyValue(activity, "used") <- usedAndExecuted
+      activity<-Activity(name=activityName, description=activityDescription, used=used, executed=executed)
       generatedBy(entity)<-activity
     }
     if (is.null(propertyValue(entity, "id"))) {
@@ -64,8 +54,10 @@ synStoreNonEntityObject<-function(object) {
     } else {
       synUpdateWiki(object)
     }
+  } else if (is(object, "Activity")) {
+    storeEntity(object)
   } else {
-    stop("%s is not supported.", class(object))
+    stop(sprintf("%s is not supported.", class(object)))
   }
 }
 

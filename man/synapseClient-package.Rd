@@ -12,8 +12,8 @@ A client for interacting with the Synapse web services.
 \tabular{ll}{
 Package: \tab synapseClient\cr
 Type: \tab Package\cr
-Version: \tab 0.26\cr
-Date: \tab 2013-05-17\cr
+Version: \tab 0.27\cr
+Date: \tab 2013-06-10\cr
 License: \tab What license is it under?\cr
 LazyLoad: \tab yes\cr
 }

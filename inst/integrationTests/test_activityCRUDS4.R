@@ -85,9 +85,30 @@ integrationTestCRUDS4Activity <-
   checkTrue(class(shouldBeError)=="try-error")
 }
 
+integrattionTestSynStore<-function() {
+  name<-"testName"
+  description<-"a description of the activity"
+  testData <-synapseClient:::.getCache("testData")
+  activity<-Activity(name=name, description=description, used=testData)
+  activity<-synStore(activity)
+  activityId<-propertyValue(activity, "id")
+  checkTrue(!is.null(activityId))
+  synapseClient:::.setCache("testActivity", activity)
+  # now check content
+  checkEquals(name, propertyValue(activity, "name"))
+  checkEquals(description, propertyValue(activity, "description"))
+  used2<-propertyValue(activity, "used")
+  checkTrue(!is.null(used2))
+  checkEquals(1, length(used2))
+  checkEquals(3, length(used2[[1]])) # (1) 'wasExecuted', (2) the reference, (3) the concrete type
+  targetId<-used2[[1]]$reference$targetId
+  names(targetId)<-NULL # needed to make the following check work
+  checkEquals(propertyValue(testData, "id"), targetId)
+  checkEquals(F, used2[[1]]$wasExecuted)
+}
+
 integrationTestReferenceConstructorNoWasExceuted<-function() {
-  activity<-Activity(list(name="name", description="description", used=list(
-        list(reference=list(targetId="syn1234"), concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"))))
+  activity<-Activity(list(name="name", description="description", used="syn1234"))
   
 }
 
@@ -98,8 +119,7 @@ integrationTestReferenceConstructor <-
   name<-"testName"
   description<-"a description of the activity"
   testData <-synapseClient:::.getCache("testData")
-  activity<-Activity(list(name=name, description=description, used=list(
-        list(reference=list(targetId=propertyValue(testData, "id")), wasExecuted=F, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"))))
+  activity<-Activity(list(name=name, description=description, used=propertyValue(testData, "id")))
   activity<-createEntity(activity)
   activityId<-propertyValue(activity, "id")
   checkTrue(!is.null(activityId))

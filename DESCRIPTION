@@ -1,9 +1,9 @@
 Package: synapseClient
 Type: Package
 Title: Synapse R Client from Sage Bionetworks
-Version: 0.26
-ReleaseNotes: Support for Evaluation services and wiki pages.
-Date: 2013-05-17
+Version: 0.27
+ReleaseNotes: Further implementation of Common Command Set.
+Date: 2013-06-10
 Author@R: c(
 	person("Bruce", "Hoff", email="bruce.hoff@sagebase.org", role="aut"),
 	person("Chris", "Bare", email="chris.bare@sagebase.org", role="aut"),

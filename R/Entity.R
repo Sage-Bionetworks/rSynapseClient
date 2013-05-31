@@ -249,7 +249,7 @@ createEntityMethod<-function(entity, createOrUpdate, forceVersion) {
       }
       entityAsList<-synapsePut(updateUri, entity)
     } else {
-      .checkCurlResponse(curlHandle)
+      .checkCurlResponse(curlHandle, toJSON(entityAsList))
     }
   } else {
     entityAsList<-synapsePost(createUri, entity)
