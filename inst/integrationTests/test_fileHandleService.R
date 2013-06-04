@@ -8,7 +8,7 @@ integrationTestFileHandle <-
     connection<-file(filePath)
     writeChar("this is a test", connection, eos=NULL)
     close(connection)  
-    fileHandle<-synapseClient:::synapseUploadToFileHandle(filePath)
+    fileHandle<-synapseClient:::chunkedUploadFile(filePath)
     checkEquals(basename(filePath), fileHandle$fileName)
     checkEquals(synapseClient:::getMimeTypeForFile(basename(filePath)), fileHandle$contentType)
     # now try to retrieve the file handle given the id

@@ -30,7 +30,7 @@ integrationTestEntityFileAccess <-
     writeChar("this is a test", connection, eos=NULL)
     close(connection)  
     
-    fileHandle<-synapseClient:::synapseUploadToFileHandle(filePath)
+    fileHandle<-synapseClient:::chunkedUploadFile(filePath)
     
     # create an entity with the file
     entity <- list(
