@@ -43,9 +43,6 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     .setCache("hasZip", TRUE)
   }
   
-  if(!.getCache("useJava"))
-    packageStartupMessage("NOTE: rJava and/or the Synapse Java client are not installed on your system and so file \nupload/download performance will be reduced and file uploads will be limited to 5GB. \nConsider installing rJava by typing install.packages(rJava) at the command prompt")
-  
   packageStartupMessage(tou)
 }
 
