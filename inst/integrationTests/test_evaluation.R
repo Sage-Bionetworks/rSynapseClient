@@ -25,8 +25,12 @@
 integrationTestEvaluationRoundtrip <-
   function()
 {
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  projectId<-propertyValue(project, "id")
+  
   name<-sprintf("test evaluation %d", sample(1000,1))
-  evaluation<-Evaluation(name=name, status="PLANNED", contentSource="content source")
+  evaluation<-Evaluation(name=name, status="PLANNED", contentSource=projectId)
   evaluation<-synStore(evaluation)
   # store for later deletion
   synapseClient:::.setCache("testEvaluation", evaluation)
@@ -80,9 +84,6 @@ integrationTestEvaluationRoundtrip <-
   checkEquals(1, length(participants@results))
   
   # make an entity to submit
-  project <- synapseClient:::.getCache("testProject")
-  checkTrue(!is.null(project))
-  projectId<-propertyValue(project, "id")
   submittableEntity<-Folder(name="submitted entity", parentId=projectId)
   submittableEntity<-synStore(submittableEntity)
   
