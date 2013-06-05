@@ -67,6 +67,7 @@
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
     message("----------------------------------")
     message("REQUEST: ", requestMethod, " ", uri)
+    message("HEADERS: ", listToString(header))
   }
   
   # check own version, stopping if blacklisted

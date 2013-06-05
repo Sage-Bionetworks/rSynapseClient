@@ -108,6 +108,8 @@
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
     message("----------------------------------")
     message("REQUEST: ", requestMethod, " ", uri)
+    headerAsString<-paste(lapply(names(header), function(n,x){sprintf("%s=%s",n, x[[n]])}, header), collapse=",")
+    message("HEADERS: ", listToString(header))
     message("REQUEST_BODY: ", httpBody)
   }
   
@@ -126,7 +128,6 @@
   )
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
-    message("RESPONSE_HEADERS: ", paste(response$headers))
     message("RESPONSE_BODY:: ", response$body)
   }
   
@@ -149,10 +150,8 @@ parseResponseBody<-function(response) {
         error = function(e){NULL}
       )
     }
-  } else if (regexpr("text/plain", contentType, fixed=T)>0) {
-    response$body
   } else {
-    stop(sprintf("Unexpected Content-Type, %s", contentType))
+    response$body
   }
   
 }

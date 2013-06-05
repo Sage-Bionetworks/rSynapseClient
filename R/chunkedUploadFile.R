@@ -43,8 +43,7 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   ## get token
   token <- createChunkedFileUploadToken(filepath, mimetype)
   if (debug) {
-    tokenAsString<-paste(lapply(names(token), function(n,x){sprintf("%s=%s",n, x[[n]])}, token), collapse=",")
-    message(sprintf('\n\ntoken: %s\n', tokenAsString))
+    message(sprintf('\n\ntoken: %s\n', listToString(token)))
   }
   
   ## define the retry policy for uploading chunks
@@ -117,11 +116,9 @@ addChunkToFile<-function(chunkRequest) {
 }
 
 completeChunkFileUpload<-function(chunkedFileToken, chunkResults) {
-  S3FileHandle(
     synapsePost(uri='/completeChunkFileUpload', 
       entity=list(
         chunkedFileToken=chunkedFileToken, 
         chunkResults=chunkResults), 
       endpoint=synapseServiceEndpoint("FILE"))
-  )
 }
