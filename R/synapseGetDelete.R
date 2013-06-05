@@ -67,6 +67,7 @@
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
     message("----------------------------------")
     message("REQUEST: ", requestMethod, " ", uri)
+    message("HEADERS: ", listToString(header))
   }
   
   # check own version, stopping if blacklisted
@@ -113,18 +114,13 @@
   }
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
-    message("RESPONSE_BODY: ", response)
+    message("RESPONSE_BODY: ", response$body)
   }
   
-  if (checkHttpStatus) .checkCurlResponse(curlHandle, response)
+  if (checkHttpStatus) .checkCurlResponse(curlHandle, response$body)
   
   if("GET" == requestMethod) {
-    if (is.null(response) ||  response=="") {
-      response
-    } else {
-      ## Parse response and prepare return value
-      as.list(fromJSON(response))
-    }
+    parseResponseBody(response)
   }
 }
 

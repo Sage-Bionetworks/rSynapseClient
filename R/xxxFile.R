@@ -170,7 +170,7 @@ localFileUnchanged<-function(fileHandleId, filePath) {
 
 uploadAndAddToCacheMap<-function(filePath) {
   lastModified<-lastModifiedTimestamp(filePath)
-  fileHandle<-synapseUploadToFileHandle(filePath)
+  fileHandle<-chunkedUploadFile(filePath)
   if (lastModified!=lastModifiedTimestamp(filePath)) stop(sprintf("During upload, %s was modified by another process.", filePath))
   addToCacheMap(fileHandle$id, filePath, lastModified)
   fileHandle
