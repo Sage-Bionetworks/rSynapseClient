@@ -14,10 +14,9 @@
 }
 
 .tearDown <- function() {
-  deleteEntity(synapseClient:::.getCache("testProject"))
-  
   evaluation<-synapseClient:::.getCache("testEvaluation")
   synDelete(evaluation)
+  deleteEntity(synapseClient:::.getCache("testProject"))
 }
 
 integrationTest_submit <- function() {
