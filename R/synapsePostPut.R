@@ -108,6 +108,8 @@
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
     message("----------------------------------")
     message("REQUEST: ", requestMethod, " ", uri)
+    headerAsString<-paste(lapply(names(header), function(n,x){sprintf("%s=%s",n, x[[n]])}, header), collapse=",")
+    message("HEADERS: ", listToString(header))
     message("REQUEST_BODY: ", httpBody)
   }
   
@@ -126,14 +128,30 @@
   )
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
-    message("RESPONSE_BODY:: ", response)
+    message("RESPONSE_BODY:: ", response$body)
   }
   
-  if (checkHttpStatus) .checkCurlResponse(curlHandle, response)
+  if (checkHttpStatus) .checkCurlResponse(curlHandle, response$body)
   
   ## Parse response and prepare return value
-  tryCatch(
-    as.list(fromJSON(response)),
-    error = function(e){NULL}
-  )
+  parseResponseBody(response)
+}
+
+# parse response body based on content type
+# the argument is a list in the format returned by 'parseHttpResponse'
+parseResponseBody<-function(response) {
+  contentType<-response$headers[["Content-Type"]]
+  if (is.null(contentType) || contentType=="" || regexpr("application/json", contentType, fixed=T)>0) {
+    if (is.null(response$body) || response$body=="") {
+      response$body
+    } else {
+      tryCatch(
+        as.list(fromJSON(response$body)),
+        error = function(e){NULL}
+      )
+    }
+  } else {
+    response$body
+  }
+  
 }

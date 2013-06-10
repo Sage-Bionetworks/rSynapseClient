@@ -33,6 +33,6 @@ synapseRequestFollowingAllRedirects<-function(
     debugfunction,
     opts=followRedirOpts)
  
-  result$response$body
+  result$response
 }
 
