@@ -5,18 +5,18 @@
 
 .setUp <- function() {
   project <- createEntity(Project())
+  projectId<-propertyValue(project, "id")
   synapseClient:::.setCache("testProject", project)
   
-  evaluation<-Evaluation(name=sprintf("test_submit_%d", sample(10000,1)), status="OPEN", contentSource="")
+  evaluation<-Evaluation(name=sprintf("test_submit_%d", sample(10000,1)), status="OPEN", contentSource=projectId)
   evaluation<-synStore(evaluation)
   synapseClient:::.setCache("testEvaluation", evaluation)
 }
 
 .tearDown <- function() {
-  deleteEntity(synapseClient:::.getCache("testProject"))
-  
   evaluation<-synapseClient:::.getCache("testEvaluation")
   synDelete(evaluation)
+  deleteEntity(synapseClient:::.getCache("testProject"))
 }
 
 integrationTest_submit <- function() {

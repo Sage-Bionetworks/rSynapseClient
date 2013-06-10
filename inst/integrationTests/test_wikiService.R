@@ -36,7 +36,7 @@ integrationTestWikiService <-
     # create a file attachment which will be used in the wiki page
     filePath<-createFile()
     fileName<-basename(filePath)
-    fileHandle<-synapseClient:::synapseUploadToFileHandle(filePath)
+    fileHandle<-synapseClient:::chunkedUploadFile(filePath)
     
     # create a wiki page
     wikiContent<-list(title="wiki title", markdown="some stuff", attachmentFileHandleIds=list(fileHandle$id))

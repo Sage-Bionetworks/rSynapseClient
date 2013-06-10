@@ -8,7 +8,7 @@ integrationTestFileHandle <-
     connection<-file(filePath)
     writeChar("this is a test", connection, eos=NULL)
     close(connection)  
-    fileHandle<-synapseClient:::synapseUploadToFileHandle(filePath)
+    fileHandle<-synapseClient:::chunkedUploadFile(filePath)
     checkEquals(basename(filePath), fileHandle$fileName)
     checkEquals(synapseClient:::getMimeTypeForFile(basename(filePath)), fileHandle$contentType)
     # now try to retrieve the file handle given the id
@@ -19,7 +19,7 @@ integrationTestFileHandle <-
     synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
     # now we should not be able to get the handle
     fileHandle3<-synapseClient:::synapseGet(handleUri, endpoint=synapseFileServiceEndpoint(), checkHttpStatus=F)
-    checkEquals("The resource you are attempting to access cannot be found", fileHandle3$reason)
+    checkTrue(regexpr("The resource you are attempting to access cannot be found", fileHandle3, fixed=T)[[1]]>0)
 }
 
 integrationTestExternalFileHandle <- function() {
