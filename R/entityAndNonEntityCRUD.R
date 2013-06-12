@@ -82,10 +82,10 @@ synUpdate<-function(object) {
 synDelete<-function(object) {
   if (is(object, "Entity") || is(object, "Activity")) {
     deleteEntity(object)
-  } else if (is(object, "Evaluation") || is(object, "WikiPage")){
+  } else if (is(object, "Evaluation") || is(object, "WikiPage") || is(object, "Submission")){
     synRestDELETE(object@updateUri)
   } else {
-    stop("%s is not supported.", class(object))
+    stop(sprintf("%s is not supported.", class(object)))
   }
 }
 

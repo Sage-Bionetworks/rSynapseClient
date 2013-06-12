@@ -15,6 +15,8 @@ If the File 'links' to an external URL (not downloaded to the local file system)
 file<-synGet("syn123456")
 filePath<-getFileLocation(file)
 }
+\seealso{
 \code{\link{File}}
 \code{\link{synGet}}
 \code{\link{synStore}}
+}

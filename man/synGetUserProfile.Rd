@@ -16,8 +16,6 @@ specified user.  User profiles have public and private fields.  For example, fir
 which email address is private.  When retrieving ones own user profile, all fields are returned.  When retrieving
 another's profile, only the public fields are returned.
 }
-\source{
-%%  ~~ reference to a publication or URL from which the data were obtained ~~
 \examples{
 # get my own user profile
 profile<-synGetUserProfile()
@@ -27,5 +25,7 @@ profile<-synStore(profile)
 principalId<-"123456"
 profile<-synGetUserProfile(principalId)
 }
+\seealso{
 \code{\link{UserProfile}}
 \code{\link{synStore}}
+}
