@@ -864,8 +864,8 @@ integrationTestExternalLink<-function() {
   
   # retrieve the metadata (no download)
   metadataOnly<-synGet(id, downloadFile=FALSE)
-  # no file path when retrieving only metadata
-  checkEquals(character(0), getFileLocation(metadataOnly))
+  # we get external URL when retrieving only metadata
+  checkEquals(filePath, getFileLocation(metadataOnly))
   
   # now download it.  This will pull a copy into the cache
   downloadedFile<-synGet(id)
@@ -874,8 +874,8 @@ integrationTestExternalLink<-function() {
   checkEquals(id, propertyValue(downloadedFile, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))
   checkEquals(synapseStore, downloadedFile@synapseStore)
-  # no file path when retrieving only metadata
-  checkEquals(character(0), getFileLocation(metadataOnly))
+  # we get external URL when retrieving only metadata
+  checkEquals(filePath, getFileLocation(metadataOnly))
   checkEquals(filePath, downloadedFile@fileHandle$externalURL)
 }
 

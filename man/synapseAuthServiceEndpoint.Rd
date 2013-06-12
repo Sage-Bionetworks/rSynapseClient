@@ -23,7 +23,7 @@ The desired service endpoint
 \details{
 If called with no arguments, get the desired endpoint. Otherwise, set the endpoint to the value provided.
 
-SynapseResetEndpoints sets the three endpoints to their default values.
+synapseResetEndpoints sets the three endpoints to their default values.
 }
 \value{
 If called with no arguments, all but synapseResetEndpoints return the value of the endpoint.
