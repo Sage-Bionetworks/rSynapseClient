@@ -22,5 +22,5 @@ If called with no arguments, returns the path to the root of the local file cach
 Matt Furia
 }
 \seealso{
-\code{\link{downloadEntity}}
+\code{\link{synGet}}
 }

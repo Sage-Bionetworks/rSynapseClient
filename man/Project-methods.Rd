@@ -11,8 +11,8 @@
 \section{Methods}{
 \describe{
 
-\item{\code{signature(entity = "list")}}{
-Construct a Project entity from a list of properties
+\item{\code{signature(...)}}{
+Construct a Project entity from a list of properties specified as key/value pairs.
 }
 }}
 \keyword{methods}
