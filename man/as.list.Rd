@@ -1,6 +1,6 @@
 \name{as.list}
 \alias{as.list}
-\docType{data}
+\docType{methods}
 \title{
 as.list
 }

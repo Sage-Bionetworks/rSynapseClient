@@ -1,6 +1,6 @@
 \name{WikiPage}
 \alias{WikiPage}
-\docType{data}
+\docType{methods}
 \title{
 Constructor for WikiPage
 }

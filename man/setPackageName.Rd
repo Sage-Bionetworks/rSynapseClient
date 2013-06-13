@@ -1,6 +1,6 @@
 \name{setPackageName}
 \alias{setPackageName}
-\docType{data}
+\docType{methods}
 \title{
 setPackageName
 }

@@ -1,6 +1,6 @@
 \name{as.environment}
 \alias{as.environment}
-\docType{data}
+\docType{methods}
 \title{
 as.environment
 }

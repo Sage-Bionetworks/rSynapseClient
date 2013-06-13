@@ -1,6 +1,6 @@
 \name{names}
 \alias{names}
-\docType{data}
+\docType{methods}
 \title{
 names
 }

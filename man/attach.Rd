@@ -1,6 +1,6 @@
 \name{attach}
 \alias{attach}
-\docType{data}
+\docType{methods}
 \title{
 attach
 }

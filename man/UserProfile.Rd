@@ -1,6 +1,6 @@
 \name{UserProfile}
 \alias{UserProfile}
-\docType{data}
+\docType{methods}
 \title{
 Constructor for UserProfile
 }

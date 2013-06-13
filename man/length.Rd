@@ -1,6 +1,6 @@
 \name{length}
 \alias{length}
-\docType{data}
+\docType{methods}
 \title{
 length
 }

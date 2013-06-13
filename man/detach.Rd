@@ -1,6 +1,6 @@
 \name{detach}
 \alias{detach}
-\docType{data}
+\docType{methods}
 \title{
 detach
 }

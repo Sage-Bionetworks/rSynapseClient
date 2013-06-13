@@ -1,6 +1,6 @@
 \name{SubmissionStatus}
 \alias{SubmissionStatus}
-\docType{data}
+\docType{methods}
 \title{
 Constructor for SubmissionStatus
 }
