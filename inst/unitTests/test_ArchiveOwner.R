@@ -25,7 +25,7 @@ unitTestInitialize <-
 {
   aa <- new("ArchiveOwner")
   ab <- new("ArchiveOwner")
-  checkTrue(cacheDir(aa) != cacheDir(ab))
+  checkTrue(synapseClient:::cacheDir(aa) != synapseClient:::cacheDir(ab))
 }
 
 unitTestAddFile <-
@@ -86,14 +86,14 @@ unitTestLoadObjectsFromFiles <-
   addFile(own, file)
   synapseClient:::loadObjectsFromFiles(own, T)
   checkEquals(length(objects(own@objects)), 0L)
-  checkEquals(length(files(own)), 1L)
-  checkEquals(files(own), gsub("^.+/","",file))
+  checkEquals(length(synapseClient:::files(own)), 1L)
+  checkEquals(synapseClient:::files(own), gsub("^.+/","",file))
 
-  moveFile(own,files(own), "file.rbin")
+  moveFile(own,synapseClient:::files(own), "file.rbin")
   synapseClient:::loadObjectsFromFiles(own, T)
   checkEquals(length(objects(own@objects)), 1L)
-  checkEquals(length(files(own)), 1L)
-  checkEquals(files(own), "file.rbin")
+  checkEquals(length(synapseClient:::files(own)), 1L)
+  checkEquals(synapseClient:::files(own), "file.rbin")
 }
 
 #unitTestObjects <-
@@ -106,7 +106,7 @@ unitTestCacheDir <-
     function()
 {
   own <- new("ArchiveOwner")
-  checkEquals(cacheDir(own), own@fileCache$getCacheDir())
+  checkEquals(synapseClient:::cacheDir(own), own@fileCache$getCacheDir())
 }
 
 unitTestGetPackageName <-
@@ -157,28 +157,28 @@ unitTestSetCacheRoot <-
   cat("TESTFILE1", file = file)
 
   addFile(own, file)
-  checkEquals(length(files(own)), 1L)
-  checkEquals(files(own), basename(file))
-  checkEquals(length(files(copy)), 1L)
+  checkEquals(length(synapseClient:::files(own)), 1L)
+  checkEquals(synapseClient:::files(own), basename(file))
+  checkEquals(length(synapseClient:::files(copy)), 1L)
 
   newroot <- tempfile()
   synapseClient:::setCacheRoot(own, newroot, TRUE)
-  checkEquals(length(files(own)), 1L)
-  checkEquals(files(own), files(copy))
+  checkEquals(length(synapseClient:::files(own)), 1L)
+  checkEquals(synapseClient:::files(own), synapseClient:::files(copy))
 
-  deleteFile(own, files(own))
-  checkEquals(length(files(own)), 0L)
-  checkEquals(length(files(copy)), 0L)
+  deleteFile(own, synapseClient:::files(own))
+  checkEquals(length(synapseClient:::files(own)), 0L)
+  checkEquals(length(synapseClient:::files(copy)), 0L)
 
   addFile(own, file)
-  checkEquals(length(files(own)), 1L)
-  checkEquals(files(own), basename(file))
-  checkEquals(length(files(copy)), 1L)
+  checkEquals(length(synapseClient:::files(own)), 1L)
+  checkEquals(synapseClient:::files(own), basename(file))
+  checkEquals(length(synapseClient:::files(copy)), 1L)
 
   own2 <- synapseClient:::ArchiveOwner()
 
   archfile <- file.path(own@fileCache$getCacheRoot(), own@fileCache$getArchiveFile())
   own2 <- synapseClient:::setCacheRoot(own2, archfile, TRUE)
-  checkEquals(length(files(own2)), 0L)
+  checkEquals(length(synapseClient:::files(own2)), 0L)
 
 }
