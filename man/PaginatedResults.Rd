@@ -1,6 +1,6 @@
 \name{PaginatedResults}
 \alias{PaginatedResults}
-\docType{data}
+\docType{methods}
 \title{
 PaginatedResults Constructor
 }

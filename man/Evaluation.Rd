@@ -1,6 +1,6 @@
 \name{Evaluation}
 \alias{Evaluation}
-\docType{data}
+\docType{methods}
 \title{
 Evaluation Constructor
 }

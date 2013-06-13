@@ -7,7 +7,7 @@ synGetEvaluation
 Function to retrieve an Evaluation object.
 }
 \usage{
-synGetEvaluation("123456")
+synGetEvaluation(evaluationId)
 }
 \details{
 Retrieves an Evaluation object, given its ID.

@@ -9,6 +9,20 @@ Get the Submissions for a given Evaluation.
 \usage{
 synGetSubmissions(evaluationId, status, limit, offset)
 }
+\arguments{
+\item{evaluationId}{
+The evaluation queue containing the submissions of interest.
+}
+\item{status}{
+An optional filter on the submissions.  One of "OPEN", "CLOSED", "SCORED", or "INVALID".
+}
+\item{limit}{
+The optional limit 'paging' parameter, default is 10.
+}
+\item{offset}{
+The optional offset 'paging' parameter, default is 0.
+}
+}
 \value{
 an object of type PaginatedResults
 }
