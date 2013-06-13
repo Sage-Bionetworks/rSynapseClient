@@ -9,6 +9,17 @@ Get the Submissions for a given Evaluation submitted by me.
 \usage{
 synGetOwnSubmissions(evaluationId, limit, offset)
 }
+\arguments{
+\item{evaluationId}{
+The evaluation queue containing the submissions of interest.
+}
+\item{limit}{
+The optional limit 'paging' parameter, default is 10.
+}
+\item{offset}{
+The optional offset 'paging' parameter, default is 0.
+}
+}
 \value{
 an object of type PaginatedResults
 }

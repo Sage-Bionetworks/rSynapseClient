@@ -13,7 +13,7 @@ synGetUserProfile(principalId)
 \details{
 synGetUserProfile() returns the profile of the logged in user.  synGetUserProfile(principalId) returns the profile of the
 specified user.  User profiles have public and private fields.  For example, first name and last name are public fields,
-which email address is private.  When retrieving ones own user profile, all fields are returned.  When retrieving
+while email address is private.  When retrieving ones own user profile, all fields are returned.  When retrieving
 another's profile, only the public fields are returned.
 }
 \examples{
