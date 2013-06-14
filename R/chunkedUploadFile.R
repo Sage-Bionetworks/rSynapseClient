@@ -70,8 +70,8 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
       opts=.getCache("curlOpts")
     )
     
-    chunkResult <- addChunkToFile(chunkRequest)
-    chunkResults[[length(chunkResults)+1]]<-chunkResult
+    ## chunkResult <- addChunkToFile(chunkRequest) ## this is no longer needed
+    chunkResults[[length(chunkResults)+1]]<-chunkNumber ## chunkResult
     chunkNumber <- chunkNumber + 1
   }
   close(connection)
@@ -115,10 +115,28 @@ addChunkToFile<-function(chunkRequest) {
     endpoint=synapseServiceEndpoint("FILE"))
 }
 
+# returns the file handle
 completeChunkFileUpload<-function(chunkedFileToken, chunkResults) {
-    synapsePost(uri='/completeChunkFileUpload', 
-      entity=list(
-        chunkedFileToken=chunkedFileToken, 
-        chunkResults=chunkResults), 
-      endpoint=synapseServiceEndpoint("FILE"))
+  # start the final assembly
+  uploadDaemonStatus = synapsePost(uri='/startCompleteUploadDaemon', 
+    entity=list(
+      chunkedFileToken=chunkedFileToken, 
+      chunkNumbers=chunkResults), 
+    endpoint=synapseFileServiceEndpoint())
+  statusUri <- sprintf("/completeUploadDaemonStatus/%s", uploadDaemonStatus$daemonId)
+  fileHandleId<-NULL
+  # wait for the file assembly to complete
+  repeat {
+    Sys.sleep(0.1) # wait for 1/10 second
+    uploadDaemonStatus <- synapseGet(uri=statusUri, endpoint=synapseFileServiceEndpoint())
+    if (uploadDaemonStatus$state=="COMPLETED") {
+      fileHandleId<-uploadDaemonStatus$fileHandleId
+      break
+    } else if (uploadDaemonStatus$state=="FAILED") {
+      stop(uploadDaemonStatus$errorMessage)
+    }
+  }
+  # retrieve and return the file handle
+  handleUri<-sprintf("/fileHandle/%s", fileHandleId)
+  synapseGet(handleUri, endpoint=synapseFileServiceEndpoint())
 }
