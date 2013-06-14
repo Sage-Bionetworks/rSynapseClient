@@ -10,10 +10,13 @@ lockdirPath<-function(filePath) {sprintf("%s.lock", filePath)}
 # they have exclusive access to the file
 # Note: It is possible, and in fact proper, to lock a file that doesn't exist yet
 # This gives the caller exclusive access for creating the file.
-lockFile<-function(filePath, maxWaitSeconds=20) {
+#
+# Note:  The ageTimeoutSeconds parameter is provided for testing purposes only
+# Other callers are not to change it.
+#
+lockFile<-function(filePath, maxWaitSeconds=70, ageTimeoutSeconds=60.0) {
   lockdirPath <- lockdirPath(filePath)
   startTime<-Sys.time()
-  ageTimeoutSeconds<-60.0
   while ((Sys.time()-startTime) < maxWaitSeconds) {
     success<-dir.create(lockdirPath, showWarnings=FALSE, recursive=TRUE)
     if (success) return(lastModifiedTimestamp(lockdirPath)+ageTimeoutSeconds)
@@ -34,7 +37,7 @@ lockFile<-function(filePath, maxWaitSeconds=20) {
 
 unlockFile<-function(filePath) {
   lockdirPath <- lockdirPath(filePath)
-  file.remove(lockdirPath)
+  if (file.exists(lockdirPath)) file.remove(lockdirPath)
   # the above doesn't work on cygwin, but one of these should
   if (file.exists(lockdirPath)) unlink(lockdirPath, recursive=T, force=T)
   if (file.exists(lockdirPath)) system(sprintf("rm -r %s", lockdirPath))
