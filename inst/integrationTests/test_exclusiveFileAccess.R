@@ -1,7 +1,9 @@
 .setUp <- 
   function()
 {
-
+  dir<-tempdir()
+  filePath<-sprintf("%s/efatest.txt", dir)
+  synapseClient:::unlockFile(filePath)
 }
 
 .tearDown <-
@@ -14,11 +16,11 @@ integrationTestHappyPath <-
 {
   # lock file
   dir<-tempdir()
-  filePath<-sprintf("%s/eaftest.txt", dir)
-  lockExpirationTimeStamp<-synapseClient:::lockFile(filePath, maxWaitSeconds=2)
+  filePath<-sprintf("%s/efatest.txt", dir)
+  lockExpirationTimeStamp<-synapseClient:::lockFile(filePath, maxWaitSeconds=2, ageTimeoutSeconds=5)
   checkTrue(!is.na(lockExpirationTimeStamp))
-  # expiration is in 10 seconds, so should be less than 15 seconds from now
-  checkTrue(lockExpirationTimeStamp<Sys.time()+15)
+  # expiration is in 5 seconds, so should be less than 10 seconds from now
+  checkTrue(lockExpirationTimeStamp<Sys.time()+10)
   checkTrue(file.exists(sprintf("%s.lock", filePath)))
   # write file
   content<-"my dog has fleas!"
@@ -35,11 +37,11 @@ integrationTestLockTimeout <-
 {
   # lock file
   dir<-tempdir()
-  filePath<-sprintf("%s/eaftest.txt", dir)
-  lockExpirationTimeStamp<-synapseClient:::lockFile(filePath, maxWaitSeconds=2)
+  filePath<-sprintf("%s/efatest.txt", dir)
+  lockExpirationTimeStamp<-synapseClient:::lockFile(filePath, maxWaitSeconds=2, ageTimeoutSeconds=5)
   # assume the lock is held by a process that died
   # second "process" should be able to get the lock
-  lockExpirationTimeStamp2<-synapseClient:::lockFile(filePath)
+  lockExpirationTimeStamp2<-synapseClient:::lockFile(filePath, ageTimeoutSeconds=5)
   checkTrue(lockExpirationTimeStamp2>=lockExpirationTimeStamp)
   synapseClient:::unlockFile(filePath)
   # check that directory is gone
@@ -51,11 +53,11 @@ integrationTestAcquireLockFailure <-
 {
   # lock file
   dir<-tempdir()
-  filePath<-sprintf("%s/eaftest.txt", dir)
-  lockExpirationTimeStamp<-synapseClient:::lockFile(filePath, maxWaitSeconds=2)
+  filePath<-sprintf("%s/efatest.txt", dir)
+  lockExpirationTimeStamp<-synapseClient:::lockFile(filePath, maxWaitSeconds=2, ageTimeoutSeconds=5)
   # assume the lock is held by a process that died
   # second "process" fails to get the lock because it doesn't wait long enough
-  result<-try(synapseClient:::lockFile(filePath, maxWaitSeconds=.5), silent=TRUE)
+  result<-try(synapseClient:::lockFile(filePath, maxWaitSeconds=.5, ageTimeoutSeconds=5), silent=TRUE)
   checkTrue(class(result)=="try-error")
   synapseClient:::unlockFile(filePath)
   # check that directory is gone

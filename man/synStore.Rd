@@ -15,10 +15,10 @@ synStore(entity, activity=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F
  The item to store.  May be an entity (File, Folder, Project) or another object (Activity, Evaluation, SubmissionStatus, UserProfile, WikiPage)
 }
  \item{used}{
- For entities, this is the list of other entities 'used' as inputs when generating the entity.  For non-entities, this parameter is ignored.
+ For entities, this is the list of other entities (URLs, objects and/or IDs) 'used' as inputs when generating the entity.  For non-entities, this parameter is ignored.
 }
  \item{executed}{
-For entities, this is the list of other entities 'executed' as software when generating the entity.  For non-entities, this parameter is ignored.
+For entities, this is the list of other entities (URLs, objects and/or IDs) 'executed' as software when generating the entity.  For non-entities, this parameter is ignored.
 }
  \item{activityName}{
 For entities, this is the name of the activity generating the given entity.  For non-entities, this parameter is ignored.

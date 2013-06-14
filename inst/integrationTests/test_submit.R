@@ -70,6 +70,7 @@ integrationTest_submit <- function() {
   # delete the submission
   synDelete(submission3)
   
+  checkException(synGetSubmission(propertyValue(submission3, "id")))
 }
   
 
