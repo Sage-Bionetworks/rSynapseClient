@@ -70,8 +70,7 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
       opts=.getCache("curlOpts")
     )
     
-    ## chunkResult <- addChunkToFile(chunkRequest) ## this is no longer needed
-    chunkResults[[length(chunkResults)+1]]<-chunkNumber ## chunkResult
+    chunkResults[[length(chunkResults)+1]]<-chunkNumber
     chunkNumber <- chunkNumber + 1
   }
   close(connection)
