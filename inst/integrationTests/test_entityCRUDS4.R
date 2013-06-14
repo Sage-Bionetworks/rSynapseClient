@@ -252,11 +252,11 @@ integrationTestDeleteEntityById <-
   
   cacheDir <- createdData$cacheDir
   checkTrue(file.exists(cacheDir))
-  deleteEntity(createdData)
+  synDelete(createdData)
   checkTrue(!file.exists(cacheDir))
   
   
-  deleteEntity(createdProject$properties$id)
+  synDelete(createdProject$properties$id)
   checkException(getEntity(createdStudy))
   checkException(getEntity(createdProject))
   synapseClient:::.deleteCache("testProject")

@@ -79,7 +79,7 @@ integrationTestCRUDS4Activity <-
   checkEquals(T, used2[[1]]$wasExecuted)
   
   # delete
-  deleteEntity(activity)	
+  synDelete(activity)	
   synapseClient:::.deleteCache("testActivity")
   shouldBeError<-try(getActivity(activityId), silent=T)
   checkTrue(class(shouldBeError)=="try-error")
@@ -109,7 +109,7 @@ integrationTestReferenceConstructor <-
   getActivity(activityId)
   
   # delete
-  deleteEntity(activity)	
+  synDelete(activity)	
   synapseClient:::.deleteCache("testActivity")
   shouldBeError<-try(getActivity(activityId), silent=T)
   checkTrue(class(shouldBeError)=="try-error")
@@ -129,7 +129,7 @@ integrationTestEntityConstructor <-
   synapseClient:::.setCache("testActivity", activity)
   
   # delete
-  deleteEntity(activity)	
+  synDelete(activity)	
   synapseClient:::.deleteCache("testActivity")
   shouldBeError<-try(getActivity(activityId), silent=T)
   checkTrue(class(shouldBeError)=="try-error")

@@ -80,7 +80,7 @@ synUpdate<-function(object) {
 }
 
 synDelete<-function(object) {
-  if (is(object, "Entity") || is(object, "Activity")) {
+  if (isSynapseId(object) || is(object, "Entity") || is(object, "Activity")) {
     deleteEntity(object)
   } else if (is(object, "Evaluation") || is(object, "WikiPage") || is(object, "Submission")){
     synRestDELETE(object@updateUri)
