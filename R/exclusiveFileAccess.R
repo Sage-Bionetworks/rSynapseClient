@@ -13,7 +13,7 @@ lockdirPath<-function(filePath) {sprintf("%s.lock", filePath)}
 lockFile<-function(filePath, maxWaitSeconds=20) {
   lockdirPath <- lockdirPath(filePath)
   startTime<-Sys.time()
-  ageTimeoutSeconds<-10.0
+  ageTimeoutSeconds<-60.0
   while ((Sys.time()-startTime) < maxWaitSeconds) {
     success<-dir.create(lockdirPath, showWarnings=FALSE, recursive=TRUE)
     if (success) return(lastModifiedTimestamp(lockdirPath)+ageTimeoutSeconds)
