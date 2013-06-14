@@ -21,7 +21,7 @@
   function()
 {
 
-  deleteEntity(synapseClient:::.getCache("testProject"))
+  synDelete(synapseClient:::.getCache("testProject"))
   synapseClient:::.deleteCache("testProject")
 
   unlink(synapseCacheDir(), recursive=T)
