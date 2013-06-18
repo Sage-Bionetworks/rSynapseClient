@@ -120,14 +120,14 @@ unitTestNames <-
 unitTestConstructorNoArg <-
 	function()
 {
-	obj <- SynapseProperties()
+	obj <- synapseClient:::SynapseProperties()
 	checkEquals(names(obj), character())
 }
 
 unitTestConstructorList <-
 	function()
 {
-	obj <- SynapseProperties(list(foo="character", boo="integer", goo="numeric"))
+	obj <- synapseClient:::SynapseProperties(list(foo="character", boo="integer", goo="numeric"))
 	checkTrue(all(names(obj) %in% c('foo','boo','goo')))
 	checkTrue(all(c('foo','boo','goo') %in% names(obj)))
 

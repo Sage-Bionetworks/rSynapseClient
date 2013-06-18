@@ -90,13 +90,27 @@ export(
 ## S3 convenience methods
 export(synapseExecute)
 
-## S4 entity constructors export methods starting with a capital letter. this is a hack.
-exportPattern("^[A-Z]")
+## S4 entity constructors 
+export(
+	"Folder",
+	"Project",
+	"Activity")
+
+# to be deprecated
+export(
+	"Data",
+	"Study",
+	"Code",
+	"Link",
+	"PhenotypeData",
+	"GenotypeData",
+	"ExpressionData",
+	"RObject",
+	"Summary",
+	"GenomicData")
 
 ## entity S4 methods
 exportMethods(
-  storeEntityFiles,
-  storeEntityObjects,
   storeEntity, 
   getEntity, 
   deleteEntity, 
