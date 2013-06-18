@@ -87,7 +87,7 @@ integrationTestWikiCRUD <-
   filePath2<-createFile()
   
   wikiPage<-WikiPage(
-    parent=project, 
+    owner=project, 
     title="wiki title", 
     markdown="some stuff", 
     attachments=list(filePath1, filePath2)

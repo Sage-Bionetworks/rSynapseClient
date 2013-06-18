@@ -45,7 +45,6 @@ detach
 
 ## add'l commands defined in C-4
 export(
-  File,
   synGet,
   synStore,
   getFileLocation,
@@ -54,7 +53,6 @@ export(
   synRestDELETE,
   synRestPOST,
   synRestPUT,
-  WikiPage,
   synGetWiki,
   synGetUserProfile,
   synGetSubmission,
@@ -90,11 +88,19 @@ export(
 ## S3 convenience methods
 export(synapseExecute)
 
-## S4 entity constructors 
+## constructors 
 export(
+	"File",
 	"Folder",
 	"Project",
-	"Activity")
+	"Activity",
+	"Evaluation",
+	"Submission",
+	"SubmissionStatus",
+	"Participant",
+	"WikiHeader",
+	"UserProfile",
+	"WikiPage")
 
 # to be deprecated
 export(
