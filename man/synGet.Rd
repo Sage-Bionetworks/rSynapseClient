@@ -1,10 +1,10 @@
 \name{synGet}
 \alias{synGet}
 \title{
-Retrieve an item from Synapse
+Retrieve an object from Synapse
 }
 \description{
-Retrieve an item from Synapse
+Retrieve an object from Synapse
 }
 \usage{
 synGet(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F)
@@ -14,36 +14,30 @@ synGet(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcollision="kee
  The Synapse ID of the entity to retrieve.
 }
  \item{version}{
- Optional:  The version number of the entity to retrieve.
+ Optional:  The version number of the entity to retrieve. Defaults to the most recent version
 }
  \item{downloadFile}{
- For File entities only.  If TRUE then the attached file is downloaded to the 'downloadLocation'.
+ For File entities only.  If TRUE then the attached file is downloaded to the 'downloadLocation'
 }
  \item{downloadLocation}{
  For File entities only.  The folder in the local file system to which the attached file is to be downloaded. 
- If omitted, then a default location is used.  See 'getFileLocation'.
+ If omitted, then a default location in a cache is used.  See \code{\link{getFileLocation}}
 }
  \item{ifcollision}{
  if.collision is one of "keep.both", "keep.local", or "overwrite.local", 
-telling the system what to do if a different file is found at the given local file location.
+telling the system what to do if a different file is found at the given local file location
 }
  \item{load}{
- If TRUE then deserialize the downloaded file into memory, using the R 'load' command. (See 'getObject', 'listObjects'.)
+ If TRUE then deserialize the downloaded file into memory, using the R 'load' command (See \code{\link{getObject}}, \code{\link{listObjects}})
 }
 }
 \details{
 Get an entity (File, Folder, etc.) from the Synapse server, with its attributes (properties, annotations) and, 
-optionally, with its associated file.  
+optionally, with its associated file.
 }
 
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Bruce Hoff
-}
-\note{
-%%  ~~further notes~~
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
