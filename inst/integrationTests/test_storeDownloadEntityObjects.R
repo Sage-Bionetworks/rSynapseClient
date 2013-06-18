@@ -33,7 +33,7 @@ integrationTestStore <-
   addObject(data, "bar", "foo")
   ##checkEquals(length(data$files), 0L)
   
-  storedData <- storeEntityObjects(data)
+  storedData <- synapseClient:::storeEntityObjects(data)
   ##checkEquals(length(storedData$files), 0L)
   checkEquals(length(storedData$objects), 1L)
   checkEquals(data$objects$foo, storedData$objects$foo)
@@ -48,7 +48,7 @@ integrationTestDownload <-
   addObject(data,"bar","foo")
   ##checkEquals(length(data$files), 0L)
   
-  storedData <- storeEntityObjects(data)
+  storedData <- synapseClient:::storeEntityObjects(data)
   
   downloadedData <- downloadEntity(propertyValue(storedData, "id"))
   ##checkEquals(length(downloadedData$files), 0L)
@@ -64,7 +64,7 @@ integrationTestLoad <-
   addObject(data, "bar", "foo")
   ##checkEquals(length(data$files), 0L)
   
-  storedData <- storeEntityObjects(data)
+  storedData <- synapseClient:::storeEntityObjects(data)
   downloadedData <- downloadEntity(propertyValue(storedData, "id"))
   
   loadedData <- loadEntity(propertyValue(storedData, "id"))
@@ -84,7 +84,7 @@ integrationTestDownloadFilesAndObjects <-
   
   addObject(data, diag(nrow=10, ncol=10), "diag")
   checkEquals(length(data$objects), 2L)
-  storedData <- storeEntityObjects(data)
+  storedData <- synapseClient:::storeEntityObjects(data)
 ##  checkEquals(length(data$files), 0L)
   checkEquals(length(data$objects), 2L)
   
