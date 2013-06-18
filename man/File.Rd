@@ -1,31 +1,31 @@
 \name{File}
 \alias{File}
 \title{
-File Constructor
+Synapse File Constructor
 }
 \description{
 Constructor for File
 }
 \usage{
-File(path="/path/to/file", parentId="syn101", synapseStore=T, ...)
+File(path, parentId, synapseStore=TRUE, ...)
 }
 \arguments{
  \item{path}{
- path to the file in local file system, or URL to file on the internet.  If omitted, an 'empty' File object is created, which can be filled using the 'addObject' function.
+Path to the file in local file system, or URL to file on the internet
 }
 \item{parentId}{
-The Synapse ID of the parent project or folder.
+The Synapse ID of the parent Project or Folder in which to store the File (e.g. "syn101")
 }
 \item{synapseStore}{
- If 'synapseStore' is TRUE then file is uploaded to S3, else only the file location is saved.
+If 'synapseStore' is TRUE then file is uploaded to S3, else only the file location is saved, along with other metadata
 }
 \item{...}{
-Additional parameters are interpreted as properties or annotations on the File.
+Additional named parameters are interpreted as properties or annotations on the File
 }
 }
 
 \value{
-The created File is returned.  Note: This is an in-memory representation.  To persist to Synapse use 'synStore'.
+The created File is returned.  NOTE: This is an in-memory representation.  To persist to Synapse use \code{\link{synStore}()}.
 }
 \author{
 Bruce Hoff
