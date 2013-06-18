@@ -28,12 +28,12 @@ setClass(
 
 ##
 ## WikiPage constructor
-WikiPage<-function(parent, title, markdown, attachments, parentWikiId) {
+WikiPage<-function(owner, title, markdown, attachments, parentWikiId) {
   wikiPage <- new("WikiPage")
-  if (missing(parent)) {
+  if (missing(owner)) {
     stop("parent is required.")
   }
-  wikiPage@createUri<-createWikiUri(parent)
+  wikiPage@createUri<-createWikiUri(owner)
   if (!missing(attachments)) wikiPage@attachments<-attachments
   if (!missing(title)) propertyValue(wikiPage, "title")<-title
   if (!missing(markdown)) propertyValue(wikiPage, "markdown")<-markdown

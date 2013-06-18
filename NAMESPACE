@@ -45,7 +45,6 @@ detach
 
 ## add'l commands defined in C-4
 export(
-  File,
   synGet,
   synStore,
   getFileLocation,
@@ -54,7 +53,6 @@ export(
   synRestDELETE,
   synRestPOST,
   synRestPUT,
-  WikiPage,
   synGetWiki,
   synGetUserProfile,
   synGetSubmission,
@@ -90,13 +88,35 @@ export(
 ## S3 convenience methods
 export(synapseExecute)
 
-## S4 entity constructors export methods starting with a capital letter. this is a hack.
-exportPattern("^[A-Z]")
+## constructors 
+export(
+	"File",
+	"Folder",
+	"Project",
+	"Activity",
+	"Evaluation",
+	"Submission",
+	"SubmissionStatus",
+	"Participant",
+	"WikiHeader",
+	"UserProfile",
+	"WikiPage")
+
+# to be deprecated
+export(
+	"Data",
+	"Study",
+	"Code",
+	"Link",
+	"PhenotypeData",
+	"GenotypeData",
+	"ExpressionData",
+	"RObject",
+	"Summary",
+	"GenomicData")
 
 ## entity S4 methods
 exportMethods(
-  storeEntityFiles,
-  storeEntityObjects,
   storeEntity, 
   getEntity, 
   deleteEntity, 

@@ -242,7 +242,7 @@ unitTestDeleteAnnotation <-
 unitTestAddAttachment <-
   function()
 {
-  entity <- Entity()
+  entity <- synapseClient:::Entity()
   file <- tempfile()
   cat("hello world", file = file)
   file <- gsub("[/\\]+", "/", normalizePath(file))
@@ -279,7 +279,7 @@ unitTestAddAttachment <-
 unitTestDeleteAttachment <-
   function()
 {
-  entity <- Entity()
+  entity <- synapseClient:::Entity()
   file <- tempfile()
   file2 <- tempfile()
   cat("hello world", file = file)
@@ -306,13 +306,13 @@ unitTestDeleteAttachment <-
 unitTestDeleteProperty <-
   function()
 {
-  entity <- Entity()
+  entity <- synapseClient:::Entity()
   entity$properties$id <- "syn1234"
 
   checkEquals("syn1234", entity$properties$id)
   newEntity <- deleteProperty(entity, "id")
 
-  checkEquals(newEntity$properties$id, Entity()$properties$id)
+  checkEquals(newEntity$properties$id, synapseClient:::Entity()$properties$id)
 }
 
 unitTestSetPropertyNull <-
@@ -331,7 +331,7 @@ unitTestAsList <-
 unitTestBracketAccessorProperties <-
   function()
 {
-  entity <- Entity()
+  entity <- synapseClient:::Entity()
   
 
 }
@@ -339,7 +339,7 @@ unitTestBracketAccessorProperties <-
 unitTestPropertyValues <-
   function()
 {
-  entity <- Entity()
+  entity <- synapseClient:::Entity()
   checkEquals(length(propertyValues(entity)), length(propertyValues(entity)))
 }
 
