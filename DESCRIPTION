@@ -2,7 +2,7 @@ Package: synapseClient
 Type: Package
 Title: Synapse R Client from Sage Bionetworks
 Version: 0.28
-ReleaseNotes: Further implementation of Common Command Set.
+ReleaseNotes: This list of issues was resolved: https://sagebionetworks.jira.com/issues/?jql=fixVersion%20%3D%20%22R-0.29%22
 Date: 2013-06-14
 Author@R: c(
 	person("Bruce", "Hoff", email="bruce.hoff@sagebase.org", role="aut"),

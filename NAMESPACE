@@ -8,9 +8,43 @@ importFrom(utils, edit, compareVersion)
 ## package has a dynamic library
 useDynLib(synapseClient)
 
+
+
+
+### DEPRECATED FUNCTIONS
+###  These functions have .Rd files, but are deprecated and will ultimately be removed
+###  Removing from export() requires also removing unit and integration tests which use them
+export(
+as.environment.EnhancedEnvironment,
+as.environment.GlobalCache, 
+as.environment.ArchiveOwner, 
+as.list.SimplePropertyOwner, 
+as.list.SynapseAnnotations, 
+as.list.TypedPropertyStore, 
+as.list.SynapseProperties,
+length.EnhancedEnvironment, 
+length.QueryResult,
+names.CachingObjectOwner, 
+names.EnhancedEnvironment, 
+names.LocationableWithoutBinaries,
+names.Locationable,
+names.Entity,
+names.QueryResult,
+names.SynapseProperties,
+getPackageName.EnhancedEnvironment, 
+getPackageName.ArchiveOwner,
+getPackageName,
+setPackageName,
+attach,
+detach
+)
+
+
+
+
+
 ## add'l commands defined in C-4
 export(
-  File,
   synGet,
   synStore,
   getFileLocation,
@@ -19,7 +53,6 @@ export(
   synRestDELETE,
   synRestPOST,
   synRestPUT,
-  WikiPage,
   synGetWiki,
   synGetUserProfile,
   synGetSubmission,
@@ -49,41 +82,44 @@ export(
   synapseLogout,  
   synapseCacheDir,
   hmacSecretKey,
-  edit,
   setApiCredentials,
   synapseQuery,
-  available.versions,
   touOnWeb
 )
 
 ## S3 convenience methods
-##export(getDatasets)
-export(as.environment.EnhancedEnvironment,as.environment.GlobalCache, as.list.SimplePropertyOwner, 
-as.list.SynapseAnnotations, as.list.TypedPropertyStore, as.environment.EnhancedEnvironment,
-length.EnhancedEnvironment, names.CachingObjectOwner, names.EnhancedEnvironment, names.LocationableWithoutBinaries,
-names.Locationable,File,getPackageName.EnhancedEnvironment, getPackageName.ArchiveOwner,
-  as.environment.ArchiveOwner, edit.Code, names.Entity,
-  
-  names.QueryResult,
-  as.data.frame.QueryResult,
-  length.QueryResult,
-  dim.QueryResult,
-  as.list.SynapseProperties,
-  names.SynapseProperties,
-  synapseExecute)
+export(synapseExecute)
 
-## S4 convenience methods
-##exportMethods(getDatasetLayers)
+## constructors 
+export(
+	"File",
+	"Folder",
+	"Project",
+	"Activity",
+	"Evaluation",
+	"Submission",
+	"SubmissionStatus",
+	"Participant",
+	"WikiHeader",
+	"UserProfile",
+	"WikiPage")
 
-## S4 entity constructors export methods starting with a capital letter. this is a hack.
-exportPattern("^[A-Z]")
+# to be deprecated
+export(
+	"Data",
+	"Study",
+	"Code",
+	"Link",
+	"PhenotypeData",
+	"GenotypeData",
+	"ExpressionData",
+	"RObject",
+	"Summary",
+	"GenomicData")
 
 ## entity S4 methods
 exportMethods(
-  storeEntityFiles,
-  storeEntityObjects,
-  storeEntity,
-##  copyEntity, 
+  storeEntity, 
   getEntity, 
   deleteEntity, 
   createEntity, 
@@ -91,12 +127,6 @@ exportMethods(
   downloadEntity, 
   loadEntity, 
   getParentEntity,
-  files,
-  attach,
-  detach,
-  setPackageName,
-  getPackageName,
-  objects,
 	getActivity,
 	generatedBy,
 	"generatedBy<-",
@@ -108,10 +138,7 @@ exportMethods(
 exportMethods(
   addFile,
   deleteFile,
-  addGithubTag,
-  moveFile,
-  cacheDir,
-  getFileCache
+  moveFile
 ) 
 
 exportMethods(

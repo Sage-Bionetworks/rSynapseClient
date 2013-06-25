@@ -69,7 +69,15 @@ synUpdate<-function(object) {
   objectResult
 }
 
-synDelete<-function(object) {synRestDELETE(object@updateUri)}
+synDelete<-function(object) {
+  if (isSynapseId(object) || is(object, "Entity") || is(object, "Activity")) {
+    deleteEntity(object)
+  } else if (is(object, "Evaluation") || is(object, "WikiPage") || is(object, "Submission")){
+    synRestDELETE(object@updateUri)
+  } else {
+    stop(sprintf("%s is not supported.", class(object)))
+  }
+}
 
 
 synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
@@ -79,7 +87,7 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
     } else {
       file<-getEntity(id, version=version)
     }   
-    if ((class(file)=="File" || class(file)=="Record") && (downloadFile || load)) {
+    if ((class(file)=="File" || class(file)=="Record")) {
       file<-synGetFile(file, downloadFile, downloadLocation, ifcollision, load)
       # TODO: Handle Record
     } else {

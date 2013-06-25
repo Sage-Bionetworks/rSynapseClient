@@ -87,7 +87,7 @@ integrationTestWikiCRUD <-
   filePath2<-createFile()
   
   wikiPage<-WikiPage(
-    parent=project, 
+    owner=project, 
     title="wiki title", 
     markdown="some stuff", 
     attachments=list(filePath1, filePath2)
@@ -107,6 +107,7 @@ integrationTestWikiCRUD <-
   # Now delete the wiki page
   #/{ownertObjectType}/{ownerObjectId}/wiki/{wikiId}
   synDelete(wikiPage2)
+  checkException(synGetWiki(project, propertyValue(wikiPage2, "id")))
   
   # delete the file handles
   for (fileHandleId in fileHandleIds) {

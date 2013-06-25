@@ -41,15 +41,15 @@ unitTestCachingRenameObject <-
   addObject(ee, "bar", "foo")
 
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(ee, "foo")))
-  checkEquals(length(files(ee)), 1L)
-  checkTrue(grepl(sprintf("^%s.+\\.rbin$",synapseClient:::synapseObjectCache()), files(ee)))
+  checkEquals(length(synapseClient:::files(ee)), 1L)
+  checkTrue(grepl(sprintf("^%s.+\\.rbin$",synapseClient:::synapseObjectCache()), synapseClient:::files(ee)))
 
   ## do a simple rename. verify the return value
   copy <- renameObject(ee, "foo", "blah")
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(ee, "blah")))
   checkTrue(!file.exists(synapseClient:::.generateCacheFileName(ee, "foo")))
   checkTrue(!file.exists(synapseClient:::.generateTmpCacheFileName(ee, "foo")))
-  checkEquals(length(files(ee)), 1L)
+  checkEquals(length(synapseClient:::files(ee)), 1L)
 
 
   ## do a double-rename with potential "stomping"
@@ -59,15 +59,15 @@ unitTestCachingRenameObject <-
 
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(ee, "foo")))
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(ee, "blah")))
-  checkEquals(length(files(ee)), 2L)
+  checkEquals(length(synapseClient:::files(ee)), 2L)
 
   copy <- renameObject(ee, "blah", "foo")
   checkEquals("CachingEnhancedEnvironment", as.character(class(copy)))
-  checkEquals(length(files(ee)), 1L)
+  checkEquals(length(synapseClient:::files(ee)), 1L)
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(ee, "foo")))
   checkTrue(!file.exists(synapseClient:::.generateCacheFileName(ee, "boo")))
 
-  checkEquals(length(files(ee)), 1L)
+  checkEquals(length(synapseClient:::files(ee)), 1L)
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(copy, "foo")))
   checkTrue(!file.exists(synapseClient:::.generateCacheFileName(copy, "boo")))
 
@@ -80,14 +80,14 @@ unitTestCachingDeleteObject <-
   addObject(ee, "bar", "foo")
 
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(ee, "foo")))
-  checkEquals(length(files(ee)), 1L)
-  checkTrue(grepl(sprintf("^%s.+\\.rbin$", synapseClient:::synapseObjectCache()), files(ee)))
+  checkEquals(length(synapseClient:::files(ee)), 1L)
+  checkTrue(grepl(sprintf("^%s.+\\.rbin$", synapseClient:::synapseObjectCache()), synapseClient:::files(ee)))
 
   ## make sure that no warnings are produced but converting warnings
   ## to errors by setting warn=2. reset back to original value in tearDown()
   options(warn=2)
   deleteObject(ee,"foo")
-  checkEquals(length(files(ee)), 0L)
+  checkEquals(length(synapseClient:::files(ee)), 0L)
   checkTrue(!file.exists(synapseClient:::.generateCacheFileName(ee, "foo")))
 
 }
@@ -113,8 +113,8 @@ unitTestLoadCachedObjects <-
 
   checkEquals(ee$boo, "bar")
   checkEquals(length(objects(ee)), 1L)
-  checkEquals(length(files(ee)), 1L)
-  checkEquals(files(ee), synapseClient:::.generateCacheFileRelativePath(ee, "boo"))
+  checkEquals(length(synapseClient:::files(ee)), 1L)
+  checkEquals(synapseClient:::files(ee), synapseClient:::.generateCacheFileRelativePath(ee, "boo"))
 
   ##load from cache and verify values
   copy <- synapseClient:::.loadCachedObjects(ee, T)
@@ -129,13 +129,13 @@ unitTestLoadCachedObjects <-
   addObject(ee, "boo", "blah")
   checkEquals(ee$foo, "bar")
   checkEquals(ee$blah, "boo")
-  checkEquals(length(files(ee)), 2L)
+  checkEquals(length(synapseClient:::files(ee)), 2L)
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(ee, "foo")))
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(ee, "blah")))
 
   ## verify the cached values
   renameObject(ee, c("foo", "blah"), c("blah", "foo"))
-  checkEquals(length(files(ee)), 2L)
+  checkEquals(length(synapseClient:::files(ee)), 2L)
   checkEquals(length(objects(ee)), 2L)
   checkTrue(all(names(ee) == c("blah", "foo")))
   checkEquals(ee$foo, "boo")
@@ -155,7 +155,7 @@ unitTestLoadCachedObjects <-
 
   ## verify the cached values
   renameObject(ee, "blah", "foo")
-  checkEquals(length(files(ee)), 1L)
+  checkEquals(length(synapseClient:::files(ee)), 1L)
   checkEquals(length(objects), 1L)
   checkTrue(file.exists(synapseClient:::.generateCacheFileName(ee, "foo")))
   checkTrue(!file.exists(synapseClient:::.generateCacheFileName(ee, "boo")))
@@ -261,15 +261,15 @@ unitTestListObjectsStartingWithDot <-
 {
   ee <- new("CachingEnhancedEnvironment")
   ee$foo <- "bar"
-  checkEquals(objects(ee), "foo")
+  checkEquals(synapseClient:::objects(ee), "foo")
 
   ## add names starting with dot
   addObject(ee, "boo", ".bar")
 
-  checkEquals(length(objects(ee, all.names=TRUE)), 2L)
-  checkEquals(length(objects(ee)), 1L)
-  checkTrue(objects(ee) == "foo")
-  checkTrue(all(c(".bar", "foo") %in% objects(ee, all.names=TRUE)))
+  checkEquals(length(synapseClient:::objects(ee, all.names=TRUE)), 2L)
+  checkEquals(length(synapseClient:::objects(ee)), 1L)
+  checkTrue(synapseClient:::objects(ee) == "foo")
+  checkTrue(all(c(".bar", "foo") %in% synapseClient:::objects(ee, all.names=TRUE)))
 }
 
 unitTestBracketAccessor <-
@@ -509,7 +509,7 @@ unitTestDeleteMultipleObjects <-
   ee <- new("CachingEnhancedEnvironment")
   ee$foo <- "bar"
   ee$boo <- "blah"
-  checkEquals(length(files(ee)), 2L)
+  checkEquals(length(synapseClient:::files(ee)), 2L)
 
   ## make sure that there was no warning by converting warnings to
   ## errors by setting warn = 2

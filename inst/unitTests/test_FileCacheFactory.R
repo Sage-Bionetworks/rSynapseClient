@@ -23,7 +23,7 @@
 unitTestNoArg <-
   function()
 {
-  fc <- getFileCache()
+  fc <- synapseClient:::getFileCache()
   checkEquals(fc$archiveFile, "archive.zip")
   checkEquals(as.character(class(fc)), "FileCache")
 }
@@ -32,19 +32,19 @@ unitTestNewFileCacheInvalidFile <-
   function()
 {
   archivefile <- tempfile(fileext=".zip")
-  checkException(getFileCache(archivefile))
+  checkException(synapseClient:::getFileCache(archivefile))
 
   archivefile <- tempfile(fileext=".bz")
-  checkException(getFileCache(archivefile))
+  checkException(synapseClient:::getFileCache(archivefile))
 
   archivefile <- tempfile(fileext=".TAR")
-  checkException(getFileCache(archivefile))
+  checkException(synapseClient:::getFileCache(archivefile))
 
   archivefile <- tempfile(fileext="tar.gz")
-  checkException(getFileCache(archivefile))
+  checkException(synapseClient:::getFileCache(archivefile))
 
   archivefile <- tempfile(fileext=".ZIP")
-  checkException(getFileCache(archivefile))
+  checkException(synapseClient:::getFileCache(archivefile))
 }
 
 unitTestExistingCacheZipNotInFactory <-
@@ -60,18 +60,18 @@ unitTestExistingCacheZipNotInFactory <-
     zip(archivefile, files = file)
   )
 
-  fc <- getFileCache(archivefile)
+  fc <- synapseClient:::getFileCache(archivefile)
   checkEquals(fc$cacheRoot, cacheRoot)
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
 
   checkEquals(synapseClient:::availFileCaches(), cacheRoot)
  
-  fc.copy <- getFileCache(file.path(fc$cacheRoot, fc$archiveFile))
+  fc.copy <- synapseClient:::getFileCache(file.path(fc$cacheRoot, fc$archiveFile))
   checkEquals(fc.copy$cacheRoot, fc$cacheRoot)
   checkEquals(fc.copy$files(), fc$files())
   checkEquals(fc.copy$archiveFile, fc.copy$archiveFile)
 
-  fc.copy <- getFileCache(archivefile)
+  fc.copy <- synapseClient:::getFileCache(archivefile)
   checkEquals(fc.copy$cacheRoot, fc$cacheRoot)
   checkEquals(fc.copy$files(), fc$files())
   checkEquals(fc.copy$archiveFile, fc.copy$archiveFile)
@@ -83,7 +83,7 @@ unitTestExistingCacheZipNotInFactory <-
 unitTestNewArchiveNoArg <-
   function()
 {
-  fc <- getFileCache()
+  fc <- synapseClient:::getFileCache()
   checkEquals(as.character(class(fc)), "FileCache")
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
   checkEquals(fc$getCacheRoot(), synapseClient:::availFileCaches())
@@ -92,14 +92,14 @@ unitTestNewArchiveNoArg <-
 unitTestExistingRootDirNotInFactory <-
   function()
 {
-  fc <- getFileCache()
+  fc <- synapseClient:::getFileCache()
   file <- tempfile()
   cat(sprintf("Testing...1 %s", Sys.time()), file = file)
   addFile(fc, file)
   fc$archiveFile <- "foo.bar.zip"
   fc$cacheFileMetaData()
 
-  fc.copy <- getFileCache(fc$cacheRoot)
+  fc.copy <- synapseClient:::getFileCache(fc$cacheRoot)
   checkEquals(fc.copy$cacheRoot, fc$cacheRoot)
   checkEquals(fc.copy$files(), fc$files())
   checkEquals(fc.copy$archiveFile, fc.copy$archiveFile)
@@ -118,7 +118,7 @@ unitTestExistingSingleFileNotInFactory <-
     zip(archivefile, files = file)
   )
 
-  fc <- getFileCache(archivefile)
+  fc <- synapseClient:::getFileCache(archivefile)
   checkEquals(fc$cacheRoot, cacheRoot)
   checkEquals(length(synapseClient:::availFileCaches()), 1L)
   checkEquals(synapseClient:::availFileCaches(), cacheRoot)
@@ -133,7 +133,7 @@ unitTestSingleFileNotInFactory <-
   file <- gsub("[\\/]+", "/", tempfile(tmpdir=cacheRoot))
   cat(sprintf("Testing...1 %s", Sys.time()), file = file)
 
-  fc <- getFileCache(file)
+  fc <- synapseClient:::getFileCache(file)
   checkEquals(fc$cacheDir, file.path(sprintf("%s_unpacked", file)))
 }
 
@@ -143,13 +143,13 @@ unitTestExistingEmptyDir <-
   root <- tempfile()
   dir.create(root)
   root <- gsub("[\\/]+", "/", normalizePath(root))
-  fc <- getFileCache(root)
+  fc <- synapseClient:::getFileCache(root)
   checkEquals(fc$archiveFile, "archive.zip")
   checkEquals(fc$cacheRoot, root)
   checkEquals(fc$cacheDir, file.path(root, sprintf("%s_unpacked", fc$archiveFile)))
 
   ## get another instance of the cache
-  fcc <- getFileCache(root)
+  fcc <- synapseClient:::getFileCache(root)
   checkEquals(fc$archiveFile, "archive.zip")
   checkEquals(fc$cacheRoot, root)
   checkEquals(fc$cacheDir, file.path(root, sprintf("%s_unpacked", fc$archiveFile)))
@@ -171,7 +171,7 @@ unitTestDirNotExist <-
   function()
 {
   root <- gsub("[\\/]+","/", tempfile())
-  fc <- getFileCache(root)
+  fc <- synapseClient:::getFileCache(root)
   root <- gsub("[\\/]+","/", normalizePath(root))
   checkEquals(fc$archiveFile, "archive.zip")
   checkEquals(fc$cacheRoot, root)
@@ -185,7 +185,7 @@ unitTestSetCacheRootNewRootNotExist <-
   root <- tempfile()
   dir.create(root)
   root <- gsub("[\\/]+", "/", normalizePath(root))
-  fc <- getFileCache(root)
+  fc <- synapseClient:::getFileCache(root)
 
   file <- gsub("[\\/]+", "/", tempfile())
   cat("Hello World\n", file=file)
@@ -216,7 +216,7 @@ unitTestSingleNonCompressedFileArchive <-
   file <- tempfile(tmpdir=root)
   cat("Hello World\n", file=file)
 
-  fc <- getFileCache(file)
+  fc <- synapseClient:::getFileCache(file)
   fc$unpackArchive()
   checkTrue(file.exists(file.path(fc$cacheDir, basename(file))))
 

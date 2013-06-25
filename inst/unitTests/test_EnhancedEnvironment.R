@@ -83,15 +83,15 @@ unitTestListObjectsStartingWithDot <-
 {
   ee <- new("EnhancedEnvironment")
   ee$foo <- "bar"
-  checkEquals(objects(ee), "foo")
+  checkEquals(synapseClient:::objects(ee), "foo")
   
   ## add names starting with dot
   addObject(ee, "boo", ".bar")
   
-  checkEquals(length(objects(ee, all.names=TRUE)), 2L)
-  checkEquals(length(objects(ee)), 1L)
-  checkTrue(objects(ee) == "foo")
-  checkTrue(all(c(".bar", "foo") %in% objects(ee, all.names=TRUE)))
+  checkEquals(length(synapseClient:::objects(ee, all.names=TRUE)), 2L)
+  checkEquals(length(synapseClient:::objects(ee)), 1L)
+  checkTrue(synapseClient:::objects(ee) == "foo")
+  checkTrue(all(c(".bar", "foo") %in% synapseClient:::objects(ee, all.names=TRUE)))
 }
 
 unitTestBracketAccessor <-

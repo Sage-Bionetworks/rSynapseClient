@@ -312,7 +312,7 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   id<-propertyValue(file, "id")
   
   # if I lack access due to a restriction...
-  if (hasUnfulfilledAccessRequirements(id)) {
+  if (downloadFile && hasUnfulfilledAccessRequirements(id)) {
     # ...an error message is displayed which include the 'onweb' command to open the entity page, 
     # where a user can address the access requirements.
     message <- sprintf("Please visit the web page for this entity (onWeb(\"%s\")) to review and fulfill its download requirement(s).", id)
