@@ -716,7 +716,13 @@ integrationTestProvenance<-function() {
   checkTrue(foundURL)
   checkTrue(foundProject)
   checkTrue(foundExecuted)
-}
+  
+  # while we're here, test synGetActivity
+  activity2<-synGetActivity(retrievedFolder)
+  checkEquals(activity$id, activity2$id)
+  activity3<-synGetActivity(propertyValue(retrievedFolder, "id"))
+  checkEquals(activity$id, activity3$id)
+  }
 
 # this tests synStore in which used and executed param's are passed, not as lists
 integrationTestProvenanceNonList<-function() {

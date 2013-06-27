@@ -350,7 +350,7 @@ integrationTestUpdateS4EntityWithUsed <-
 	deleteEntity(synapseClient:::.getCache("testProject"))	
 	synapseClient:::.deleteCache("testProject")
 	project <- Project()
-	used(project)<-list(list(entity=createdProject2, wasExecuted=F, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"))
+	used(project)<-list(list(entity=createdProject2, wasExecuted=F))
 	
 	createdProject <- createEntity(project)
 	synapseClient:::.setCache("testProject", createdProject)

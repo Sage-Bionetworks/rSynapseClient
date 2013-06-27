@@ -249,7 +249,7 @@ createEntityMethod<-function(entity, createOrUpdate, forceVersion) {
       }
       entityAsList<-synapsePut(updateUri, entity)
     } else {
-      .checkCurlResponse(curlHandle)
+      .checkCurlResponse(curlHandle, toJSON(entityAsList))
     }
   } else {
     entityAsList<-synapsePost(createUri, entity)
@@ -796,28 +796,101 @@ setMethod(
     if (is.null(activity)) {
       return(NULL)
     }
-    propertyValue(activity, "used")
+    used(activity)
   }
 )
+
+entitySetUsedMethod<-function(entity, value) {
+  activity <- generatedBy(entity)
+  if (is.null(activity)) {
+    activity <- new("Activity")
+  } 
+  used(activity)<-value
+  generatedBy(entity)<-activity
+  entity
+}
 
 setMethod(
   f = "used<-",
   signature = signature("Entity", "list"),
   definition = function(entity, value) {
-    usedList <- lapply(value, usedListEntry)
-    activity <- generatedBy(entity)
-    if (is.null(activity)) {
-      activity <- new("Activity")
-    } 
-    propertyValue(activity, "used") <- usedList
-    generatedBy(entity)<-activity
-    entity
+    entitySetUsedMethod(entity, value)
   }
-
 )
 
 setMethod(
   f = "used<-",
+  signature = signature("Entity", "character"),
+  definition = function(entity, value) {
+    entitySetUsedMethod(entity, value)
+  }
+)
+
+setMethod(
+  f = "used<-",
+  signature = signature("Entity", "Entity"),
+  definition = function(entity, value) {
+    entitySetUsedMethod(entity, value)
+  }
+)
+
+setMethod(
+  f = "used<-",
+  signature = signature("Entity", "NULL"),
+  definition = function(entity, value) {
+    generatedBy(entity)<-NULL
+    entity
+  }
+)
+
+setMethod(
+  f = "executed",
+  signature = "Entity",
+  definition = function(entity){
+    activity <- generatedBy(entity)
+    if (is.null(activity)) {
+      return(NULL)
+    }
+    executed(activity)
+  }
+)
+
+entitySetExcecutedMethod<-function(entity, value) {
+  activity <- generatedBy(entity)
+  if (is.null(activity)) {
+    activity <- new("Activity")
+  } 
+  executed(activity)<-value
+  generatedBy(entity)<-activity
+  entity
+}
+
+setMethod(
+  f = "executed<-",
+  signature = signature("Entity", "list"),
+  definition = function(entity, value) {
+    entitySetExcecutedMethod(entity, value)
+  }
+)
+
+setMethod(
+  f = "executed<-",
+  signature = signature("Entity", "character"),
+  definition = function(entity, value) {
+    entitySetExcecutedMethod(entity, value)
+  }
+)
+
+setMethod(
+  f = "executed<-",
+  signature = signature("Entity", "Entity"),
+  definition = function(entity, value) {
+    entitySetExcecutedMethod(entity, value)
+  }
+)
+
+setMethod(
+  f = "executed<-",
   signature = signature("Entity", "NULL"),
   definition = function(entity, value) {
     generatedBy(entity)<-NULL
