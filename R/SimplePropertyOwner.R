@@ -138,4 +138,25 @@ setMethod(
     }
 )
 
+setMethod(
+  f = "$",
+  signature = "SimplePropertyOwner",
+  definition = function(x, name){
+   if (any(name==propertyNames(x))) {
+      propertyValue(x, name)
+    } else {
+      stop(sprintf("invalid name %s", name))
+    }
+  }
+)
 
+setReplaceMethod("$", 
+  signature = "SimplePropertyOwner",
+  definition = function(x, name, value) {
+    if (any(name==propertyNames(x))) {
+      propertyValue(x, name)<-value
+    } else {
+      stop(sprintf("invalid name %s", name))
+    }
+  }
+)

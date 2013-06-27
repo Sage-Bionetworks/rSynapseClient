@@ -76,6 +76,24 @@ setMethod(
 
 setMethod(
   f = "used<-",
+  signature = signature("Activity", "character"),
+  definition = function(entity, value) {
+    setUsedMethod(entity, value, FALSE)
+  }
+
+)
+
+setMethod(
+  f = "used<-",
+  signature = signature("Activity", "Entity"),
+  definition = function(entity, value) {
+    setUsedMethod(entity, list(value), FALSE)
+  }
+
+)
+
+setMethod(
+  f = "used<-",
   signature = signature("Activity", "NULL"),
   definition = function(entity, value) {
     setUsedMethod(entity, NULL, FALSE)
@@ -95,6 +113,24 @@ setMethod(
   signature = signature("Activity", "list"),
   definition = function(entity, value) {
     setUsedMethod(entity, value, TRUE)
+  }
+
+)
+
+setMethod(
+  f = "executed<-",
+  signature = signature("Activity", "character"),
+  definition = function(entity, value) {
+    setUsedMethod(entity, value, TRUE)
+  }
+
+)
+
+setMethod(
+  f = "executed<-",
+  signature = signature("Activity", "Entity"),
+  definition = function(entity, value) {
+    setUsedMethod(entity, list(value), TRUE)
   }
 
 )
@@ -159,7 +195,7 @@ setMethod(
     if( !is.null(properties(object)$used) ){
       cat("USED:\n")
       for( i in 1:length(properties(object)$used) ){
-        thisUsed <- object$properties$used[[i]]
+        thisUsed <- object$used[[i]]
         if( thisUsed$concreteType == "org.sagebionetworks.repo.model.provenance.UsedEntity" ){
           cat("id          : ", thisUsed$reference$targetId, "\n", sep="")
           cat("version     : ", thisUsed$reference$targetVersionNumber, "\n", sep="")
@@ -183,8 +219,8 @@ setMethod(
     name <- deparse(substitute(activity, env=parent.frame()))
     
     ## delete the activity in synapse
-    if(!is.null(activity$properties$id))
-      synapseDelete(.generateActivityUri(activity$properties$id))
+    if(!is.null(activity$id))
+      synapseDelete(.generateActivityUri(activity$id))
     
     ## remove the activity from the parent environment
     if(any(grepl(name,ls(envir=envir))))
@@ -203,7 +239,7 @@ setMethod(
   signature = signature("Activity"),
   definition = function(entity){
     activity<-entity
-    ee<-Activity(synapseGet(.generateActivityUri(activity$properties$id)))
+    ee<-Activity(synapseGet(.generateActivityUri(activity$id)))
     ee
   }
 )
@@ -266,10 +302,10 @@ setMethod(
   definition = function(entity)
   {
     activity<-entity
-    if(is.null(activity$properties$id)) {
+    if(is.null(activity$id)) {
       stop("Cannot update an Activity which has no ID.")
     } else {
-      uri <- .generateActivityUri(activity$properties$id)
+      uri <- .generateActivityUri(activity$id)
       activity <- as.list.SimplePropertyOwner(activity)
       activity <- Activity(synapsePut(uri, activity))
     }
@@ -283,7 +319,7 @@ setMethod(
   definition = function(entity)
   {
     activity<-entity
-    if(is.null(activity$properties$id)) {
+    if(is.null(activity$id)) {
       activity <- createEntity(activity)
     } else {
       activity <- updateEntity(activity)
@@ -292,109 +328,37 @@ setMethod(
   }
 )
 
-
-
-#####
-## convert the S4 activity to a list activity
-#####
-setMethod(
-  f = ".extractEntityFromSlots",
-  signature = "Activity",
-  definition = function(object){
-    properties(object)
-  }
-)
-
-#####
-## convert the list activity to an S4 activity
-#####
-setMethod(
-  f = ".populateSlotsFromActivity",
-  signature = signature("Activity", "list"),
-  definition = function(object, activity){
-    if(any(names(activity) == "") && length(activity) > 0)
-      stop("All elements of the activity must be named")
-    
-    ## all activity fields should be stored as properties
-    for(name in names(activity))
-      propertyValue(object, name) <- activity[[name]]
-    object
-  }
-)
-
-
-names.Activity <-
-  function(x)
-{
-  c("properties")
-}
-
-setMethod(
-  f = "[",
-  signature = "Activity",
-  definition = function(x, i, j, ...){
-    if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
-      stop("incorrect number of subscripts")
-    if(is.numeric(i)){
-      if(any(i > length(names(x))))
-        stop("subscript out of bounds")
-      i <- names(x)[i]
-    }else if(is.character(i)){
-      if(!all(i %in% names(x)))
-        stop("undefined objects selected")
-    }else{
-      stop(sprintf("invalid subscript type '%s'", class(i)))
-    }
-    retVal <- lapply(i, function(i){
-        if(i == "attachDir"){
-          retVal <- attachDir(x)
-        }else if(i == "attachments"){
-          attachments(x)
-        } else if(i == "available.versions"){
-          if(is.null(x$properties$id)){
-            retVal <- NULL
-          }else{
-            retVal <- available.versions(x$properties$id)
-          }
-        } else if(i %in% names(x)){
-          retVal <- slot(x, i)
-        }else{
-          retVal <- NULL
-        }
-      }
-    )
-    names(retVal) <- i
-    retVal
-  }
-)
-
-setMethod(
-  f = "[[",
-  signature = "Activity",
-  definition = function(x, i, j, ...){
-    if(length(as.character(as.list(substitute(list(...)))[-1L])) > 0L || !missing(j))
-      stop("incorrect number of subscripts")
-    if(length(i) > 1)
-      stop("subscript out of bounds")
-    x[i][[1]]
-  }
-)
-
 setMethod(
   f = "$",
   signature = "Activity",
   definition = function(x, name){
-    x[[name]]
+    if (name=="used") {
+      used(x)
+    } else if (name=="executed") {
+      executed(x) 
+    } else if (any(name==propertyNames(x))) {
+      propertyValue(x, name)
+    } else {
+      stop(sprintf("invalid name %s", name))
+    }
   }
 )
 
 setReplaceMethod("$", 
   signature = "Activity",
   definition = function(x, name, value) {
-    if(!(name %in% names(x)))
-      stop("invalid element")
-    slot(x, name) <- value
-    x
+    if (name=="used") {
+      used(x)<-value
+      x
+    } else if (name=="executed") {
+      executed(x) <-value
+      x
+    } else if (any(name==propertyNames(x))) {
+      propertyValue(x, name)<-value
+      x
+    } else {
+      stop(sprintf("invalid name %s", name))
+    }
   }
 )
 

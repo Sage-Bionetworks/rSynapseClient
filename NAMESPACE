@@ -131,7 +131,9 @@ exportMethods(
 	generatedBy,
 	"generatedBy<-",
 	"used",
-	"used<-"
+	"used<-",
+	"executed",
+	"executed<-"
   )
 
 ## methods for managing layer files

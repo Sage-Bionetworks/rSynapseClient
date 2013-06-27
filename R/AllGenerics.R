@@ -803,6 +803,20 @@ setGeneric(
   }
 )
 
+setGeneric(
+  name = "executed",
+  def = function(entity) {
+    standardGeneric("executed")	
+  }
+)
+
+setGeneric(
+  name = "executed<-",
+  def = function(entity, value) {
+    standardGeneric("executed<-")
+  }
+)
+
 # returns a reference list of the form (targetId="syn1234") or
 # (targetId="syn1234", targetVersionNumber="1") referring
 # to the given entity.  The argument can be a SynapseEntity or a 

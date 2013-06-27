@@ -36,9 +36,9 @@ createUsedEntitiesList <- function(args) {
     if (!is.scalar(argVal)) {
       usedEntitiesList <- append(usedEntitiesList, createUsedEntitiesList(argVal))
     } else if (isSynapseId(argVal)) {
-      usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=argVal, wasExecuted=FALSE)
+      usedEntitiesList[[length(usedEntitiesList)+1]] <- argVal
     } else if (extends(class(argVal), "Entity") && !is.null(propertyValue(argVal, "id"))) {
-      usedEntitiesList[[length(usedEntitiesList)+1]] <- list(entity=propertyValue(argVal, "id"), wasExecuted=FALSE)
+      usedEntitiesList[[length(usedEntitiesList)+1]] <- argVal
     }
   }
   usedEntitiesList
@@ -310,12 +310,7 @@ synapseExecute <- function(executable, args, resultParentId, codeParentId, resul
   
   functionResult <- do.call(executableFunction, args)
   
-  usedEntitiesList[[length(usedEntitiesList)+1]] <- 
-    list(reference=list(targetId=propertyValue(executionCodeEntity, "id"), 
-        targetVersionNumber=propertyValue(executionCodeEntity, "versionNumber")), 
-      wasExecuted=TRUE)
-  
-  activity <- Activity(list(name = activityName, used = usedEntitiesList))
+  activity <- Activity(name = activityName, used = usedEntitiesList, executed=executionCodeEntity)
   activity <- createEntity(activity)
   # Finally, we create the result entity
   # If the entity already exists we create a new version
