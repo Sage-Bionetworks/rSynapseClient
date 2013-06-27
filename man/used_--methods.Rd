@@ -8,7 +8,11 @@
 }
 \usage{
 used(entity)<-list(entity1, entity2, entity3)
+used(entity)<-c(entity1, entity2, entity3)
 used(activity)<-list(entity1, entity2, entity3)
+used(activity)<-c(entity1, entity2, entity3)
+activity$used<-list(entity1, entity2, entity3)
+activity$used<-c(entity1, entity2, entity3)
 }
 \details{
 Sets the vector or list of entities/entity IDs/URLs used (but not *executed*) to generate the given Entity or Activity.    

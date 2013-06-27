@@ -9,6 +9,7 @@ Function for getting the entities used to generate an Entity or Activity
 \usage{
 used(entity)
 used(activity)
+activity$used
 }
 \arguments{
   \item{entity}{

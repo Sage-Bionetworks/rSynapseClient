@@ -9,6 +9,7 @@ Function for getting the entities executed to generate an Entity or Activity
 \usage{
 executed(entity)
 executed(activity)
+activity$executed
 }
 \arguments{
   \item{entity}{
