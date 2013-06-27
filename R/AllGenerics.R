@@ -727,6 +727,20 @@ setGeneric(
 )
 
 setGeneric(
+  name = "synGetActivity",
+  def = function(entity, version) {
+    standardGeneric("synGetActivity")
+  }
+)
+
+setGeneric(
+  name = "synSetActivity<-",
+  def = function(entity, activity){
+    standardGeneric("synSetActivity<-")
+  }
+)
+
+setGeneric(
   name = "deleteActivity",
   def = function(activity) {
     standardGeneric("deleteActivity")
@@ -786,6 +800,20 @@ setGeneric(
   name = "used<-",
   def = function(entity, value) {
     standardGeneric("used<-")
+  }
+)
+
+setGeneric(
+  name = "executed",
+  def = function(entity) {
+    standardGeneric("executed")	
+  }
+)
+
+setGeneric(
+  name = "executed<-",
+  def = function(entity, value) {
+    standardGeneric("executed<-")
   }
 )
 

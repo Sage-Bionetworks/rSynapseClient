@@ -350,6 +350,67 @@ unitTestPropertyNames <-
 }
 
 
+unitTestUsedAndExecuted<-function() {
+  # test setting and retrieving 'used' entities on an entity
+  a<-synapseClient:::Entity()
+  checkEquals(NULL, used(a))
+  used(a)<-list("syn101")
+  checkEquals(list(list(reference=list(targetId="syn101"), wasExecuted=FALSE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")), used(a))
+  # test setting and retrieving 'executed' entities on an entity
+  executed(a)<-list("syn202", "http://my.favorite.site.com")
+  # should not appear in used list
+  checkEquals(list(list(reference=list(targetId="syn101"), wasExecuted=FALSE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")), used(a))
+  checkEquals(list(
+      list(reference=list(targetId="syn202"), wasExecuted=TRUE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"),
+      list(url="http://my.favorite.site.com", wasExecuted=TRUE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedURL")), executed(a)) 
+  
+  # test setting and retrieving used and executed if they are passed as vectors rather than lists
+  #		and test both single and multiple entitites
+  a<-synapseClient:::Entity()
+  used(a)<-"syn101"
+  checkEquals(list(list(reference=list(targetId="syn101"), wasExecuted=FALSE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")), used(a))
+  # test setting and retrieving 'executed' entities on an entity
+  executed(a)<-c("syn202", "http://my.favorite.site.com")
+  # should not appear in used list
+  checkEquals(list(list(reference=list(targetId="syn101"), wasExecuted=FALSE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")), used(a))
+  checkEquals(list(
+      list(reference=list(targetId="syn202"), wasExecuted=TRUE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"),
+      list(url="http://my.favorite.site.com", wasExecuted=TRUE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedURL")), executed(a)) 
+  
+  # test used<-, executed<- using a single/multiple Entity(ies) as the argument(s)
+  a<-synapseClient:::Entity()
+  entity<-Folder(id="syn987", parentId="syn000")
+  used(a)<-entity
+  checkEquals(list(list(reference=list(targetId="syn987"), wasExecuted=FALSE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")), used(a))
+  executed(a)<-entity
+  checkEquals(list(list(reference=list(targetId="syn987"), wasExecuted=TRUE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")), executed(a))
+  
+  entity2<-Folder(id="syn654", parentId="syn000")
+  used(a)<-c(entity, entity2)
+  checkEquals(list(
+      list(reference=list(targetId="syn987"), wasExecuted=FALSE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"),
+      list(reference=list(targetId="syn654"), wasExecuted=FALSE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")), used(a)) 
+  
+  executed(a)<-c(entity, entity2)
+  checkEquals(list(
+      list(reference=list(targetId="syn987"), wasExecuted=TRUE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"),
+      list(reference=list(targetId="syn654"), wasExecuted=TRUE, 
+        concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")), executed(a)) 
+ 
+}
 
 
 

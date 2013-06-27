@@ -331,7 +331,7 @@ integrationTestUpdateS4FileWithUsed <-
 	## now *create* an Entity having a "used" list initially
   file<-createFileInMemory(createdProject)
   
-	used(file)<-list(list(entity=createdFile2, wasExecuted=F, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"))
+	used(file)<-list(list(entity=createdFile2, wasExecuted=F))
 	
 	createdFile <- createEntity(file)
 	usedList2 <- used(createdFile)
