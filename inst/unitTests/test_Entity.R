@@ -412,6 +412,21 @@ unitTestUsedAndExecuted<-function() {
  
 }
 
+unitTestSynAnnot<-function() {
+  e<-Folder()
+  checkTrue(is.null(synAnnot(e, "id")))
+  synAnnot(e, "id")<-"syn101"
+  checkEquals("syn101", propertyValue(e, "id"))
+  checkEquals("syn101", synAnnot(e, "id"))
+  synAnnot(e, "myCustomAnnotation")<-"abc"
+  checkEquals("abc", annotValue(e, "myCustomAnnotation"))
+  checkEquals("abc", synAnnot(e, "myCustomAnnotation"))
+  synAnnot(e, "myNumberAnnotation")<-999
+  checkEquals(999, annotValue(e, "myNumberAnnotation"))
+  checkEquals(999, synAnnot(e, "myNumberAnnotation"))
+  synAnnot(e, "id")<-NULL
+  checkTrue(is.null(synAnnot(e, "id")))
+}
 
 
 
