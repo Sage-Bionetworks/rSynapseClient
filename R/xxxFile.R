@@ -54,6 +54,14 @@ synAnnotSetMethod<-function(object, which, value) {
   object
 }
 
+setMethod(
+  f = "synAnnot<-",
+  signature = signature("Entity", "character", "ANY"),
+  definition = function(object, which, value){
+    synAnnotSetMethod(object, which, value)
+  }
+)
+
 synAnnotGetMethod<-function(object, which) {
   if(any(which==propertyNames(object))) {
     propertyValue(object, which)
@@ -61,6 +69,14 @@ synAnnotGetMethod<-function(object, which) {
     annotValue(object, which)
   }
 }
+
+setMethod(
+  f = "synAnnot",
+  signature = signature("Entity", "character"),
+  definition = function(object, which) {
+    synAnnotGetMethod(object, which)
+  }
+)
 
 ##
 ## File contructor: path="/path/to/file", synapseStore=T, name="foo", ...

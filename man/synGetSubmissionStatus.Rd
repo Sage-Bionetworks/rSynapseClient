@@ -7,7 +7,8 @@ synGetSubmissionStatus
 Get the status of a Submission, given the submission ID.
 }
 \usage{
-synGetSubmissionStatus("123456")
+synGetSubmissionStatus(submission)
+synGetSubmissionStatus(submissionId)
 }
 \examples{
 # one of "OPEN", "CLOSED", "SCORED", "INVALID"
