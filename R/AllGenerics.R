@@ -528,6 +528,20 @@ setGeneric(
 )
 
 setGeneric(
+  name = "synAnnot",
+  def = function(object, which){
+    standardGeneric("synAnnot")
+  }
+)
+
+setGeneric(
+  name = "synAnnot<-",
+  def = function(object, which, value){
+    standardGeneric("synAnnot<-")
+  }
+)
+
+setGeneric(
   name = "TypedPropertyStore",
   def = function(file, data, json){
     standardGeneric("TypedPropertyStore")

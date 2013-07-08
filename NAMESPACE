@@ -65,7 +65,9 @@ export(
   synDelete,
   listObjects,
   synGetActivity,
-  "synSetActivity<-"
+  "synSetActivity<-",
+  synAnnot,
+  "synAnnot<-"
 )
 
 export(onWeb)

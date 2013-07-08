@@ -112,6 +112,10 @@ integrationTestEvaluationRoundtrip <-
   checkEquals(propertyValue(submission, "id"), propertyValue(status, "id"))
   checkEquals("OPEN", propertyValue(status, "status"))
   
+  # should also be able to retrieve by the submission object itself
+  status2<-synGetSubmissionStatus(submission)
+  checkEquals(status2, status)
+  
   propertyValue(status, "score")<-0.5
   propertyValue(status, "status")<-"SCORED"
   propertyValue(status, "report")<-"a supplementary report"

@@ -37,7 +37,12 @@ newSubmissionStatus<-function(content) {
   submissionStatus
 }
 
-synGetSubmissionStatus<-function(id) {
+synGetSubmissionStatus<-function(submission) {
+  if (class(submission)=="Submission") {
+    id <-submission$id
+  } else {
+    id <- submission
+  }
   newSubmissionStatus(synRestGET(sprintf("/evaluation/submission/%s/status", id)))
 }
 
