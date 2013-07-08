@@ -174,3 +174,14 @@ exportMethods(
   propertyNames
 )
 
+exportMethods(
+	"synGetAnnotations",
+	"synSetAnnotations<-",
+	"synGetProperties",
+	"synSetProperties<-",
+	"synGetAnnotation",
+	"synSetAnnotation<-",
+	"synGetProperty",
+	"synSetProperty<-"
+)
+
