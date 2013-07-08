@@ -26,7 +26,7 @@ setMethod(
   f = "synGetProperties",
   signature = signature("Entity"),
   definition = function(object) {
-    sapply(annotationNames(object), function(x){propertyValue(object,x)}, USE.NAMES=TRUE)
+    sapply(propertyNames(object), function(x){propertyValue(object,x)}, USE.NAMES=TRUE)
   }
 )
 
