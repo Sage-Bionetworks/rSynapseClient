@@ -855,3 +855,60 @@ setGeneric(
      standardGeneric("FileListConstructor")
     }
 )
+
+setGeneric(
+  name = "synGetAnnotations",
+  def = function(object){
+    standardGeneric("synGetAnnotations")
+  }
+)
+
+setGeneric(
+  name = "synSetAnnotations<-",
+  def = function(object, value){
+    standardGeneric("synSetAnnotations<-")
+  }
+)
+
+setGeneric(
+  name = "synGetProperties",
+  def = function(object){
+    standardGeneric("synGetProperties")
+  }
+)
+
+setGeneric(
+  name = "synSetProperties<-",
+  def = function(object, value){
+    standardGeneric("synSetProperties<-")
+  }
+)
+
+setGeneric(
+  name = "synGetAnnotation",
+  def = function(object, which){
+    standardGeneric("synGetAnnotation")
+  }
+)
+
+setGeneric(
+  name = "synSetAnnotation<-",
+  def = function(object, which, value){
+    standardGeneric("synSetAnnotation<-")
+  }
+)
+
+setGeneric(
+  name = "synGetProperty",
+  def = function(object, which){
+    standardGeneric("synGetProperty")
+  }
+)
+
+setGeneric(
+  name = "synSetProperty<-",
+  def = function(object, which, value){
+    standardGeneric("synSetProperty<-")
+  }
+)
+
