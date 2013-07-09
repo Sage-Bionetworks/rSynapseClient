@@ -1,5 +1,6 @@
 \name{synapseQuery}
 \alias{synapseQuery}
+\alias{synQuery}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Query The Synapse API
@@ -9,6 +10,8 @@ Provides an interface to the Synapse API
 }
 \usage{
 synapseQuery(queryStatement)
+synQuery(queryStatement)
+
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -41,11 +44,11 @@ Nicole Deflaux
 
 \examples{
   ## query for the first 1000 datasets found, returning results as a data.frame
-  df <- synapseQuery("select id, name, parentId from dataset limit 1000")
+  df <- synQuery("select id, name, parentId from dataset limit 1000")
 
 
   ## get a QueryResult object back from a query
-  qr <- synapseQuery("select id, name, parentId from dataset limit 1000", blockSize=100)
+  qr <- synQuery("select id, name, parentId from dataset limit 1000", blockSize=100)
 
   ## get a data.frame with 100 results
   df <- qr$fetch()

@@ -39,3 +39,10 @@ synapseQuery <-
   }
   
 }
+
+
+synQuery <- 
+  function(queryStatement, blockSize=NULL)
+{
+  synapseQuery(queryStatement, blockSize)
+}

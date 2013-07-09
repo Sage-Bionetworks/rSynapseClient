@@ -86,6 +86,7 @@ export(
   hmacSecretKey,
   setApiCredentials,
   synapseQuery,
+  synQuery,
   touOnWeb
 )
 
