@@ -39,8 +39,6 @@
 unitTestSetAuth <-
   function()
 {
-  #checkTrue(is.null(synapseClient:::.getCache("sessionToken")))
-  #checkTrue(is.null(synapseClient:::.getCache("hmacSecretKey")))
   synapseClient:::sessionToken("1234")
   hmacSecretKey("5678")
   checkEquals(synapseClient:::sessionToken(), "1234")
@@ -48,8 +46,6 @@ unitTestSetAuth <-
   checkEquals(synapseAuthServiceEndpoint()$endpoint, "http://foobar.com")
   synapseAuthServiceEndpoint('http://authme.com')
   checkEquals(synapseAuthServiceEndpoint()$endpoint, 'http://authme.com')
-  #checkTrue(is.null(synapseClient:::.getCache("sessionToken")))
-  #checkTrue(is.null(synapseClient:::.getCache("hmacSecretKey")))
 }
 
 unitTestSetFile <-
@@ -63,8 +59,6 @@ unitTestSetFile <-
 unitTestSetRepo <-
   function()
 {
-  #checkTrue(is.null(synapseClient:::.getCache("sessionToken")))
-  #checkTrue(is.null(synapseClient:::.getCache("hmacSecretKey")))
   synapseClient:::sessionToken("1234")
   hmacSecretKey("5678")
   checkEquals(synapseClient:::sessionToken(), "1234")
@@ -73,15 +67,11 @@ unitTestSetRepo <-
   checkEquals(synapseRepoServiceEndpoint()$endpoint, "http://boobar.com")
   synapseRepoServiceEndpoint('http://repome.com')
   checkEquals(synapseRepoServiceEndpoint()$endpoint, 'http://repome.com')
-  #checkTrue(is.null(synapseClient:::.getCache("sessionToken")))
-  #checkTrue(is.null(synapseClient:::.getCache("hmacSecretKey")))
 }
 
 unitTestSetPortal <-
   function()
 {
-  #checkTrue(is.null(synapseClient:::.getCache("sessionToken")))
-  #checkTrue(is.null(synapseClient:::.getCache("hmacSecretKey")))
   synapseClient:::sessionToken("1234")
   hmacSecretKey("5678")
   checkEquals(synapseClient:::sessionToken(), "1234")
@@ -100,8 +90,6 @@ unitTestSetPortal <-
 unitTestResetEndpoints <-
   function()
 {
-  #checkTrue(is.null(synapseClient:::.getCache("sessionToken")))
-  #checkTrue(is.null(synapseClient:::.getCache("hmacSecretKey")))
   synapseClient:::sessionToken("1234")
   hmacSecretKey("5678")
   checkEquals(synapseClient:::sessionToken(), "1234")
@@ -117,12 +105,28 @@ unitTestResetEndpoints <-
   checkEquals(synapseAuthServiceEndpoint()$endpoint, 'https://auth-prod.prod.sagebase.org/auth/v1')
   checkEquals(synapseFileServiceEndpoint()$endpoint, 'https://file-prod.prod.sagebase.org/file/v1')
   checkEquals(synapsePortalEndpoint()$endpoint, 'http://synapse.sagebase.org')
-  #checkTrue(is.null(synapseClient:::.getCache("sessionToken")))
-  #checkTrue(is.null(synapseClient:::.getCache("hmacSecretKey")))
 }
 
 unitTestSetVersionsEndpoint <- function()
 {
   synapseClient:::synapseVersionsServiceEndpoint("http://boobar.com")
   checkEquals("http://boobar.com", synapseClient:::.getVersionsEndpoint())
+}
+
+unitTestSynEndpoints<-function()
+{
+  checkEquals(synGetEndpoints()$repo, "http://boobar.com")	
+  checkEquals(synGetEndpoints()$auth, "http://foobar.com")
+  checkEquals(synGetEndpoints()$file, "http://shoobar.com")
+  checkEquals(synGetEndpoints()$portal, "http://barboo.com")
+  synSetEndpoints("http://1.com/repo/v1", "http://2.com/auth/v1", "http://3.com/file/v1", "http://4.com/portal")
+  checkEquals(synGetEndpoints()$repo, "http://1.com/repo/v1")	
+  checkEquals(synGetEndpoints()$auth, "http://2.com/auth/v1")
+  checkEquals(synGetEndpoints()$file, "http://3.com/file/v1")
+  checkEquals(synGetEndpoints()$portal, "http://4.com/portal")
+  synSetEndpoints()
+  checkEquals(synapseRepoServiceEndpoint()$endpoint, 'https://repo-prod.prod.sagebase.org/repo/v1')
+  checkEquals(synapseAuthServiceEndpoint()$endpoint, 'https://auth-prod.prod.sagebase.org/auth/v1')
+  checkEquals(synapseFileServiceEndpoint()$endpoint, 'https://file-prod.prod.sagebase.org/file/v1')
+  checkEquals(synapsePortalEndpoint()$endpoint, 'http://synapse.sagebase.org')
 }
