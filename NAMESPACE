@@ -185,3 +185,9 @@ exportMethods(
 	"synSetProperty<-"
 )
 
+export(
+	"synSetEndpoints",
+	"synGetEndpoints"
+)
+
+
