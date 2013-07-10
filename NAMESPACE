@@ -86,6 +86,7 @@ export(
   hmacSecretKey,
   setApiCredentials,
   synapseQuery,
+  synQuery,
   touOnWeb
 )
 
@@ -184,4 +185,10 @@ exportMethods(
 	"synGetProperty",
 	"synSetProperty<-"
 )
+
+export(
+	"synSetEndpoints",
+	"synGetEndpoints"
+)
+
 
