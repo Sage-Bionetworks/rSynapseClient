@@ -27,6 +27,12 @@
     assignInNamespace("hasUnfulfilledAccessRequirements", attr(synapseClient:::hasUnfulfilledAccessRequirements, "origDef"), "synapseClient")
     synapseClient:::.setCache("hasUnfulfilledAccessRequirementsIsOverRidden", NULL)
   }
+  ## in the case that we have 'mocked' createLockAccessRequirement, this restores the original function
+  if (!is.null(synapseClient:::.getCache("createLockAccessRequirementIsOverRidden"))) {
+    assignInNamespace(".createLockAccessRequirement", attr(synapseClient:::.createLockAccessRequirement, "origDef"), "synapseClient")
+    assignInNamespace(".hasAccessRequirement", attr(synapseClient:::.hasAccessRequirement, "origDef"), "synapseClient")
+    synapseClient:::.setCache("createLockAccessRequirementIsOverRidden", NULL)
+  }
   
 }
 
@@ -37,6 +43,34 @@ createFile<-function(content, filePath) {
   writeChar(content, connection, eos=NULL)
   close(connection)  
   filePath
+}
+
+integrationTestMakeRestricted<-function() {
+  # mock services to create restriction and check it
+  myHasAccessRequirement<-function(entityId) {F}
+  attr(myHasAccessRequirement, "origDef") <- synapseClient:::.hasAccessRequirement
+  assignInNamespace(".hasAccessRequirement", myHasAccessRequirement, "synapseClient")
+
+  myCreateLockAccessRequirement<-function(entityId) {synapseClient:::.setCache("createLockAccessRequirementWasInvoked", TRUE)}
+  attr(myCreateLockAccessRequirement, "origDef") <- synapseClient:::.createLockAccessRequirement
+  assignInNamespace(".createLockAccessRequirement", myCreateLockAccessRequirement, "synapseClient")
+  synapseClient:::.setCache("createLockAccessRequirementWasInvoked", NULL)
+  synapseClient:::.setCache("createLockAccessRequirementIsOverRidden", TRUE)
+  
+  # now create a file and make sure it is restricted
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  
+  # create a File
+  filePath<- createFile()
+  synapseStore<-TRUE
+  file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
+  # store, indicating it is restricted
+  storedFile<-synStore(file, isRestricted=TRUE)
+  id<-propertyValue(storedFile, "id")
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
+  
+  checkTrue(synapseClient:::.getCache("createLockAccessRequirementWasInvoked"))
 }
 
 integrationTestUpdateProvenance <- function() {
