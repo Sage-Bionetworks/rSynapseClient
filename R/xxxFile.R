@@ -130,9 +130,15 @@ lastModifiedTimestamp<-function(filePath) {
   file.info(filePath)$mtime
 }
 
+fanoutDir<-function(fileHandleId) {
+  fileHandleIdAsNumber<-as.numeric(fileHandleId)
+  if (is.na(fileHandleIdAsNumber)) stop(sprintf("Expected number for fileHandleId but found %s", fileHandleId))
+  fileHandleIdAsNumber %% 1000
+}
+
 defaultDownloadLocation<-function(fileHandleId) {
   # TODO:  insert an intermediate subfolder?
-  file.path(synapseCacheDir(), fileHandleId)
+  file.path(synapseCacheDir(), fanoutDir, fileHandleId)
 }
 
 cacheMapFilePath<-function(fileHandleId) {
