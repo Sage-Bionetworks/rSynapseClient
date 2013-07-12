@@ -7,7 +7,7 @@ submit
 \description{
 Submit an entity to an Evaluation
 }
-\usage{submit(evaluation, entity, submissionName)}
+\usage{submit(evaluation, entity, submissionName, teamName)}
 \arguments{
 	\item{evaluation}{
 	The evaluation queue to which the entity is submitted.  You must first 'join' the evaluation to be allowed to submit.
@@ -18,6 +18,9 @@ Submit an entity to an Evaluation
 	}
 	\item{submissionName}{
 	Optional:  A name for the submission.  If omitted, the entity's name is used.
+	}
+	\item{teamName}{
+	Optional:  The name of the team on whose behalf the entity is submitted.
 	}
 }
 \details{

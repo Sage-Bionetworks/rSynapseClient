@@ -36,7 +36,7 @@ For entities only:  If TRUE (the default) then if the entity is new (not retriev
 For versionable entities only:  If TRUE new version of the object is created.  Note, if FALSE this does not mean that a new version is not created:  Whenever a new or modified file is attached to a File entity and stored in Synapse, then Synapse creates a new version itself, regardless of the forceVersion parameter
 }
  \item{isRestricted}{
-For File entities only:  If TRUE then Download access by others is prevented and the Synapse Access and Compliance Team is contacted to help craft the appropriate Terms of Use.  This argument is employed when uploading sensitive human data.  This feature has not yet been implemented
+For File entities only:  If TRUE then Download access by others is prevented and the Synapse Access and Compliance Team is contacted to help craft the appropriate Terms of Use.  This argument is employed when uploading sensitive human data.
 }
 }
 \details{

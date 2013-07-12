@@ -23,10 +23,10 @@ checkBlackList<-function() {
   if (.versionIsBlackListed(myOwnVersion, serverVersion, versionInfo$blacklist)) {
     # check whether the *latest* version is also blacklisted for the server we're using
     if (.versionIsBlackListed(versionInfo$latestVersion, serverVersion, versionInfo$blacklist)) {
-      stop(sprintf("This version of the Synapse Client, %s, has been disabled.  Please contact Synapse support to access an enabled client.\n%s",
+      stop(sprintf("This version of the Synapse Client, %s, has been disabled.  To upgrade:\n\tsource('http://depot.sagebase.org/CRAN.R')\n\tpkgInstall('synapseClient')\n%s",
           myOwnVersion, versionInfo$message))
     } else {
-      stop(sprintf("This version of the Synapse Client, %s, has been disabled.  Please upgrade to the latest version, %s.\n%s",
+      stop(sprintf("This version of the Synapse Client, %s, has been disabled.  Please upgrade to the latest version, %s.\nTo upgrade:\n\tsource('http://depot.sagebase.org/CRAN.R')\n\tpkgInstall('synapseClient')\n%s",
           myOwnVersion, versionInfo$latestVersion, versionInfo$message))
     }
   }
