@@ -3,7 +3,7 @@
 # Author: brucehoff
 ###############################################################################
 
-submit<-function(evaluation, entity, submissionName) {
+submit<-function(evaluation, entity, submissionName, teamName) {
   if (missing(entity)) stop("entity is required.")
   if (is(entity, "Entity")) {
     entityId<-propertyValue(entity, "id")
@@ -30,7 +30,18 @@ submit<-function(evaluation, entity, submissionName) {
     stop("You must provide an evaluation or and evaluation ID.")
   }
   if (missing(submissionName)) submissionName<-propertyValue(entity, "name")
-  submission<-Submission(evaluationId=evaluationId, entityId=entityId, versionNumber=entityVersion, name=submissionName)
+  if (missing(teamName)) {
+    submission<-Submission(evaluationId=evaluationId, 
+      entityId=entityId, 
+      versionNumber=entityVersion, 
+      name=submissionName)
+  } else {
+    submission<-Submission(evaluationId=evaluationId, 
+      entityId=entityId, 
+      versionNumber=entityVersion, 
+      name=submissionName,
+      submitterAlias=teamName)
+  }
   synCreateSubmission(submission, entityEtag=etag)
 }
 

@@ -42,7 +42,9 @@ getURLWithRetries<-function(url,
     errorMessages <- c("connect() timed out",
       "Connection reset by peer",
       "Failure when receiving data from the peer",
-      "Empty reply from server")
+      "Empty reply from server",
+      "SSL read: error:00000000",
+      "Unknown SSL protocol error")
     
     if (class(rawResponse)=="try-error") {
       # if any of the strings in 'errorMessages' appear anywhere in 'rawResponse[[1]]'...

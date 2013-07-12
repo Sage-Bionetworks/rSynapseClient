@@ -130,9 +130,15 @@ lastModifiedTimestamp<-function(filePath) {
   file.info(filePath)$mtime
 }
 
+fanoutDir<-function(fileHandleId) {
+  fileHandleIdAsNumber<-as.numeric(fileHandleId)
+  if (is.na(fileHandleIdAsNumber)) stop(sprintf("Expected number for fileHandleId but found %s", fileHandleId))
+  fileHandleIdAsNumber %% 1000
+}
+
 defaultDownloadLocation<-function(fileHandleId) {
   # TODO:  insert an intermediate subfolder?
-  file.path(synapseCacheDir(), fileHandleId)
+  file.path(synapseCacheDir(), fanoutDir(fileHandleId), fileHandleId)
 }
 
 cacheMapFilePath<-function(fileHandleId) {
@@ -229,7 +235,7 @@ serializeObjects<-function(file) {
   filePath
 }
 
-synStoreFile <- function(file, createOrUpdate=T, forceVersion=T) {
+synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, isRestricted=F) {
   if (hasObjects(file)) file@filePath<-serializeObjects(file)
   if (!fileHasFileHandleId(file)) { # if there's no existing Synapse File associated with this object...
     if (!fileHasFilePath(file)) { # ... and there's no local file staged for upload ...
@@ -260,11 +266,29 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T) {
         file@fileHandle<-fileHandle
         propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
       }
-    } else { # synapseStore==F
+    } else { # file@synapseStore==F
       # file is considered 'read only' and will not be uploaded
     }
   }
+  if (isRestricted) {
+    # check to see if access restriction(s) is/are in place already
+    id<-propertyValue(file, "id")
+    if (!.hasAccessRequirement(id)) {
+      # nothing in place, so we create the restriction
+      .createLockAccessRequirement(id)
+    }
+  }
   file
+}
+
+# we define these functions to allow mocking during testing
+.hasAccessRequirement<-function(entityId) {
+  currentAccessRequirements<-synRestGET(sprintf("/entity/%s/accessRequirement", entityId))
+  currentAccessRequirements$totalNumberOfResults>0
+}
+
+.createLockAccessRequirement<-function(entityId) {
+  synRestPOST(sprintf("/entity/%s/lockAccessRequirement", entityId))
 }
 
 fileExists<-function(folder, filename) {

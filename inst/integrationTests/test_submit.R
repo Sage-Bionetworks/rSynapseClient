@@ -34,11 +34,14 @@ integrationTest_submit <- function() {
   synRestPOST(sprintf("/evaluation/%s/participant/%s", eid, myOwnId), list())
   
   # submit the entity
-  submission<-submit(evaluation, file)
+  submissionName<-"test-sub-name"
+  teamName<-"test-team-name"
+  submission<-submit(evaluation=evaluation, entity=file, submissionName=submissionName, teamName=teamName)
   checkEquals(propertyValue(file, "id"), propertyValue(submission, "entityId"))
   checkEquals(propertyValue(file, "versionNumber"), propertyValue(submission, "versionNumber"))
   checkEquals(eid, propertyValue(submission, "evaluationId"))
-  checkEquals(propertyValue(file, "name"), propertyValue(submission, "name"))
+  checkEquals(submissionName, submission$name)
+  checkEquals(teamName, submission$submitterAlias)
   
   # retrieve the submission
   submission2<-synGetSubmission(propertyValue(submission, "id"))

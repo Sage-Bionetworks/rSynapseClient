@@ -70,8 +70,8 @@ integrationTestCheckVersionBlackListed <- function()
   # black listed version, should throw exception
   error<-try(synapseClient:::.checkBlackListGivenMyVersion("0.10", "1.15.0-8-ge79db7a"), silent=TRUE)
   checkEquals("try-error", class(error))
-  blackListMessage<-"This version of the Synapse Client, 0.10, has been disabled.  Please upgrade to the latest version, 0.19-0.\nOn January 1, all clients will be required to upgrade to the latest version.\n"
-  checkTrue(any(grep(blackListMessage, error[1])))
+  blackListMessage<-"This version of the Synapse Client, 0.10, has been disabled.  Please upgrade to the latest version, 0.19-0.\nTo upgrade:\n\tsource('http://depot.sagebase.org/CRAN.R')\n\tpkgInstall('synapseClient')\nOn January 1, all clients will be required to upgrade to the latest version.\n"
+  checkTrue(any(grep(blackListMessage, error[1], fixed=TRUE)))
 }
 
 integrationTestCheckVersionBlackListedLatestIsBlacklisted <- function()
@@ -79,7 +79,7 @@ integrationTestCheckVersionBlackListedLatestIsBlacklisted <- function()
   # black listed version, should throw exception
   error<-try(synapseClient:::.checkBlackListGivenMyVersion("0.05", "1.12.0-7-ch24528f"), silent=TRUE)
   checkEquals("try-error", class(error))
-  blackListMessage<-"This version of the Synapse Client, 0.05, has been disabled.  Please contact Synapse support to access an enabled client.\nOn January 1, all clients will be required to upgrade to the latest version.\n"
-  checkTrue(any(grep(blackListMessage, error[1])))
+  blackListMessage<-"This version of the Synapse Client, 0.05, has been disabled.  To upgrade:\n\tsource('http://depot.sagebase.org/CRAN.R')\n\tpkgInstall('synapseClient')\nOn January 1, all clients will be required to upgrade to the latest version.\n"
+  checkTrue(any(grep(blackListMessage, error[1], fixed=TRUE)))
 }
 

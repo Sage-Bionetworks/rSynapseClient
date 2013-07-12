@@ -4,10 +4,10 @@
 ###############################################################################
 
 
-synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T) {  
+synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F) {  
   if (is(entity, "Entity")) {
     if (class(entity)=="File" || class(entity)=="Record") {
-      entity<-synStoreFile(file=entity, createOrUpdate, forceVersion)
+      entity<-synStoreFile(file=entity, createOrUpdate, forceVersion, isRestricted)
       # TODO: Handle Record
     }
     # Now save the metadata
