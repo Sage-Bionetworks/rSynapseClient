@@ -178,7 +178,7 @@ updateProvenanceIntern<-function(project) {
 }
 
 integrationTestCacheMapRoundTrip <- function() {
-  fileHandleId<-"TEST_FHID"
+  fileHandleId<-"101"
   filePath<- createFile()
   filePath2<- createFile()
   

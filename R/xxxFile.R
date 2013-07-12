@@ -138,7 +138,7 @@ fanoutDir<-function(fileHandleId) {
 
 defaultDownloadLocation<-function(fileHandleId) {
   # TODO:  insert an intermediate subfolder?
-  file.path(synapseCacheDir(), fanoutDir, fileHandleId)
+  file.path(synapseCacheDir(), fanoutDir(fileHandleId), fileHandleId)
 }
 
 cacheMapFilePath<-function(fileHandleId) {
