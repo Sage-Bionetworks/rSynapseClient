@@ -2,22 +2,22 @@
 \alias{Study}
 \alias{Code}
 \alias{Data}
-\alias{SynapseEntity}
-\alias{SynapseLocationOwner}
-\alias{Project}
+\alias{Preview}
+\alias{ExpressionData}
+\alias{GenotypeData}
+\alias{PhenotypeData}
+\alias{RObject}
 \title{
-Entity Constructors
+DEPRECATED Entity Constructors
 }
 \description{
-Constructors for Synapse Entities
+Constructors for Synapse Entities. These Constructors are now deprecated. Please see \code{\link{Project}}, \code{\link{Folder}}, \code{\link{File}} for currently supported Synapse Objects.
 }
 \usage{
 Study(entity)
 Data(entity)
-Project(entity)
 Preview(entity)
 Link(entity)
-Folder(entity)
 ExpressionData(entity)
 GenotypeData(entity)
 PhenotypeData(entity)
