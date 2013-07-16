@@ -91,7 +91,18 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
       file<-synGetFile(file, downloadFile, downloadLocation, ifcollision, load)
       # TODO: Handle Record
     } else {
-      file
+      if (is (file, "Locationable") && downloadFile) {
+        if (!is.null(downloadLocation)) {
+          warning("Cannot specify download location for 'Locationable' entities")
+        }
+        if (load) {
+          loadEntity(file)
+        } else {
+          downloadEntity(file)
+        }
+      } else {
+        file
+      }
     }
   } else {
     stop(sprintf("%s is not a Synapse ID.", id))
