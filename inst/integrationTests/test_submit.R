@@ -36,6 +36,8 @@ integrationTest_submit <- function() {
   # submit the entity
   submissionName<-"test-sub-name"
   teamName<-"test-team-name"
+  missingTeamName<-try(submit(evaluation=evaluation, entity=file, submissionName=submissionName), silent=T)
+  checkEquals("try-error", class(missingTeamName))
   submission<-submit(evaluation=evaluation, entity=file, submissionName=submissionName, teamName=teamName)
   checkEquals(propertyValue(file, "id"), propertyValue(submission, "entityId"))
   checkEquals(propertyValue(file, "versionNumber"), propertyValue(submission, "versionNumber"))
@@ -59,7 +61,7 @@ integrationTest_submit <- function() {
   # now submit the old version
   oldFile<-synGet(propertyValue(file, "id"), version=1, downloadFile=F)
   checkEquals(1, propertyValue(oldFile, "versionNumber"))
-  submission2<-submit(evaluation, oldFile)
+  submission2<-submit(evaluation, oldFile, teamName=teamName)
   
   checkEquals(propertyValue(oldFile, "id"), propertyValue(submission2, "entityId"))
   checkEquals(propertyValue(oldFile, "versionNumber"), propertyValue(submission2, "versionNumber"))

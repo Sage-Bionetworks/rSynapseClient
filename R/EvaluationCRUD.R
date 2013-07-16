@@ -23,8 +23,9 @@ newSubmission<-function(content) {
   submission
 }
 
-synGetSubmission<-function(id) {
+synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
   newSubmission(synRestGET(sprintf("/evaluation/submission/%s", id)))
+  # TODO refactor synGetFile to work here too
 }
 
 synCreateSubmission<-function(submission, entityEtag) {

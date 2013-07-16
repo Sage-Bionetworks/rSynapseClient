@@ -347,6 +347,8 @@ hasUnfulfilledAccessRequirements<-function(id) {
   unfulfilledAccessRequirements$totalNumberOfResults>0
 }
 
+## TODO refactor to download attachments to submissions as well as files
+# file provides: unfulfilled access requirements, downloadUri (possibly using version), fileHandles
 synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
   if (class(file)!="File") stop("'synGetFile' may only be invoked with a File parameter.")
   id<-propertyValue(file, "id")
