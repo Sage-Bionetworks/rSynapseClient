@@ -43,12 +43,12 @@ Nicole Deflaux
 }
 
 \examples{
-  ## query for the first 1000 datasets found, returning results as a data.frame
-  df <- synQuery("select id, name, parentId from dataset limit 1000")
+  ## query for the first 1000 Files found, returning results as a data.frame
+  df <- synQuery("select id, name, parentId from file limit 1000")
 
 
   ## get a QueryResult object back from a query
-  qr <- synQuery("select id, name, parentId from dataset limit 1000", blockSize=100)
+  qr <- synQuery("select id, name, parentId from file limit 1000", blockSize=100)
 
   ## get a data.frame with 100 results
   df <- qr$fetch()
