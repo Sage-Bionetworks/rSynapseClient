@@ -38,6 +38,18 @@ integrationTestStore <-
   checkTrue(file.exists(file.path(data$cacheDir, synapseClient:::.getCache("rObjCacheDir"), "foo.rbin")))
 }
 
+integrationTestNoSynStore <-
+  function()
+{
+  study <- synapseClient:::.getCache("testStudy")
+  data <- Data(list(name="Test Data", parentId = propertyValue(study, "id"), type="C"))
+  
+  # you can't call 'synStore' for Locationable objects
+  result<-try(synStore(data))
+  
+  checkEquals("try-error", class(result))
+}
+
 integrationTestDownload <-
   function()
 {

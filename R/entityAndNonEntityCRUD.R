@@ -6,6 +6,7 @@
 
 synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F) {  
   if (is(entity, "Entity")) {
+    if (is(entity, "Locationable")) stop("For 'Locationable' entities you must use createEntity, storeEntity, or updateEntity.")
     if (class(entity)=="File" || class(entity)=="Record") {
       entity<-synStoreFile(file=entity, createOrUpdate, forceVersion, isRestricted)
       # TODO: Handle Record
