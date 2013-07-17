@@ -87,7 +87,7 @@ integrationTestEvaluationRoundtrip <-
   submittableEntity<-Folder(name="submitted entity", parentId=projectId)
   submittableEntity<-synStore(submittableEntity)
   
-  submit(evaluation, submittableEntity)
+  submit(evaluation, submittableEntity, teamName="some team name")
   
   submissions<-synGetSubmissions(eid, "OPEN")
   
