@@ -164,6 +164,8 @@ updateProvenanceIntern<-function(project) {
   
   # the File should be a new version
   checkEquals(4, propertyValue(myOutputFile, "versionNumber"))
+  # ... and should have the activity as its 'generatedBy'
+  checkEquals(propertyValue(activity, "id"), propertyValue(generatedBy(myOutputFile), "id"))
   
   # create another output created by the same activity
   myPlotFilePath <-createFile() # replaces "/tmp/myPlot.png"
