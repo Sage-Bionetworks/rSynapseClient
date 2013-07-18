@@ -29,7 +29,7 @@
 }
 \examples{
   ## get a QueryResult object back from a query
-  qr <- synapseQuery("select id, name, parentId from dataset limit 1000", blockSize=100)
+  qr <- synapseQuery("select id, name, parentId from file limit 1000", blockSize=100)
 
   ## get a data.frame with 100 results
   df <- qr$fetch()

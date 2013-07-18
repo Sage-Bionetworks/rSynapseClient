@@ -17,7 +17,7 @@ Path to the file in local file system, or URL to file on the internet
 The Synapse ID of the parent Project or Folder in which to store the File (e.g. "syn101")
 }
 \item{synapseStore}{
-If 'synapseStore' is TRUE then file is uploaded to S3, else only the file location is saved, along with other metadata
+If 'synapseStore' is TRUE then the file specified by \code{path} will be uploaded to S3 when the constructed File object is passed to \code{\link{synStore}}(), else only the file location is saved, along with other metadata
 }
 \item{...}{
 Additional named parameters are interpreted as properties or annotations on the File
