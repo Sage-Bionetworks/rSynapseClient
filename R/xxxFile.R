@@ -10,9 +10,13 @@
 
 
 
-initializeFileProperties<-function() {
-  synapseType<-"org.sagebionetworks.repo.model.FileEntity"
+initializeProperties<-function(synapseType) {
   properties<-SynapseProperties(getEffectivePropertyTypes(synapseType))
+  properties
+}
+
+initializeFileProperties<-function(synapseType) {
+  properties<-initializeProperties(synapseType)
   properties$entityType <- synapseType
   properties
 }
@@ -37,7 +41,7 @@ setClass(
   # This is modeled after defineEntityClass in AAAschema
   prototype = prototype(
     synapseEntityKind = "File",
-    properties = initializeFileProperties(),
+    properties = initializeFileProperties("org.sagebionetworks.repo.model.FileEntity"),
     synapseStore = TRUE,
     objects = NULL
   )
@@ -137,7 +141,6 @@ fanoutDir<-function(fileHandleId) {
 }
 
 defaultDownloadLocation<-function(fileHandleId) {
-  # TODO:  insert an intermediate subfolder?
   file.path(synapseCacheDir(), fanoutDir(fileHandleId), fileHandleId)
 }
 
@@ -347,8 +350,7 @@ hasUnfulfilledAccessRequirements<-function(id) {
   unfulfilledAccessRequirements$totalNumberOfResults>0
 }
 
-## TODO refactor to download attachments to submissions as well as files
-# file provides: unfulfilled access requirements, downloadUri (possibly using version), fileHandles
+
 synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
   if (class(file)!="File") stop("'synGetFile' may only be invoked with a File parameter.")
   id<-propertyValue(file, "id")
@@ -362,7 +364,35 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   }
   
   fileHandle<-getFileHandle(file)
+  file@fileHandle<-fileHandle
+  
+  if (is.null(propertyValue(file, "versionNumber"))) {
+    downloadUri<-sprintf("/entity/%s/file", id)
+  } else {
+    downloadUri<-sprintf("/entity/%s/version/%s/file", id, propertyValue(file, "versionNumber"))
+  }
+  
+  result<-synGetFileAttachment(
+    downloadUri,
+    fileHandle,
+    downloadFile,
+    downloadLocation,
+    ifcollision,
+    load
+    )
+    
+  # now construct File from 'result', which has filePath, synapseStore 
+  if (!is.null(result$filePath)) file@filePath<-result$filePath
+  file@synapseStore<-result$synapseStore
+  if (load) {
+    if (is.null(file@objects)) file@objects<-new.env(parent=emptyenv())
+    # Note: the following only works if 'path' is a file system path, not a URL
+    load(file=file@filePath, envir = as.environment(file@objects))
+  }  
+  file
+}
 
+synGetFileAttachment<-function(downloadUri, fileHandle, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
   if (isExternalFileHandle(fileHandle)) {
     synapseStore<-FALSE
     externalURL<-fileHandle$externalURL
@@ -370,11 +400,6 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   } else {
     synapseStore<-TRUE
     externalURL<-NULL
-    if (is.null(propertyValue(file, "versionNumber"))) {
-      downloadUri<-sprintf("/entity/%s/file", id)
-    } else {
-      downloadUri<-sprintf("/entity/%s/version/%s/file", id, propertyValue(file, "versionNumber"))
-    }
   }
   
   if (downloadFile) {
@@ -414,23 +439,19 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }
-  if (!is.null(filePath)) file@filePath<-filePath
-  file@synapseStore<-synapseStore
-  file@fileHandle<-fileHandle
+  result<-list()
+  if (!is.null(filePath)) result$filePath<-filePath #file@filePath<-filePath
+  result$synapseStore<-synapseStore #file@synapseStore<-synapseStore
   if (load) {
     if(is.null(filePath)) {
       if (!isExternalURL(fileHandle) && !downloadFile) {
-        stop("Cannot load Synapse file which has not been downloaded.  Please call synGet again, with downloadFile=T.")
+        stop("Cannot load Synapse file which has not been downloaded.  Please try again, with downloadFile=T.")
       }
       # shouldn't reach this statement.  something has gone very wrong.
       stop(sprintf("Cannot load file %s, there is no local file path.", fileHandle$fileName))
     }
-    # TODO handle .Rbin, .R, or text data file differently (Use the contentType field in the FileHandle?)
-    if (is.null(file@objects)) file@objects<-new.env(parent=emptyenv())
-    # Note: the following only works if 'path' is a file system path, not a URL
-    load(file=filePath, envir = as.environment(file@objects))
   }
-  file
+  result
 }
 
 
@@ -572,13 +593,17 @@ setMethod(
   }
 )
 
+deleteObjectMethod<-function(owner, which) {
+  remove(list=which, envir=owner@objects)
+  if (length(owner@objects)==0) owner@objects<-NULL
+  invisible(owner)
+}
+
 setMethod(
   f = "deleteObject",
   signature = signature("File", "character"),
   definition = function(owner, which) {
-    remove(list=which, envir=owner@objects)
-    if (length(owner@objects)==0) owner@objects<-NULL
-    invisible(owner)
+    deleteObjectMethod(owner, which)
   }
 )
 
@@ -590,27 +615,36 @@ setMethod(
   }
 )
 
+getObjectMethod<-function(owner) {
+  if (is.null(owner@objects)) stop("Owner contains no objects.")
+  numberOfObjects<-length(ls(owner@objects))
+  if (numberOfObjects>1) stop(sprintf("Owner contains %s objects.  Use 'getObject(owner,objectName)' to select one.",numberOfObjects))
+  objectName<-ls(owner@objects)[1]
+  get(x=objectName, envir=owner@objects)
+  
+}
+
 setMethod(
   f = "getObject",
   signature = signature("File", "missing"),
   definition = function(owner) {
-    # TODO get(x=which, envir=owner@objects)
-    if (is.null(owner@objects)) stop("File contains no objects.")
-    numberOfObjects<-length(ls(owner@objects))
-    if (numberOfObjects>1) stop(sprintf("File contains %s objects.  Use 'getObject(file,objectName)' to select one.",numberOfObjects))
-    objectName<-ls(owner@objects)[1]
-    get(x=objectName, envir=owner@objects)
+    getObjectMethod(owner)
   }
 )
+
+renameObjectMethod<-function(owner, which, name) {
+  object<-get(x=which, envir=owner@objects)
+  assign(x=name, value=object, envir=owner@objects)
+  remove(list=which, envir=owner@objects)   
+  invisible(owner)
+  
+}
 
 setMethod(
   f = "renameObject",
   signature = signature("File", "character", "character"),
   definition = function(owner, which, name) {
-    object<-get(x=which, envir=owner@objects)
-    assign(x=name, value=object, envir=owner@objects)
-    remove(list=which, envir=owner@objects)   
-    invisible(owner)
+    renameObjectMethod(owner, which, name)
   }
 )
 

@@ -3,7 +3,7 @@
 # Author: brucehoff
 ###############################################################################
 
-submit<-function(evaluation, entity, submissionName, teamName) {
+submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
   if (missing(teamName)) stop("teamName (submitter alias) is required.")
   if (missing(entity)) stop("entity is required.")
   if (is(entity, "Entity")) {
@@ -32,17 +32,19 @@ submit<-function(evaluation, entity, submissionName, teamName) {
   }
   if (missing(submissionName)) submissionName<-propertyValue(entity, "name")
   if (missing(teamName)) {
-    submission<-Submission(evaluationId=evaluationId, 
+    submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
       entityId=entityId, 
       versionNumber=entityVersion, 
-      name=submissionName)
+      name=submissionName))
   } else {
-    submission<-Submission(evaluationId=evaluationId, 
+    submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
       entityId=entityId, 
       versionNumber=entityVersion, 
       name=submissionName,
-      submitterAlias=teamName)
+      submitterAlias=teamName))
   }
-  synCreateSubmission(submission, entityEtag=etag)
+  createdSubmission<-synCreateSubmission(submission, entityEtag=etag)
+  if (!silent) message(evaluation$submissionReceiptMessage)
+  list(submission=createdSubmission, submissionReceiptMessage=evaluation$submissionReceiptMessage)
 }
 

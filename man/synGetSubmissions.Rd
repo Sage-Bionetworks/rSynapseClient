@@ -24,7 +24,8 @@ The optional offset 'paging' parameter, default is 0.
 }
 }
 \value{
-an object of type PaginatedResults
+an object of type PaginatedResults.  Note, this function does not download files associated with Submissions. 
+For that please see synGetSubmission.
 }
 \examples{
 # one of "OPEN", "CLOSED", "SCORED", "INVALID"
