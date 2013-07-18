@@ -33,8 +33,8 @@ setMethod(
   definition = function(propertiesList) {
     submission <- new("Submission")
     for (prop in names(propertiesList))
-      submission[[prop]]<-propertiesList[[prop]]
-    submission@updateUri<-sprintf("/evaluation/submission/%s", submission$id)
+      propertyValue(submission, prop)<-propertiesList[[prop]]
+    if (!is.null(submission$id)) submission@updateUri<-sprintf("/evaluation/submission/%s", submission$id)
     fileHandle<-getFileHandleFromEntityBundleJSON(submission$entityBundleJSON)
     submission@fileHandle<-fileHandle
     
@@ -43,11 +43,11 @@ setMethod(
 )
 
 getFileHandleFromEntityBundleJSON<-function(entityBundleJSON) {
-  if (missing(entityBundleJSON) || is.null(entityBundleJSON)) stop("Missing entity bundle")
+  if (missing(entityBundleJSON) || is.null(entityBundleJSON)) return(list())
   entityBundle<-fromJSON(entityBundleJSON)
   fileHandles<-entityBundle$fileHandles
-  if (is.null(fileHandles)) return(NULL) # this is the case if the submitted entity is not a File
-  if (length(fileHandles)<1) stop("Empty file handle list")
+  if (is.null(fileHandles)) return(list()) # this is the case if the submitted entity is not a File
+  if (length(fileHandles)<1) return(list())
   if (length(fileHandles)==1) {
     return(fileHandles[[1]])
   } else {
@@ -63,8 +63,8 @@ getFileHandleFromEntityBundleJSON<-function(entityBundleJSON) {
 synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
   submission<-SubmissionListConstructor(synRestGET(sprintf("/evaluation/submission/%s", id)))
   
-  if (!is.null(submission@fileHandle)) { # otherwise it's not a File
-    downloadUri<-sprintf("/evaluation/submission/%s/file/%s", submission$id, fileHandle$id)
+  if (!is.null(submission@fileHandle$id)) { # otherwise it's not a File
+    downloadUri<-sprintf("/evaluation/submission/%s/file/%s", submission$id, submission@fileHandle$id)
 
     result<-synGetFileAttachment(
       downloadUri,

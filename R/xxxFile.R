@@ -11,11 +11,11 @@
 
 
 initializeProperties<-function(synapseType) {
-  properties<-SynapseProperties(getEffectivePropertyTypes(synapseType))
-  properties
+  SynapseProperties(getEffectivePropertyTypes(synapseType))
 }
 
-initializeFileProperties<-function(synapseType) {
+initializeFileProperties<-function() {
+  synapseType<-"org.sagebionetworks.repo.model.FileEntity"
   properties<-initializeProperties(synapseType)
   properties$entityType <- synapseType
   properties
@@ -41,7 +41,7 @@ setClass(
   # This is modeled after defineEntityClass in AAAschema
   prototype = prototype(
     synapseEntityKind = "File",
-    properties = initializeFileProperties("org.sagebionetworks.repo.model.FileEntity"),
+    properties = initializeFileProperties(),
     synapseStore = TRUE,
     objects = NULL
   )

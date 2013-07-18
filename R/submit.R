@@ -31,18 +31,13 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
     stop("You must provide an evaluation or and evaluation ID.")
   }
   if (missing(submissionName)) submissionName<-propertyValue(entity, "name")
-  if (missing(teamName)) {
-    submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
-      entityId=entityId, 
-      versionNumber=entityVersion, 
-      name=submissionName))
-  } else {
-    submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
-      entityId=entityId, 
-      versionNumber=entityVersion, 
-      name=submissionName,
-      submitterAlias=teamName))
-  }
+
+  submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
+    entityId=entityId, 
+    versionNumber=entityVersion, 
+    name=submissionName,
+    submitterAlias=teamName))
+  
   createdSubmission<-synCreateSubmission(submission, entityEtag=etag)
   if (!silent) message(evaluation$submissionReceiptMessage)
   list(submission=createdSubmission, submissionReceiptMessage=evaluation$submissionReceiptMessage)
