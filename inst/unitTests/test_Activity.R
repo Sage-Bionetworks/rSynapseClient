@@ -149,6 +149,16 @@ unitTestShowActivity <- function(){
   act <- Activity()
   act
   
+  ## USING NEW METHODS FOR SETTING USED AND EXECUTED
+  act$used <- "syn123"
+  act$executed <- "syn456"
+  act
+  
+  act <- Activity()
+  used(act) <- "syn123"
+  executed(act) <- "syn456"
+  act
+  
   ## CREATE AN ACTIVITY WITH A NAME BUT NOTHING USED
   act <- Activity(name="Sweet")
   act

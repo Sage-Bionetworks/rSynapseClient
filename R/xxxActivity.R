@@ -192,10 +192,10 @@ setMethod(
     cat("--------------------\n")
     
     ## DISPLAY USED LIST
-    if( !is.null(properties(object)$used) ){
+    if( length(properties(object)$used) > 0 ){
       cat("USED:\n")
       for( i in 1:length(properties(object)$used) ){
-        thisUsed <- object$used[[i]]
+        thisUsed <- properties(object)$used[[i]]
         if( thisUsed$concreteType == "org.sagebionetworks.repo.model.provenance.UsedEntity" ){
           cat("id          : ", thisUsed$reference$targetId, "\n", sep="")
           cat("version     : ", thisUsed$reference$targetVersionNumber, "\n", sep="")
