@@ -850,10 +850,17 @@ setGeneric(
 )
 
 setGeneric(
-   name="FileListConstructor",
-    def = function(propertiesList) {
-     standardGeneric("FileListConstructor")
-    }
+  name="FileListConstructor",
+  def = function(propertiesList) {
+    standardGeneric("FileListConstructor")
+  }
+)
+
+setGeneric(
+  name="SubmissionListConstructor",
+  def = function(propertiesList) {
+    standardGeneric("SubmissionListConstructor")
+  }
 )
 
 setGeneric(

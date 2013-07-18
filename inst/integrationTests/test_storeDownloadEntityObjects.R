@@ -45,7 +45,7 @@ integrationTestNoSynStore <-
   data <- Data(list(name="Test Data", parentId = propertyValue(study, "id"), type="C"))
   
   # you can't call 'synStore' for Locationable objects
-  result<-try(synStore(data))
+  result<-try(synStore(data), silent=T)
   
   checkEquals("try-error", class(result))
 }

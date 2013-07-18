@@ -7,8 +7,8 @@
   project <- createEntity(Project())
   projectId<-propertyValue(project, "id")
   synapseClient:::.setCache("testProject", project)
-  
-  evaluation<-Evaluation(name=sprintf("test_submit_%d", sample(10000,1)), status="OPEN", contentSource=projectId)
+  submissionReceiptMessage<-"Your submission has been received. Please check the leader board for your score."
+  evaluation<-Evaluation(name=sprintf("test_submit_%d", sample(10000,1)), status="OPEN", contentSource=projectId, submissionReceiptMessage=submissionReceiptMessage)
   evaluation<-synStore(evaluation)
   synapseClient:::.setCache("testEvaluation", evaluation)
 }
@@ -38,7 +38,10 @@ integrationTest_submit <- function() {
   teamName<-"test-team-name"
   missingTeamName<-try(submit(evaluation=evaluation, entity=file, submissionName=submissionName), silent=T)
   checkEquals("try-error", class(missingTeamName))
-  submission<-submit(evaluation=evaluation, entity=file, submissionName=submissionName, teamName=teamName)
+  submissionResult<-submit(evaluation=evaluation, entity=file, submissionName=submissionName, teamName=teamName, silent=T)
+  submission<-submissionResult$submission
+  submissionReceiptMessage<-"Your submission has been received. Please check the leader board for your score." # duplicates def'n above
+  checkEquals(submissionReceiptMessage, submissionResult$submissionReceiptMessage)
   checkEquals(propertyValue(file, "id"), propertyValue(submission, "entityId"))
   checkEquals(propertyValue(file, "versionNumber"), propertyValue(submission, "versionNumber"))
   checkEquals(eid, propertyValue(submission, "evaluationId"))
@@ -47,7 +50,22 @@ integrationTest_submit <- function() {
   
   # retrieve the submission
   submission2<-synGetSubmission(propertyValue(submission, "id"))
-  checkEquals(submission, submission2)
+  # make sure they're the same (except the download file path)
+  submission2MinusFilePath<-submission2
+  submission2MinusFilePath@filePath<-character(0)
+  checkEquals(submission, submission2MinusFilePath)
+  
+  # check that the file was downloaded
+  checkTrue(!is.null(getFileLocation(submission2)))
+  checkTrue(!is.null(submission2@fileHandle))
+  checkEquals(0, length(listObjects(submission2)))
+  
+  # now download with load=T
+  submission2<-synGetSubmission(submission$id, load=T)
+  checkTrue(!is.null(getFileLocation(submission2)))
+  checkTrue(!is.null(submission2@fileHandle))
+  checkEquals(1, length(listObjects(submission2)))
+  checkEquals(c(1,2,3), getObject(submission2))
   
   # delete the submission
   synDelete(submission)
@@ -61,7 +79,8 @@ integrationTest_submit <- function() {
   # now submit the old version
   oldFile<-synGet(propertyValue(file, "id"), version=1, downloadFile=F)
   checkEquals(1, propertyValue(oldFile, "versionNumber"))
-  submission2<-submit(evaluation, oldFile, teamName=teamName)
+  submissionResult2<-submit(evaluation, oldFile, teamName=teamName, silent=T)
+  submission2<-submissionResult2$submission
   
   checkEquals(propertyValue(oldFile, "id"), propertyValue(submission2, "entityId"))
   checkEquals(propertyValue(oldFile, "versionNumber"), propertyValue(submission2, "versionNumber"))
@@ -70,7 +89,9 @@ integrationTest_submit <- function() {
   
   # retrieve the submission
   submission3<-synGetSubmission(propertyValue(submission2, "id"))
-  checkEquals(submission2, submission3)
+  submission3MinusFilePath<-submission3
+  submission3MinusFilePath@filePath<-character(0)
+  checkEquals(submission2, submission3MinusFilePath)
   
   # delete the submission
   synDelete(submission3)

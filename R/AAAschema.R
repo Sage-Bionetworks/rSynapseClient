@@ -23,7 +23,10 @@ entitiesToLoad <-
 {
   paths <- NULL
   
-  classesToSkip<-c("org.sagebionetworks.repo.model.FileEntity")
+  classesToSkip<-c(
+    "org.sagebionetworks.repo.model.FileEntity",
+    "org.sagebionetworks.evaluation.model.Submission"
+    )
   
   for(i in 1:length(resources$entityTypes)){
     thisOne <- resources$entityTypes[[i]]

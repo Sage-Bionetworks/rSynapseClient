@@ -115,7 +115,6 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     nonEntities<-list(
       "org.sagebionetworks.repo.model.UserProfile",
       "org.sagebionetworks.evaluation.model.Evaluation",
-      "org.sagebionetworks.evaluation.model.Submission",
       "org.sagebionetworks.evaluation.model.SubmissionStatus",
       "org.sagebionetworks.evaluation.model.SubmissionBundle",
       "org.sagebionetworks.evaluation.model.Participant",
@@ -127,8 +126,9 @@ kSupportedDataLocationTypes <- c("external", "awss3")
       synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
     }
     
-    # we override FileEntity with our own class constructor.  See also entitiesToLoad() in AAAschema.R
-  addToEntityTypeMap(className="FileListConstructor", jsonSchemaName="org.sagebionetworks.repo.model.FileEntity")
+    # we override FileEntity, Submission with our own class constructor.  See also entitiesToLoad() in AAAschema.R
+addToEntityTypeMap(className="FileListConstructor", jsonSchemaName="org.sagebionetworks.repo.model.FileEntity")
+addToEntityTypeMap(className="SubmissionListConstructor", jsonSchemaName="org.sagebionetworks.evaluation.model.Submission")
 }
 
 

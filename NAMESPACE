@@ -100,11 +100,6 @@ export(
 	"Project",
 	"Activity",
 	"Evaluation",
-	"Submission",
-	"SubmissionStatus",
-	"Participant",
-	"WikiHeader",
-	"UserProfile",
 	"WikiPage")
 
 # to be deprecated

@@ -22,10 +22,17 @@ Submit an entity to an Evaluation
 	\item{teamName}{
 	Optional:  The name of the team on whose behalf the entity is submitted.
 	}
+	\item{silent}{
+	Optional:  Defaults to FALSE.  If TRUE then do not print out the submission confirmation message.
+	}
 }
 \details{
 The content of the given entity is added to the given evaluation queue.  Since the content is extracted, changing the entity
 after submission does not change what is in the queue.
+}
+\value{
+A named list having two fields, 'createdSubmission' is the Submission object created by the server; 'submissionReceiptMessage' 
+is the message acknowledging submission receipt (as customized by the Evaluation queue).
 }
 \seealso{
 \code{\link{synGet}}
