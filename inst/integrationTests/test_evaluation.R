@@ -30,7 +30,8 @@ integrationTestEvaluationRoundtrip <-
   projectId<-propertyValue(project, "id")
   
   name<-sprintf("test evaluation %d", sample(1000,1))
-  evaluation<-Evaluation(name=name, status="PLANNED", contentSource=projectId)
+  submissionReceiptMessage<-"Your submission has been received. Please check the leader board for your score."
+  evaluation<-Evaluation(name=name, status="PLANNED", contentSource=projectId, submissionReceiptMessage=submissionReceiptMessage)
   evaluation<-synStore(evaluation)
   # store for later deletion
   synapseClient:::.setCache("testEvaluation", evaluation)
@@ -87,14 +88,16 @@ integrationTestEvaluationRoundtrip <-
   submittableEntity<-Folder(name="submitted entity", parentId=projectId)
   submittableEntity<-synStore(submittableEntity)
   
-  submit(evaluation, submittableEntity, teamName="some team name")
-  
+  submissionResult<-submit(evaluation, submittableEntity, teamName="some team name", silent=TRUE)
+  createdSubmission<-submissionResult$submission
+  checkEquals(evaluation$submissionReceiptMessage, submissionResult$submissionReceiptMessage)
+    
   submissions<-synGetSubmissions(eid, "OPEN")
   
   checkEquals(1, submissions@totalNumberOfResults)
   checkEquals(1, length(submissions@results))
   submission<-submissions@results[[1]]
-  
+  checkEquals(createdSubmission$id, submission$id)
   entityId<-propertyValue(submission, "entityId")
   # check that all submission fields are correct
   checkEquals(myOwnId, propertyValue(submission, "userId"))
@@ -132,7 +135,7 @@ integrationTestEvaluationRoundtrip <-
   submittableEntity2<-Folder(name="submitted entity 2", parentId=projectId)
   submittableEntity2<-synStore(submittableEntity2)
   
-  submit(evaluation, submittableEntity2, teamName="some team name")
+  submit(evaluation, submittableEntity2, teamName="some team name", silent=TRUE)
   
   submissions<-synGetSubmissions(eid, "OPEN")
   
