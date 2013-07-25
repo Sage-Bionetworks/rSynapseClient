@@ -7,6 +7,21 @@
 synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F) {  
   if (is(entity, "Entity")) {
     if (is(entity, "Locationable")) stop("For 'Locationable' entities you must use createEntity, storeEntity, or updateEntity.")
+ 
+    if (is.null(propertyValue(entity, "id")) && createOrUpdate) {
+      entityAsList<-try(findExistingEntity(propertyValue(entity, "name"), propertyValue(entity, "parentId")), silent=TRUE)
+      if (class(entityAsList)!='try-error') {
+        # found it!
+        mergedProperties<-copyProperties(as.list.SimplePropertyOwner(entity), entityAsList)
+        # this copies retrieved properties not overwritten by the given entity, including id
+        # hence it turns a 'create' operation into an 'update' operation
+        propertyValues(entity)<-mergedProperties
+        if (class(entity)=="File") {
+            entity@fileHandle<-getFileHandle(entity)
+        }
+      }
+    }
+    
     if (class(entity)=="File" || class(entity)=="Record") {
       entity<-synStoreFile(file=entity, createOrUpdate, forceVersion, isRestricted)
       # TODO: Handle Record

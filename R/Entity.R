@@ -198,6 +198,16 @@ findExistingEntity<-function(name, parentId=NULL) {
   synapseGet(.generateEntityUri(entityId))
 }
 
+copyProperties<-function(fromEntityAsList, toEntityAsList) {
+  propertiesNOTtoTransfer<-c("etag")
+  for (propName in names(fromEntityAsList)) {
+    if (!any(propName==propertiesNOTtoTransfer)) {
+      toEntityAsList[[propName]]<-fromEntityAsList[[propName]]
+    }
+  }
+  toEntityAsList
+}
+
 createEntityMethod<-function(entity, generatingActivity, createOrUpdate, forceVersion) {
   if (missing(createOrUpdate)) createOrUpdate<-FALSE
   
@@ -221,14 +231,8 @@ createEntityMethod<-function(entity, generatingActivity, createOrUpdate, forceVe
     if (curlInfo$response.code==409) {
       # retrieve the object
       entityAsList<-findExistingEntity(entity$name, entity$parentId)
-      # apply the properties of the new entity
-      propertiesNOTtoTransfer<-c("etag")
-      for (propName in names(entity)) {
-        if (!any(propName==propertiesNOTtoTransfer)) {
-          entityAsList[[propName]]<-entity[[propName]]
-        }
-      }
-      entity<-entityAsList
+      # apply the properties of the new entity to the discovered one
+      entity<-copyProperties(entity,entityAsList)
       # now update the existing entity
       updateUri<-sprintf("/entity/%s", entity$id)
       if (missing("forceVersion")) forceVersion=FALSE

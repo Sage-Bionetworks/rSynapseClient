@@ -383,6 +383,13 @@ createOrUpdateIntern<-function(project) {
   checkEquals(propertyValue(file, "id"), propertyValue(file2, "id"))
   checkEquals(2, propertyValue(file2, "versionNumber")) # this is the test for SYNR-429
   
+  # SYNR-450: using the same file twice, if forceVersion=F should result in no version change!
+  file25<-File(filePath2, name=name, parentId=pid)
+  file25<-synStore(file25, forceVersion=FALSE)
+  checkEquals(propertyValue(file, "id"), propertyValue(file25, "id"))
+  checkEquals(2, propertyValue(file25, "versionNumber"))
+  checkEquals(propertyValue(file2, "dataFileHandleId"), propertyValue(file25, "dataFileHandleId"))
+  
   filePath3 <- createFile()
   file3<-File(filePath3, name=name, parentId=pid)
   result<-try(synStore(file3, createOrUpdate=F), silent=T)
