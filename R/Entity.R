@@ -198,13 +198,22 @@ findExistingEntity<-function(name, parentId=NULL) {
   synapseGet(.generateEntityUri(entityId))
 }
 
-createEntityMethod<-function(entity, createOrUpdate, forceVersion) {
+copyProperties<-function(fromEntityAsList, toEntityAsList) {
+  propertiesNOTtoTransfer<-c("etag")
+  for (propName in names(fromEntityAsList)) {
+    if (!any(propName==propertiesNOTtoTransfer)) {
+      toEntityAsList[[propName]]<-fromEntityAsList[[propName]]
+    }
+  }
+  toEntityAsList
+}
+
+createEntityMethod<-function(entity, generatingActivity, createOrUpdate, forceVersion) {
   if (missing(createOrUpdate)) createOrUpdate<-FALSE
   
   oldAnnots <- entity@annotations
   
   createUri = "/entity"
-  generatingActivity <- generatedBy(entity)
   if (!is.null(generatingActivity)) {
     if(is.null(propertyValue(generatingActivity, "id"))) {
       generatingActivity <-createEntity(generatingActivity)
@@ -222,14 +231,8 @@ createEntityMethod<-function(entity, createOrUpdate, forceVersion) {
     if (curlInfo$response.code==409) {
       # retrieve the object
       entityAsList<-findExistingEntity(entity$name, entity$parentId)
-      # apply the properties of the new entity
-      propertiesNOTtoTransfer<-c("etag")
-      for (propName in names(entity)) {
-        if (!any(propName==propertiesNOTtoTransfer)) {
-          entityAsList[[propName]]<-entity[[propName]]
-        }
-      }
-      entity<-entityAsList
+      # apply the properties of the new entity to the discovered one
+      entity<-copyProperties(entity,entityAsList)
       # now update the existing entity
       updateUri<-sprintf("/entity/%s", entity$id)
       if (missing("forceVersion")) forceVersion=FALSE
@@ -280,7 +283,7 @@ setMethod(
   f = "createEntity",
   signature = "Entity",
   # without the wrapper I get this error in R 2.15: methods can add arguments to the generic ÔcreateEntityÕ only if '...' is an argument to the generic
-  definition = function(entity){createEntityMethod(entity=entity, createOrUpdate=FALSE, forceVersion=FALSE)}
+  definition = function(entity){createEntityMethod(entity=entity, generatingActivity=generatedBy(entity), createOrUpdate=FALSE, forceVersion=FALSE)}
 )
 
 setMethod(
@@ -341,7 +344,7 @@ setMethod(
   }
 )
 
-updateEntityMethod<-function(entity, forceVersion)
+updateEntityMethod<-function(entity, newGeneratingActivity, forceVersion)
   {
     if(is.null(entity$properties$id))
       stop("entity ID was null so could not update. use createEntity instead.")
@@ -362,12 +365,11 @@ updateEntityMethod<-function(entity, forceVersion)
       }
     }
     
-    generatingActivity <- generatedBy(entity)
-    if (!is.null(generatingActivity)) {
-      if(is.null(propertyValue(generatingActivity, "id"))) {
-        generatingActivity <-createEntity(generatingActivity)
+    if (!is.null(newGeneratingActivity)) {
+      if(is.null(propertyValue(newGeneratingActivity, "id"))) {
+        newGeneratingActivity <-createEntity(newGeneratingActivity)
       }
-      updateUri <- sprintf("%s?generatedBy=%s", updateUri, propertyValue(generatingActivity, "id"))
+      updateUri <- sprintf("%s?generatedBy=%s", updateUri, propertyValue(newGeneratingActivity, "id"))
     }
     
     ee <- getEntityInstance(synapsePut(updateUri, as.list.SimplePropertyOwner(entity)))
@@ -382,7 +384,7 @@ updateEntityMethod<-function(entity, forceVersion)
     ee@annotations <- annots
     
     # now take care of the 'generatedBy' field
-    if (is.null(generatingActivity)) {
+    if (is.null(newGeneratingActivity) && is.null(generatedBy(entity))) {
       # need to ensure the 'generatedBy' field is also cleared on the server side
       # it's unfortunate to have to make another method call to update 'generatedBy' but
       # eventually 'generatedBy' may be part of the entity schema, obviating the need for the extra method call
@@ -390,7 +392,7 @@ updateEntityMethod<-function(entity, forceVersion)
       updatedEtagEntity<-synapseGet(entity$properties$uri)
       propertyValue(ee, "etag")<-updatedEtagEntity$etag
     }
-    generatedBy(ee)<-generatingActivity
+    generatedBy(ee)<-newGeneratingActivity
     
     ee
 }
@@ -398,7 +400,7 @@ updateEntityMethod<-function(entity, forceVersion)
 setMethod(
   f = "updateEntity",
   signature = signature("Entity"),
-  definition = function(entity){updateEntityMethod(entity=entity, forceVersion=FALSE)}
+  definition = function(entity){updateEntityMethod(entity=entity, newGeneratingActivity=generatedBy(entity), forceVersion=FALSE)}
 )
  
 setMethod(
@@ -455,7 +457,7 @@ storeEntityMethod<-function(entity, forceVersion) {
     entity <- createEntity(entity)
   }
   else {
-    entity <- updateEntityMethod(entity, forceVersion)
+    entity <- updateEntityMethod(entity, generatedBy(entity), forceVersion)
   }
 }
 
