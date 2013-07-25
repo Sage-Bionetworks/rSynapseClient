@@ -12,16 +12,16 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
       # TODO: Handle Record
     }
     # Now save the metadata
+    generatingActivity<-NULL
     if (!is.null(activity)) {
-      generatedBy(entity)<-activity
+      generatingActivity<-activity
     } else if (!is.null(used) || !is.null(executed)) {
-      activity<-Activity(name=activityName, description=activityDescription, used=used, executed=executed)
-      generatedBy(entity)<-activity
+      generatingActivity<-Activity(name=activityName, description=activityDescription, used=used, executed=executed)
     }
     if (is.null(propertyValue(entity, "id"))) {
-      storedEntity<-createEntityMethod(entity, createOrUpdate, forceVersion)
+      storedEntity<-createEntityMethod(entity, generatingActivity, createOrUpdate, forceVersion)
     } else {
-      storedEntity<-updateEntityMethod(entity, forceVersion)
+      storedEntity<-updateEntityMethod(entity, generatingActivity, forceVersion)
     }
     if (class(entity)=="File" || class(entity)=="Record") {
       # now copy the class-specific fields into the newly created object

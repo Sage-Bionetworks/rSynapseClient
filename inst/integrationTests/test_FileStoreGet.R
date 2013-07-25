@@ -209,7 +209,6 @@ integrationTestReviseWithoutProvenance <- function() {
   # now modify the file
   createFile(content="some other content", getFileLocation(retrievedFile))
   
-  fileHandleIdBeforeModification<-retrievedFile@fileHandle$id
   retrievedFile<-synStore(retrievedFile)
   
   # it's the second new version
@@ -223,7 +222,7 @@ integrationTestReviseWithoutProvenance <- function() {
   retrievedFile<-synStore(retrievedFile, used="syn101")
   
   # its the third new version
-  checkEquals(3, propertyValue(myOutputFile, "versionNumber"))
+  checkEquals(3, propertyValue(retrievedFile, "versionNumber"))
   
   # the specified provenance is there!
   gb<-generatedBy(retrievedFile)
