@@ -179,6 +179,59 @@ updateProvenanceIntern<-function(project) {
   checkEquals(2, length(used))
 }
 
+# Per SYNR-501, if you update an entity the new version
+# should not carry forward the provenance record of the old one
+integrationTestReviseWithoutProvenance <- function() {
+  # create a Project
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  projectId <- propertyValue(project, "id")
+  
+  myOutputFilePath<-createFile()
+  
+  myOutputFile <- synStore(File(myOutputFilePath, name="myOutputFile.txt", parentId=projectId), 
+    used=list(list(name="Script.py", url="https://raw.github.com/.../Script.py", wasExecuted=T),
+      list(name="GSM349870.CEL", url="http://www.ncbi.nlm.nih.gov/geo/download/...", wasExecuted=F)),
+    activityName="Scripted Annotation of Raw Data",
+    activityDescription="To execute run: python Script.py [Annotation] [CEL]")
+  
+  # its the first new version
+  checkEquals(1, propertyValue(myOutputFile, "versionNumber"))
+  
+  # verify that the provenance can be retrieved
+  retrievedFile<-synGet(propertyValue(myOutputFile, "id"))
+  gb<-generatedBy(retrievedFile)
+  checkEquals("Scripted Annotation of Raw Data", propertyValue(gb, "name"))
+  checkEquals("To execute run: python Script.py [Annotation] [CEL]", propertyValue(gb, "description"))
+  used<-propertyValue(gb, "used")
+  checkEquals(2, length(used))
+  
+  # now modify the file
+  createFile(content="some other content", getFileLocation(retrievedFile))
+  
+  fileHandleIdBeforeModification<-retrievedFile@fileHandle$id
+  retrievedFile<-synStore(retrievedFile)
+  
+  # it's the second new version
+  checkEquals(2, propertyValue(retrievedFile, "versionNumber"))
+  
+  # since we specified no provenance in synStore, there should be none
+  checkTrue(is.null(generatedBy(retrievedFile)))
+  
+  # now modify again
+  createFile(content="yet some other, other content", getFileLocation(retrievedFile))
+  retrievedFile<-synStore(retrievedFile, used="syn101")
+  
+  # its the third new version
+  checkEquals(3, propertyValue(myOutputFile, "versionNumber"))
+  
+  # the specified provenance is there!
+  gb<-generatedBy(retrievedFile)
+  used<-propertyValue(gb, "used")
+  checkEquals(1, length(used))
+  
+}
+
 integrationTestCacheMapRoundTrip <- function() {
   fileHandleId<-"101"
   filePath<- createFile()
