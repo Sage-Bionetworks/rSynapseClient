@@ -240,7 +240,7 @@ serializeObjects<-function(file) {
   filePath
 }
 
-synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, isRestricted=F) {
+synStoreFile <- function(file, createOrUpdate=T, forceVersion=T) {
   if (hasObjects(file)) file@filePath<-serializeObjects(file)
   if (!fileHasFileHandleId(file)) { # if there's no existing Synapse File associated with this object...
     if (!fileHasFilePath(file)) { # ... and there's no local file staged for upload ...
@@ -275,14 +275,6 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, isRestricted=F)
       # file is considered 'read only' and will not be uploaded
     }
   }
-  if (isRestricted) {
-    # check to see if access restriction(s) is/are in place already
-    id<-propertyValue(file, "id")
-    if (!.hasAccessRequirement(id)) {
-      # nothing in place, so we create the restriction
-      .createLockAccessRequirement(id)
-    }
-  }
   file
 }
 
@@ -293,7 +285,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, isRestricted=F)
 }
 
 .createLockAccessRequirement<-function(entityId) {
-  synRestPOST(sprintf("/entity/%s/lockAccessRequirement", entityId))
+  synRestPOST(sprintf("/entity/%s/lockAccessRequirement", entityId), list())
 }
 
 fileExists<-function(folder, filename) {
