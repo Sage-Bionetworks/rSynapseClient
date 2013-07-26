@@ -158,7 +158,9 @@ getCacheMapFileContent<-function(fileHandleId) {
 # return the last-modified time stamp for the given fileHandleId and filePath
 # or NULL if there is no entry
 getFromCacheMap<-function(fileHandleId, filePath) {
+  lockFile(filePath)
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
+  unlockFile(filePath)
   # this is necessary to allow Windows paths to work with toJSON/fromJSON
   filePath<-normalizePath(filePath, winslash="/")
   for (key in names(mapForFileHandleId)) {
@@ -462,19 +464,19 @@ synGetFileAttachment<-function(downloadUri, fileHandle, downloadFile=T, download
 setMethod(
   f = "updateEntity",
   signature = signature("File"),
-  definition = function(entity) {synStore(entity, forceVersion=F)}
+  definition = function(entity) {synStore(entity, activity=generatedBy(entity), forceVersion=F)}
 )
 
 setMethod(
   f = "createEntity",
   signature = signature("File"),
-  definition = function(entity) {synStore(entity, forceVersion=F)}
+  definition = function(entity) {synStore(entity, activity=generatedBy(entity), forceVersion=F)}
 )
 
 setMethod(
   f = "storeEntity",
   signature = signature("File"),
-  definition = function(entity) {synStore(entity, forceVersion=F)}
+  definition = function(entity) {synStore(entity, activity=generatedBy(entity), forceVersion=F)}
 )
 
 setMethod(

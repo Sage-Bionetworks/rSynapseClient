@@ -155,6 +155,7 @@ setReplaceMethod("$",
   definition = function(x, name, value) {
     if (any(name==propertyNames(x))) {
       propertyValue(x, name)<-value
+      x
     } else {
       stop(sprintf("invalid name %s", name))
     }

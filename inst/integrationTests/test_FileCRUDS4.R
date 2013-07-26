@@ -229,7 +229,7 @@ integrationTestDeleteFileById <-
   deleteEntity(file)
   
   deleteEntity(createdProject$properties$id)
-  checkException(getEntity(createdFile))
+  checkException(getEntity(createdFile), silent=TRUE)
   synapseClient:::.deleteCache("testProject")
 }
 
@@ -361,7 +361,7 @@ integrationTestDeleteFile <-
   deleteEntity(createdFile)
   
   # should get a 404 error 
-  result<-try(getEntity(propertyValue(createdFile, "id")))
+  result<-try(getEntity(propertyValue(createdFile, "id")), silent=TRUE)
   checkEquals("try-error", class(result))
 }
 
