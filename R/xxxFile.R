@@ -17,7 +17,7 @@ initializeProperties<-function(synapseType) {
 initializeFileProperties<-function() {
   synapseType<-"org.sagebionetworks.repo.model.FileEntity"
   properties<-initializeProperties(synapseType)
-  properties$entityType <- synapseType
+  properties$concreteType <- synapseType
   properties
 }
 
@@ -110,7 +110,7 @@ setMethod(
         for (prop in names(propertiesList))
           file<-synAnnotSetMethod(file, prop, propertiesList[[prop]])
         
-        propertyValue(file, "entityType") <- "org.sagebionetworks.repo.model.FileEntity"
+        propertyValue(file, "concreteType") <- "org.sagebionetworks.repo.model.FileEntity"
         
         file
       }

@@ -20,7 +20,7 @@ xxxxTestGetDuplicateWithId <-
 
   entity <- list(
     id=basename(tempdir()),
-    entityType = "org.sagebionetworks.repo.model.Data",
+    concreteType = "org.sagebionetworks.repo.model.Data",
     locations = list(list('path'= url))
   )
 
@@ -41,7 +41,7 @@ xxxxTestGetDuplicateNoId <-
   url <- sprintf("http://fakedomain.com%s", root)
 
   entity <- list(
-    entityType = "org.sagebionetworks.repo.model.Data",
+    concreteType = "org.sagebionetworks.repo.model.Data",
     locations = list(list('path'= url))
   )
 

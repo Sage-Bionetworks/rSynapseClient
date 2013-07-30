@@ -21,7 +21,7 @@ integrationTestCRUD <- function() {
   project <- synapseClient:::.getCache("testProject")
   # create something
   pid<-propertyValue(project, "id")
-  result<-synRestPOST("/entity", list(entityType="org.sagebionetworks.repo.model.Folder", parentId=pid, name="foo"))
+  result<-synRestPOST("/entity", list(concreteType="org.sagebionetworks.repo.model.Folder", parentId=pid, name="foo"))
   id<-result$id
   checkTrue(!is.null(id))
   # get it
@@ -44,7 +44,7 @@ integrationTestObjectCRUD <- function() {
   project <- synapseClient:::.getCache("testProject")
   # create something
   pid<-propertyValue(project, "id")
-  folder<-Folder(list(entityType="org.sagebionetworks.repo.model.Folder", parentId=pid, name="foo"))
+  folder<-Folder(list(concreteType="org.sagebionetworks.repo.model.Folder", parentId=pid, name="foo"))
   result<-Folder(synRestPOST("/entity", folder))
   id<-propertyValue(result, "id")
   checkTrue(!is.null(id))
