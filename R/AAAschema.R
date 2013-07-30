@@ -24,8 +24,7 @@ entitiesToLoad <-
   paths <- NULL
   
   classesToSkip<-c(
-    "org.sagebionetworks.repo.model.FileEntity",
-    "org.sagebionetworks.evaluation.model.Submission"
+    "org.sagebionetworks.repo.model.FileEntity"
     )
   
   for(i in 1:length(resources$entityTypes)){
@@ -159,7 +158,7 @@ defineEntityConstructors <-
         ee <- new(classType)
         for(prop in names(entity))
           propertyValue(ee, prop) <- entity[[prop]]
-        if (is(ee, "Entity")) propertyValue(ee, "entityType") <- synapseType
+        if (is(ee, "Entity")) propertyValue(ee, "concreteType") <- synapseType
         ee
       },
       where = where

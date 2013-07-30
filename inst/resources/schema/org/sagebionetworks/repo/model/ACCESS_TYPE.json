@@ -1,5 +1,5 @@
 {
-    "description":"JSON schema for the access types allowed in access control lists.",
+    "description":"The enumeration of possible permission.",
     "name": "ACCESS_TYPE",
     "type":"string",
     "enum":[
@@ -9,6 +9,7 @@
         "DELETE",
         "CHANGE_PERMISSIONS",
 	 	"DOWNLOAD",
-	 	"PARTICIPATE"
+	 	"PARTICIPATE",
+	 	"READ_PRIVATE_SUBMISSION"
     ]
 }
