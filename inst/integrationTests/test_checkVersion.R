@@ -45,7 +45,9 @@ integrationTestCheckVersionOld <- function()
    
   # old version (not blacklisted), should display message to upgrade
   message<- synapseClient:::.checkLatestVersionGivenMyVersion("0.18", "1.15.0-8-ge79db7a")
-  upgradeMessage<-"Please upgrade to the latest version of the Synapse Client, 0.19-0, having the following changes/features:\nThis version includes new provenance features.\n\nOn January 1, all clients will be required to upgrade to the latest version.\n"
+  #upgradeMessage<-"Please upgrade to the latest version of the Synapse Client, 0.19-0, having the following changes/features:\nThis version includes new provenance features.\n\nOn January 1, all clients will be required to upgrade to the latest version.\n"
+  upgradeMessage<-"Please upgrade to the latest version of the Synapse Client, 0.19-0, by running the following commands:\n\tsource('http://depot.sagebase.org/CRAN.R')\n\tpkgInstall(\"synapseClient\")\n\nThis version includes new provenance features.\n\nOn January 1, all clients will be required to upgrade to the latest version.\n"
+  
   checkEquals(upgradeMessage, message)
   error<-try(synapseClient:::.checkBlackListGivenMyVersion("0.18", "1.15.0-8-ge79db7a"), silent=TRUE)
   checkTrue(is.null(error))
