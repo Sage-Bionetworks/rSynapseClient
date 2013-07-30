@@ -140,7 +140,7 @@ convertAnnotation<-function(a) {
 createMemoryCodeEntity <-function(f, codeFolderId, codeEntityName, replChar=".") {
   synapseEntityName <- scrubEntityName(codeEntityName, replChar)
   
-  sourceFileEntity <- getOrCreateEntity(name=synapseEntityName, parentId=codeFolderId, entityType="Code")
+  sourceFileEntity <- getOrCreateEntity(name=synapseEntityName, parentId=codeFolderId, concreteType="Code")
   
   sourceFileEntity<-addObject(sourceFileEntity, f)
   
@@ -162,7 +162,7 @@ createMemoryCodeEntity <-function(f, codeFolderId, codeEntityName, replChar=".")
 createFileCodeEntity <- function(sourceFile, codeFolderId, replChar=".") {
   synapseSourceFile <- scrubEntityName(sourceFile, replChar)
   
-  sourceFileEntity <- getOrCreateEntity(name=synapseSourceFile, parentId=codeFolderId, entityType="Code")
+  sourceFileEntity <- getOrCreateEntity(name=synapseSourceFile, parentId=codeFolderId, concreteType="Code")
   
   sourceFileEntity<-addFile(sourceFileEntity, sourceFile)
   
@@ -207,10 +207,10 @@ createGithubCodeEntity <- function(repoName, sourceFile, codeFolderId, replChar=
   synapseCommitName <- scrubEntityName(githubRepo@commit, replChar)
   synapseSourceFile <- scrubEntityName(sourceFile, replChar)
   
-  repoEntity <- getOrCreateEntity(name=synapseRepoName, parentId=codeFolderId, entityType="Folder")
+  repoEntity <- getOrCreateEntity(name=synapseRepoName, parentId=codeFolderId, concreteType="Folder")
 
-  commitEntity <- getOrCreateEntity(name=synapseCommitName, parentId=repoEntity$properties$id, entityType="Folder")
-  sourceFileEntity <- getOrCreateEntity(name=synapseSourceFile, parentId=commitEntity$properties$id, entityType="Code")
+  commitEntity <- getOrCreateEntity(name=synapseCommitName, parentId=repoEntity$properties$id, concreteType="Folder")
+  sourceFileEntity <- getOrCreateEntity(name=synapseSourceFile, parentId=commitEntity$properties$id, concreteType="Code")
   
   githubURL <- getPermlink(repository=githubRepo, repositoryPath=sourceFile, type="raw")
   

@@ -26,14 +26,14 @@ integrationTestGetOrCreateEntity <-
   function()
 {
   project<-synapseClient:::.getCache("testProject")
-  createdData<-synapseClient:::getOrCreateEntity(name="test data", parentId=propertyValue(project, "id"), entityType="Data")
+  createdData<-synapseClient:::getOrCreateEntity(name="test data", parentId=propertyValue(project, "id"), concreteType="Data")
   synapseClient:::.setCache("testData", createdData)
   firstId <- propertyValue(createdData, "id")
   checkTrue(!is.null(firstId))
   checkEquals("test data", propertyValue(createdData, "name"))
   checkTrue("Data"==class(createdData))
   # now verify that if we try to get/create the same data, we get the same entity, not a new one
-  createdData2<-synapseClient:::getOrCreateEntity(name="test data", parentId=propertyValue(project, "id"), entityType="Data")
+  createdData2<-synapseClient:::getOrCreateEntity(name="test data", parentId=propertyValue(project, "id"), concreteType="Data")
   secondId <- propertyValue(createdData2, "id")
   checkEquals(firstId, secondId)
 }

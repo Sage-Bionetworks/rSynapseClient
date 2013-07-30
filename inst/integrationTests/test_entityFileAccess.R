@@ -34,7 +34,7 @@ integrationTestEntityFileAccess <-
     
     # create an entity with the file
     entity <- list(
-      entityType="org.sagebionetworks.repo.model.FileEntity", # doesn't work for 'Data'
+      concreteType="org.sagebionetworks.repo.model.FileEntity", # doesn't work for 'Data'
       name="foo", 
       parentId=propertyValue(project, "id"), 
       dataFileHandleId=fileHandle$id)

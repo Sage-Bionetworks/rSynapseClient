@@ -83,7 +83,7 @@ unitTestConstructor<-function() {
   checkEquals(annotValue, annotValue(file, annotName))
   checkEquals(annotValue, synapseClient:::synAnnotGetMethod(file, annotName))
   checkTrue(!synapseClient:::hasObjects(file))
-  checkEquals("org.sagebionetworks.repo.model.FileEntity", propertyValue(file, "entityType"))
+  checkEquals("org.sagebionetworks.repo.model.FileEntity", propertyValue(file, "concreteType"))
 }
 
 unitTestListConstructor<-function() {
