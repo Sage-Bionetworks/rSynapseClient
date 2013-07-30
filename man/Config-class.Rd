@@ -11,14 +11,14 @@
 \keyword{classes}
 \section{Methods}{
   \describe{
-    \item{\code{get.option(section, option)}:}{
-      Returns the value of the given section and option.  
+    \item{\code{ConfigParser(path)}:}{
+      Returns a Config object with parsed INI data.  
     }
-    \item{\code{has.option(section, option)}:}{
+    \item{\code{Config.hasOption(config, section, option)}:}{
       Returns TRUE if the given option exists within the given section.
     }
-    \item{\code{initialize(configFile)}:}{
-      Reads and parses the given configuration file.
+    \item{\code{Config.getOption(config, section, option)}:}{
+      Returns the value of the given section and option.  
     }
   }
 }
@@ -29,12 +29,12 @@
 
 \examples{conf
   # Logging into Synapse with loaded credentials
-  config <- new("Config", "~/.synapseConfig")
+  config <- ConfigParser("~/.synapseConfig")
   
-  if (config$has.option("authentication", "username") 
-      && config$has.option("authentication", "password")) {
-    username <- config$get.option("authentication", "username") 
-    password <- config$get.option("authentication", "password")
+  if (Config.hasOption(config, "authentication", "username") 
+      && Config.hasOption(config, "authentication", "password")) {
+    username <- Config.getOption(config, "authentication", "username") 
+    password <- Config.getOption(config, "authentication", "password")
     synapseLogin(username, password)
   }
 }
