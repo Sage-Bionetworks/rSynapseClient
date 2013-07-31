@@ -3,9 +3,13 @@ setClass("Config",
     representation(data = "list", filepath = "character"))
     
 ConfigParser <- function(path) {
+	if (missing(path)) {
+		path <- "~/.synapseConfig"
+	}
+	
     config <- new("Config")
     if (!file.exists(path)) {
-        stop(sprintf("Configuration file %s cannot be found.", path))
+        stop(sprintf("Configuration file '%s' cannot be found.", path))
     }
 
     config@filepath <- path
