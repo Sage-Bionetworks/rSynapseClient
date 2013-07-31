@@ -50,15 +50,16 @@
   
   if(length(path) > 1)
     stop("put", paste(length(path), path))
-  ## Prepare the header. If not an anonymous request, stuff the
-  ## sessionToken into the header
+    
+  ## Prepare the header. If not an anonymous request, stuff API key or session token into the header
   header <- .getCache("curlHeader")
   if(is.null(anonymous) || !anonymous) {
-    header <- switch(authMode(),
-      auth = .stuffHeaderAuth(header),
-      hmac = .stuffHeaderHmac(header, paste(path, uriWithoutParams, sep="")),
-      stop("Unknown auth mode: %s. Could not build header", authMode())
-    )		
+    header <- tryCatch(
+        .stuffHeaderHmac(header, paste(path, uriWithoutParams, sep="")), 
+        error = function(e) .stuffHeaderAuth(header))
+    if (!("signature" %in% names(header) || "sessionToken" %in% names(header))) {
+        stop("Please authenticate")
+    }
   }
   
   ## Submit request and check response code

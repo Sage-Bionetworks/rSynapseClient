@@ -39,8 +39,8 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
     ## 1) supplied username and password
     if (all(credentials$username != "" && credentials$password != "")) {
         userName(credentials$username)
-        credentials$sessionToken <- .getSessionToken(credentials)
-        .doHmac(credentials)
+        .getSessionToken(credentials)
+        .doHmac()
 	
     ## 2) supplied username and API key (base 64 encoded)
     } else if (all(credentials$username != "" && credentials$apiKey != "")) {
@@ -49,8 +49,10 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 
     ## 3) supplied session token
     } else if (all(credentials$sessionToken != "")) {
+        .refreshSessionToken(credentials)
+        sessionToken(credentials$sessionToken)
         .doUsername(credentials)
-        .doHmac(credentials)
+        .doHmac()
     
     ## Need to read from the session cache
     } else {
@@ -78,15 +80,15 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 
                 ## 7) username and password in the configuraton file
                 } else if (all(Config.hasOption(config, "authentication", "password"))) {
-                    .doHmac(list(
-                        .getSessionToken(list(username = userName()
-                                              password = Config.getOption(config, "authentication", "password")))
-                    ))
+                    .getSessionToken(list(username = userName(), 
+                                          password = Config.getOption(config, "authentication", "password")))
+                    .doHmac()
                 }
 
             ## 8) session token in the configuration file
             } else if (all(Config.hasOption(config, "authentication", "sessiontoken"))) {
-                .doHmac(list(Config.getOption(config, "authentication", "sessiontoken")))
+                sessionToken(Config.getOption(config, "authentication", "sessiontoken"))
+                .doHmac()
             
             ## Failure
             } else {
@@ -119,24 +121,30 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
     return(response$sessionToken)
 }
 
-.doHmac <- function(credentials) {
-    ## Use a session token to fetch an API key
-    kService <- "/secretKey"
-
-    if(is.null(credentials$username) || credentials$username == "")
-        stop("Must provide username in hmac mode")
+.refreshSessionToken <- function(credentials) {
+    ## Refreshes the session token so that it can be used for another 24 hours
+    kService <- "/session"
 
     entity <- list()
-    entity$email <- credentials$username
+    entity$sessionToken <- credentials$sessionToken
+
+    response <- synapsePut(uri =kService, 
+        entity=entity, 
+        endpoint=synapseServiceEndpoint("AUTH"), 
+        anonymous=TRUE)
+}
+
+.doHmac <- function() {
+    ## Use a session token to fetch an API key
+    kService <- "/secretKey"
 
     ## Request the secret key
     response <- synapseGet(uri = kService, 
         endpoint=synapseServiceEndpoint("AUTH"),
-        entity = entity, 
         anonymous = FALSE
     )
 
-    hmacSecretKey((response$secretKey)
+    hmacSecretKey(response$secretKey)
 }
 
 .doUsername <- function(credentials) {
@@ -145,7 +153,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 
 
 .readSessionCache <- function() {
-	sessionFile <- .sessionFile
+	sessionFile <- .sessionFile()
 	if (!file.exists(sessionFile)) {
 		return(list())
 	}
@@ -154,7 +162,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 }
 
 .writeSessionCache <- function(json) {
-	sessionFile <- .sessionFile
+	sessionFile <- .sessionFile()
 	file.writeLines(toJSON(json), sessionFile)
 }
 
@@ -231,7 +239,6 @@ userName <-
 }
 
 hmacSecretKey <- function(secretKey) {
-  kAuthMode <- "hmac"
   if(missing(secretKey)){
     key <- .getCache("base64secretKey")
     if(is.null(key))
@@ -239,7 +246,6 @@ hmacSecretKey <- function(secretKey) {
     return(key)
   }
   .setCache("base64secretKey", secretKey)
-  authMode(kAuthMode)
 }
 
 sessionToken <- function(token) {

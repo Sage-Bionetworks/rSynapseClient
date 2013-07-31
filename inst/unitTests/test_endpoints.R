@@ -6,7 +6,6 @@
 .setUp <-
   function()
 {
-  synapseClient:::.setCache('oldAuthMode', synapseClient:::authMode())
   synapseClient:::.setCache('oldSessionToken', synapseClient:::.getCache("sessionToken"))
   synapseClient:::.setCache('oldHmacKey', synapseClient:::.getCache("hmacSecretKey"))
   synapseClient:::.setCache('oldRepoEndpoint', synapseRepoServiceEndpoint())
@@ -33,7 +32,6 @@
   synapsePortalEndpoint(synapseClient:::.getCache('oldPortalEndpoint')$endpoint)
   synapseClient:::sessionToken(synapseClient:::.getCache('oldSessionToken'))
   hmacSecretKey(synapseClient:::.getCache('oldHmacKey'))
-  synapseClient:::authMode(synapseClient:::.getCache('oldAuthMode'))
 }
 
 unitTestSetAuth <-

@@ -52,11 +52,7 @@ synapseDownloadFromRepoServiceToDestination<-function(downloadUri, destfile=temp
   }
   
   # we add in the authentication info
-  header <- switch(authMode(),
-    auth = .stuffHeaderAuth(header),
-    hmac = .stuffHeaderHmac(header, sprintf("%s%s", getEndpointPrefixForService("REPO"), downloadUriWithoutParams)),
-    stop("Unknown auth mode: %s. Could not build header", authMode())
-  )		
+  header <- .stuffHeaderHmac(header, sprintf("%s%s", getEndpointPrefixForService("REPO"), downloadUriWithoutParams))
   
   # we start with the common request options, then add the headers
   opts$httpheader <- header
