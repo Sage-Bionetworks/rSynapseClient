@@ -29,6 +29,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 	if (rememberMe) {
 		json <- .readSessionCache()
 		json[[userName()]] <- hmacSecretKey()
+        json[["<mostRecent>"]] <- userName()
 		.writeSessionCache(json)
 	}
 }
@@ -36,18 +37,18 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 .doAuth <- function(credentials) {
 	## Tries to authenticate in the following order:
     
-    ## 1) supplied username and password
+    ## - Supplied username and password
     if (all(credentials$username != "" && credentials$password != "")) {
         userName(credentials$username)
         .getSessionToken(credentials)
         .doHmac()
 	
-    ## 2) supplied username and API key (base 64 encoded)
+    ## - Supplied username and API key (base 64 encoded)
     } else if (all(credentials$username != "" && credentials$apiKey != "")) {
         userName(credentials$username)
         hmacSecretKey(credentials$apiKey)
 
-    ## 3) supplied session token
+    ## - Supplied session token
     } else if (all(credentials$sessionToken != "")) {
         .refreshSessionToken(credentials)
         sessionToken(credentials$sessionToken)
@@ -58,7 +59,12 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
     } else {
         sessions <- .readSessionCache()
         
-        ## 4) supplied username and cached API key
+        ## - Most recent username and API key
+        if (all(credentials$username == "" && "<mostRecent>" %in% sessions)) {
+            credentials$username <- sessions[["<mostRecent>"]]
+        }
+        
+        ## - Supplied username and cached API key
         if (all(credentials$username != "" && credentials$username %in% sessions)) {
             userName(credentials$username)
             hmacSecretKey(sessions[[userName()]])
@@ -70,22 +76,22 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
             if (all(Config.hasOption(config, "authentication", "username"))) {
                 userName(Config.getOption(config, "authentication", "username"))
                 
-                ## 5) username in the configuration file and cached API key
+                ## - Username in the configuration file and cached API key
                 if (all(userName() %in% sessions)) {
                     hmacSecretKey(sessions[[userName()]])
                 
-                ## 6) username and API key in the configuration file
+                ## - Username and API key in the configuration file
                 } else if (all(Config.hasOption(config, "authentication", "apikey"))) {
                     hmacSecretKey(Config.getOption(config, "authentication", "apikey"))
 
-                ## 7) username and password in the configuraton file
+                ## - Username and password in the configuraton file
                 } else if (all(Config.hasOption(config, "authentication", "password"))) {
                     .getSessionToken(list(username = userName(), 
                                           password = Config.getOption(config, "authentication", "password")))
                     .doHmac()
                 }
 
-            ## 8) session token in the configuration file
+            ## - Session token in the configuration file
             } else if (all(Config.hasOption(config, "authentication", "sessiontoken"))) {
                 sessionToken(Config.getOption(config, "authentication", "sessiontoken"))
                 .doHmac()
