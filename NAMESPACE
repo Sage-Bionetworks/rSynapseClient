@@ -59,7 +59,6 @@ export(
   synGetSubmissionStatus,
   synGetEvaluation,
   synGetSubmissions,
-  synGetOwnSubmissions,
   synGetParticipants,
   synGetWikiHeaders,
   synDelete,

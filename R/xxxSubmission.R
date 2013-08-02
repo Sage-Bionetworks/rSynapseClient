@@ -116,19 +116,8 @@ newSubmissionPaginatedResults<-function(content) {
   paginatedResults
 }
 
-synGetOwnSubmissions<-function(evaluationId, limit, offset) {
-  uri<-sprintf("/evaluation/%s/submission", evaluationId)
-  
-  params<-list()
-  if (!missing(limit)) params$limit<-limit  
-  if (!missing(offset)) params$offset<-offset  
-  if (length(params)>0) uri<-sprintf("%s?%s", uri, listToURLParams(params))
-  
-  newSubmissionPaginatedResults(synRestGET(uri))
-}
-
-synGetSubmissions<-function(evaluationId, status, limit, offset) {
-  uri<-sprintf("/evaluation/%s/submission/all", evaluationId)
+synGetSubmissions<-function(evaluationId, status, limit, offset, myOwn=FALSE) {
+  uri<-sprintf("/evaluation/%s/submission%s", evaluationId, if (myOwn) "" else "/all")
   
   params<-list()
   if (!missing(status)) params$status<-status  
