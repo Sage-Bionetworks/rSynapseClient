@@ -37,8 +37,11 @@ lockFile<-function(filePath, maxWaitSeconds=70, ageTimeoutSeconds=60.0) {
 
 unlockFile<-function(filePath) {
   lockdirPath <- lockdirPath(filePath)
-  if (file.exists(lockdirPath)) file.remove(lockdirPath)
-  # the above doesn't work on cygwin, but one of these should
+  if (file.exists(lockdirPath)) {
+    # This won't work on Windows (since empty directories are not files)
+    # It'll throw a warning saying that "Permission denied"
+    suppressWarnings(file.remove(lockdirPath))
+  }
   if (file.exists(lockdirPath)) unlink(lockdirPath, recursive=T, force=T)
   if (file.exists(lockdirPath)) system(sprintf("rm -r %s", lockdirPath))
 }
