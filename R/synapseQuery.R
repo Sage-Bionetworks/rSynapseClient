@@ -46,3 +46,10 @@ synQuery <-
 {
   synapseQuery(queryStatement, blockSize)
 }
+
+
+md5Query <- function(md5) {
+    kPath <- sprintf("/entity/md5/%s", md5)
+    result <- synapseGet(uri=kPath)
+    return(result[['results']])
+}
