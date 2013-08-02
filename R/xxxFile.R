@@ -94,7 +94,8 @@ File<-function(path, synapseStore=T, ...) {
   if (missing(path)) {
     entityParams<-list(...)
   } else {
-    entityParams<-modifyList(list(name=basename(path)), list(...))
+    possibleName <- .ParsedUrl(path.expand(path))@file
+    entityParams<-modifyList(list(name=possibleName), list(...))
     file@filePath <- path
   }
   for (key in names(entityParams)) file<-synAnnotSetMethod(file, key, entityParams[[key]])
