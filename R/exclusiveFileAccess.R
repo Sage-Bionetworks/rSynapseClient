@@ -3,7 +3,7 @@
 # they are appropriate for small files and brief (<1 sec) locks
 #
 
-lockdirPath<-function(filePath) {sprintf("%s.lock", filePath)}
+lockdirPath<-function(filePath) {file.path(filePath, ".lock")}
 
 # lock a file by creating an empty directory with a ".lock" suffix and capturing the time stamp
 # returns the expiration time on the lock, which lets the caller know how long
@@ -14,8 +14,8 @@ lockdirPath<-function(filePath) {sprintf("%s.lock", filePath)}
 # Note:  The ageTimeoutSeconds parameter is provided for testing purposes only
 # Other callers are not to change it.
 #
-lockFile<-function(filePath, maxWaitSeconds=70, ageTimeoutSeconds=60.0) {
-  lockdirPath <- lockdirPath(filePath)
+lockFile<-function(filePath, maxWaitSeconds=70, ageTimeoutSeconds=10.0) {
+  lockdirPath <- lockdirPath(dirname(filePath))
   startTime<-Sys.time()
   while ((Sys.time()-startTime) < maxWaitSeconds) {
     success<-dir.create(lockdirPath, showWarnings=FALSE, recursive=TRUE)
@@ -24,7 +24,7 @@ lockFile<-function(filePath, maxWaitSeconds=70, ageTimeoutSeconds=60.0) {
     Sys.sleep(0.5)
     lockdirTimestamp<-lastModifiedTimestamp(lockdirPath)
     if (!is.na(lockdirTimestamp)) { # the directory is there already...is the lock stale?
-      modifiedAgeSeconds<-Sys.time()-lockdirTimestamp
+      modifiedAgeSeconds<-difftime(Sys.time(), lockdirTimestamp, units="secs")
       # if the lock is stale -- and has been for a while -- break the lock
       if (modifiedAgeSeconds > ageTimeoutSeconds) {
         unlockFile(filePath)
@@ -36,7 +36,7 @@ lockFile<-function(filePath, maxWaitSeconds=70, ageTimeoutSeconds=60.0) {
 }
 
 unlockFile<-function(filePath) {
-  lockdirPath <- lockdirPath(filePath)
+  lockdirPath <- lockdirPath(dirname(filePath))
   if (file.exists(lockdirPath)) {
     # This won't work on Windows (since empty directories are not files)
     # It'll throw a warning saying that "Permission denied"

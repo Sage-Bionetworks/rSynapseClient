@@ -147,7 +147,7 @@ defaultDownloadLocation<-function(fileHandleId) {
 }
 
 cacheMapFilePath<-function(fileHandleId) {
-  sprintf("%s/.cacheMap", defaultDownloadLocation(fileHandleId))
+  file.path(defaultDownloadLocation(fileHandleId), ".cacheMap")
 }
 
 getCacheMapFileContent<-function(fileHandleId) {
@@ -160,9 +160,10 @@ getCacheMapFileContent<-function(fileHandleId) {
 # return the last-modified time stamp for the given fileHandleId and filePath
 # or NULL if there is no entry
 getFromCacheMap<-function(fileHandleId, filePath) {
-  lockFile(filePath)
+  cacheMapFile<-cacheMapFilePath(fileHandleId)
+  lockFile(cacheMapFile)
   mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
-  unlockFile(filePath)
+  unlockFile(cacheMapFile)
   # this is necessary to allow Windows paths to work with toJSON/fromJSON
   filePath<-normalizePath(filePath, winslash="/")
   for (key in names(mapForFileHandleId)) {
@@ -549,7 +550,7 @@ setMethod(
   f = "addFile",
   signature = signature("File", "character", "character"),
   definition = function(entity, file, path) { # Note 'entity' is a File, not an Entity
-    addFile(entity, sprintf("%s/%s", path, file))
+    addFile(entity, file.path(path, file))
   }
 )
 
