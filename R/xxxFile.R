@@ -98,6 +98,8 @@ File<-function(path, synapseStore=T, ...) {
     entityParams<-modifyList(list(name=possibleName), list(...))
     file@filePath <- path
   }
+  if (!file.exists(file@filePath) && synapseStore) 
+    stop(sprintf("'synapseStore' may not be true when %s does not exist.", file@filePath))
   for (key in names(entityParams)) file<-synAnnotSetMethod(file, key, entityParams[[key]])
   file@synapseStore <- synapseStore
   file
