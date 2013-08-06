@@ -1,16 +1,7 @@
 
 ConfigParser <- function(path) {
-	if (missing(path)) {
-		path <- "~/.synapseConfig"
-	}
-	
     config <- new("Config")
-    if (!file.exists(path)) {
-        stop(sprintf("Configuration file '%s' cannot be found.", path))
-    }
-
-    config@filepath <- path
-    configFile <- readLines(path)
+	configFile <- .checkAndReadFile(path)
     section = NULL
     for (line in configFile) {
         # Sections
@@ -18,7 +9,10 @@ ConfigParser <- function(path) {
         matches <- unlist(regmatches(line, matches))
         if (length(matches) > 1) {
             section <- matches[2]
-            config@data[[section]] <- c()
+            # Keep all items if there are repeated sections
+            if (!(section %in% names(config@data))) {
+                config@data[[section]] <- list()
+            }
             next
         }
         
@@ -32,6 +26,20 @@ ConfigParser <- function(path) {
     }
     
     return(config)
+}
+
+.checkAndReadFile <- function(path) {
+    if (missing(path)) {
+		path <- "~/.synapseConfig"
+	}
+    if (!file.exists(path)) {
+        stop(sprintf("Configuration file '%s' cannot be found.", path))
+    }
+    return(readLines(path))
+}
+
+Config.hasSection <- function(config, section) {
+    return(section %in% names(config@data))
 }
 
 Config.hasOption <- function(config, section, option) {

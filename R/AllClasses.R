@@ -481,5 +481,5 @@ setClass(
 
 setClass(
   Class="Config", 
-  representation=list(data="list", filepath="character")
+  representation=list(data="list")
 )
