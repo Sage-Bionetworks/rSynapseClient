@@ -77,7 +77,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
                 userName(Config.getOption(config, "authentication", "username"))
                 
                 ## - Username in the configuration file and cached API key
-                if (all(userName() %in% sessions)) {
+                if (all(userName() %in% names(sessions))) {
                     hmacSecretKey(sessions[[userName()]])
                 
                 ## - Username and API key in the configuration file

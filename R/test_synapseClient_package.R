@@ -108,6 +108,48 @@
   result
 }
 
+# Replaces a function in the given namespace
+# !!! Do NOT replace any functions in GlobalCache.R !!!
+.mock <- function(funcName, replacement, namespace='synapseClient') {
+    origFunc <- get(funcName, envir=asNamespace(namespace))
+    if (is.null(attr(origFunc, "origDef"))) {
+        attr(replacement, "origDef") <- origFunc
+    } else {
+        # Allow mocks to overwrite previous mocks
+        attr(replacement, "origDef") <- attr(origFunc, "origDef")
+    }
+    assignInNamespace(funcName, replacement, namespace)
+    synapseClient:::.setCache(.appendMockPrefix(funcName), namespace)
+}
+
+# Un-replaces the given function in the given namespace
+.unmock <- function(funcName, namespace) {
+    replaced <- get(funcName, envir=asNamespace(namespace))
+    assignInNamespace(funcName, attr(replaced, "origDef"), namespace)
+    synapseClient:::.deleteCache(.appendMockPrefix(funcName))
+}
+
+# Searches the global cache for mocked functions and unmocks them
+.unmockAll <- function() {
+    cached <- objects(envir=synapseClient:::as.environment.GlobalCache(new("GlobalCache")))
+    mocked <- grep("!@#$%^&*()_", cached, fixed=TRUE)
+    for (mock in mocked) {
+        mockKey <- cached[mock]
+        matches <- regexec("!@#\\$%\\^&\\*\\(\\)_(.*)", mockKey)
+        matches <- unlist(regmatches(mockKey, matches))
+        if (length(matches) != 2) {
+            next
+        }
+        funcName <- matches[2]
+        namespace <- synapseClient:::.getCache(mockKey)
+        .unmock(funcName, namespace)
+    }
+}
+
+.appendMockPrefix <- function(funcName) {
+    return(paste("!@#$%^&*()_", funcName, sep=""))
+}
+
 testHMACSignature <-
   function()
 {
