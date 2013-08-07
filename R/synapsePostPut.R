@@ -84,12 +84,7 @@
   ## Prepare the header. If not an anonymous request, stuff API key or session token into the header
   header <- .getCache("curlHeader")
   if(is.null(anonymous) || !anonymous) {
-    header <- tryCatch(
-        .stuffHeaderHmac(header, paste(path, uriWithoutParams, sep="")), 
-        error = function(e) .stuffHeaderAuth(header))
-    if (!("signature" %in% names(header) || "sessionToken" %in% names(header))) {
-        stop("Please authenticate")
-    }
+    header <- .stuffHeader(header, uri)
   }
   if("PUT" == requestMethod) {
     # Add the ETag header

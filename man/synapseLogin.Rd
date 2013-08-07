@@ -14,6 +14,7 @@ synapseLogin(sessionToken = ...)
 synapseLogin(username = ...)
 synapseLogin()
 synapseLogout(localOnly=FALSE)
+invalidateAPIKey()
 }
 
 \arguments{
@@ -27,8 +28,22 @@ synapseLogout(localOnly=FALSE)
 If insufficient arguments are provided to login, either cached or configuration information may be used to supplement.
 The configuration file is by default located in ``~/.synapseConfig''.  
 
-If logout is propagated to Synapse (ie. localOnly = TRUE), 
-it is likely that the user will be logged out for all clients currently in use.
+If logout is propagated to Synapse (ie. localOnly = FALSE), 
+it is likely that the user will be logged out for all web clients currently in use.
+To logout globally across all analytical clients, use invalidateAPIKey().
+}
+\examples{
+  # Logging into Synapse with the rememberMe flag
+  synapseLogin(username, password, rememberMe=TRUE)
+  
+  # ... Do things ...
+  # Restart the session ...
+  
+  # Login with remembered credentials
+  synapseLogin()
+}
+\seealso{
+  \code{\link{Config}}
 }
 
 \author{Matt Furia, Joseph Wu}

@@ -1,7 +1,4 @@
 
-setClass("Config", 
-    representation(data = "list", filepath = "character"))
-    
 ConfigParser <- function(path) {
 	if (missing(path)) {
 		path <- "~/.synapseConfig"
@@ -29,7 +26,6 @@ ConfigParser <- function(path) {
         matches <- regexec("\\s*([^=]+)\\s*=\\s*([^=]+)\\s*", line)
         matches <- unlist(regmatches(line, matches))
         if (length(matches) > 2) {
-            
             matches <- sapply(matches, function(vec){ gsub("(^ +)|( +$)", "", vec) })
             config@data[[section]][[matches[2]]] <- matches[3]
         }

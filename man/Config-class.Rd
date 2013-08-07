@@ -27,7 +27,7 @@
   \code{\link{synapseLogin}}
 }
 
-\examples{conf
+\examples{
   # Logging into Synapse with loaded credentials
   config <- ConfigParser("~/.synapseConfig")
   

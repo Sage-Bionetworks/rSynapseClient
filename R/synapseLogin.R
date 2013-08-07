@@ -60,12 +60,12 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
         sessions <- .readSessionCache()
         
         ## - Most recent username and API key
-        if (all(credentials$username == "" && "<mostRecent>" %in% sessions)) {
+        if (all(credentials$username == "" && "<mostRecent>" %in% names(sessions))) {
             credentials$username <- sessions[["<mostRecent>"]]
         }
         
         ## - Supplied username and cached API key
-        if (all(credentials$username != "" && credentials$username %in% sessions)) {
+        if (all(credentials$username != "" && credentials$username %in% names(sessions))) {
             userName(credentials$username)
             hmacSecretKey(sessions[[userName()]])
         
@@ -169,7 +169,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 
 .writeSessionCache <- function(json) {
 	sessionFile <- .sessionFile()
-	file.writeLines(toJSON(json), sessionFile)
+	writeLines(toJSON(json), sessionFile)
 }
 
 .sessionFile <- function() {
@@ -189,7 +189,10 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 }
 
 synapseLogout <- function(localOnly=FALSE, forgetMe=FALSE) {
-    kService <- "/secretKey"
+    kService <- "/session"
+
+    # Remove the HMAC key so that the session token is used
+    hmacSecretKey(NULL)
 
     if (!localOnly){
         response <- synapseDelete(uri = kService,
@@ -205,9 +208,18 @@ synapseLogout <- function(localOnly=FALSE, forgetMe=FALSE) {
     }
     
     userName(NULL)
-    hmacSecretKey(NULL)
     sessionToken(NULL)
     message("Goodbye.")
+}
+
+invalidateAPIKey <- function() {
+    kService <- "/secretKey"
+    
+    response <- synapseDelete(uri = kService,
+        endpoint = synapseServiceEndpoint("AUTH")
+    )
+    
+    synapseLogout(localOnly=TRUE, forgetMe=TRUE)
 }
 
 .generateHMACSignature<-function(url, timestamp, username = userName(), base64EncodedSecretKey= hmacSecretKey(), algo="sha1") {
@@ -218,6 +230,19 @@ synapseLogout <- function(localOnly=FALSE, forgetMe=FALSE) {
   hash<-hmac(secretKey, data, algo=algo, raw=TRUE)
   #Base64 encode the result
   base64(hash, encode=TRUE)
+}
+
+.stuffHeader <- function(header, uri) {
+    # Try to fetch the HMAC header.
+    # If that fails, fall back on the session token.
+    # This should only happen when logging in. 
+    header <- tryCatch(
+        .stuffHeaderHmac(header, paste(path, uriWithoutParams, sep="")), 
+        error = function(e) .stuffHeaderAuth(header))
+    if (!("signature" %in% names(header) || 
+            ("sessionToken" %in% names(header) && is.null(header[['sessionToken']])))) {
+        stop("Please authenticate")
+    }
 }
 
 .stuffHeaderAuth <- function(header) {

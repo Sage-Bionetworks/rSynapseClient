@@ -478,3 +478,8 @@ setClass(
     results = "list"
     )
 )
+
+setClass(
+  Class="Config", 
+  representation=list(data="list", filepath="character")
+)
