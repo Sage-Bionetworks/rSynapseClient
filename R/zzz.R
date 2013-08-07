@@ -34,7 +34,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   unlink(ff)
   unlink(zipfile, recursive = TRUE)
   if(ans != 0){
-    packageStartupMessage("zip was not found on your system and so the Synapse funcionality related to file and object storage will be limited. To fix this, make sure that 'zip' is executable from your system's command interpreter.")
+    packageStartupMessage("zip was not found on your system and so the Synapse functionality related to file and object storage will be limited. To fix this, make sure that 'zip' is executable from your system's command interpreter.")
     .setCache("rObjCacheDir", .Platform$file.sep)
     .setCache("hasZip", FALSE)
   }else{
