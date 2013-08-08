@@ -4,7 +4,6 @@
 ###############################################################################
 
 submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
-  if (missing(teamName)) stop("teamName (submitter alias) is required.")
   if (missing(entity)) stop("entity is required.")
   if (is(entity, "Entity")) {
     entityId<-propertyValue(entity, "id")
