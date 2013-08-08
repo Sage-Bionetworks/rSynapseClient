@@ -85,12 +85,15 @@ integrationTestWikiCRUD <-
   # create file attachments which will be used in the wiki page
   filePath1<-createFile()
   filePath2<-createFile()
+  filePath3<-createFile()
+  fileHandle<-synapseClient:::chunkedUploadFile(filePath3)
   
   wikiPage<-WikiPage(
     owner=project, 
     title="wiki title", 
     markdown="some stuff", 
-    attachments=list(filePath1, filePath2)
+    attachments=list(filePath1, filePath2), 
+    fileHandles=list(fileHandle$id)
   )
   
   wikiPage<-synStore(wikiPage)
@@ -102,7 +105,7 @@ integrationTestWikiCRUD <-
   
   # check that fileHandle is in the wiki
   fileHandleIds<-propertyValue(wikiPage2, "attachmentFileHandleIds")
-  checkEquals(2, length(fileHandleIds))
+  checkEquals(3, length(fileHandleIds))
   
   # Now delete the wiki page
   #/{ownertObjectType}/{ownerObjectId}/wiki/{wikiId}
