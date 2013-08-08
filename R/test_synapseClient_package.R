@@ -108,9 +108,11 @@
   result
 }
 
+
 # Replaces a function in the given namespace
 # !!! Do NOT replace any functions in GlobalCache.R !!!
 .mock <- function(funcName, replacement, namespace='synapseClient') {
+    # For non-exported or non-locked functions, replacement is straightforward
     origFunc <- get(funcName, envir=asNamespace(namespace))
     if (is.null(attr(origFunc, "origDef"))) {
         attr(replacement, "origDef") <- origFunc
@@ -119,35 +121,78 @@
         attr(replacement, "origDef") <- attr(origFunc, "origDef")
     }
     assignInNamespace(funcName, replacement, namespace)
-    synapseClient:::.setCache(.appendMockPrefix(funcName), namespace)
+    
+    # Mark the mocked function for cleanup
+    .setCache(.appendMockPrefix(funcName), namespace)
+}
+
+.appendMockPrefix <- function(funcName) {
+    return(paste("!Mocked_Function->", funcName, sep=""))
 }
 
 # Un-replaces the given function in the given namespace
 .unmock <- function(funcName, namespace) {
     replaced <- get(funcName, envir=asNamespace(namespace))
     assignInNamespace(funcName, attr(replaced, "origDef"), namespace)
-    synapseClient:::.deleteCache(.appendMockPrefix(funcName))
+    .deleteCache(.appendMockPrefix(funcName))
 }
 
 # Searches the global cache for mocked functions and unmocks them
 .unmockAll <- function() {
-    cached <- objects(envir=synapseClient:::as.environment.GlobalCache(new("GlobalCache")))
-    mocked <- grep("!@#$%^&*()_", cached, fixed=TRUE)
-    for (mock in mocked) {
-        mockKey <- cached[mock]
-        matches <- regexec("!@#\\$%\\^&\\*\\(\\)_(.*)", mockKey)
-        matches <- unlist(regmatches(mockKey, matches))
-        if (length(matches) != 2) {
+    mocked <- objects(envir=as.environment.GlobalCache(new("GlobalCache")))
+    for (mockKey in mocked) {
+        mock.matches <- regexec("!Mocked_Function->(.*)", mockKey)
+        mock.matches <- unlist(regmatches(mockKey, mock.matches))
+        if (length(mock.matches) != 2) {
             next
         }
-        funcName <- matches[2]
-        namespace <- synapseClient:::.getCache(mockKey)
+        
+        funcName <- mock.matches[2]
+        namespace <- .getCache(mockKey)
         .unmock(funcName, namespace)
     }
 }
 
-.appendMockPrefix <- function(funcName) {
-    return(paste("!@#$%^&*()_", funcName, sep=""))
+.intercept <- function (victimName, funcName, replacement) {
+    # To replace a locked function, shim in an environment for cleanup later
+    # 'intercept' should be the function name who's call to 'funcName' is being intercepted
+    func.env <- environment(get(victimName))
+    orig.parent <- parent.env(func.env)
+    mock.env <- new.env(parent=orig.parent)
+    assign(funcName, replacement, envir=mock.env)
+    parent.env(func.env) <- mock.env
+    
+    # Mark the intercepted function for cleanup
+    .setCache(.appendInterceptPrefix(victimName), funcName)
+}
+
+.appendInterceptPrefix <- function(victimName) {
+    return(paste("!Intercepted_Function->", victimName, sep=""))
+}
+
+# Undoes the shim-environment
+.unintercept <- function(victimName, funcName) {
+    func.env <- environment(get(victimName))
+    mock.env <- parent.env(func.env)
+    assign(funcName, NULL, envir=mock.env)
+    orig.parent <- parent.env(mock.env)
+    parent.env(func.env) <- orig.parent
+    .deleteCache(.appendInterceptPrefix(victimName))
+}
+
+.uninterceptAll <- function() {
+    mocked <- objects(envir=as.environment.GlobalCache(new("GlobalCache")))
+    for (mockKey in mocked) {
+        intercept.matches <- regexec("!Intercepted_Function->(.*)", mockKey)
+        intercept.matches <- unlist(regmatches(mockKey, intercept.matches))
+        if (length(intercept.matches) != 2) {
+            next
+        }
+        
+        victimName <- intercept.matches[2]
+        funcName <- .getCache(mockKey)
+        .unintercept(victimName, funcName)
+    }
 }
 
 testHMACSignature <-
