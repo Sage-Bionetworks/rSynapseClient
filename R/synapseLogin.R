@@ -16,6 +16,9 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
     if(any(length(username) !=1 || length(password) != 1 || length(sessionToken) != 1 || length(apiKey) != 1))
         stop("Please provide a single username and password")
     
+    checkBlackList()
+    checkLatestVersion()
+    
     ## replace nulls with empty strings
     if(is.null(username))     username <- ""
     if(is.null(password))     password <- ""
@@ -36,7 +39,6 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 
 .doAuth <- function(credentials) {
 	## Tries to authenticate in the following order:
-    
     ## - Supplied username and password
     if (all(credentials$username != "" && credentials$password != "")) {
         userName(credentials$username)
@@ -96,9 +98,20 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
                 sessionToken(Config.getOption(config, "authentication", "sessiontoken"))
                 .doHmac()
             
-            ## Failure
+            ## Resort to terminal/Tk login
             } else {
-                stop("No credentials provided")
+                ## Check to see if the "useTk" option is set
+                useTk <- .getCache("useTk")
+                if(is.null(useTk)){
+                    useTk <- .decideTk()
+                }
+
+                ## Initiate login
+                if (useTk){
+                    message(.doTkLogin(credentials))
+                }else{
+                    message(.doTerminalLogin(credentials))
+                }
             }
         }
     }
@@ -174,6 +187,49 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 
 .sessionFile <- function() {
 	return(paste(synapseCacheDir(), "/.session", sep=""))
+}
+
+.decideTk <- function() {
+    ## If this is a UNIX terminal, do a terminal login
+    if (tolower(.Platform$GUI) == "rstudio") {
+        useTk <- FALSE
+        
+    } else if (tolower(.Platform$OS.type) == "unix") {
+        if (tolower(.Platform$GUI) %in% c("aqua", "x11")) {
+            ## Don't use Tk for terminal or for CRAN R GUI
+            ## the CRAN R GUI locks up when Tk is initialized
+            ## if it is not installed properly
+            useTk <- FALSE
+        } else {
+            ## Another GUI is being used. Check to see if Tk is installed
+            useTk <- .hasTk()
+        }
+
+    ## This is a non OSX/UNIX OS. Tk installation that comes with R should work.
+    } else {
+        useTk <- .hasTk()
+    }
+    return(useTk)
+}
+
+.doTerminalLogin <- function(credentials) {
+    credentials <- .terminalGetCredentials(credentials)
+    if(!is.null(credentials)) {
+        .doLogin(credentials)
+    }
+}
+
+.doTkLogin <- function(credentials) {
+    credentials <- tryCatch(
+        .tkGetCredentials(credentials),
+        error = function(e){
+            .setCache("useTk", FALSE)
+            return(.doTerminalLogin(credentials))
+        }
+    )
+    if(!is.null(credentials)) {
+        .doLogin(credentials)
+    }
 }
 
 .doWelcome <- function() {  
