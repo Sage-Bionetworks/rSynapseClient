@@ -21,7 +21,7 @@ ConfigParser <- function(path) {
         matches <- unlist(regmatches(line, matches))
         if (length(matches) > 2) {
             matches <- sapply(matches, function(vec){ gsub("(^ +)|( +$)", "", vec) })
-            config@data[[section]][[matches[2]]] <- matches[3]
+            config@data[[section]][[matches[[2]]]] <- matches[[3]]
         }
     }
     

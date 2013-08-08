@@ -27,11 +27,13 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
     
     credentials <- list(username = username, password = password, 
                         sessionToken = sessionToken, apiKey = apiKey)
+    synapseLogout(localOnly=True)
     .doAuth(credentials)
   
 	if (rememberMe) {
 		json <- .readSessionCache()
-		json[[userName()]] <- hmacSecretKey()
+        endpointAndUsername <- paste(synapseAuthServiceEndpoint()$endpoint, userName())
+		json[[endpointAndUsername]] <- hmacSecretKey()
         json[["<mostRecent>"]] <- userName()
 		.writeSessionCache(json)
 	}
@@ -67,9 +69,10 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
         }
         
         ## - Supplied username and cached API key
-        if (all(credentials$username != "" && credentials$username %in% names(sessions))) {
+        endpointAndUsername <- paste(synapseAuthServiceEndpoint()$endpoint, credentials$username)
+        if (all(credentials$username != "" && endpointAndUsername %in% names(sessions))) {
             userName(credentials$username)
-            hmacSecretKey(sessions[[userName()]])
+            hmacSecretKey(sessions[[endpointAndUsername]])
         
         ## Need to read from the config file
         } else {
@@ -79,8 +82,9 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
                 userName(Config.getOption(config, "authentication", "username"))
                 
                 ## - Username in the configuration file and cached API key
-                if (all(userName() %in% names(sessions))) {
-                    hmacSecretKey(sessions[[userName()]])
+                endpointAndUsername <- paste(synapseAuthServiceEndpoint()$endpoint, credentials$username)
+                if (all(endpointAndUsername %in% names(sessions))) {
+                    hmacSecretKey(sessions[[endpointAndUsername]])
                 
                 ## - Username and API key in the configuration file
                 } else if (all(Config.hasOption(config, "authentication", "apikey"))) {
@@ -234,12 +238,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 
 .doWelcome <- function() {  
     ## try to fetch user's display name from profile for a proper greeting
-    greetingName <- tryCatch({
-        synapseGet(uri="/userProfile")$displayName
-    },
-        error = function(e) {
-        userName()
-    })
+    greetingName <- synapseGet(uri="/userProfile")$displayName
 
     message(sprintf("Welcome %s!", greetingName))
 }
@@ -259,7 +258,8 @@ synapseLogout <- function(localOnly=FALSE, forgetMe=FALSE) {
     ## Global logouts invalidate API keys, so local copies must be deleted
     if (forgetMe || !localOnly) {
         sessions <- .readSessionCache()
-        sessions <- subset(sessions, names(sessions) != userName())
+        endpointAndUsername <- paste(synapseAuthServiceEndpoint()$endpoint, userName())
+        sessions <- subset(sessions, names(sessions) != endpointAndUsername)
         .writeSessionCache(sessions)
     }
     
@@ -293,12 +293,12 @@ invalidateAPIKey <- function() {
     # If that fails, fall back on the session token.
     # This should only happen when logging in. 
     header <- tryCatch(
-        .stuffHeaderHmac(header, paste(path, uriWithoutParams, sep="")), 
+        .stuffHeaderHmac(header, uri), 
         error = function(e) .stuffHeaderAuth(header))
-    if (!("signature" %in% names(header) || 
-            ("sessionToken" %in% names(header) && is.null(header[['sessionToken']])))) {
+    if (!("signature" %in% names(header) || "sessionToken" %in% names(header))) {
         stop("Please authenticate")
     }
+    return(header)
 }
 
 .stuffHeaderAuth <- function(header) {
@@ -329,7 +329,7 @@ hmacSecretKey <- function(secretKey) {
   if(missing(secretKey)){
     key <- .getCache("base64secretKey")
     if(is.null(key))
-      stop("Please Authenticate")
+      stop("Please authenticate")
     return(key)
   }
   .setCache("base64secretKey", secretKey)
