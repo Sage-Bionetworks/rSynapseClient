@@ -535,10 +535,10 @@ roundTripIntern<-function(project) {
   # delete the cached file
   deleteEntity(downloadedFile)
   # clean up downloaded file
-  handleUri<-sprintf("/fileHandle/%s", storedFile@fileHandle$id)
-  synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
-  handleUri<-sprintf("/fileHandle/%s", updatedFile2@fileHandle$id)
-  synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
+  # handleUri<-sprintf("/fileHandle/%s", storedFile@fileHandle$id)
+  # synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
+  # handleUri<-sprintf("/fileHandle/%s", updatedFile2@fileHandle$id)
+  # synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
 }
 
 
@@ -603,8 +603,8 @@ integrationTestAddToNewFILEEntity <-
   # delete the file
   deleteEntity(downloadedFile)
   # clean up downloaded file
-  handleUri<-sprintf("/fileHandle/%s", storedFile@fileHandle$id)
-  synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
+  # handleUri<-sprintf("/fileHandle/%s", storedFile@fileHandle$id)
+  # synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
 }
 
 # test that legacy *Entity based methods work on File objects, cont.
@@ -636,8 +636,8 @@ integrationTestReplaceFile<-function() {
     # delete the file
     deleteEntity(downloadedFile)
     # clean up downloaded file
-    handleUri<-sprintf("/fileHandle/%s", newStoredFile@fileHandle$id)
-    synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
+    # handleUri<-sprintf("/fileHandle/%s", newStoredFile@fileHandle$id)
+    # synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
   }
 
 
@@ -668,8 +668,8 @@ integrationTestLoadEntity<-function() {
   # delete the file
   deleteEntity(loadedEntity)
   # clean up downloaded file
-  handleUri<-sprintf("/fileHandle/%s", loadedEntity2@fileHandle$id)
-  synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
+  # handleUri<-sprintf("/fileHandle/%s", loadedEntity2@fileHandle$id)
+  # synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
 }
 
 integrationTestSerialization<-function() {

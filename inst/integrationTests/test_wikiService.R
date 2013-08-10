@@ -110,8 +110,8 @@ integrationTestWikiCRUD <-
   checkException(synGetWiki(project, propertyValue(wikiPage2, "id")))
   
   # delete the file handles
-  for (fileHandleId in fileHandleIds) {
-    handleUri<-sprintf("/fileHandle/%s", fileHandleId)
-    synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
-  }
+  # for (fileHandleId in fileHandleIds) {
+  #   handleUri<-sprintf("/fileHandle/%s", fileHandleId)
+  #   synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
+  # }
 }
