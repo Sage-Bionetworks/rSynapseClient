@@ -28,10 +28,10 @@ integrationTest_submit <- function() {
   file<-synStore(file)
   
   # join the evaluation
-  myOwnId<-propertyValue(synGetUserProfile(), "ownerId")
   evaluation<-synapseClient:::.getCache("testEvaluation")
   eid<-propertyValue(evaluation, "id")
-  synRestPOST(sprintf("/evaluation/%s/participant/%s", eid, myOwnId), list())
+  synapseClient:::.allowParticipation(eid, "PUBLIC")
+  synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
   
   # submit the entity
   submissionName<-"test-sub-name"

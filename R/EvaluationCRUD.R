@@ -45,3 +45,30 @@ synGetParticipants<-function(evaluationId,limit,offset) {
   newParticipantPaginatedResults(synRestGET(uri))
 }
 
+# Experimental method! liable to change in future without notice
+.allowParticipation <- function(evaluationId, user, 
+        rights=c("READ", "PARTICIPATE", "SUBMIT", "UPDATE_SUBMISSION")) {
+    # Treat integers as user IDs and strings as user groups
+    userId <- suppressWarnings(as.integer(user))
+    
+    # Fetch the user ID for a user group
+    if (is.na(userId)) {
+        groups <- synRestGET(sprintf('/userGroupHeaders?prefix=%s', user))
+        for (child in groups$children) {
+            if (all(!child$isIndividual && child$displayName == user)) {
+                userId <- as.integer(child$ownerId)
+            }
+        }
+    }
+    
+    # Grab the ACL 
+    acl <<- synRestGET(sprintf('/evaluation/%s/acl', evaluationId))
+    acl$resourceAccess[[length(acl$resourceAccess) + 1]] <- list(accessType=rights, principalId=userId)
+    
+    # The JSON dumper may convert IDs into floating point (i.e. 1234.5e+06)
+    for (access in 1:length(acl$resourceAccess)) {
+        acl$resourceAccess[[access]]$principalId <- as.character(acl$resourceAccess[[access]]$principalId)
+    }
+    synRestPUT('/evaluation/acl', acl)
+}
+
