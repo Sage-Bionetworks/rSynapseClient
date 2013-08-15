@@ -77,8 +77,10 @@ integrationTestEvaluationRoundtrip <-
   checkEquals(0, participants@totalNumberOfResults)
   checkEquals(0, length(participants@results))
   
+  # Join the Evaluation
   myOwnId<-propertyValue(synGetUserProfile(), "ownerId")
-  synRestPOST(sprintf("/evaluation/%s/participant/%s", eid, myOwnId), list())
+  synapseClient:::.allowParticipation(eid, "AUTHENTICATED_USERS")
+  synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
   
   participants<-synGetParticipants(eid)
   checkEquals(1, participants@totalNumberOfResults)
