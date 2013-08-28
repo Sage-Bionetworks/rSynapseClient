@@ -27,7 +27,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
     
     credentials <- list(username = username, password = password, 
                         sessionToken = sessionToken, apiKey = apiKey)
-    synapseLogout(localOnly=True)
+    synapseLogout(localOnly=TRUE, silent=TRUE)
     .doAuth(credentials)
   
 	if (rememberMe) {
@@ -243,7 +243,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
     message(sprintf("Welcome %s!", greetingName))
 }
 
-synapseLogout <- function(localOnly=FALSE, forgetMe=FALSE) {
+synapseLogout <- function(localOnly=FALSE, forgetMe=FALSE, silent=FALSE) {
     kService <- "/session"
 
     # Remove the HMAC key so that the session token is used
@@ -265,7 +265,10 @@ synapseLogout <- function(localOnly=FALSE, forgetMe=FALSE) {
     
     userName(NULL)
     sessionToken(NULL)
-    message("Goodbye.")
+    
+    if (!silent) {
+        message("Goodbye.")
+    }
 }
 
 invalidateAPIKey <- function() {
