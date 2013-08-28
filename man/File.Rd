@@ -27,6 +27,31 @@ Additional named parameters are interpreted as properties or annotations on the 
 \value{
 The created File is returned.  NOTE: This is an in-memory representation.  To persist to Synapse use \code{\link{synStore}()}.
 }
+
+\section{Slots}{
+  \describe{
+    \item{\code{filePath}}{local path to the file, if downloaded from Synapse}
+    \item{\code{synapseStore}}{flag to tell \code{\link{synStore}} whether to store the file or just the loacation of the file, along with any metadata}
+    \item{\code{fileHandle}}{Synapse fileHandle associated with the stored file}
+    \item{\code{objects}}{R objects stored in this File, if previously added by \code{\link{addObject}}}
+    \item{\code{attachOwn}}{internally used information to handle file caching}
+    \item{\code{annotations}}{annotations set on the object}
+    \item{\code{synapseEntityKind}}{in this case, 'File'}
+    \item{\code{synapseWebUrl}}{Synapse web URL}
+    \item{\code{generatedBy}}{the Activity which generated this File, if applicable (see \code{\link{Activity}})}
+    \item{\code{properties}}{
+    Synapse properties for a File. Properties of interest include:
+      \describe{
+        \item{\code{id}}{unique Synapse ID as set by the system upon synStore (not set by user)}
+        \item{\code{versionNumber}}{Version of this File}
+        \item{\code{name}}{user supplied name, usually the File name}
+        \item{\code{description}}{user supplied description}
+      }
+    }
+  }
+}
+
+
 \author{
 Bruce Hoff
 }
