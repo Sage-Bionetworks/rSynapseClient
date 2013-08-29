@@ -7,18 +7,18 @@
  	Method for setting the Activity which generated an Entity
 }
 \usage{
-	generatedBy(entity)<-activity
+	generatedBy(locationable)<-activity
 }
 \arguments{
-  \item{entity}{
-the entity of interest
+  \item{locationable}{
+the Locationable entity of interest
 }
  \item{activity}{
-the activity which generated the entity
+the activity which generated the Locationable entity
 }
 }
 \details{
-Sets the Activity which generated an entity.  NULL is allowed.  No server interaction takes place. (That is done when \code{storeEntity} is called.)
+Sets the Activity which generated a Locationable entity.  NULL is allowed.  No server interaction takes place. (That is done when \code{storeEntity} is called.)
 }
 
 \author{
