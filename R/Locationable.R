@@ -1,33 +1,7 @@
 #
 # Author: mfuria
 ###############################################################################
-
-##
-## This class exists to prevent entities from owning R binaries
-##
-setClass(
-  Class = "LocationableWithoutBinaries",
-  contains = c("Entity"),
-  representation = representation(
-    archOwn = "ArchiveOwner"
-  ),
-  prototype = prototype(
-    properties = synapseClient:::SynapseProperties(synapseClient:::getEffectivePropertyTypes("org.sagebionetworks.repo.model.Locationable"))
-  )
-)
-
 defineEntityConstructors("org.sagebionetworks.repo.model.Locationable", "LocationableWithoutBinaries", package="synapseClient")
-
-##
-## All Locationable entities that are allowed to own R binaries will inherit from this class
-##
-setClass(
-    Class = "Locationable",
-    contains = c("LocationableWithoutBinaries"),
-    representation(
-      objOwn = "CachingObjectOwner"
-    )
-)
 
 
 ##
