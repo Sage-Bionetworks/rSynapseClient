@@ -353,6 +353,7 @@ unitTestPropertyNames <-
 unitTestUsedAndExecuted<-function() {
   # test setting and retrieving 'used' entities on an entity
   a<-synapseClient:::Entity()
+  class(a)<-"Locationable"
   checkEquals(NULL, used(a))
   used(a)<-list("syn101")
   checkEquals(list(list(reference=list(targetId="syn101"), wasExecuted=FALSE, 
@@ -371,6 +372,7 @@ unitTestUsedAndExecuted<-function() {
   # test setting and retrieving used and executed if they are passed as vectors rather than lists
   #		and test both single and multiple entitites
   a<-synapseClient:::Entity()
+  class(a)<-"Locationable"
   used(a)<-"syn101"
   checkEquals(list(list(reference=list(targetId="syn101"), wasExecuted=FALSE, 
         concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")), used(a))
@@ -387,6 +389,7 @@ unitTestUsedAndExecuted<-function() {
   
   # test used<-, executed<- using a single/multiple Entity(ies) as the argument(s)
   a<-synapseClient:::Entity()
+  class(a)<-"Locationable"
   entity<-Folder(id="syn987", parentId="syn000")
   used(a)<-entity
   checkEquals(list(list(reference=list(targetId="syn987"), wasExecuted=FALSE, 
