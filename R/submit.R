@@ -4,7 +4,6 @@
 ###############################################################################
 
 submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
-  if (missing(teamName)) stop("teamName (submitter alias) is required.")
   if (missing(entity)) stop("entity is required.")
   if (is(entity, "Entity")) {
     entityId<-propertyValue(entity, "id")
@@ -31,6 +30,15 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
     stop("You must provide an evaluation or and evaluation ID.")
   }
   if (missing(submissionName)) submissionName<-propertyValue(entity, "name")
+  
+  # Check for unmet access requirements
+  kService <- sprintf('/evaluation/%s/accessRequirementUnfulfilled', evaluationId)
+  response <- synapseGet(uri=kService, anonymous=FALSE)
+  if (response[['totalNumberOfResults']] > 0) {
+    accessTerms <- lapply(response[['results']], function(x) sprintf("%s - %s", x[['accessType']], x[['termsOfUse']]))
+    accessTerms <- paste(accessTerms, collapse="\n")
+    stop(sprintf('You have unmet access requirements: \n%s', accessTerms))
+  }
 
   submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
     entityId=entityId, 
