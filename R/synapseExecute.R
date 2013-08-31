@@ -320,7 +320,7 @@ synapseExecute <- function(executable, args, resultParentId, codeParentId, resul
   version <- propertyValue(resultEntity, "versionNumber")
   if (!is.null(version)) propertyValue(resultEntity, "versionNumber")<-(version+1)
   
-  resultEntity@generatedBy <- activity
+  generatedBy(resultEntity) <- activity
   
   # Adding a new object causes the version to increment upon storage
   resultEntity <- addObject(resultEntity, functionResult, name="functionResult")

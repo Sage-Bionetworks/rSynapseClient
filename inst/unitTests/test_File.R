@@ -185,9 +185,3 @@ unitTestIsLoadable <- function() {
   checkTrue(!synapseClient:::isLoadable(filePath))
   checkEquals(origWarn, options()$warn) # make sure options("warn") is restored
 }
-
-unitTestGeneratedBy<-function() {
-  own <- new("File")
-  act<-Activity(name="foo")
-  checkException(generatedBy(own)<-act)
-}
