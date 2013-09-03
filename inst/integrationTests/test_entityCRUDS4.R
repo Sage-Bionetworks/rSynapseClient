@@ -266,52 +266,53 @@ integrationTestUpdateS4EntityWithGeneratedBy <-
 		function()
 {
 	## Create Project
-  project <- Project()
-  createdProject <- createEntity(project)
-  synapseClient:::.setCache("testProject", createdProject)
-  data <- Data(name="data", parentId=propertyValue(createdProject, "id"))
-	createdData <- createEntity(data)
+	project <- Project()
+	createdProject <- createEntity(project)
+	synapseClient:::.setCache("testProject", createdProject)
 	
 	## set generatedBy and update. 
 	testActivity <-synapseClient:::.getCache("testActivity")
 	checkTrue(!is.null(testActivity))
-	generatedBy(createdData) <- testActivity
-	updatedData <- updateEntity(createdData)
-	testActivity <- generatedBy(updatedData)
+	generatedBy(createdProject) <- testActivity
+	updatedProject <- updateEntity(createdProject)
+	testActivity <- generatedBy(updatedProject)
 	# since storing the entity also stores the activity, we need to update the cached value
 	synapseClient:::.setCache("testActivity", testActivity)
-	checkEquals(propertyValue(testActivity, "id"), propertyValue(generatedBy(updatedData), "id"))
-	checkTrue(propertyValue(updatedData, "etag") != propertyValue(createdData, "etag"))
+	checkEquals(propertyValue(testActivity, "id"), propertyValue(generatedBy(updatedProject), "id"))
+	checkTrue(propertyValue(updatedProject, "etag") != propertyValue(createdProject, "etag"))
 
   #  get the entity by ID and verify that the generatedBy is not null
-  gotData <- getEntity(propertyValue(createdData, "id"))
-  checkTrue(!is.null(gotData))
-  checkTrue(!is.null(generatedBy(gotData)))
+  gotProject <- getEntity(propertyValue(createdProject, "id"))
+  checkTrue(!is.null(gotProject))
+  checkTrue(!is.null(generatedBy(gotProject)))
   
 	## remove generatedBy and update
-	createdData<-updatedData
-	generatedBy(createdData) <- NULL
-	updatedData <- updateEntity(createdData)
-	checkTrue(is.null(generatedBy(updatedData)))
+	createdProject<-updatedProject
+	generatedBy(createdProject) <- NULL
+	updatedProject <- updateEntity(createdProject)
+	checkTrue(is.null(generatedBy(updatedProject)))
 	
 	## now *create* an Entity having a generatedBy initially
-  data <- Data(name="data 2", parentId=propertyValue(createdProject, "id"))
-  generatedBy(data) <- testActivity
-	createdData <- createEntity(data)
-	checkTrue(!is.null(generatedBy(createdData)))
-	testActivity <- generatedBy(createdData)
+	deleteEntity(synapseClient:::.getCache("testProject"))	
+	synapseClient:::.deleteCache("testProject")
+	project <- Project()
+	generatedBy(project) <- testActivity
+	createdProject <- createEntity(project)
+	checkTrue(!is.null(generatedBy(createdProject)))
+	synapseClient:::.setCache("testProject", createdProject)
+	testActivity <- generatedBy(createdProject)
 	# since storing the entity also stores the activity, we need to update the cached value
 	synapseClient:::.setCache("testActivity", testActivity)
 	
   #  get the entity by ID and verify that the generatedBy is not null
-  gotData <- getEntity(propertyValue(createdData, "id"))
-  checkTrue(!is.null(gotData))
-  checkTrue(!is.null(generatedBy(gotData)))
+  gotProject <- getEntity(propertyValue(createdProject, "id"))
+  checkTrue(!is.null(gotProject))
+  checkTrue(!is.null(generatedBy(gotProject)))
   
   ## remove generatedBy and update
-	generatedBy(createdData)<-NULL
-  updatedData <- updateEntity(createdData)
-	checkTrue(is.null(generatedBy(updatedData)))
+	generatedBy(createdProject)<-NULL
+	updatedProject <- updateEntity(createdProject)
+	checkTrue(is.null(generatedBy(updatedProject)))
 	
 }
 # a variation of the previous test, using the 'used' convenience function
@@ -322,19 +323,17 @@ integrationTestUpdateS4EntityWithUsed <-
 	project <- Project()
 	createdProject <- createEntity(project)
 	synapseClient:::.setCache("testProject", createdProject)
-  data<-Data(name="test data", parentId=propertyValue(createdProject, "id"))
-  createdData <- createEntity(data)
 	
 	project2 <- Project()
 	createdProject2 <- createEntity(project2)
 	synapseClient:::.setCache("testProject2", createdProject2)
 	
 	checkTrue(is.null(used(createdProject)))
-	## 2nd project was 'used' to generate data
-	used(createdData)<-list(createdProject2)
-	updatedData <- updateEntity(createdData)
-	checkTrue(propertyValue(updatedData, "etag") != propertyValue(createdData, "etag"))
-	usedList<-used(updatedData)
+	## 2nd project was 'used' to generate 1st project
+	used(createdProject)<-list(createdProject2)
+	updatedProject <- updateEntity(createdProject)
+	checkTrue(propertyValue(updatedProject, "etag") != propertyValue(createdProject, "etag"))
+	usedList<-used(updatedProject)
 	checkTrue(!is.null(usedList))
 	checkEquals(1, length(usedList))
 	targetId<-usedList[[1]]$reference$targetId
@@ -342,18 +341,20 @@ integrationTestUpdateS4EntityWithUsed <-
 	checkEquals(propertyValue(createdProject2, "id"), targetId)
 	
 	## remove "used" list and update
-  createdData<-updatedData
-	used(createdData) <- NULL
-  updatedData <- updateEntity(createdData)
-	checkTrue(is.null(used(updatedData)))
+	createdProject<-updatedProject
+	used(createdProject) <- NULL
+	updatedProject <- updateEntity(createdProject)
+	checkTrue(is.null(used(updatedProject)))
 	
 	## now *create* an Entity having a "used" list initially
-  data<-Data(name="test data 2", parentId=propertyValue(createdProject, "id"))
-  used(data)<-list(list(entity=createdProject2, wasExecuted=F))
+	deleteEntity(synapseClient:::.getCache("testProject"))	
+	synapseClient:::.deleteCache("testProject")
+	project <- Project()
+	used(project)<-list(list(entity=createdProject2, wasExecuted=F))
 	
-  createdData <- createEntity(data)
-	synapseClient:::.setCache("testProject", createdData)
-	usedList2 <- used(createdData)
+	createdProject <- createEntity(project)
+	synapseClient:::.setCache("testProject", createdProject)
+	usedList2 <- used(createdProject)
 	checkTrue(!is.null(usedList2))
 	checkEquals(1, length(usedList2))
 	targetId<-usedList2[[1]]$reference$targetId
@@ -362,9 +363,9 @@ integrationTestUpdateS4EntityWithUsed <-
 	checkEquals(F, usedList2[[1]]$wasExecuted)
 	
 	## remove "used" list and update
-	used(createdData)<-NULL
-  updatedData <- updateEntity(createdData)
-	checkTrue(is.null(used(updatedData)))
+	used(createdProject)<-NULL
+	updatedProject <- updateEntity(createdProject)
+	checkTrue(is.null(used(updatedProject)))
 }
 
 # this is the test to show that SYNR-327 is fixed
@@ -375,9 +376,9 @@ integrationTestTwoEntitiesOneActivity<-function() {
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
   pid<-propertyValue(createdProject, "id")
-  foo<-Data(name="foo", parentId=pid)
+  foo<-Folder(name="foo", parentId=pid)
   foo<-storeEntity(foo)
-  bar<-Data(name="bar", parentId=pid)
+  bar<-Folder(name="bar", parentId=pid)
   bar<-storeEntity(bar)
   
   activity<-Activity(list(name="foobarActivity"))

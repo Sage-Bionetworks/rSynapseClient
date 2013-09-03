@@ -4,6 +4,23 @@
 ###############################################################################
 
 
+setClass(
+  Class = "Entity",
+  contains = "SimplePropertyOwner",
+  representation = representation(
+    attachOwn = "AttachmentOwner",
+    annotations = "SynapseAnnotations",
+    synapseEntityKind = "character",
+    synapseWebUrl = "character",
+    generatedBy = "activityOrNULL"
+  ),
+  prototype = prototype(
+    annotations = new("SynapseAnnotations"),
+    SynapseWebUrl = "",
+    properties = SynapseProperties(getEffectivePropertyTypes("org.sagebionetworks.repo.model.Entity"))
+  )
+)
+
 defineEntityConstructors("org.sagebionetworks.repo.model.Entity", package="synapseClient")
 
 setMethod(
@@ -375,7 +392,7 @@ updateEntityMethod<-function(entity, newGeneratingActivity, forceVersion)
       updatedEtagEntity<-synapseGet(entity$properties$uri)
       propertyValue(ee, "etag")<-updatedEtagEntity$etag
     }
-    ee@generatedBy<-newGeneratingActivity
+    generatedBy(ee)<-newGeneratingActivity
     
     ee
 }
@@ -756,7 +773,7 @@ setMethod(
 
 setMethod(
   f = "generatedBy<-",
-  signature = signature("Locationable", "Activity"),
+  signature = signature("Entity", "Activity"),
   definition = function(entity, value) {
     entity@generatedBy <- value
     entity
@@ -765,7 +782,7 @@ setMethod(
 
 setMethod(
   f = "generatedBy<-",
-  signature = signature("Locationable", "NULL"),
+  signature = signature("Entity", "NULL"),
   definition = function(entity, value) {
     entity@generatedBy <- NULL
     entity
@@ -797,7 +814,7 @@ entitySetUsedMethod<-function(entity, value) {
 
 setMethod(
   f = "used<-",
-  signature = signature("Locationable", "list"),
+  signature = signature("Entity", "list"),
   definition = function(entity, value) {
     entitySetUsedMethod(entity, value)
   }
@@ -805,7 +822,7 @@ setMethod(
 
 setMethod(
   f = "used<-",
-  signature = signature("Locationable", "character"),
+  signature = signature("Entity", "character"),
   definition = function(entity, value) {
     entitySetUsedMethod(entity, value)
   }
@@ -813,7 +830,7 @@ setMethod(
 
 setMethod(
   f = "used<-",
-  signature = signature("Locationable", "Entity"),
+  signature = signature("Entity", "Entity"),
   definition = function(entity, value) {
     entitySetUsedMethod(entity, value)
   }
@@ -821,7 +838,7 @@ setMethod(
 
 setMethod(
   f = "used<-",
-  signature = signature("Locationable", "NULL"),
+  signature = signature("Entity", "NULL"),
   definition = function(entity, value) {
     generatedBy(entity)<-NULL
     entity
@@ -852,7 +869,7 @@ entitySetExcecutedMethod<-function(entity, value) {
 
 setMethod(
   f = "executed<-",
-  signature = signature("Locationable", "list"),
+  signature = signature("Entity", "list"),
   definition = function(entity, value) {
     entitySetExcecutedMethod(entity, value)
   }
@@ -860,7 +877,7 @@ setMethod(
 
 setMethod(
   f = "executed<-",
-  signature = signature("Locationable", "character"),
+  signature = signature("Entity", "character"),
   definition = function(entity, value) {
     entitySetExcecutedMethod(entity, value)
   }
@@ -868,7 +885,7 @@ setMethod(
 
 setMethod(
   f = "executed<-",
-  signature = signature("Locationable", "Entity"),
+  signature = signature("Entity", "Entity"),
   definition = function(entity, value) {
     entitySetExcecutedMethod(entity, value)
   }
@@ -876,7 +893,7 @@ setMethod(
 
 setMethod(
   f = "executed<-",
-  signature = signature("Locationable", "NULL"),
+  signature = signature("Entity", "NULL"),
   definition = function(entity, value) {
     generatedBy(entity)<-NULL
     entity
