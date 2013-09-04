@@ -68,7 +68,7 @@ synCreateWiki<-function(wikiPage) {
   createUri<-wikiPage@createUri
   # convert 'attachments' list to file handles
   fileHandleIdList<-propertyValue(wikiPage, "attachmentFileHandleIds")
-  if (is.null(fileHandleIdList)) fileHandleIdList <- NULL
+  if (is.null(fileHandleIdList)) fileHandleIdList <- list()
   for (attachment in wikiPage@attachments) {
     fileHandle<-uploadAndAddToCacheMap(attachment)
     fileHandleIdList[[length(fileHandleIdList)+1]]<-fileHandle$id
