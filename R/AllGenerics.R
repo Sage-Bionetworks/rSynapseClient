@@ -748,13 +748,6 @@ setGeneric(
 )
 
 setGeneric(
-  name = "synSetActivity<-",
-  def = function(entity, activity){
-    standardGeneric("synSetActivity<-")
-  }
-)
-
-setGeneric(
   name = "deleteActivity",
   def = function(activity) {
     standardGeneric("deleteActivity")

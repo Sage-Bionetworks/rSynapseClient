@@ -12,11 +12,13 @@ setClass(
     annotations = "SynapseAnnotations",
     synapseEntityKind = "character",
     synapseWebUrl = "character",
-    generatedBy = "activityOrNULL"
+    generatedBy = "activityOrNULL",
+    generatedByChanged = "logical"
   ),
   prototype = prototype(
     annotations = new("SynapseAnnotations"),
     SynapseWebUrl = "",
+    generatedByChanged = FALSE,
     properties = SynapseProperties(getEffectivePropertyTypes("org.sagebionetworks.repo.model.Entity"))
   )
 )
@@ -392,7 +394,7 @@ updateEntityMethod<-function(entity, newGeneratingActivity, forceVersion)
       updatedEtagEntity<-synapseGet(entity$properties$uri)
       propertyValue(ee, "etag")<-updatedEtagEntity$etag
     }
-    generatedBy(ee)<-newGeneratingActivity
+    ee@generatedBy<-newGeneratingActivity
     
     ee
 }
@@ -400,7 +402,11 @@ updateEntityMethod<-function(entity, newGeneratingActivity, forceVersion)
 setMethod(
   f = "updateEntity",
   signature = signature("Entity"),
-  definition = function(entity){updateEntityMethod(entity=entity, newGeneratingActivity=generatedBy(entity), forceVersion=FALSE)}
+  definition = function(entity){
+    newGeneratingActivity<-NULL
+    if (entity@generatedByChanged) newGeneratingActivity<-generatedBy(entity)
+    updateEntityMethod(entity=entity, newGeneratingActivity=newGeneratingActivity, forceVersion=FALSE)
+  }
 )
  
 setMethod(
@@ -457,7 +463,9 @@ storeEntityMethod<-function(entity, forceVersion) {
     entity <- createEntity(entity)
   }
   else {
-    entity <- updateEntityMethod(entity, generatedBy(entity), forceVersion)
+    newGeneratingActivity<-NULL
+    if (entity@generatedByChanged) newGeneratingActivity<-generatedBy(entity)
+    entity <- updateEntityMethod(entity, newGeneratingActivity, forceVersion)
   }
 }
 
@@ -776,6 +784,7 @@ setMethod(
   signature = signature("Entity", "Activity"),
   definition = function(entity, value) {
     entity@generatedBy <- value
+    entity@generatedByChanged <- TRUE
     entity
   }
 )
@@ -785,6 +794,7 @@ setMethod(
   signature = signature("Entity", "NULL"),
   definition = function(entity, value) {
     entity@generatedBy <- NULL
+    entity@generatedByChanged <- TRUE
     entity
   }
 
