@@ -285,9 +285,7 @@ setMethod(
   f = "createEntity",
   signature = "Entity",
   # without the wrapper I get this error in R 2.15: methods can add arguments to the generic ‘createEntity’ only if '...' is an argument to the generic
-  definition = function(entity){
-    createEntityMethod(entity=entity, generatingActivity=generatedBy(entity), createOrUpdate=FALSE, forceVersion=FALSE)
-  }
+  definition = function(entity){createEntityMethod(entity=entity, generatingActivity=generatedBy(entity), createOrUpdate=FALSE, forceVersion=FALSE)}
 )
 
 setMethod(
@@ -405,8 +403,8 @@ setMethod(
   f = "updateEntity",
   signature = signature("Entity"),
   definition = function(entity){
-    newGeneratingActivity=NULL
-    if (entity@generatedByChanged) newGeneratingActivity=generatedBy(entity)
+    newGeneratingActivity<-NULL
+    if (entity@generatedByChanged) newGeneratingActivity<-generatedBy(entity)
     updateEntityMethod(entity=entity, newGeneratingActivity=newGeneratingActivity, forceVersion=FALSE)
   }
 )
@@ -465,8 +463,8 @@ storeEntityMethod<-function(entity, forceVersion) {
     entity <- createEntity(entity)
   }
   else {
-    newGeneratingActivity=NULL
-    if (entity@generatedByChanged) newGeneratingActivity=generatedBy(entity)
+    newGeneratingActivity<-NULL
+    if (entity@generatedByChanged) newGeneratingActivity<-generatedBy(entity)
     entity <- updateEntityMethod(entity, newGeneratingActivity, forceVersion)
   }
 }
