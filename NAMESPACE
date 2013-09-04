@@ -65,7 +65,6 @@ export(
   synDelete,
   listObjects,
   synGetActivity,
-  "synSetActivity<-",
   synAnnot,
   "synAnnot<-"
 )

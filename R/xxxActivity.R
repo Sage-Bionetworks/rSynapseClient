@@ -278,13 +278,6 @@ setMethod(
 )
 
 setMethod(
-  f = "synSetActivity<-",
-  signature=signature("Entity", "Activity"),
-  definition = function(entity, activity) {
-    generatedBy(entity)<-activity
-  })
-
-setMethod(
   f = "createEntity",
   signature = "Activity",
   definition = function(entity)

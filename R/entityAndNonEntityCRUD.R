@@ -32,6 +32,10 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
       generatingActivity<-activity
     } else if (!is.null(used) || !is.null(executed)) {
       generatingActivity<-Activity(name=activityName, description=activityDescription, used=used, executed=executed)
+    } else if (entity@generatedByChanged) {
+      # this takes care of the case in which generatedBy(entity)<- 
+      # is called rather than specifying the activity in the synStore() parameters
+      generatingActivity<-generatedBy(entity)
     }
     if (is.null(propertyValue(entity, "id"))) {
       storedEntity<-createEntityMethod(entity, generatingActivity, createOrUpdate, forceVersion)
