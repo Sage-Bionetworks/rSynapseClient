@@ -262,6 +262,28 @@ integrationTestDeleteEntityById <-
   synapseClient:::.deleteCache("testProject")
 }
 
+createFile<-function(content, filePath) {
+  if (missing(content)) content<-"this is a test"
+  if (missing(filePath)) filePath<- tempfile()
+  connection<-file(filePath)
+  writeChar(content, connection, eos=NULL)
+  close(connection)  
+  filePath
+}
+
+integrationTestSYNR580<-function() {
+  ## Create Project
+  project <- Project()
+  createdProject <- createEntity(project)
+  synapseClient:::.setCache("testProject", createdProject)
+  
+  testActivity <-synapseClient:::.getCache("testActivity")
+  genF <- File(path=createFile(), parentId=propertyValue(createdProject, "id"))
+  generatedBy(genF) <- testActivity
+  genF <- synStore(genF)
+  checkTrue(!is.null(generatedBy(genF)))
+}
+
 integrationTestUpdateS4EntityWithGeneratedBy <-
 		function()
 {
