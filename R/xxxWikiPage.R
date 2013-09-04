@@ -31,7 +31,7 @@ setClass(
 WikiPage<-function(owner, title, markdown, attachments, parentWikiId) {
   wikiPage <- new("WikiPage")
   if (missing(owner)) {
-    stop("parent is required.")
+    stop("owner is required.")
   }
   wikiPage@createUri<-createWikiUri(owner)
   if (!missing(attachments)) wikiPage@attachments<-attachments
