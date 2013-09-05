@@ -129,9 +129,6 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
     entity$email <- credentials$username
     entity$password <- credentials$password
   
-    checkBlackList()
-    checkLatestVersion()
-  
     response <- synapsePost(uri = kService, 
         entity = entity, 
         endpoint = synapseServiceEndpoint("AUTH"),
