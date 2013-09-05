@@ -70,7 +70,7 @@ unitTestDoAuth_most_recent <- function() {
     synapseClient:::.mock(".readSessionCache", 
         function(...) {
             readSessionCache_called <<- TRUE
-            username <- paste(synapseClient:::synapseAuthServiceEndpoint()$endpoint, "foo")
+            username <- "foo"
             json <- list()
             json[[username]] <- "api key"
             json[['<mostRecent>']] <- "foo"
@@ -107,18 +107,14 @@ unitTestDoAuth_session_and_config <- function() {
     synapseClient:::.mock("ConfigParser", function(...) {configParser_called <<- TRUE})
     synapseClient:::.mock("Config.hasOption", 
         function(ignore, section, option) {
-            hasOption_called_correctly <<- all(section == "authentication" && option == "username" || option == "apikey")
+            hasOption_called_correctly <<- all(section == "authentication" && option == "username")
             return(hasOption_called_correctly)
         }
     )
     synapseClient:::.mock("Config.getOption", 
         function(ignore, section, option) {
-            if (all(section == "authentication")) {
-                if (all(option == "username")) {
-                    return("foo")
-                } else if (all(option == "apikey")) {
-                    return("api key")
-                }
+            if (all(section == "authentication" && option == "username")) {
+                return("foo")
             }
             stop(sprintf("Incorrect arguments to Config.getOption: %s, %s", section, option))
         }

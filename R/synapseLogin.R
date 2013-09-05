@@ -32,8 +32,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
   
 	if (rememberMe) {
 		json <- .readSessionCache()
-        endpointAndUsername <- paste(synapseAuthServiceEndpoint()$endpoint, userName())
-		json[[endpointAndUsername]] <- hmacSecretKey()
+		json[[userName()]] <- hmacSecretKey()
         json[["<mostRecent>"]] <- userName()
 		.writeSessionCache(json)
 	}
@@ -69,10 +68,9 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
         }
         
         ## - Supplied username and cached API key
-        endpointAndUsername <- paste(synapseAuthServiceEndpoint()$endpoint, credentials$username)
-        if (all(credentials$username != "" && endpointAndUsername %in% names(sessions))) {
+        if (all(credentials$username != "" && credentials$username %in% names(sessions))) {
             userName(credentials$username)
-            hmacSecretKey(sessions[[endpointAndUsername]])
+            hmacSecretKey(sessions[[userName()]])
         
         ## Need to read from the config file
         } else {
@@ -82,9 +80,8 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
                 userName(Config.getOption(config, "authentication", "username"))
                 
                 ## - Username in the configuration file and cached API key
-                endpointAndUsername <- paste(synapseAuthServiceEndpoint()$endpoint, credentials$username)
-                if (all(endpointAndUsername %in% names(sessions))) {
-                    hmacSecretKey(sessions[[endpointAndUsername]])
+                if (all(userName() %in% names(sessions))) {
+                    hmacSecretKey(sessions[[userName()]])
                 
                 ## - Username and API key in the configuration file
                 } else if (all(Config.hasOption(config, "authentication", "apikey"))) {
@@ -258,8 +255,7 @@ synapseLogout <- function(localOnly=FALSE, forgetMe=FALSE, silent=FALSE) {
     ## Global logouts invalidate API keys, so local copies must be deleted
     if (forgetMe || !localOnly) {
         sessions <- .readSessionCache()
-        endpointAndUsername <- paste(synapseAuthServiceEndpoint()$endpoint, userName())
-        sessions <- subset(sessions, names(sessions) != endpointAndUsername)
+        sessions <- subset(sessions, names(sessions) != userName())
         .writeSessionCache(sessions)
     }
     
