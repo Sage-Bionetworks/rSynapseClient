@@ -34,7 +34,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   unlink(ff)
   unlink(zipfile, recursive = TRUE)
   if(ans != 0){
-    packageStartupMessage("zip was not found on your system and so the Synapse funcionality related to file and object storage will be limited. To fix this, make sure that 'zip' is executable from your system's command interpreter.")
+    packageStartupMessage("zip was not found on your system and so the Synapse functionality related to file and object storage will be limited. To fix this, make sure that 'zip' is executable from your system's command interpreter.")
     .setCache("rObjCacheDir", .Platform$file.sep)
     .setCache("hasZip", FALSE)
   }else{
@@ -92,12 +92,28 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   .setCache("annotationTypeMap", kSynapseRAnnotationTypeMap)
   .setCache("anonymous", FALSE)
   .setCache("downloadSuffix", "unpacked")
-  .setCache("debug", FALSE)
   # this is the maximum number of times a web request will be tried when there is a temporary outage.  Must be >0
   .setCache("webRequestMaxTries", 10)
   .setCache("webRequestMaxRedirects", 3)
 
+  # Fetch endpoints from the config file
+  config <- ConfigParser()
   synapseResetEndpoints()
+  if (Config.hasOption(config, "endpoints", "repoEndpoint")) {
+    synapseRepoServiceEndpoint(Config.getOption(config, "endpoints", "repoEndpoint"))
+  }
+  if (Config.hasOption(config, "endpoints", "authEndpoint")) {
+    synapseAuthServiceEndpoint(Config.getOption(config, "endpoints", "authEndpoint"))
+  }
+  if (Config.hasOption(config, "endpoints", "fileHandleEndpoint")) {
+    synapseFileServiceEndpoint(Config.getOption(config, "endpoints", "fileHandleEndpoint"))
+  }
+  if (Config.hasOption(config, "endpoints", "portalEndpoint")) {
+    synapsePortalEndpoint(Config.getOption(config, "endpoints", "portalEndpoint"))
+  }
+  
+  # Fetch the debug flag from the config file
+  .setCache("debug", Config.hasSection(config, "debug"))
   
   synapseDataLocationPreferences(kSupportedDataLocationTypes)
   synapseCacheDir(gsub("[\\/]+", "/", path.expand("~/.synapseCache")))

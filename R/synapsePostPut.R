@@ -81,17 +81,10 @@
     uriWithoutParams<-uri
   }
   
-  
-  
-  ## Prepare the header. If not an anonymous request, stuff the
-  ## sessionToken into the header
+  ## Prepare the header. If not an anonymous request, stuff API key or session token into the header
   header <- .getCache("curlHeader")
   if(is.null(anonymous) || !anonymous) {
-    header <- switch(authMode(),
-      auth = .stuffHeaderAuth(header),
-      hmac = .stuffHeaderHmac(header, paste(path, uriWithoutParams, sep="")),
-      stop("Unknown auth mode: %s. Could not build header", authMode())
-    )		
+    header <- .stuffHeader(header, paste(path, uriWithoutParams, sep=""))
   }
   if("PUT" == requestMethod) {
     # Add the ETag header
