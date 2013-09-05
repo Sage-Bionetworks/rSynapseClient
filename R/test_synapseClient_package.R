@@ -100,10 +100,23 @@
       cat("\n  ", basename(names(details)[[i]]), "\n")
       for (j in seq_along(details[[i]])) {
         cat("    ", details[[i]][[j]], "\n")
+        
+        # Print out the details of the error
+        detailSource <- result[[1]]$sourceFileResults[[names(details)[[i]]]][[details[[i]][[j]]]]
+        errorMessage <- detailSource$msg
+        errorMessage <- gsub('\n', "", errorMessage)
+        width <- 50
+        errorMessage <- substring(errorMessage, 
+                            seq(1, nchar(errorMessage), width), 
+                            seq(width, nchar(errorMessage)+width, width))
+        cat(paste("          ", errorMessage, sep=""), sep="\n")
+        
+        # Print out a stack trace (Note: this may print nothing because R doesn't usually save stack traces)
+        stacktrace <- detailSource$traceBack
+        cat("        Traceback:", paste("          ->", stacktrace, sep = ""), "", sep="\n")
       }
     }
     cat("\n\n")
-    stop(paste(suiteName, " tests failed for package synapseClient"))
   }
   result
 }
