@@ -36,8 +36,6 @@ integrationTest_submit <- function() {
   # submit the entity
   submissionName<-"test-sub-name"
   teamName<-"test-team-name"
-  missingTeamName<-try(submit(evaluation=evaluation, entity=file, submissionName=submissionName), silent=T)
-  checkEquals("try-error", class(missingTeamName))
   submissionResult<-submit(evaluation=evaluation, entity=file, submissionName=submissionName, teamName=teamName, silent=T)
   submission<-submissionResult$submission
   submissionReceiptMessage<-"Your submission has been received. Please check the leader board for your score." # duplicates def'n above

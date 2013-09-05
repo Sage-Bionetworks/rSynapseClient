@@ -1,6 +1,7 @@
 ## Login to synapse
 ## 
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
+##         Joseph Wu <joseph.wu@sagebase.org>
 ###############################################################################
 
 setApiCredentials <-
@@ -10,193 +11,270 @@ setApiCredentials <-
   synapseClient:::hmacSecretKey(secretKey)
 }
 
-synapseLogin <- 
-  function(username = "", password = "", mode = "auth")
-{
-  ## username and password must both be of length
-  if(any(length(username) !=1 || length(password) != 1))
-    stop("Please provide a single username and password")
-  mode <- tolower(mode)
-  if(!(mode %in% c("auth", "hmac")))
-    stop(sprintf("Invalid authentication mode: %s", mode))
+synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey = "", rememberMe = FALSE) {
+    ## parameters must be of length 1
+    if(any(length(username) !=1 || length(password) != 1 || length(sessionToken) != 1 || length(apiKey) != 1))
+        stop("Please provide a single username and password")
+    
+    checkBlackList()
+    checkLatestVersion()
+    
+    ## replace nulls with empty strings
+    if(is.null(username))     username <- ""
+    if(is.null(password))     password <- ""
+    if(is.null(sessionToken)) sessionToken <- ""
+    if(is.null(apiKey))       apiKey <- ""
+    
+    credentials <- list(username = username, password = password, 
+                        sessionToken = sessionToken, apiKey = apiKey)
+    synapseLogout(localOnly=TRUE, silent=TRUE)
+    .doAuth(credentials)
   
-  ## replace nulls with empty strings
-  if(is.null(username))
-    username <- ""
-  if(is.null(password))
-    password <- ""
-  
-  credentials <- list(username = username, password = password, mode=mode)
-  .doAuth(credentials)
-  .setCache("sessionTimestamp", Sys.time())
+	if (rememberMe) {
+		json <- .readSessionCache()
+		json[[userName()]] <- hmacSecretKey()
+        json[["<mostRecent>"]] <- userName()
+		.writeSessionCache(json)
+	}
 }
 
-.doHmac <-
-  function(credentials)
-{
-  ## constants
-  kService <- "/secretKey"
-  ## end constants
-  
-  if(is.null(credentials$username) || credentials$username == "")
-    stop("Must provide username in hmac mode")
-  
-  entity <- list()
-  entity$email <- credentials$username
-  
-  ## Request the secret key
-  response <- synapseGet(uri = kService, 
-    endpoint=synapseServiceEndpoint("AUTH"),
-    entity = entity, 
-    anonymous = FALSE
-  )
-  
-  ## Cache the sessionToken. No need to check validity since it was just created
-  hmacSecretKey(response$secretKey)
-}
+.doAuth <- function(credentials) {
+	## Tries to authenticate in the following order:
+    ## - Supplied username and password
+    if (all(credentials$username != "" && credentials$password != "")) {
+        userName(credentials$username)
+        .getSessionToken(credentials)
+        .doHmac()
+	
+    ## - Supplied username and API key (base 64 encoded)
+    } else if (all(credentials$username != "" && credentials$apiKey != "")) {
+        userName(credentials$username)
+        hmacSecretKey(credentials$apiKey)
 
-.doAuth <- 
-  function(credentials)
-{
-  if(all(credentials$username != "" && credentials$password != "")){
-    ## username and password were both provided log the use in
-    message(.doLogin(credentials))
-  }else{
-    ## check to see if the "useTk" option is set
-    useTk <- .getCache("useTk")
-    if(is.null(useTk)){ ## useTk isn't set
-      useTk <- .decideTk()
+    ## - Supplied session token
+    } else if (all(credentials$sessionToken != "")) {
+        .refreshSessionToken(credentials)
+        sessionToken(credentials$sessionToken)
+        .doUsername(credentials)
+        .doHmac()
+    
+    ## Need to read from the session cache
+    } else {
+        sessions <- .readSessionCache()
+        
+        ## - Most recent username and API key
+        if (all(credentials$username == "" && "<mostRecent>" %in% names(sessions))) {
+            credentials$username <- sessions[["<mostRecent>"]]
+        }
+        
+        ## - Supplied username and cached API key
+        if (all(credentials$username != "" && credentials$username %in% names(sessions))) {
+            userName(credentials$username)
+            hmacSecretKey(sessions[[userName()]])
+        
+        ## Need to read from the config file
+        } else {
+            config <- ConfigParser()
+            
+            if (all(Config.hasOption(config, "authentication", "username"))) {
+                userName(Config.getOption(config, "authentication", "username"))
+                
+                ## - Username in the configuration file and cached API key
+                if (all(userName() %in% names(sessions))) {
+                    hmacSecretKey(sessions[[userName()]])
+                
+                ## - Username and API key in the configuration file
+                } else if (all(Config.hasOption(config, "authentication", "apikey"))) {
+                    hmacSecretKey(Config.getOption(config, "authentication", "apikey"))
+
+                ## - Username and password in the configuraton file
+                } else if (all(Config.hasOption(config, "authentication", "password"))) {
+                    .getSessionToken(list(username = userName(), 
+                                          password = Config.getOption(config, "authentication", "password")))
+                    .doHmac()
+                }
+
+            ## - Session token in the configuration file
+            } else if (all(Config.hasOption(config, "authentication", "sessiontoken"))) {
+                sessionToken(Config.getOption(config, "authentication", "sessiontoken"))
+                .doHmac()
+            
+            ## Resort to terminal/Tk login
+            } else {
+                ## Check to see if the "useTk" option is set
+                useTk <- .getCache("useTk")
+                if(is.null(useTk)){
+                    useTk <- .decideTk()
+                }
+
+                ## Initiate login
+                if (useTk){
+                    message(.doTkLogin(credentials))
+                }else{
+                    message(.doTerminalLogin(credentials))
+                }
+            }
+        }
     }
     
-    ##initiate login.
-    if(useTk){
-      message(.doTkLogin(credentials))
-    }else{
-      message(.doTerminalLogin(credentials))
-    }
-  }
+    ## Print out a greeting
+    .doWelcome()
 }
 
-.decideTk <-
-  function()
-{
-  ## if this is a unix terminal, do a terminal login
-  if(tolower(.Platform$GUI) == "rstudio"){
-    useTk <- FALSE
-  }else if(tolower(.Platform$OS.type) == "unix"){
-    if(tolower(.Platform$GUI) %in% c("aqua", "x11")){
-      ## don't use tk for terminal or for CRAN R GUI
-      ## the CRAN R GUI locks up when tk is initialized
-      ## if it is not installed properly
-      useTk <- FALSE
-    }else{
-      ## another GUI is being used. check to see if Tk is
-      ## installed
-      useTk <- .hasTk()
-    }
-    
-  }else{
-    ## this is a non OSX/unix OS. Tk installation that comes with
-    ## R should work.
-    useTk <- .hasTk()
-  }
-  useTk
-}
-
-.doTerminalLogin <-
-  function(credentials)
-{
-  credentials <- .terminalGetCredentials(credentials)
-  if(!is.null(credentials))
-    .doLogin(credentials)
-}
-
-.doTkLogin <-
-  function(credentials)
-{
-  credentials <- tryCatch(
-    .tkGetCredentials(credentials),
-    error = function(e){
-      .setCache("useTk", FALSE)
-      return(.doTerminalLogin(credentials))
-    }
-  )
-  if(!is.null(credentials))
-    .doLogin(credentials)
-}
-
-.doLogin <- 
-  function(credentials)
-{
-  ## constants
-  kService <- "/session"
-  ## end constants
+.getSessionToken <- function(credentials) {
+    ## Fetch a session token using a username and password
+    kService <- "/session"
   
+    entity <- list()
+    entity$email <- credentials$username
+    entity$password <- credentials$password
   
-  ## get auth service endpoint and prefix from memory cache
-  host <- getEndpointLocationForService("AUTH")
-  path <- getEndpointPrefixForService("AUTH")
+    checkBlackList()
+    checkLatestVersion()
   
-  entity <- list()
-  entity$email <- credentials$username
-  entity$password <- credentials$password
-  
-  checkBlackList()
-  checkLatestVersion()
-  
-  ## Login and check for success
-  response <- synapsePost(uri = kService, 
-    entity = entity, 
-    endpoint = synapseServiceEndpoint("AUTH"),
-    anonymous = TRUE
-  )
-  
-  ## Cache the sessionToken. No need to check validity since it was just created
-  sessionToken(response$sessionToken, checkValidity=FALSE)
-  userName(credentials$username)
-  if(credentials$mode == "hmac"){
-    tryCatch(.doHmac(credentials),
-      error = function(e){
-        synapseLogout(localOnly=TRUE)
-        stop(e)
-      }
+    response <- synapsePost(uri = kService, 
+        entity = entity, 
+        endpoint = synapseServiceEndpoint("AUTH"),
+        anonymous = TRUE
     )
-  }
-
-  ## try to fetch user's display name from profile for a proper greeting
-  greetingName <- tryCatch({
-      synapseGet(uri="/userProfile")$displayName
-    },
-    error = function(e) {
-      credentials$username
-    })
-
-  sprintf("Welcome %s!", greetingName)
+    sessionToken(response$sessionToken)
+    return(response$sessionToken)
 }
 
-synapseLogout <-
-  function(localOnly=FALSE)
-{
-  ## constants
-  kService <- "/session"
-  ## end constants
-  
-  ## get auth service endpoint and prefix from memory cache
-  host <- getEndpointLocationForService("AUTH")
-  path <- getEndpointPrefixForService("AUTH")
-  
-  entity <- list(sessionToken = sessionToken())
-  
-  if(!localOnly){
+.refreshSessionToken <- function(credentials) {
+    ## Refreshes the session token so that it can be used for another 24 hours
+    kService <- "/session"
+
+    entity <- list()
+    entity$sessionToken <- credentials$sessionToken
+
+    response <- synapsePut(uri =kService, 
+        entity=entity, 
+        endpoint=synapseServiceEndpoint("AUTH"), 
+        anonymous=TRUE)
+}
+
+.doHmac <- function() {
+    ## Use a session token to fetch an API key
+    kService <- "/secretKey"
+
+    ## Request the secret key
+    response <- synapseGet(uri = kService, 
+        endpoint=synapseServiceEndpoint("AUTH"),
+        anonymous = FALSE
+    )
+
+    hmacSecretKey(response$secretKey)
+}
+
+.doUsername <- function(credentials) {
+    userName(synapseGet(uri="/userProfile")$userName)
+}
+
+
+.readSessionCache <- function() {
+	sessionFile <- .sessionFile()
+	if (!file.exists(sessionFile)) {
+		return(list())
+	}
+	
+	return(fromJSON(readFile(sessionFile)))
+}
+
+.writeSessionCache <- function(json) {
+	sessionFile <- .sessionFile()
+	writeLines(toJSON(json), sessionFile)
+}
+
+.sessionFile <- function() {
+	return(paste(synapseCacheDir(), "/.session", sep=""))
+}
+
+.decideTk <- function() {
+    ## If this is a UNIX terminal, do a terminal login
+    if (tolower(.Platform$GUI) == "rstudio") {
+        useTk <- FALSE
+        
+    } else if (tolower(.Platform$OS.type) == "unix") {
+        if (tolower(.Platform$GUI) %in% c("aqua", "x11")) {
+            ## Don't use Tk for terminal or for CRAN R GUI
+            ## the CRAN R GUI locks up when Tk is initialized
+            ## if it is not installed properly
+            useTk <- FALSE
+        } else {
+            ## Another GUI is being used. Check to see if Tk is installed
+            useTk <- .hasTk()
+        }
+
+    ## This is a non OSX/UNIX OS. Tk installation that comes with R should work.
+    } else {
+        useTk <- .hasTk()
+    }
+    return(useTk)
+}
+
+.doTerminalLogin <- function(credentials) {
+    credentials <- .terminalGetCredentials(credentials)
+    if(!is.null(credentials)) {
+        .doLogin(credentials)
+    }
+}
+
+.doTkLogin <- function(credentials) {
+    credentials <- tryCatch(
+        .tkGetCredentials(credentials),
+        error = function(e){
+            .setCache("useTk", FALSE)
+            return(.doTerminalLogin(credentials))
+        }
+    )
+    if(!is.null(credentials)) {
+        .doLogin(credentials)
+    }
+}
+
+.doWelcome <- function() {  
+    ## try to fetch user's display name from profile for a proper greeting
+    greetingName <- synapseGet(uri="/userProfile")$displayName
+
+    message(sprintf("Welcome %s!", greetingName))
+}
+
+synapseLogout <- function(localOnly=FALSE, forgetMe=FALSE, silent=FALSE) {
+    kService <- "/session"
+
+    # Remove the HMAC key so that the session token is used
+    hmacSecretKey(NULL)
+
+    if (!localOnly){
+        response <- synapseDelete(uri = kService,
+            endpoint = synapseServiceEndpoint("AUTH")
+        )
+    }
+    
+    ## Global logouts invalidate API keys, so local copies must be deleted
+    if (forgetMe || !localOnly) {
+        sessions <- .readSessionCache()
+        sessions <- subset(sessions, names(sessions) != userName())
+        .writeSessionCache(sessions)
+    }
+    
+    userName(NULL)
+    sessionToken(NULL)
+    
+    if (!silent) {
+        message("Goodbye.")
+    }
+}
+
+invalidateAPIKey <- function() {
+    kService <- "/secretKey"
+    
     response <- synapseDelete(uri = kService,
-      entity = entity,
-      endpoint=synapseServiceEndpoint("AUTH")
+        endpoint = synapseServiceEndpoint("AUTH")
     )
-  }
-  hmacSecretKey(NULL)
-  sessionToken(NULL)
-  .setCache("username", NULL)
-  message("Goodbye.")
+    
+    synapseLogout(localOnly=TRUE, forgetMe=TRUE)
 }
 
 .generateHMACSignature<-function(url, timestamp, username = userName(), base64EncodedSecretKey= hmacSecretKey(), algo="sha1") {
@@ -209,30 +287,25 @@ synapseLogout <-
   base64(hash, encode=TRUE)
 }
 
-hmacSecretKey <- 
-  function(secretKey)
-{
-  kAuthMode <- "hmac"
-  if(missing(secretKey)){
-    key <- .getCache("base64secretKey")
-    if(is.null(key))
-      stop("Please Authenticate")
-    return(key)
-  }
-  .setCache("base64secretKey", secretKey)
-  authMode(kAuthMode)
+.stuffHeader <- function(header, uri) {
+    # Try to fetch the HMAC header.
+    # If that fails, fall back on the session token.
+    # This should only happen when logging in. 
+    header <- tryCatch(
+        .stuffHeaderHmac(header, uri), 
+        error = function(e) .stuffHeaderAuth(header))
+    if (!("signature" %in% names(header) || "sessionToken" %in% names(header))) {
+        stop("Please authenticate")
+    }
+    return(header)
 }
 
-.stuffHeaderAuth <-
-  function(header)
-{
+.stuffHeaderAuth <- function(header) {
   c(header, sessionToken = sessionToken())
 }
 
 # uri is, for example, /repo/v1/dataset
-.stuffHeaderHmac <-
-  function(header, uri)
-{
+.stuffHeaderHmac <- function(header, uri) {
   timestamp <- .nowAsString()
   ## this is a hack. drop leap seconds
   timestamp <- gsub(":6[01][\\.]", ":59.", timestamp)
@@ -251,18 +324,18 @@ userName <-
   .setCache("username", name)
 }
 
-authMode <- 
-  function(mode)
-{
-  kDefaultMode <- "auth"
-  if(missing(mode)){
-    mode <- .getCache("authMode")
-    if(is.null(mode))
-      mode <- kDefaultMode
-    return(mode)
+hmacSecretKey <- function(secretKey) {
+  if(missing(secretKey)){
+    key <- .getCache("base64secretKey")
+    if(is.null(key))
+      stop("Please authenticate")
+    return(key)
   }
-  .setCache("authMode", mode)
+  .setCache("base64secretKey", secretKey)
 }
 
-
-
+sessionToken <- function(token) {
+    if (missing(token))
+        return(.getCache("sessionToken"))
+    .setCache("sessionToken", token)
+}
