@@ -85,14 +85,56 @@ integrationTestWikiCRUD <-
   # create file attachments which will be used in the wiki page
   filePath1<-createFile()
   filePath2<-createFile()
+  filePath3<-createFile()
+  fileHandle<-synapseClient:::chunkedUploadFile(filePath3)
   
   wikiPage<-WikiPage(
     owner=project, 
     title="wiki title", 
     markdown="some stuff", 
-    attachments=list(filePath1, filePath2)
+    attachments=list(filePath1, filePath2), 
+    fileHandles=list(fileHandle$id)
   )
   
+  checkAndCleanUpWikiCRUD(project, wikiPage, 3)
+}
+
+integrationTestWikiCRUD_NoAttachments <- function() {
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  
+  # Create a file attachment which will be used in the wiki page
+  filePath1<-createFile()
+  fileHandle<-synapseClient:::chunkedUploadFile(filePath1)
+  
+  wikiPage<-WikiPage(
+    owner=project, 
+    title="wiki title", 
+    markdown="some stuff", 
+    fileHandles=list(fileHandle$id)
+  )
+  
+  checkAndCleanUpWikiCRUD(project, wikiPage, 1)
+}
+
+integrationTestWikiCRUD_NoFileHandles <- function() {
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  
+  # Create a file attachment which will be used in the wiki page
+  filePath1<-createFile()
+  
+  wikiPage<-WikiPage(
+    owner=project, 
+    title="wiki title", 
+    markdown="some stuff", 
+    attachments=list(filePath1)
+  )
+  
+  checkAndCleanUpWikiCRUD(project, wikiPage, 1)
+}
+
+checkAndCleanUpWikiCRUD <- function(project, wikiPage, expectedAttachmentLength) {
   wikiPage<-synStore(wikiPage)
     
   # see if we can get the wiki from its parent
@@ -102,7 +144,7 @@ integrationTestWikiCRUD <-
   
   # check that fileHandle is in the wiki
   fileHandleIds<-propertyValue(wikiPage2, "attachmentFileHandleIds")
-  checkEquals(2, length(fileHandleIds))
+  checkEquals(expectedAttachmentLength, length(fileHandleIds))
   
   # Now delete the wiki page
   #/{ownertObjectType}/{ownerObjectId}/wiki/{wikiId}

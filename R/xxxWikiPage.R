@@ -28,13 +28,14 @@ setClass(
 
 ##
 ## WikiPage constructor
-WikiPage<-function(owner, title, markdown, attachments, parentWikiId) {
+WikiPage<-function(owner, title, markdown, attachments, parentWikiId, fileHandles) {
   wikiPage <- new("WikiPage")
   if (missing(owner)) {
     stop("owner is required.")
   }
   wikiPage@createUri<-createWikiUri(owner)
   if (!missing(attachments)) wikiPage@attachments<-attachments
+  if (!missing(fileHandles)) propertyValue(wikiPage, "attachmentFileHandleIds")<-fileHandles
   if (!missing(title)) propertyValue(wikiPage, "title")<-title
   if (!missing(markdown)) propertyValue(wikiPage, "markdown")<-markdown
   if (!missing(parentWikiId)) propertyValue(wikiPage, "parentWikiId")<-parentWikiId
@@ -47,7 +48,7 @@ createWikiUri<-function(parent) {
   } else if (is(parent, "Evaluation")){
     sprintf("/evaluation/%s/wiki", propertyValue(parent, "id"))
   } else {
-    stop(sprintf("Unsupported %s", class(parent)))
+    stop(sprintf("Cannot construct a WikiPage for a %s object", class(parent)))
   }
 }
 
@@ -57,7 +58,7 @@ populateWikiPage<-function(createUri, listContent) {
   result@updateUri<-sprintf("%s/%s", createUri, listContent$id)
   # initialize attachmentFileHandleIds to be an empty list
   propertyValues(result)<-listContent
-  if (0==length(propertyValue(result, "attachmentFileHandleIds"))) {
+  if (length(propertyValue(result, "attachmentFileHandleIds")) == 0) {
     propertyValue(result, "attachmentFileHandleIds")<-list()
   }
   result
@@ -66,7 +67,8 @@ populateWikiPage<-function(createUri, listContent) {
 synCreateWiki<-function(wikiPage) {
   createUri<-wikiPage@createUri
   # convert 'attachments' list to file handles
-  fileHandleIdList<-list()
+  fileHandleIdList<-propertyValue(wikiPage, "attachmentFileHandleIds")
+  if (is.null(fileHandleIdList)) fileHandleIdList <- list()
   for (attachment in wikiPage@attachments) {
     fileHandle<-uploadAndAddToCacheMap(attachment)
     fileHandleIdList[[length(fileHandleIdList)+1]]<-fileHandle$id
