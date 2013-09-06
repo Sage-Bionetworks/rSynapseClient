@@ -706,8 +706,12 @@ integrationTestSerialization<-function() {
 }
 
 integrationTestSerializeToEmptyFile<-function() {
+  # Skip the existence check within the File constructor
+  synapseClient:::.mock("fileExists", function(...) {TRUE})
+  
   # Random, non-existent file
   filePath<-sprintf("%s/integrationTestSerializeToEmptyFile_%d", tempdir(), sample(1000,1))
+  
   project <- synapseClient:::.getCache("testProject")
   myData<-list(foo="bar", foo2="bas")
   file<-File(path=filePath, parentId=propertyValue(project, "id"))

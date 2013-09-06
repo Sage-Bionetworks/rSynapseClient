@@ -84,25 +84,25 @@ setMethod(
   }
 )
 
-##
 ## File contructor: path="/path/to/file", synapseStore=T, name="foo", ...
 File<-function(path, synapseStore=T, ...) {
-  file <- new("File")
-  if (is.null(list(...)$parentId)) {
-    stop("parentId is required.")
-  }
-  if (missing(path)) {
-    entityParams<-list(...)
-  } else {
-    possibleName <- .ParsedUrl(path.expand(path))@file
-    entityParams<-modifyList(list(name=possibleName), list(...))
-    file@filePath <- path
-  }
-  if (!file.exists(file@filePath) && synapseStore) 
-    stop(sprintf("'synapseStore' may not be true when %s does not exist.", file@filePath))
-  for (key in names(entityParams)) file<-synAnnotSetMethod(file, key, entityParams[[key]])
-  file@synapseStore <- synapseStore
-  file
+    file <- new("File")
+    if (is.null(list(...)$parentId)) {
+        stop("parentId is required.")
+    }
+    if (missing(path)) {
+        entityParams<-list(...)
+    } else {
+        possibleName <- .ParsedUrl(path.expand(path))@file
+        entityParams<-modifyList(list(name=possibleName), list(...))
+        file@filePath <- path
+        if (!fileExists(".", file@filePath) && synapseStore) {
+            stop(sprintf("'synapseStore' may not be true when %s does not exist.", file@filePath))
+        }
+    }
+    for (key in names(entityParams)) file<-synAnnotSetMethod(file, key, entityParams[[key]])
+        file@synapseStore <- synapseStore
+    file
 }
 
 # this is the required constructor for a metadata Entity, taking a list of properties
