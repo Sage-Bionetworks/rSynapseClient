@@ -214,6 +214,9 @@ integrationTestUpdateS4File <-
 integrationTestDeleteFileById <-
   function()
 {
+  # Skip the existence check within the File constructor
+  synapseClient:::.mock("mockable.file.exists", function(...) {TRUE})
+  
   project <- Project()
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)

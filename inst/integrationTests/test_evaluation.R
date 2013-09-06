@@ -150,7 +150,7 @@ integrationTestEvaluationRoundtrip <-
   checkEquals(2, submissions@totalNumberOfResults)
   checkEquals(2, length(submissions@results))
   
-  ownSubmissions<-synGetOwnSubmissions(eid)
+  ownSubmissions<-synGetSubmissions(eid, myOwn=TRUE)
   checkEquals(ownSubmissions, submissions)
   
   lbWikiPage<-synGetWiki(evaluation, lbWikiId)
