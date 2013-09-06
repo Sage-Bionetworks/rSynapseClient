@@ -96,13 +96,16 @@ File<-function(path, synapseStore=T, ...) {
         possibleName <- .ParsedUrl(path.expand(path))@file
         entityParams<-modifyList(list(name=possibleName), list(...))
         file@filePath <- path
-        if (!fileExists(".", file@filePath) && synapseStore) {
+        if (!mockable.file.exists(file@filePath) && synapseStore) {
             stop(sprintf("'synapseStore' may not be true when %s does not exist.", file@filePath))
         }
     }
     for (key in names(entityParams)) file<-synAnnotSetMethod(file, key, entityParams[[key]])
         file@synapseStore <- synapseStore
     file
+}
+mockable.file.exists <- function (filepath) {
+    base::file.exists(filepath)
 }
 
 # this is the required constructor for a metadata Entity, taking a list of properties

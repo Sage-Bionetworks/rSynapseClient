@@ -707,7 +707,7 @@ integrationTestSerialization<-function() {
 
 integrationTestSerializeToEmptyFile<-function() {
   # Skip the existence check within the File constructor
-  synapseClient:::.mock("fileExists", function(...) {TRUE})
+  synapseClient:::.mock("mockable.file.exists", function(...) {TRUE})
   
   # Random, non-existent file
   filePath<-sprintf("%s/integrationTestSerializeToEmptyFile_%d", tempdir(), sample(1000,1))
