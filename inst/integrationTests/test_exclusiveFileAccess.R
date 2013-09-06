@@ -21,14 +21,14 @@ integrationTestHappyPath <-
   checkTrue(!is.na(lockExpirationTimeStamp))
   # expiration is in 5 seconds, so should be less than 10 seconds from now
   checkTrue(lockExpirationTimeStamp<Sys.time()+10)
-  checkTrue(file.exists(sprintf("%s.lock", filePath)))
+  checkTrue(file.exists(file.path(dirname(filePath), ".lock")))
   # write file
   content<-"my dog has fleas!"
   synapseClient:::writeFileAndUnlock(filePath, content, lockExpirationTimeStamp)
   # read file
   checkEquals(content, synapseClient:::readFile(filePath))
   # check that directory is gone
-  checkTrue(!file.exists(sprintf("%s.lock", filePath)))
+  checkTrue(!file.exists(file.path(dirname(filePath), ".lock")))
 }
 
 # test locking a file which already exists
@@ -45,7 +45,7 @@ integrationTestLockTimeout <-
   checkTrue(lockExpirationTimeStamp2>=lockExpirationTimeStamp)
   synapseClient:::unlockFile(filePath)
   # check that directory is gone
-  checkTrue(!file.exists(sprintf("%s.lock", filePath)))
+  checkTrue(!file.exists(file.path(dirname(filePath), ".lock")))
 }
 
 integrationTestAcquireLockFailure <-
@@ -61,5 +61,5 @@ integrationTestAcquireLockFailure <-
   checkTrue(class(result)=="try-error")
   synapseClient:::unlockFile(filePath)
   # check that directory is gone
-  checkTrue(!file.exists(sprintf("%s.lock", filePath)))
+  checkTrue(!file.exists(file.path(dirname(filePath), ".lock")))
 }

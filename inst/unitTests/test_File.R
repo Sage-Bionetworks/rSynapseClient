@@ -20,6 +20,9 @@
 }
 
 unitTestSimpleConstructor<-function() {
+  # Skip the existence check within the File constructor
+  synapseClient:::.mock("mockable.file.exists", function(...) {TRUE})
+  
   # test that it works to give just a file path and parentId
   file<-File("/path/to/file", parentId="syn1234")
   
@@ -37,6 +40,9 @@ unitTestSimpleConstructor<-function() {
 }
 
 unitTestParentIdRequired<-function() {
+  # Skip the existence check within the File constructor
+  synapseClient:::.mock("mockable.file.exists", function(...) {TRUE})
+  
   # this is OK...
   File("/path/to/file", parentId="syn101")
   # ... but check that there's an error if parentId is ommitted
@@ -61,6 +67,9 @@ unitTestObjectConstructor<-function() {
  }
 
 unitTestConstructor<-function() {
+  # Skip the existence check within the File constructor
+  synapseClient:::.mock("mockable.file.exists", function(...) {TRUE})
+  
   description<-"this describes my File"
   versionComment<-"this is the first version"
   annotName<-"anAnnotation"

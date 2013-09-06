@@ -22,18 +22,7 @@
   }
   synapseClient:::.setCache("foldersToDelete", list())
   
-  ## in the case that we have 'mocked' hasUnfulfilledAccessRequirements, this restores the original function
-  if (!is.null(synapseClient:::.getCache("hasUnfulfilledAccessRequirementsIsOverRidden"))) {
-    assignInNamespace("hasUnfulfilledAccessRequirements", attr(synapseClient:::hasUnfulfilledAccessRequirements, "origDef"), "synapseClient")
-    synapseClient:::.setCache("hasUnfulfilledAccessRequirementsIsOverRidden", NULL)
-  }
-  ## in the case that we have 'mocked' createLockAccessRequirement, this restores the original function
-  if (!is.null(synapseClient:::.getCache("createLockAccessRequirementIsOverRidden"))) {
-    assignInNamespace(".createLockAccessRequirement", attr(synapseClient:::.createLockAccessRequirement, "origDef"), "synapseClient")
-    assignInNamespace(".hasAccessRequirement", attr(synapseClient:::.hasAccessRequirement, "origDef"), "synapseClient")
-    synapseClient:::.setCache("createLockAccessRequirementIsOverRidden", NULL)
-  }
-  
+  synapseClient:::.unmockAll()
 }
 
 createFile<-function(content, filePath) {
@@ -51,11 +40,9 @@ integrationTestMakeRestricted<-function() {
   attr(myHasAccessRequirement, "origDef") <- synapseClient:::.hasAccessRequirement
   assignInNamespace(".hasAccessRequirement", myHasAccessRequirement, "synapseClient")
 
-  myCreateLockAccessRequirement<-function(entityId) {synapseClient:::.setCache("createLockAccessRequirementWasInvoked", TRUE)}
-  attr(myCreateLockAccessRequirement, "origDef") <- synapseClient:::.createLockAccessRequirement
-  assignInNamespace(".createLockAccessRequirement", myCreateLockAccessRequirement, "synapseClient")
+  synapseClient:::.mock(".createLockAccessRequirement", 
+    function(entityId) {synapseClient:::.setCache("createLockAccessRequirementWasInvoked", TRUE)})
   synapseClient:::.setCache("createLockAccessRequirementWasInvoked", NULL)
-  synapseClient:::.setCache("createLockAccessRequirementIsOverRidden", TRUE)
   
   # now create a file and make sure it is restricted
   project <- synapseClient:::.getCache("testProject")
@@ -318,10 +305,8 @@ integrationTestGovernanceRestriction <- function() {
   scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
   
   # mock Governance restriction
-  myHasUnfulfilledAccessRequirements<-function(id) {TRUE} # return TRUE, i.e. yes, there are unfulfilled access requiremens
-  attr(myHasUnfulfilledAccessRequirements, "origDef") <- synapseClient:::hasUnfulfilledAccessRequirements
-  assignInNamespace("hasUnfulfilledAccessRequirements", myHasUnfulfilledAccessRequirements, "synapseClient")
-  synapseClient:::.setCache("hasUnfulfilledAccessRequirementsIsOverRidden", TRUE)
+  # return TRUE, i.e. yes, there are unfulfilled access requirements
+  synapseClient:::.mock("hasUnfulfilledAccessRequirements", function(id) {TRUE})
   
   # try synGet with downloadFile=F, load=F, should be OK
   synGet(id, downloadFile=F, load=F)
@@ -542,6 +527,31 @@ roundTripIntern<-function(project) {
 }
 
 
+# test that the md5 calculation works on non-expanded paths
+integrationTestMD5_NonExpandedPath <- function() {
+    # Create a Project
+    project <- synapseClient:::.getCache("testProject")
+    checkTrue(!is.null(project))
+    filePath <- createFile(content="Some content", filePath="~/arglebargle")
+    file <- File(filePath, parentId=propertyValue(project, "id"))
+
+    # Intercept a call that uses the calculated MD5
+    synapseClient:::.mock("completeChunkFileUpload", 
+        function(chunkedFileToken, passedOn) {
+            # Make sure the MD5 is there
+            checkTrue(!is.null(chunkedFileToken[['contentMD5']]))
+            
+            # Now do what the function is supposed to do
+            synapseClient:::.getMockedFunction("completeChunkFileUpload")(chunkedFileToken, passedOn)
+        }
+    )
+
+    storedFile <- synStore(file)
+    deleteEntity(storedFile)
+    unlink(filePath)
+}
+
+
 # test that legacy *Entity based methods work on File objects
 integrationTestAddToNewFILEEntity <-
   function()
@@ -696,8 +706,12 @@ integrationTestSerialization<-function() {
 }
 
 integrationTestSerializeToEmptyFile<-function() {
+  # Skip the existence check within the File constructor
+  synapseClient:::.mock("mockable.file.exists", function(...) {TRUE})
+  
   # Random, non-existent file
   filePath<-sprintf("%s/integrationTestSerializeToEmptyFile_%d", tempdir(), sample(1000,1))
+  
   project <- synapseClient:::.getCache("testProject")
   myData<-list(foo="bar", foo2="bas")
   file<-File(path=filePath, parentId=propertyValue(project, "id"))

@@ -3,44 +3,6 @@
 ## Author: Nicole Deflaux <nicole.deflaux@sagebase.org>
 ###############################################################################
 
-#.testSafety <-
-#  function()
-#{
-#  lapply(c(synapseAuthServiceEndpoint(), synapseRepoServiceEndpoint(#)),
-#    function(svc) {
-#      if(!(grepl("staging", svc) || grepl(":8080", svc))) {
-#        stop("tests may only run against staging or your localhost")
-#      }
-#    }
-#  )
-#}
-
-#.doTestConfigureNamespace <-
-#  function()
-#{
-#  oldCache <- synapseClient:::.cache
-#  synapseClient:::.setCache("oldCache", oldCache)
-#  synapseClient:::.setCache("oldHooks", getHook(packageEvent('synapseClient','attach')))
-#
-#  fcn <- list()
-#  fcn[[1]] <- function(...){}
-#  setHook(packageEvent('synapseClient','attach'), fcn, action='replace')
-#  unloadNamespace('synapseClient')
-#  assignInNamespace('.cache', oldCache, 'synapseClient')
-#  require(synapseClient, quietly=TRUE)
-#
-#}
-#
-#.undoTestConfigureNamespace <-
-#  function()
-#{
-#  oldCache <- synapseClient:::.getCache('oldCache')
-#  unloadNamespace("synapseClient")
-#  assignInNamespace('.cache', oldCache, 'synapseClient')
-#  require(synapseClient, quietly=TRUE)
-#  setHook(packageEvent("synapseClient","attach"), synapseClient:::.getCache("oldHooks"), action="replace")
-#}
-
 .test <- function(dir=system.file("unitTests", package="synapseClient"), testFileRegexp = "^test_.*\\.R$") {
  ## .doTestConfigureNamespace()
   .runTestSuite(dir=dir, testFileRegexp=testFileRegexp, testFuncRegexp="^unitTest.+", suiteName="unit tests")
@@ -141,6 +103,15 @@
 
 .appendMockPrefix <- function(funcName) {
     return(paste("!Mocked_Function->", funcName, sep=""))
+}
+
+.getMockedFunction <- function(funcName, namespace='synapseClient') {
+    mocked <- get(funcName, envir=asNamespace(namespace))
+    if (is.null(attr(mocked, "origDef"))) {
+        return(mocked) # Function is not mocked
+    } else {
+        return(attr(mocked, "origDef"))
+    }
 }
 
 # Un-replaces the given function in the given namespace

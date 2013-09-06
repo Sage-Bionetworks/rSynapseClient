@@ -79,7 +79,7 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
 }
 
 createChunkedFileUploadToken<-function(filepath, mimetype) {
-  md5 <- tools::md5sum(filepath)
+  md5 <- tools::md5sum(path.expand(filepath))
   if (is.na(md5)) stop(sprintf("Unable to compute md5 for %s", filepath))
   names(md5)<-NULL # Needed to make toJSON work right
 
