@@ -17,7 +17,7 @@ ConfigParser <- function(path) {
         }
         
         # Options and values
-        matches <- regexec("\\s*([^=]+)\\s*=\\s*([^=]+)\\s*", line)
+        matches <- regexec("\\s*([^:=]+)\\s*[:=]\\s*(\\S.*)\\s*", line)
         matches <- unlist(regmatches(line, matches))
         if (length(matches) > 2) {
             matches <- sapply(matches, function(vec){ gsub("(^ +)|( +$)", "", vec) })

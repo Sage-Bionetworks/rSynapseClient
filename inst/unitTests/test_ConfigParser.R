@@ -12,7 +12,7 @@
 unitTest_ConfigParser <- function() {
     # Replace the config file with a list of strings
     permissive_section <- "Anything sh0uld be f!ne in-the s3ction as 1ong @s no brackets are_used. Even = should work"
-    permissive_key <- "0n1y da e#uals-$ign *s ^no% @()owed!"
+    permissive_key <- "0n1y da e#uals-$ign & c01On *s ^no% @()owed!"
     permissive_value <- "Same here`~!@#$%^&*()_-+[]\\{}|;':\",./<>?"
     spaced_key <- "arbitrary"
     spaced_value <- "spacing"
@@ -28,10 +28,10 @@ unitTest_ConfigParser <- function() {
                 sprintf("[%s]", empty_section), 
                 sprintf("[%s]", repeated_section), 
                 "a = a", 
-                "b = b", 
+                "b:b", 
                 sprintf("[%s]", repeated_section), 
-                "c = c", 
-                "d = d", 
+                "c=c", 
+                "d : d", 
                 "to be = OVERWRITTEN", 
                 sprintf("to be = %s", overwritten_value)))
         }
