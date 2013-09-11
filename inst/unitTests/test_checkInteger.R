@@ -45,6 +45,9 @@ unitTestCheckSingleValue <-
   
   val <- 5.00001
   checkTrue(!synapseClient:::checkInteger(val))
+  
+  val <- "53082535172170281e54918781912015"
+  checkTrue(!synapseClient:::checkInteger(val))
 }
 
 unitTestFactors <-
