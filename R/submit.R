@@ -40,11 +40,18 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
     stop(sprintf('You have unmet access requirements: \n%s', accessTerms))
   }
 
-  submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
-    entityId=entityId, 
-    versionNumber=entityVersion, 
-    name=submissionName,
-    submitterAlias=teamName))
+  if (missing(teamName)) {
+    submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
+        entityId=entityId, 
+        versionNumber=entityVersion, 
+        name=submissionName))
+  } else {
+    submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
+        entityId=entityId, 
+        versionNumber=entityVersion, 
+        name=submissionName,
+        submitterAlias=teamName))
+  } 
   
   createdSubmission<-synCreateSubmission(submission, entityEtag=etag)
   if (!silent) message(evaluation$submissionReceiptMessage)
