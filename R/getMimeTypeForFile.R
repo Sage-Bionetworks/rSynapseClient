@@ -11,7 +11,7 @@ getMimeTypeForFile<-function(fileName) {
   mimeTypeMap<-getMimeTypeMap()
   mimeType<-mimeTypeMap[[extension]]
   if (is.null(mimeType)) mimeType<-defaultMimeType
-  mimeType
+  return(mimeType)
 }
 
 # get the substring following the LAST "." in fname, or "" if there is no "."
@@ -26,9 +26,9 @@ getExtension<-function(fname) {
     if (dot==0) stop("Illegal state, dot==0")
   }
   if (lastDot==0) {
-    ""
+    return("")
   } else {
-    suffix
+    return(tolower(suffix))
   }
 }
 
@@ -58,5 +58,7 @@ createMimeTypeMap<-function() {
       }
     }
   }
-  ans
+  # The online list does not contain a mime type for .R files
+  ans[['r']] <- 'text/x-r'
+  return(ans)
 }
