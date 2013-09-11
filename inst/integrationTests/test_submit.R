@@ -97,4 +97,31 @@ integrationTest_submit <- function() {
   checkException(synGetSubmission(propertyValue(submission3, "id")))
 }
   
+integrationTest_submit_noTeamName <- function() {
+  # create an entity
+  project<-synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  file<-File(parentId=pid, name="foo")
+  file<-addObject(file,c(1,2,3))
+  file<-synStore(file)
+  
+  # join the evaluation
+  evaluation<-synapseClient:::.getCache("testEvaluation")
+  eid<-propertyValue(evaluation, "id")
+  synapseClient:::.allowParticipation(eid, "PUBLIC")
+  synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
+  
+  # submit the entity
+  submissionName<-"test-sub-name"
+  submissionResult<-submit(evaluation=evaluation, entity=file, submissionName=submissionName, silent=T)
+  submission<-submissionResult$submission
+  submissionReceiptMessage<-"Your submission has been received. Please check the leader board for your score." # duplicates def'n above
+  checkEquals(submissionReceiptMessage, submissionResult$submissionReceiptMessage)
+  checkEquals(propertyValue(file, "id"), propertyValue(submission, "entityId"))
+  checkEquals(propertyValue(file, "versionNumber"), propertyValue(submission, "versionNumber"))
+  checkEquals(eid, propertyValue(submission, "evaluationId"))
+  checkEquals(submissionName, submission$name)
+  
+}
+
 
