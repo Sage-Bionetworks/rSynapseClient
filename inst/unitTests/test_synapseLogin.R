@@ -125,3 +125,28 @@ unitTestDoAuth_session_and_config <- function() {
     checkTrue(configParser_called)
     checkTrue(hasOption_called_correctly)
 }
+
+unitTest_logout <- function() {
+    synapseClient:::userName("foo")
+    synapseClient:::sessionToken("bar")
+    synapseClient:::hmacSecretKey("baz")
+    synapseDelete_called <- FALSE
+    synapseClient:::.mock("synapseDelete", function(...) {synapseDelete_called <<- TRUE})
+    
+    synapseLogout(silent=TRUE)
+    checkTrue(is.null(synapseClient:::userName()))
+    checkTrue(is.null(synapseClient:::sessionToken()))
+    checkTrue(class(try(synapseClient:::hmacSecretKey(), silent=TRUE)) == "try-error")
+    checkTrue(synapseDelete_called)
+    
+    # Try again without the session token
+    synapseClient:::userName("foo")
+    synapseClient:::hmacSecretKey("baz")
+    synapseDelete_called <- FALSE
+    
+    synapseLogout(silent=TRUE)
+    checkTrue(is.null(synapseClient:::userName()))
+    checkTrue(is.null(synapseClient:::sessionToken()))
+    checkTrue(class(try(synapseClient:::hmacSecretKey(), silent=TRUE)) == "try-error")
+    checkTrue(!synapseDelete_called)
+}

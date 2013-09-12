@@ -243,7 +243,7 @@ synapseLogout <- function(localOnly=FALSE, forgetMe=FALSE, silent=FALSE) {
     # Remove the HMAC key so that the session token is used
     hmacSecretKey(NULL)
 
-    if (!localOnly){
+    if (!localOnly && !is.null(sessionToken())) {
         response <- synapseDelete(uri = kService,
             endpoint = synapseServiceEndpoint("AUTH")
         )
