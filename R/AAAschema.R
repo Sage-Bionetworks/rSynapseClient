@@ -136,7 +136,7 @@ defineEntityConstructors <-
     setGeneric(
       name=name,
       def = function(entity, ...){
-        do.call("standardGeneric", list(name))
+        do.call(name, list(...))
       },
       package = package
     )
