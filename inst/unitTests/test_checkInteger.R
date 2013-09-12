@@ -48,6 +48,18 @@ unitTestCheckSingleValue <-
   
   val <- "53082535172170281e54918781912015"
   checkTrue(!synapseClient:::checkInteger(val))
+  
+  val <- "-12345e12345"
+  checkTrue(!synapseClient:::checkInteger(val))
+  
+  val <- "--12345"
+  checkTrue(!synapseClient:::checkInteger(val))
+  
+  val <- "12345e+0"
+  checkTrue(!synapseClient:::checkInteger(val))
+  
+  val <- "12345e-0"
+  checkTrue(!synapseClient:::checkInteger(val))
 }
 
 unitTestFactors <-

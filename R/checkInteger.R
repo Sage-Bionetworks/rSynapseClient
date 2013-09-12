@@ -27,7 +27,7 @@ checkInteger <- function(x){
       if(any(mk)) {
         thisVal[mk] <- FALSE
       }
-      if (is.null(attr(try(as.character(xx)), "class"))) {
+      if (class(try(as.character(xx), silent=TRUE)) != "try-error") {
           # as.integer() and as.numeric() may interpret a string as '0'
           xx <- gsub("^-","",xx) # Remove leading '-'
           if (regexpr('\\D', xx) >= 0) {
