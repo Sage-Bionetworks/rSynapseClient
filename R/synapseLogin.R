@@ -74,41 +74,44 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
         
         ## Need to read from the config file
         } else {
-            config <- ConfigParser()
-            
-            if (all(Config.hasOption(config, "authentication", "username"))) {
-                userName(Config.getOption(config, "authentication", "username"))
-                
-                ## - Username in the configuration file and cached API key
-                if (all(userName() %in% names(sessions))) {
-                    hmacSecretKey(sessions[[userName()]])
-                
-                ## - Username and API key in the configuration file
-                } else if (all(Config.hasOption(config, "authentication", "apikey"))) {
-                    hmacSecretKey(Config.getOption(config, "authentication", "apikey"))
+            config <- try(ConfigParser())
+            if (class(config) != "try-error") {
+                if (all(Config.hasOption(config, "authentication", "username"))) {
+                    userName(Config.getOption(config, "authentication", "username"))
+                    
+                    ## - Username in the configuration file and cached API key
+                    if (all(userName() %in% names(sessions))) {
+                        hmacSecretKey(sessions[[userName()]])
+                    
+                    ## - Username and API key in the configuration file
+                    } else if (all(Config.hasOption(config, "authentication", "apikey"))) {
+                        hmacSecretKey(Config.getOption(config, "authentication", "apikey"))
 
-                ## - Username and password in the configuraton file
-                } else if (all(Config.hasOption(config, "authentication", "password"))) {
-                    .getSessionToken(list(username = userName(), 
-                                          password = Config.getOption(config, "authentication", "password")))
+                    ## - Username and password in the configuraton file
+                    } else if (all(Config.hasOption(config, "authentication", "password"))) {
+                        .getSessionToken(list(username = userName(), 
+                                              password = Config.getOption(config, "authentication", "password")))
+                        .doHmac()
+                    }
+
+                ## - Session token in the configuration file
+                } else if (all(Config.hasOption(config, "authentication", "sessiontoken"))) {
+                    sessionToken(Config.getOption(config, "authentication", "sessiontoken"))
                     .doHmac()
                 }
-
-            ## - Session token in the configuration file
-            } else if (all(Config.hasOption(config, "authentication", "sessiontoken"))) {
-                sessionToken(Config.getOption(config, "authentication", "sessiontoken"))
-                .doHmac()
+            }
             
-            ## Resort to terminal/Tk login
-            } else {
+            # Resort to terminal/Tk login if all else has failed
+            # i.e. there's still no secret key
+            if (class(try(hmacSecretKey(), silent=TRUE)) == "try-error") {
                 ## Check to see if the "useTk" option is set
                 useTk <- .getCache("useTk")
-                if(is.null(useTk)){
+                if (is.null(useTk)) {
                     useTk <- .decideTk()
                 }
 
                 ## Initiate login
-                if (useTk){
+                if (useTk) {
                     message(.doTkLogin(credentials))
                 }else{
                     message(.doTerminalLogin(credentials))
@@ -213,7 +216,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 .doTerminalLogin <- function(credentials) {
     credentials <- .terminalGetCredentials(credentials)
     if(!is.null(credentials)) {
-        .doLogin(credentials)
+        .doAuth(credentials)
     }
 }
 
@@ -226,7 +229,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
         }
     )
     if(!is.null(credentials)) {
-        .doLogin(credentials)
+        .doAuth(credentials)
     }
 }
 
@@ -243,7 +246,7 @@ synapseLogout <- function(localOnly=FALSE, forgetMe=FALSE, silent=FALSE) {
     # Remove the HMAC key so that the session token is used
     hmacSecretKey(NULL)
 
-    if (!localOnly){
+    if (!localOnly && !is.null(sessionToken())) {
         response <- synapseDelete(uri = kService,
             endpoint = synapseServiceEndpoint("AUTH")
         )

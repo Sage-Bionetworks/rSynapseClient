@@ -8,10 +8,10 @@ Authentication
 Functions for handling Synapse authentication.
 }
 \usage{
-synapseLogin(username, password)
-synapseLogin(username = ..., apiKey = ...)
-synapseLogin(sessionToken = ...)
-synapseLogin(username = ...)
+synapseLogin(username, password, rememberMe=F)
+synapseLogin(username = ..., apiKey = ..., rememberMe=F)
+synapseLogin(sessionToken = ..., rememberMe=F)
+synapseLogin(username = ..., rememberMe=F)
 synapseLogin()
 synapseLogout(localOnly=FALSE)
 invalidateAPIKey()
@@ -22,6 +22,7 @@ invalidateAPIKey()
   \item{password}{Password associated with the username}
   \item{apiKey}{Can be found online by logging in and going to https://www.synapse.org/#!Settings:0}
   \item{sessionToken}{Usage not recommended}
+  \item{rememberMe}{Boolean indicated whether login should store session information on the local machine.  Defaults to FALSE}
   \item{localOnly}{Boolean controlling whether logout is done locally only, or propagated to Synapse}
 }
 \details{
