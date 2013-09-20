@@ -125,3 +125,59 @@ unitTestDoAuth_session_and_config <- function() {
     checkTrue(configParser_called)
     checkTrue(hasOption_called_correctly)
 }
+
+unitTest_logout <- function() {
+    synapseClient:::userName("foo")
+    synapseClient:::sessionToken("bar")
+    synapseClient:::hmacSecretKey("baz")
+    synapseDelete_called <- FALSE
+    synapseClient:::.mock("synapseDelete", function(...) {synapseDelete_called <<- TRUE})
+    
+    synapseLogout(silent=TRUE)
+    checkTrue(is.null(synapseClient:::userName()))
+    checkTrue(is.null(synapseClient:::sessionToken()))
+    checkTrue(class(try(synapseClient:::hmacSecretKey(), silent=TRUE)) == "try-error")
+    checkTrue(synapseDelete_called)
+    
+    # Try again without the session token
+    synapseClient:::userName("foo")
+    synapseClient:::hmacSecretKey("baz")
+    synapseDelete_called <- FALSE
+    
+    synapseLogout(silent=TRUE)
+    checkTrue(is.null(synapseClient:::userName()))
+    checkTrue(is.null(synapseClient:::sessionToken()))
+    checkTrue(class(try(synapseClient:::hmacSecretKey(), silent=TRUE)) == "try-error")
+    checkTrue(!synapseDelete_called)
+}
+
+unitTest_loginNoConfigFile <- function() {
+    credentials = list(username="", password="", sessionToken="", apiKey="")
+    
+    readSessionCache_called <- FALSE
+    synapseClient:::.mock(".readSessionCache", 
+        function(...) {
+            readSessionCache_called <<- TRUE
+            return(list(totally="ignored"))
+        }
+    )
+    
+    configParser_called <- FALSE
+    synapseClient:::.mock("ConfigParser", 
+        function(...) {
+            configParser_called <<- TRUE
+            synapseClient:::.getMockedFunction("ConfigParser")()
+        }
+    )
+    synapseClient:::.mock(".checkAndReadFile", function(...) {stop("Mwhaha!  No config file here!")})
+    
+    doTkLogin_called <- FALSE
+    doTerminalLogin_called <- FALSE
+    synapseClient:::.mock(".doTkLogin", function(...) {doTkLogin_called <<- TRUE})
+    synapseClient:::.mock(".doTerminalLogin", function(...) {doTerminalLogin_called <<- TRUE})
+    
+    synapseClient:::.doAuth(credentials)
+    checkTrue(readSessionCache_called)
+    checkTrue(configParser_called)
+    checkTrue(doTkLogin_called || doTerminalLogin_called)
+}
