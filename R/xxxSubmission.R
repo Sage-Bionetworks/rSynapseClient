@@ -35,7 +35,7 @@ setMethod(
     for (prop in names(propertiesList))
       propertyValue(submission, prop)<-propertiesList[[prop]]
     if (!is.null(submission$id)) submission@updateUri<-sprintf("/evaluation/submission/%s", submission$id)
-    fileHandle<-getFileHandleFromEntityBundleJSON(submission$entityBundleJSON)
+    fileHandle<-as.list(getFileHandleFromEntityBundleJSON(submission$entityBundleJSON))
     submission@fileHandle<-fileHandle
     
     submission
