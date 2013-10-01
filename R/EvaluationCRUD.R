@@ -16,8 +16,8 @@ synGetEvaluation<-function(id) {
   result
 }
 
-synGetEvaluationByProject <- function(id) {
-    uri <- sprintf("/evaluation/project/%s", id)
+synGetEvaluationByContentSource <- function(id) {
+    uri <- sprintf("/entity/%s/evaluation", id)
     content <- synRestGET(uri)
     
     paginatedResults <- new("PaginatedResults")
