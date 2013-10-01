@@ -124,4 +124,34 @@ integrationTest_submit_noTeamName <- function() {
   
 }
 
-
+# this is the test for SYNR-613
+integrationTest_externalURL <- function() {
+  # create an entity
+  project<-synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  file<-File(path="http://www.google.com", parentId=pid, name="foo", synapseStore=FALSE)
+  file<-synStore(file)
+  
+  # join the evaluation
+  evaluation<-synapseClient:::.getCache("testEvaluation")
+  eid<-propertyValue(evaluation, "id")
+  synapseClient:::.allowParticipation(eid, "PUBLIC")
+  synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
+  
+  # submit the entity
+  submissionName<-"test-sub-name"
+  submissionResult<-submit(evaluation=evaluation, entity=file, submissionName=submissionName, silent=T)
+  
+  submission<-submissionResult$submission
+  submissionReceiptMessage<-"Your submission has been received. Please check the leader board for your score." # duplicates def'n above
+  checkEquals(submissionReceiptMessage, submissionResult$submissionReceiptMessage)
+  
+  # In SYNR-613 the following breaks due to submitting an external URL
+  retrievedSubmission<-synGetSubmission(submission$id)
+  
+  checkEquals(propertyValue(file, "id"), propertyValue(retrievedSubmission, "entityId"))
+  checkEquals(propertyValue(file, "versionNumber"), propertyValue(retrievedSubmission, "versionNumber"))
+  checkEquals(eid, propertyValue(retrievedSubmission, "evaluationId"))
+  checkEquals(submissionName, retrievedSubmission$name)
+  
+}
