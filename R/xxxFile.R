@@ -3,7 +3,7 @@
 #
 # This error was fixed by renaming "File.R" to "FileX.R"
 #  Error in function (classes, fdef, mtable)  : 
-#    unable to find an inherited method for function ‘getFileCache’ for signature ‘"character", "character", "FileCacheFactory"’
+#    unable to find an inherited method for function getFileCache for signature "character", "character", "FileCacheFactory"
 # This error was fixed by renaming "FileX.R" to "xxxFile.R"
 # Error in `$<-`(`*tmp*`, "entityType", value = "org.sagebionetworks.repo.model.FileEntity") : 
 #  no method for assigning subsets of this S4 class
@@ -137,9 +137,14 @@ validdateFile<-function(file) {
   if (isExternal==FALSE & file@synapseStore==FALSE) stop("synapseStore=F but file is not external")
 }
 
+# returns the last modified timestamp or NA if the file does not exist
+lastModifiedTimestampNonexistentOK<-function(filePath) {
+  file.info(filePath)$mtime
+}
+
 lastModifiedTimestamp<-function(filePath) {
   if (!file.exists(filePath)) stop(sprintf("%s does not exist.", filePath))
-  file.info(filePath)$mtime
+  lastModifiedTimestampNonexistentOK(filePath)
 }
 
 fanoutDir<-function(fileHandleId) {
