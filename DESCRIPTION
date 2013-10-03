@@ -1,9 +1,9 @@
 Package: synapseClient
 Type: Package
 Title: Synapse R Client from Sage Bionetworks
-Version: 0.32
-ReleaseNotes: This list of issues was resolved: This list of issues was resolved: https://sagebionetworks.jira.com/secure/ReleaseNote.jspa?projectId=10238&version=12250
-Date: 2013-09-20
+Version: 0.32-1
+ReleaseNotes: This list of issues was resolved: This list of issues was resolved: https://sagebionetworks.jira.com/secure/ReleaseNote.jspa?projectId=10238&version=12650
+Date: 2013-10-4
 Author@R: c(
 	person("Bruce", "Hoff", email="bruce.hoff@sagebase.org", role="aut"),
 	person("Chris", "Bare", email="chris.bare@sagebase.org", role="aut"),
