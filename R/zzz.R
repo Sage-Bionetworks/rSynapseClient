@@ -22,6 +22,12 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     3) Use and contribute only data de-identified to HIPAA standards.
     4) Redistribute data only under these same terms of use.\n"
 
+  packageStartupMessage(tou)
+}
+
+.onLoad <-
+  function(libname, pkgname)
+{  
   ##set the R_OBJECT cache directory. check for a functional zip first
   packageStartupMessage("Verifying zip installation...")
 
@@ -43,12 +49,6 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     .setCache("hasZip", TRUE)
   }
   
-  packageStartupMessage(tou)
-}
-
-.onLoad <-
-  function(libname, pkgname)
-{  
 
   classpath <- c(list.files(file.path(find.package("synapseClient"), "java"), full.names=TRUE, pattern='jar$', recursive=FALSE))
   packageStartupMessage("\nChecking rJava installation...")

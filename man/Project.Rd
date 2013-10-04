@@ -24,17 +24,33 @@ The created Project is returned.  NOTE: This is an in-memory representation.  To
 
 \section{Slots}{
   \describe{
-    \item{\code{attachOwn}}{internally used information to handle file caching}
-    \item{\code{annotations}}{annotations set on the object}
-    \item{\code{synapseEntityKind}}{in this case, 'Project'}
-    \item{\code{synapseWebUrl}}{Synapse web URL}
-    \item{\code{generatedBy}}{the Activity which generated this Project, if applicable (see \code{\link{Activity}})}
+    \item{\code{attachOwn}}{
+    internally used information to handle file caching
+    }
+    \item{\code{annotations}}{
+    annotations set on the object
+    }
+    \item{\code{synapseEntityKind}}{
+    in this case, 'Project'
+    }
+    \item{\code{synapseWebUrl}}{
+    Synapse web URL
+    }
+    \item{\code{generatedBy}}{
+    the Activity which generated this Project, if applicable (see \code{\link{Activity}})
+    }
     \item{\code{properties}}{
     Synapse properties for a Project. Properties of interest include:
       \describe{
-        \item{\code{id}}{unique Synapse ID as set by the system upon synStore (not set by user)}
-        \item{\code{name}}{user supplied name}
-        \item{\code{description}}{user supplied description}
+        \item{\code{id}}{
+        unique Synapse ID as set by the system upon synStore (not set by user)
+        }
+        \item{\code{name}}{
+        user supplied name
+        }
+        \item{\code{description}}{
+        user supplied description
+        }
       }
     }
   }
