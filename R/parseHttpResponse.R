@@ -30,9 +30,9 @@ parseHttpResponse<-function(r) {
   if (headerCount>0) {
     for (j in 2:(headerCount+1)) {
       headerRow<-parsedResult[j]
-      i <- regexpr(": ", headerRow, fixed=T)
+      i <- regexpr(":", headerRow, fixed=T)
       if (i<0) stop(sprintf("Unexpected format for header %s", headerRow))
-      headers[[substr(headerRow, 1, i-1)]]<-substr(headerRow, i+2, nchar(headerRow))
+      headers[[substr(headerRow, 1, i-1)]]<-trimWhitespace(substr(headerRow, i+1, nchar(headerRow)))
     }
   }
   if (zeroLengthElement<length(parsedResult)) {
@@ -43,6 +43,9 @@ parseHttpResponse<-function(r) {
   # return list of response code, response string, headers, response body
   return(list(statusCode=responseStatusCode, statusString=responseStatusString, headers=headers, body=responseBody))
 }
+
+# from http://r.789695.n4.nabble.com/Remove-leading-and-trailing-white-spaces-td907851.html
+trimWhitespace<-function(x) sub("^[[:space:]]*(.*?)[[:space:]]*$", "\\1", x, perl=TRUE) 
 
 # returns the zero length character string from an array of character strings
 # stops if no zero length character string is found
