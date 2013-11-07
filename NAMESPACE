@@ -82,6 +82,7 @@ export(
   synapseLogout,  
   synapseCacheDir,
   hmacSecretKey,
+  invalidateAPIKey, 
   setApiCredentials,
   synapseQuery,
   synQuery,
