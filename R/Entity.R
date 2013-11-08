@@ -352,7 +352,7 @@ updateEntityMethod<-function(entity, newGeneratingActivity, forceVersion)
       stop("entity ID was null so could not update. use createEntity instead.")
     
     annots <- entity@annotations
-    updateUri<-entity$properties$uri
+    updateUri <- sprintf("/entity/%s", entity$properties$id)
     
     if (missing(forceVersion)) forceVersion=FALSE
     # only do the following for versionable entities
@@ -391,7 +391,7 @@ updateEntityMethod<-function(entity, newGeneratingActivity, forceVersion)
       # it's unfortunate to have to make another method call to update 'generatedBy' but
       # eventually 'generatedBy' may be part of the entity schema, obviating the need for the extra method call
       synapseDelete(sprintf("/entity/%s/generatedBy", entity$properties$id))
-      updatedEtagEntity<-synapseGet(entity$properties$uri)
+      updatedEtagEntity<-synapseGet(sprintf("/entity/%s", entity$properties$id))
       propertyValue(ee, "etag")<-updatedEtagEntity$etag
     }
     ee@generatedBy<-newGeneratingActivity

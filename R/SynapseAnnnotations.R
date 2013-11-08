@@ -242,7 +242,8 @@ setMethod(
       }
     }
 
-    SynapseAnnotations(synapsePut(entity@properties$uri, as.list(annotations)))
+    uri <- sprintf("/entity/%s/annotations", entity@properties$id)
+    SynapseAnnotations(synapsePut(uri, as.list(annotations)))
   }
 )
 

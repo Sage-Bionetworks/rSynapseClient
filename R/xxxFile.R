@@ -48,8 +48,6 @@ setClass(
 )
 
 getFileLocation <- function(file) {file@filePath}
-# synGetFileURL <- function(file) {properties(file)$uri}
-# synGetFilePath <- function(file) {file@filePath}
 
 synAnnotSetMethod<-function(object, which, value) {
   if(any(which==propertyNames(object))) {
