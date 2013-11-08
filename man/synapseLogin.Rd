@@ -1,6 +1,7 @@
 \name{synapseLogin}
 \alias{synapseLogin}
 \alias{synapseLogout}
+\alias{invalidateAPIKey}
 \title{
 Authentication
 }
