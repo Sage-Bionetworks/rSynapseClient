@@ -16,6 +16,22 @@ synGetEvaluation<-function(id) {
   result
 }
 
+synGetEvaluationByContentSource <- function(id) {
+    uri <- sprintf("/entity/%s/evaluation", id)
+    content <- synRestGET(uri)
+    
+    paginatedResults <- new("PaginatedResults")
+    paginatedResults@totalNumberOfResults <- as.integer(content$totalNumberOfResults)
+    for (s in content$results) {
+        result <- Evaluation(as.list(s))
+        result@updateUri <- sprintf("/evaluation/%s", propertyValue(result, "id"))
+        
+        n <- length(paginatedResults@results)
+        paginatedResults@results[[n+1]] <- result
+    }
+    return(paginatedResults)
+}
+
 newParticipantPaginatedResults<-function(content) {
   paginatedResults<-new("PaginatedResults")
   paginatedResults@totalNumberOfResults<-as.integer(content$totalNumberOfResults)
