@@ -250,7 +250,21 @@ scheduleCacheFolderForDeletion<-function(fileHandleId) {
   scheduleFolderForDeletion(synapseClient:::defaultDownloadLocation(fileHandleId))
 }
 
-integrationTestMetadataRoundTrip <- function() {
+integrationTestMetadataRoundTrip_URL <- function() {
+  project <- synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  
+  # create a file to be uploaded
+  synapseStore<-FALSE
+  filePath<-"http://dilbert.com/index.html"
+  file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
+  
+  # now store it
+  storedFile<-synStore(file)
+  metadataRoundTrip(storedFile, expectedFileLocation=filePath)
+}
+
+integrationTestMetadataRoundTrip_S3File <- function() {
   # create a Project
   project <- synapseClient:::.getCache("testProject")
   checkTrue(!is.null(project))
@@ -265,7 +279,10 @@ integrationTestMetadataRoundTrip <- function() {
   # now store it
   storedFile<-synStore(file)
   scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
-  
+  metadataRoundTrip(storedFile)
+}
+
+metadataRoundTrip <- function(storedFile, expectedFileLocation=character(0)) {  
   metadataOnly<-synGet(propertyValue(storedFile, "id"),downloadFile=F)
   metadataOnly<-synapseClient:::synAnnotSetMethod(metadataOnly, "annot", "value")
   storedMetadata<-synStore(metadataOnly, forceVersion=F)
@@ -279,8 +296,7 @@ integrationTestMetadataRoundTrip <- function() {
   
   retrievedMetadata<-synGet(propertyValue(storedFile, "id"),downloadFile=F)
   checkEquals(2, propertyValue(retrievedMetadata, "versionNumber"))
-  # no file location since we haven't downloaded anything
-  checkEquals(character(0), getFileLocation(retrievedMetadata))
+  checkEquals(expectedFileLocation, getFileLocation(retrievedMetadata))
   
   # of course we should still be able to get the original version
   originalVersion<-synGet(propertyValue(storedFile, "id"), version=1, downloadFile=F)
