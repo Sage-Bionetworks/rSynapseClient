@@ -11,8 +11,12 @@
 }
 
 .tearDown <- function() {
-  ## delete the test project
+  ## delete the test projects
   deleteEntity(synapseClient:::.getCache("testProject"))
+  project <- synapseClient:::.getCache("testProject2")
+  if (!is.null(project)) {
+    deleteEntity(project)
+  }
   
   foldersToDelete<-synapseClient:::.getCache("foldersToDelete")
   for (folder in foldersToDelete) {
@@ -284,12 +288,20 @@ integrationTestMetadataRoundTrip_S3File <- function() {
 
 metadataRoundTrip <- function(storedFile, expectedFileLocation=character(0)) {  
   metadataOnly<-synGet(propertyValue(storedFile, "id"),downloadFile=F)
+  
+  # Change some metadata
   metadataOnly<-synapseClient:::synAnnotSetMethod(metadataOnly, "annot", "value")
+  
+  # Also change the project the entity belongs to (SYNR-625(
+  project <- createEntity(Project())
+  synapseClient:::.setCache("testProject2", project)
+  propertyValue(metadataOnly, "parentId") <- propertyValue(project, "id")
+  
+  # Update the metadata
   storedMetadata<-synStore(metadataOnly, forceVersion=F)
-  
   checkEquals("value", synapseClient:::synAnnotGetMethod(storedMetadata, "annot"))
-  
-  checkEquals(1, propertyValue(metadataOnly, "versionNumber"))
+  checkEquals(propertyValue(project, "id"), propertyValue(storedMetadata, "parentId"))
+  checkEquals(1, propertyValue(storedMetadata, "versionNumber"))
   
   # now store again, but force a version update
   storedMetadata<-synStore(storedMetadata) # default is forceVersion=T
