@@ -67,7 +67,7 @@ integrationTestEvaluationRoundtrip <-
   checkEquals(evaluation2, evaluation)
   
   # Try getting the evaluation through the content source
-  paginatedEvaluations <- synapseClient:::synGetEvaluationByContentSource(projectId)
+  paginatedEvaluations <- synGetEvaluationByContentSource(projectId)
   checkEquals(paginatedEvaluations@results[[1]], evaluation)
   
   propertyValue(evaluation, "status")<-"OPEN"
