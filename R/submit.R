@@ -26,6 +26,7 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
     if (is.null(evaluationId)) stop("The Evaluation provided does not have an ID.")
   } else if (is(evaluation, "character")) {
     evaluationId<-evaluation
+    evaluation <- synGetEvaluation(evaluationId)
   } else {
     stop("You must provide an evaluation or and evaluation ID.")
   }
