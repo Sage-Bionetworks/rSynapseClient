@@ -12,9 +12,8 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
       entityAsList<-try(findExistingEntity(propertyValue(entity, "name"), propertyValue(entity, "parentId")), silent=TRUE)
       if (class(entityAsList)!='try-error') {
         # found it!
+        # this copies retrieved properties not overwritten by the given entity
         mergedProperties<-copyProperties(as.list.SimplePropertyOwner(entity), entityAsList)
-        # this copies retrieved properties not overwritten by the given entity, including id
-        # hence it turns a 'create' operation into an 'update' operation
         propertyValues(entity)<-mergedProperties
         if (class(entity)=="File") {
             entity@fileHandle<-getFileHandle(entity)

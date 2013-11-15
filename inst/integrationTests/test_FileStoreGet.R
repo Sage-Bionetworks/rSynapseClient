@@ -418,6 +418,30 @@ createOrUpdateIntern<-function(project) {
   checkEquals("try-error", class(result))
 }
 
+integrationTestCreateOrUpdate_MergeAnnotations <- function() {
+    # Test for SYNR-586
+    project <- synapseClient:::.getCache("testProject")
+    checkTrue(!is.null(project))
+    pid<-propertyValue(project, "id")
+    
+    # Add some annotations to the project
+    annotValue(project, "a") <- "1"
+    annotValue(project, "b") <- "2"
+    project <- synStore(project)
+    
+    # Create another project with the same name and slighly different annotations
+    project2 <- Project(name=propertyValue(project, "name"))
+    annotValue(project2, "b") <- "3"
+    annotValue(project2, "c") <- "4"
+    project2 <- synStore(project2)
+    
+    # Check for the expected ID and annotations
+    checkEquals(propertyValue(project2, "id"), pid)
+    checkEquals(annotValue(project2, "a"), "1")
+    checkEquals(annotValue(project2, "b"), "3")
+    checkEquals(annotValue(project2, "c"), "4")
+}
+
 #
 # This code exercises the file services underlying upload/download to/from an entity
 #
