@@ -16,6 +16,7 @@
   project <- synapseClient:::.getCache("testProject2")
   if (!is.null(project)) {
     deleteEntity(project)
+    synapseClient:::.setCache("testProject2", NULL)
   }
   
   foldersToDelete<-synapseClient:::.getCache("foldersToDelete")
