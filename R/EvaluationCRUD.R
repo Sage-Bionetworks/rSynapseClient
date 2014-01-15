@@ -62,19 +62,13 @@ synGetParticipants<-function(evaluationId,limit,offset) {
 }
 
 # Experimental method! liable to change in future without notice
-.allowParticipation <- function(evaluationId, user, 
+.allowParticipation <- function(evaluationId, userPrincipalId, 
         rights=c("READ", "PARTICIPATE", "SUBMIT", "UPDATE_SUBMISSION")) {
     # Treat integers as user IDs and strings as user groups
-    userId <- suppressWarnings(as.integer(user))
+    userId <- suppressWarnings(as.integer(userPrincipalId))
     
-    # Fetch the user ID for a user group
     if (is.na(userId)) {
-        groups <- synRestGET(sprintf('/userGroupHeaders?prefix=%s', user))
-        for (child in groups$children) {
-            if (all(!child$isIndividual && child$displayName == user)) {
-                userId <- as.integer(child$ownerId)
-            }
-        }
+      stop(sprintf("Expected user's principal Id but found %s", userPrincipalId))
     }
     
     # Grab the ACL 
