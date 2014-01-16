@@ -30,7 +30,8 @@ integrationTest_submit <- function() {
   # join the evaluation
   evaluation<-synapseClient:::.getCache("testEvaluation")
   eid<-propertyValue(evaluation, "id")
-  synapseClient:::.allowParticipation(eid, "PUBLIC")
+  PUBLIC_GROUP_PRINCIPAL_ID<-273949 # This is defined in org.sagebionetworks.repo.model.AuthorizationConstants
+  synapseClient:::.allowParticipation(eid, PUBLIC_GROUP_PRINCIPAL_ID)
   synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
   
   # submit the entity
@@ -108,7 +109,8 @@ integrationTest_submit_noTeamName <- function() {
   # join the evaluation
   evaluation<-synapseClient:::.getCache("testEvaluation")
   eid<-propertyValue(evaluation, "id")
-  synapseClient:::.allowParticipation(eid, "PUBLIC")
+  PUBLIC_GROUP_PRINCIPAL_ID<-273949 # This is defined in org.sagebionetworks.repo.model.AuthorizationConstants
+  synapseClient:::.allowParticipation(eid, PUBLIC_GROUP_PRINCIPAL_ID)
   synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
   
   # submit the entity
@@ -135,7 +137,8 @@ integrationTest_externalURL <- function() {
   # join the evaluation
   evaluation<-synapseClient:::.getCache("testEvaluation")
   eid<-propertyValue(evaluation, "id")
-  synapseClient:::.allowParticipation(eid, "PUBLIC")
+  PUBLIC_GROUP_PRINCIPAL_ID<-273949 # This is defined in org.sagebionetworks.repo.model.AuthorizationConstants
+  synapseClient:::.allowParticipation(eid, PUBLIC_GROUP_PRINCIPAL_ID)
   synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
   
   # submit the entity

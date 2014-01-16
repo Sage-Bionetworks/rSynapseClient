@@ -87,9 +87,9 @@ synStoreNonEntityObject<-function(object) {
     } else {
       synUpdate(object)
     }
-  } else if (is(object, "UserProfile")) {
+  #} else if (is(object, "UserProfile")) { # SYNR-671 will restore this
     # note, user can't create a UserProfile, only update one
-    synUpdateUserProfile(object)
+   # synUpdateUserProfile(object) # SYNR-671 will restore this
   } else if (is(object, "SubmissionStatus")) {
     # note, user can't create a SubmissionStatus, only update one
     synUpdate(object)   
