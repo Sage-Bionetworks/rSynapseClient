@@ -14,13 +14,10 @@ This constructor is not called directly, rather an instance is returned by synGe
 \examples{
 # get my own user profile
 profile<-synGetUserProfile()
-propertyValue(profile, "position")<-"Imperial Vice Duke of all Engineering"
-profile<-synStore(profile)
 # get someone else's profile
 principalId<-"123456"
 profile<-synGetUserProfile(principalId)
 }
 \seealso{
 \code{\link{synGetUserProfile}}
-\code{\link{synStore}}
 }
