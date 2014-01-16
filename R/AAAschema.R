@@ -9,7 +9,7 @@ TYPEMAP <- list(
   float = "numeric",
   number = "numeric",
   object = "character",
-  array = "list"
+  array = "character"
 )
 
 getResources <- 
