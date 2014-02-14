@@ -51,7 +51,6 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   chunkResults<-list()
   connection<-file(filepath, open="rb")
   repeat {
-    #chunk <- readChar(connection, chunksizeBytes)
     chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
     if (length(chunk)==0) break
     # get the ith chunk from the file

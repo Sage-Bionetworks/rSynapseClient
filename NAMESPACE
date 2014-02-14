@@ -87,7 +87,8 @@ export(
   setApiCredentials,
   synapseQuery,
   synQuery,
-  touOnWeb
+  touOnWeb,
+  sendMessage
 )
 
 ## S3 convenience methods
