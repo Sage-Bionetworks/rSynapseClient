@@ -5,7 +5,7 @@
 # <header name>: <header value>
 # ...
 # <blank line>
-# <resonse body>
+# <response body>
 # 
 # Author: brucehoff
 ###############################################################################
@@ -14,7 +14,10 @@ parseHttpResponse<-function(r) {
   parsedResult<-strsplit(r, "\r\n", fixed=TRUE)[[1]]
   # sometimes the response has two extra lines:  "100 Continue", followed by a blank line
   # I believe this is RCurl returning an intermediate response concatenated with the final response
-  while (length(parsedResult)>2 && parsedResult[1]=="HTTP/1.1 100 Continue" && parsedResult[2]=="") {
+  # Update:  Sometimes the first of these two lines is "HTTP/1.0 200 Connection established"
+  while (length(parsedResult)>2 && 
+    (parsedResult[1]=="HTTP/1.1 100 Continue" || parsedResult[1]=="HTTP/1.0 200 Connection established")
+    && parsedResult[2]=="") {
     parsedResult<-parsedResult[3:length(parsedResult)]
 	}
   firstRow<-strsplit(parsedResult[1], " ")[[1]]
