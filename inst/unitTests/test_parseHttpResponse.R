@@ -49,7 +49,6 @@ unitTestRedirect <-
 unitTestConnectionEstablished <-
   function()
 {
-  # this is the response indicating a redirect.  there is no response body
   s<-"HTTP/1.0 200 Connection established\r\n\r\nHTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/json\r\nDate: Thu, 20 Feb 2014 00:44:53 GMT\r\nServer: Apache-Coyote/1.1\r\nContent-Length: 29\r\nConnection: keep-alive\r\n\r\n{\"version\":\"30.0-4-g4e1bf9f\"}"
   ans <- synapseClient:::parseHttpResponse(s)
   # parsed response has (1) status code, (2) status string, (3) headers, (4) body
