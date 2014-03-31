@@ -13,7 +13,7 @@ checkInteger <- function(x){
     }else{
       xx <- x
     }
-    if(any(isS4(xx)) | length(xx) == 0L | is.list(xx)){
+    if(any(isS4(xx)) | length(xx) == 0L | is.list(xx) | is.character(xx)){
       result <- c(result, FALSE)
     }else{
       suppressWarnings(thisVal <- tryCatch({

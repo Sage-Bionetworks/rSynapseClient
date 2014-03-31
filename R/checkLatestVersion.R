@@ -14,7 +14,7 @@ checkLatestVersion<-function() {
 .majorVersion<-function(v) {strsplit(v, "[-]")[[1]][1]}
 
 .majorVersionDiff<-function(v1, v2) {
-  .majorVersion(v1)!=.majorVersion(v2)
+  .majorVersion(v1) < .majorVersion(v2)
 }
 
 # for testing purposes returns the printed message

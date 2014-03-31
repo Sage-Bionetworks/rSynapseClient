@@ -27,5 +27,4 @@ profile<-synGetUserProfile(principalId)
 }
 \seealso{
 \code{\link{UserProfile}}
-\code{\link{synStore}}
 }

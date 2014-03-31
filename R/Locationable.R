@@ -196,11 +196,7 @@ setMethod(
     }
 
     entity <- tryCatch(
-      if(.getCache("useJava")){
-        .performMultipartUpload(entity, filePath)
-      }else{
-        .performRUpload(entity, filePath)
-      },
+      .performRUpload(entity, filePath),
       error = function(e){
         warning(sprintf("failed to upload data file, please try again: %s", e))
         return(entity)

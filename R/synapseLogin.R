@@ -235,7 +235,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 
 .doWelcome <- function() {  
     ## try to fetch user's display name from profile for a proper greeting
-    greetingName <- synapseGet(uri="/userProfile")$displayName
+    greetingName <- synapseGet(uri="/userProfile")$userName
 
     message(sprintf("Welcome %s!", greetingName))
 }

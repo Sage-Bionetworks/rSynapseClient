@@ -58,6 +58,7 @@ export(
   synGetSubmission,
   synGetSubmissionStatus,
   synGetEvaluation,
+  synGetEvaluationByContentSource, 
   synGetSubmissions,
   synGetParticipants,
   synGetWikiHeaders,
@@ -82,10 +83,12 @@ export(
   synapseLogout,  
   synapseCacheDir,
   hmacSecretKey,
+  invalidateAPIKey, 
   setApiCredentials,
   synapseQuery,
   synQuery,
-  touOnWeb
+  touOnWeb,
+  sendMessage
 )
 
 ## S3 convenience methods

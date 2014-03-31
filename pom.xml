@@ -17,81 +17,10 @@
 	<packaging>pom</packaging>
 	<name>Synapse R Client</name>
 
-	<repositories>
-		<repository>
-			<id>sagebionetworks-releases-local</id>
-			<name>sagebionetworks-releases-local</name>
-			<url>http://sagebionetworks.artifactoryonline.com/sagebionetworks/libs-releases-local
-			</url>
-		</repository>
-		<repository>
-			<id>sagebionetworks-ext</id>
-			<name>sagebionetworks-releases-ext</name>
-			<url>http://sagebionetworks.artifactoryonline.com/sagebionetworks/ext-releases-local
-			</url>
-		</repository>
-	</repositories>
-
-	<dependencies>
-
-		<dependency>
-			<groupId>org.sagebionetworks</groupId>
-			<artifactId>synapseJavaClient</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.sagebionetworks</groupId>
-			<artifactId>lib-auto-generated</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
-
-	</dependencies>
-
 	<build>
 		<plugins>
-
-			<!-- Unpack java client with this -->
-			<plugin>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack-java-client</id>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<phase>compile</phase>
-						<configuration>
-							<outputDirectory>inst/java</outputDirectory>
-							<includeArtifacIds>synapseJavaClient</includeArtifacIds>
-							<stripVersion>true</stripVersion>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- Unpack json schemas -->
-			<plugin>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack-java-client</id>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<phase>compile</phase>
-						<configuration>
-							<outputDirectory>inst/tmp</outputDirectory>
-							<includeArtifacIds>lib-auto-generated</includeArtifacIds>
-							<stripVersion>true</stripVersion>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
 			<!-- We use this assembly to package the R and Python dependencies so 
-				they are aviablible for integration testing. -->
+				they are available for integration testing. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>

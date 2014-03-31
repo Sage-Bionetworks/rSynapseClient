@@ -6,19 +6,26 @@
 
 synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F) {  
   if (is(entity, "Entity")) {
-    if (is(entity, "Locationable")) stop("For 'Locationable' entities you must use createEntity, storeEntity, or updateEntity.")
- 
+    if (is(entity, "Locationable")) {
+      stop("For 'Locationable' entities you must use createEntity, storeEntity, or updateEntity.")
+    }
+    
     if (is.null(propertyValue(entity, "id")) && createOrUpdate) {
       entityAsList<-try(findExistingEntity(propertyValue(entity, "name"), propertyValue(entity, "parentId")), silent=TRUE)
       if (class(entityAsList)!='try-error') {
-        # found it!
+        # Found it!
+        # This copies retrieved properties not overwritten by the given entity
         mergedProperties<-copyProperties(as.list.SimplePropertyOwner(entity), entityAsList)
-        # this copies retrieved properties not overwritten by the given entity, including id
-        # hence it turns a 'create' operation into an 'update' operation
+        
+        # This also includes ID, which turns a "create" into an "update"
         propertyValues(entity)<-mergedProperties
         if (class(entity)=="File") {
             entity@fileHandle<-getFileHandle(entity)
         }
+        
+        # But the create-or-update logic lies in the "create" operation
+        # So the ID must be nullified before proceeding
+        propertyValue(entity, "id") <- NULL
       }
     }
     
@@ -80,9 +87,9 @@ synStoreNonEntityObject<-function(object) {
     } else {
       synUpdate(object)
     }
-  } else if (is(object, "UserProfile")) {
+  #} else if (is(object, "UserProfile")) { # SYNR-671 will restore this
     # note, user can't create a UserProfile, only update one
-    synUpdateUserProfile(object)
+   # synUpdateUserProfile(object) # SYNR-671 will restore this
   } else if (is(object, "SubmissionStatus")) {
     # note, user can't create a SubmissionStatus, only update one
     synUpdate(object)   

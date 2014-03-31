@@ -48,8 +48,6 @@ setClass(
 )
 
 getFileLocation <- function(file) {file@filePath}
-# synGetFileURL <- function(file) {properties(file)$uri}
-# synGetFilePath <- function(file) {file@filePath}
 
 synAnnotSetMethod<-function(object, which, value) {
   if(any(which==propertyNames(object))) {
@@ -165,6 +163,7 @@ getCacheMapFileContent<-function(fileHandleId) {
   cacheMapFile<-cacheMapFilePath(fileHandleId)
   if (!file.exists(cacheMapFile)) return(list())
   cacheRecordJson<-readFile(cacheMapFile)
+  if (nchar(cacheRecordJson)==0) return (list())
   as.list(fromJSON(cacheRecordJson))
 }
 

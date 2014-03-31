@@ -48,40 +48,6 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     .setCache("rObjCacheDir", ".R_OBJECTS/")
     .setCache("hasZip", TRUE)
   }
-  
-
-  classpath <- c(list.files(file.path(find.package("synapseClient"), "java"), full.names=TRUE, pattern='jar$', recursive=FALSE))
-  packageStartupMessage("\nChecking rJava installation...")
-
-  .setCache("useJava", FALSE)
-
-  if(("rJava" %in% utils::installed.packages())){
-    options(java.parameters="-Xrs")
-    javaInitReturn <- tryCatch(
-      rJava::.jinit(classpath), 
-      error = function(e){
-        print(e)
-        .setCache("useJava", FALSE)
-        -1L
-      }
-    )
-    if(javaInitReturn >= 0L){
-      tryCatch({
-          # use the non-default text-based progress listener for uploads
-          progress <- rJava::.jnew("org/sagebionetworks/client/TextProgressListener")
-          uploader <- rJava::.jnew("org/sagebionetworks/client/DataUploaderMultipartImpl")
-          uploader$setProgressListener(progress)
-
-          .setCache("mpUploader", uploader)
-          .setCache("useJava", TRUE)
-          packageStartupMessage("OK")
-        }, error = function(e) {
-          print(e)
-          .setCache("useJava", FALSE)
-        }
-      )
-    }
-  }
 
   .setCache("curlOpts", list(low.speed.time=60, low.speed.limit=1, connecttimeout=300, followlocation=TRUE, ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))
   .setCache("curlHeader", c('Content-Type'="application/json", Accept = "application/json", "Accept-Charset"="utf-8", "User-Agent" = .userAgent()))

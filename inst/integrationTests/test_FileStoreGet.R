@@ -11,8 +11,13 @@
 }
 
 .tearDown <- function() {
-  ## delete the test project
+  ## delete the test projects
   deleteEntity(synapseClient:::.getCache("testProject"))
+  project <- synapseClient:::.getCache("testProject2")
+  if (!is.null(project)) {
+    deleteEntity(project)
+    synapseClient:::.setCache("testProject2", NULL)
+  }
   
   foldersToDelete<-synapseClient:::.getCache("foldersToDelete")
   for (folder in foldersToDelete) {
@@ -250,7 +255,21 @@ scheduleCacheFolderForDeletion<-function(fileHandleId) {
   scheduleFolderForDeletion(synapseClient:::defaultDownloadLocation(fileHandleId))
 }
 
-integrationTestMetadataRoundTrip <- function() {
+integrationTestMetadataRoundTrip_URL <- function() {
+  project <- synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  
+  # create a file to be uploaded
+  synapseStore<-FALSE
+  filePath<-"http://dilbert.com/index.html"
+  file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
+  
+  # now store it
+  storedFile<-synStore(file)
+  metadataRoundTrip(storedFile, expectedFileLocation=filePath)
+}
+
+integrationTestMetadataRoundTrip_S3File <- function() {
   # create a Project
   project <- synapseClient:::.getCache("testProject")
   checkTrue(!is.null(project))
@@ -265,22 +284,32 @@ integrationTestMetadataRoundTrip <- function() {
   # now store it
   storedFile<-synStore(file)
   scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
-  
+  metadataRoundTrip(storedFile)
+}
+
+metadataRoundTrip <- function(storedFile, expectedFileLocation=character(0)) {  
   metadataOnly<-synGet(propertyValue(storedFile, "id"),downloadFile=F)
+  
+  # Change some metadata
   metadataOnly<-synapseClient:::synAnnotSetMethod(metadataOnly, "annot", "value")
+  
+  # Also change the project the entity belongs to (SYNR-625(
+  project <- createEntity(Project())
+  synapseClient:::.setCache("testProject2", project)
+  propertyValue(metadataOnly, "parentId") <- propertyValue(project, "id")
+  
+  # Update the metadata
   storedMetadata<-synStore(metadataOnly, forceVersion=F)
-  
   checkEquals("value", synapseClient:::synAnnotGetMethod(storedMetadata, "annot"))
-  
-  checkEquals(1, propertyValue(metadataOnly, "versionNumber"))
+  checkEquals(propertyValue(project, "id"), propertyValue(storedMetadata, "parentId"))
+  checkEquals(1, propertyValue(storedMetadata, "versionNumber"))
   
   # now store again, but force a version update
   storedMetadata<-synStore(storedMetadata) # default is forceVersion=T
   
   retrievedMetadata<-synGet(propertyValue(storedFile, "id"),downloadFile=F)
   checkEquals(2, propertyValue(retrievedMetadata, "versionNumber"))
-  # no file location since we haven't downloaded anything
-  checkEquals(character(0), getFileLocation(retrievedMetadata))
+  checkEquals(expectedFileLocation, getFileLocation(retrievedMetadata))
   
   # of course we should still be able to get the original version
   originalVersion<-synGet(propertyValue(storedFile, "id"), version=1, downloadFile=F)
@@ -388,6 +417,30 @@ createOrUpdateIntern<-function(project) {
   project3<-Project(name=propertyValue(project, "name"))
   result<-try(synStore(project3, createOrUpdate=F), silent=T)
   checkEquals("try-error", class(result))
+}
+
+integrationTestCreateOrUpdate_MergeAnnotations <- function() {
+    # Test for SYNR-586
+    project <- synapseClient:::.getCache("testProject")
+    checkTrue(!is.null(project))
+    pid<-propertyValue(project, "id")
+    
+    # Add some annotations to the project
+    annotValue(project, "a") <- "1"
+    annotValue(project, "b") <- "2"
+    project <- synStore(project)
+    
+    # Create another project with the same name and slighly different annotations
+    project2 <- Project(name=propertyValue(project, "name"))
+    annotValue(project2, "b") <- "3"
+    annotValue(project2, "c") <- "4"
+    project2 <- synStore(project2)
+    
+    # Check for the expected ID and annotations
+    checkEquals(propertyValue(project2, "id"), pid)
+    checkEquals(annotValue(project2, "a"), "1")
+    checkEquals(annotValue(project2, "b"), "3")
+    checkEquals(annotValue(project2, "c"), "4")
 }
 
 #

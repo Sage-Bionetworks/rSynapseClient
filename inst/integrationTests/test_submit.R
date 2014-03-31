@@ -30,7 +30,8 @@ integrationTest_submit <- function() {
   # join the evaluation
   evaluation<-synapseClient:::.getCache("testEvaluation")
   eid<-propertyValue(evaluation, "id")
-  synapseClient:::.allowParticipation(eid, "PUBLIC")
+  PUBLIC_GROUP_PRINCIPAL_ID<-273949 # This is defined in org.sagebionetworks.repo.model.AuthorizationConstants
+  synapseClient:::.allowParticipation(eid, PUBLIC_GROUP_PRINCIPAL_ID)
   synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
   
   # submit the entity
@@ -47,6 +48,11 @@ integrationTest_submit <- function() {
   checkEquals(teamName, submission$submitterAlias)
   
   # retrieve the submission
+  # first, get rid of the local copy
+  origChecksum<- as.character(tools::md5sum(getFileLocation(file)))
+  unlink(getFileLocation(file))
+  unlink(synapseClient:::cacheMapFilePath(file@fileHandle$id))
+  
   submission2<-synGetSubmission(propertyValue(submission, "id"))
   # make sure they're the same (except the download file path)
   submission2MinusFilePath<-submission2
@@ -56,6 +62,10 @@ integrationTest_submit <- function() {
   # check that the file was downloaded
   checkTrue(!is.null(getFileLocation(submission2)))
   checkTrue(!is.null(submission2@fileHandle))
+  # check that the file content is correct!
+  submissionCheckSum<-as.character(tools::md5sum(getFileLocation(submission2)))
+  checkEquals(origChecksum, submissionCheckSum)
+  
   checkEquals(0, length(listObjects(submission2)))
   
   # now download with load=T
@@ -108,7 +118,8 @@ integrationTest_submit_noTeamName <- function() {
   # join the evaluation
   evaluation<-synapseClient:::.getCache("testEvaluation")
   eid<-propertyValue(evaluation, "id")
-  synapseClient:::.allowParticipation(eid, "PUBLIC")
+  PUBLIC_GROUP_PRINCIPAL_ID<-273949 # This is defined in org.sagebionetworks.repo.model.AuthorizationConstants
+  synapseClient:::.allowParticipation(eid, PUBLIC_GROUP_PRINCIPAL_ID)
   synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
   
   # submit the entity
@@ -135,7 +146,8 @@ integrationTest_externalURL <- function() {
   # join the evaluation
   evaluation<-synapseClient:::.getCache("testEvaluation")
   eid<-propertyValue(evaluation, "id")
-  synapseClient:::.allowParticipation(eid, "PUBLIC")
+  PUBLIC_GROUP_PRINCIPAL_ID<-273949 # This is defined in org.sagebionetworks.repo.model.AuthorizationConstants
+  synapseClient:::.allowParticipation(eid, PUBLIC_GROUP_PRINCIPAL_ID)
   synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
   
   # submit the entity

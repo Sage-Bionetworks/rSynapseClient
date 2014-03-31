@@ -223,54 +223,49 @@ createEntityMethod<-function(entity, generatingActivity, createOrUpdate, forceVe
     createUri <- sprintf("%s?generatedBy=%s", createUri, propertyValue(generatingActivity, "id"))
   }
   
-  entity <- as.list.SimplePropertyOwner(entity)
+  entityAsList <- as.list.SimplePropertyOwner(entity)
 
   if (createOrUpdate) {
     curlHandle=getCurlHandle()
-    entityAsList<-synapsePost(createUri, entity, curlHandle=curlHandle, checkHttpStatus=FALSE)
+    entityAsList<-synapsePost(createUri, entityAsList, curlHandle=curlHandle, checkHttpStatus=FALSE)
     # is it a 409 response?  If so, the entity already exists
     curlInfo <- .getCurlInfo(curlHandle)
     if (curlInfo$response.code==409) {
-      # retrieve the object
-      entityAsList<-findExistingEntity(entity$name, entity$parentId)
-      # apply the properties of the new entity to the discovered one
-      entity<-copyProperties(entity,entityAsList)
-      # now update the existing entity
-      updateUri<-sprintf("/entity/%s", entity$id)
-      if (missing("forceVersion")) forceVersion=FALSE
-      # only do the following for versionable entities
-      if (forceVersion && any("versionNumber"==names(entity))) {
-        updateUri <-sprintf("%s/version", updateUri)
-        # make sure the version label changes!
-        versionLabel<-entity$versionLabel
-        # if the version is the string version of the numeric version field...
-        if (!is.null(versionLabel) && !is.null(entity$versionNumber) && entity$versionNumber==versionLabel) {
-          # ... then increment it
-        entity$versionLabel <- sprintf("%d", 1+as.numeric(versionLabel))
-        }
+      # Retrieve the object
+      entityAsList <- as.list.SimplePropertyOwner(entity)
+      existingEntity<-findExistingEntity(entityAsList$name, entityAsList$parentId)
+      
+      # Apply the properties of the new entity to the discovered one
+      # This copies retrieved properties not overwritten by the given entity, including id
+      mergedProperties<-copyProperties(entityAsList, existingEntity)
+      propertyValues(entity)<-mergedProperties
+      
+      # Apply the annotations of the old entity to the discovered one
+      oldAnnots <- getAnnotations(existingEntity[['id']])
+      for (n in annotationNames(entity)) {
+        annotValue(oldAnnots, n) <- annotValue(entity, n)
       }
-      if (!is.null(generatingActivity)) {
-        updateUri<-sprintf("%s?generatedBy=%s", updateUri, propertyValue(generatingActivity, "id"))
-      }
-      entityAsList<-synapsePut(updateUri, entity)
+      entity@annotations <- oldAnnots
+      
+      # Perform the update
+      entity <- updateEntityMethod(entity, generatingActivity, forceVersion)
+      return(entity)
     } else {
       .checkCurlResponse(curlHandle, toJSON(entityAsList))
     }
   } else {
-    entityAsList<-synapsePost(createUri, entity)
+    entityAsList<-synapsePost(createUri, as.list.SimplePropertyOwner(entity))
   }
-  entity <- getEntityInstance(entityAsList)
   # create the entity in Synapse and get back the id
-  annots <- getAnnotations(entity$properties$id)
+  entity <- getEntityInstance(entityAsList)
   
-  # merge annotations from input variable into 'annots'
+  # Save the annotations
+  annots <- getAnnotations(entity$properties$id)
   for (n in annotationNames(oldAnnots)) {
     annotValue(annots, n) <- annotValue(oldAnnots, n)
   }
-  
   if(length(annotationNames(annots)) > 0L){
     annots <- updateEntity(annots)
-    propertyValue(annots, "id") <- entity$properties$id
   }
   entity$properties$etag <- propertyValue(annots, "etag")
   
@@ -352,7 +347,7 @@ updateEntityMethod<-function(entity, newGeneratingActivity, forceVersion)
       stop("entity ID was null so could not update. use createEntity instead.")
     
     annots <- entity@annotations
-    updateUri<-entity$properties$uri
+    updateUri <- sprintf("/entity/%s", entity$properties$id)
     
     if (missing(forceVersion)) forceVersion=FALSE
     # only do the following for versionable entities
@@ -391,7 +386,7 @@ updateEntityMethod<-function(entity, newGeneratingActivity, forceVersion)
       # it's unfortunate to have to make another method call to update 'generatedBy' but
       # eventually 'generatedBy' may be part of the entity schema, obviating the need for the extra method call
       synapseDelete(sprintf("/entity/%s/generatedBy", entity$properties$id))
-      updatedEtagEntity<-synapseGet(entity$properties$uri)
+      updatedEtagEntity<-synapseGet(sprintf("/entity/%s", entity$properties$id))
       propertyValue(ee, "etag")<-updatedEtagEntity$etag
     }
     ee@generatedBy<-newGeneratingActivity
