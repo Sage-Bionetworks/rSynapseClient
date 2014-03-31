@@ -48,6 +48,11 @@ integrationTest_submit <- function() {
   checkEquals(teamName, submission$submitterAlias)
   
   # retrieve the submission
+  # first, get rid of the local copy
+  origChecksum<- as.character(tools::md5sum(getFileLocation(file)))
+  unlink(getFileLocation(file))
+  unlink(synapseClient:::cacheMapFilePath(file@fileHandle$id))
+  
   submission2<-synGetSubmission(propertyValue(submission, "id"))
   # make sure they're the same (except the download file path)
   submission2MinusFilePath<-submission2
@@ -57,6 +62,10 @@ integrationTest_submit <- function() {
   # check that the file was downloaded
   checkTrue(!is.null(getFileLocation(submission2)))
   checkTrue(!is.null(submission2@fileHandle))
+  # check that the file content is correct!
+  submissionCheckSum<-as.character(tools::md5sum(getFileLocation(submission2)))
+  checkEquals(origChecksum, submissionCheckSum)
+  
   checkEquals(0, length(listObjects(submission2)))
   
   # now download with load=T
