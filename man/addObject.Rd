@@ -39,7 +39,7 @@ getObject(owner) (omitting 'which'), for an entity having just one object, will 
 
 It is important to note that the objects held by an entity are stored in an environment. In R environments are passed by reference. So, if 
 you make multiple copies of an entity, any modifications made to the objects held by one copy of the entity will be propagated to all copies
-of that entity. use \code{\link{copyEntity}} to prevent this. 
+of that entity.
 
 Another implication of using environments is that it is not technically necessary to catch the return value from these functions. However, it
 may help the clarity of your code to do so.
@@ -54,7 +54,6 @@ Matt Furia
 
 \seealso{
 \code{\link{addFile}}
-\code{\link{copyEntity}}
 
 }
 

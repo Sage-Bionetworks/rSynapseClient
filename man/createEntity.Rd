@@ -123,6 +123,4 @@ Matt Furia
 %%  ~~further notes~~
 }
 
-\seealso{
-\code{\link{SynapseEntity}}
-}
+

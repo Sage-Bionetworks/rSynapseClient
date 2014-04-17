@@ -12,13 +12,13 @@ synGetWiki(owner, id)
 }
 \details{
 Retrieves a WikiPage given its owner (Entity or Evaluation) and, optionally, its ID.  If no ID is specified then 
-the root ID is returned.   To get the IDs of all the WikiPages for an owner, see getWikiHeaders.
+the root ID is returned.   To get the IDs of all the WikiPages for an owner, see synGetWikiHeaders.
 }
 \examples{
 entity<-synGet("syn123456")
 wikiPage<-synGetWiki(entity)
 }
 \seealso{
-\code{\link{getWikiHeaders}}
+\code{\link{synGetWikiHeaders}}
 \code{\link{synStore}}
 }
