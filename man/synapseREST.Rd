@@ -53,7 +53,4 @@ Matt Furia
 These are internal function and should not be called by the user
 }
 
-\seealso{
-\code{\link{curlPerform}}
-}
 
