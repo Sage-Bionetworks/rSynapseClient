@@ -460,7 +460,7 @@ integrationTestContentType <- function() {
   storedFile<-synStore(file, contentType=myContentType)
   scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
   
-  checkEquals(myContentTYpe, getFileHandle(storedFile)$contentType)
+  checkEquals(myContentType, getFileHandle(storedFile)$contentType)
 }
 
 #

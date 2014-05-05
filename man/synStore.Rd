@@ -41,6 +41,7 @@ For File entities only:  If TRUE then Download access by others is prevented and
 \item{contentType}{
 The (optional) contentType, stored when the File is uploaded. If omitted, it is the MIME type inferred from the file's suffix.
 }
+}
 \details{
 Stores an object crafted in memory, either creating it in Synapse anew, or updating an existing object.
 }
