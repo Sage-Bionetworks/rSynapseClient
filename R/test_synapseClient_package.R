@@ -13,7 +13,8 @@
   function(dir=system.file("integrationTests", package="synapseClient"), testFileRegexp="^test_.*\\.R$")
 {
 ##  .doTestConfigureNamespace()
-  .runTestSuite(dir=dir, testFileRegexp=testFileRegexp, testFuncRegexp="^integrationTest.+", suiteName="integration tests")
+  res <- .runTestSuite(dir=dir, testFileRegexp=testFileRegexp, testFuncRegexp="^integrationTest.+", suiteName="integration tests")
+  return(res)
 ##  .undoTestConfigureNamespace()
 }
 

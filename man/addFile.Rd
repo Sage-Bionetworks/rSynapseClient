@@ -61,7 +61,6 @@
 }
 \seealso{
   \code{\link{addObject}}
-  \code{\link{moveObject}}
   \code{\link{deleteObject}}
   \code{\link{storeEntity}}
   \code{\link{downloadEntity}}
