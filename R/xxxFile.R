@@ -210,7 +210,7 @@ localFileUnchanged<-function(fileHandleId, filePath) {
 
 uploadAndAddToCacheMap<-function(filePath, contentType=NULL) {
   lastModified<-lastModifiedTimestamp(filePath)
-  fileHandle<-chunkedUploadFile(filePath, contentType)
+  fileHandle<-chunkedUploadFile(filepath=filePath, contentType=contentType)
   if (lastModified!=lastModifiedTimestamp(filePath)) stop(sprintf("During upload, %s was modified by another process.", filePath))
   addToCacheMap(fileHandle$id, filePath, lastModified)
   fileHandle
@@ -260,7 +260,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
       # meta data only
     } else { # ... we are storing a new file
       if (file@synapseStore) { # ... we are storing a new file which we are also uploading
-        fileHandle<-uploadAndAddToCacheMap(file@filePath, contentType)
+        fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, contentType=contentType)
       } else { # ... we are storing a new file which we are linking, but not uploading
         # link external URL in Synapse, get back fileHandle	
         fileName <- basename(file@filePath)
@@ -282,7 +282,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         # since local file matches Synapse file (or was not actually retrieved) nothing to store
       } else {
         #	load file into Synapse, get back fileHandle (save in slot, put id in properties)
-        fileHandle<-uploadAndAddToCacheMap(file@filePath, contentType)
+        fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, contentType=contentType)
         file@fileHandle<-fileHandle
         propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
       }

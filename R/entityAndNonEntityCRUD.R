@@ -30,7 +30,7 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
     }
     
     if (class(entity)=="File") {
-      entity<-synStoreFile(file=entity, createOrUpdate, forceVersion, contentType)
+      entity<-synStoreFile(file=entity, createOrUpdate=createOrUpdate, forceVersion=forceVersion, contentType=contentType)
     }
     # Now save the metadata
     generatingActivity<-NULL
