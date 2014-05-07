@@ -4,7 +4,7 @@
 ###############################################################################
 
 
-synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F) {  
+synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL) {  
   if (is(entity, "Entity")) {
     if (is(entity, "Locationable")) {
       stop("For 'Locationable' entities you must use createEntity, storeEntity, or updateEntity.")
@@ -29,9 +29,8 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
       }
     }
     
-    if (class(entity)=="File" || class(entity)=="Record") {
-      entity<-synStoreFile(file=entity, createOrUpdate, forceVersion)
-      # TODO: Handle Record
+    if (class(entity)=="File") {
+      entity<-synStoreFile(file=entity, createOrUpdate=createOrUpdate, forceVersion=forceVersion, contentType=contentType)
     }
     # Now save the metadata
     generatingActivity<-NULL
@@ -49,7 +48,7 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
     } else {
       storedEntity<-updateEntityMethod(entity, generatingActivity, forceVersion)
     }
-    if (class(entity)=="File" || class(entity)=="Record") {
+    if (class(entity)=="File") {
       # now copy the class-specific fields into the newly created object
       if (fileHasFilePath(entity)) storedEntity@filePath <- entity@filePath
       storedEntity@synapseStore <- entity@synapseStore
@@ -132,9 +131,8 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
     } else {
       file<-getEntity(id, version=version)
     }   
-    if ((class(file)=="File" || class(file)=="Record")) {
+    if ((class(file)=="File")) {
       file<-synGetFile(file, downloadFile, downloadLocation, ifcollision, load)
-      # TODO: Handle Record
     } else {
       if (is (file, "Locationable") && downloadFile) {
         if (!is.null(downloadLocation)) {

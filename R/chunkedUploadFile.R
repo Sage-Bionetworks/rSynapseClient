@@ -14,7 +14,7 @@
 #  Author: brucehoff
 ###############################################################################
 
-chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes=5*1024*1024) {
+chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes=5*1024*1024, contentType=NULL) {
   if (chunksizeBytes < 5*1024*1024)
       stop('Minimum chunksize is 5 MB.')
   
@@ -27,7 +27,9 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   chunkNumber <- 1 # service requires that chunk number be >0
   
   # guess mime-type - important for confirmation of MD5 sum by receiver
-  mimetype<-getMimeTypeForFile(basename(filepath))
+  if (is.null(contentType)) {
+    contentType<-getMimeTypeForFile(basename(filepath))
+  }
   
   ## S3 wants 'content-type' and 'content-length' headers. S3 doesn't like
   ## 'transfer-encoding': 'chunked', which requests will add for you, if it
@@ -38,10 +40,10 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   ## If you give S3 'transfer-encoding' and no 'content-length', you get:
   ## 501 Server Error: Not Implemented
   ## A header you provided implies functionality that is not implemented
-  headers <- list('Content-Type'=mimetype)
+  headers <- list('Content-Type'=contentType)
   
   ## get token
-  token <- createChunkedFileUploadToken(filepath, mimetype)
+  token <- createChunkedFileUploadToken(filepath, contentType)
   if (debug) {
     message(sprintf('\n\ntoken: %s\n', listToString(token)))
   }
@@ -77,14 +79,14 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   completeChunkFileUpload(token, chunkResults)
 }
 
-createChunkedFileUploadToken<-function(filepath, mimetype) {
+createChunkedFileUploadToken<-function(filepath, contentType) {
   md5 <- tools::md5sum(path.expand(filepath))
   if (is.na(md5)) stop(sprintf("Unable to compute md5 for %s", filepath))
   names(md5)<-NULL # Needed to make toJSON work right
 
   chunkedFileTokenRequest<-list(
     fileName=basename(filepath),
-    contentType=mimetype,
+    contentType=contentType,
     contentMD5=md5
   )
   

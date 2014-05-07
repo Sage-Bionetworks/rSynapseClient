@@ -7,8 +7,8 @@ Store an object in Synapse
 Store an object in Synapse
 }
 \usage{
-synStore(entity, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F)
-synStore(entity, activity=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F)
+synStore(entity, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)
+synStore(entity, activity=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)
 }
 \arguments{
  \item{entity}{
@@ -37,6 +37,9 @@ For versionable entities only:  If TRUE new version of the object is created.  N
 }
  \item{isRestricted}{
 For File entities only:  If TRUE then Download access by others is prevented and the Synapse Access and Compliance Team is contacted to help craft the appropriate Terms of Use.  This argument is employed when uploading sensitive human data.
+}
+\item{contentType}{
+The (optional) contentType, stored when the File is uploaded. If omitted, it is the MIME type inferred from the file's suffix.
 }
 }
 \details{

@@ -443,6 +443,21 @@ integrationTestCreateOrUpdate_MergeAnnotations <- function() {
     checkEquals(annotValue(project2, "c"), "4")
 }
 
+integrationTestContentType <- function() {
+  # create a Project
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  # create a file to be uploaded
+  filePath<- createFile(content="Some content")
+  file<-File(filePath, parentId=propertyValue(project, "id"))
+  # now store it
+  myContentType<-"text/plain"
+  storedFile<-synStore(file, contentType=myContentType)
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
+  
+  checkEquals(myContentType, synapseClient:::getFileHandle(storedFile)$contentType)
+}
+
 #
 # This code exercises the file services underlying upload/download to/from an entity
 #

@@ -208,9 +208,9 @@ localFileUnchanged<-function(fileHandleId, filePath) {
   !is.null(downloadedTimestamp) && .formatAsISO8601(lastModifiedTimestamp(filePath))==downloadedTimestamp
 }
 
-uploadAndAddToCacheMap<-function(filePath) {
+uploadAndAddToCacheMap<-function(filePath, contentType=NULL) {
   lastModified<-lastModifiedTimestamp(filePath)
-  fileHandle<-chunkedUploadFile(filePath)
+  fileHandle<-chunkedUploadFile(filepath=filePath, contentType=contentType)
   if (lastModified!=lastModifiedTimestamp(filePath)) stop(sprintf("During upload, %s was modified by another process.", filePath))
   addToCacheMap(fileHandle$id, filePath, lastModified)
   fileHandle
@@ -253,18 +253,20 @@ serializeObjects<-function(file) {
   filePath
 }
 
-synStoreFile <- function(file, createOrUpdate=T, forceVersion=T) {
+synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NULL) {
   if (hasObjects(file)) file@filePath<-serializeObjects(file)
   if (!fileHasFileHandleId(file)) { # if there's no existing Synapse File associated with this object...
     if (!fileHasFilePath(file)) { # ... and there's no local file staged for upload ...
       # meta data only
     } else { # ... we are storing a new file
       if (file@synapseStore) { # ... we are storing a new file which we are also uploading
-        fileHandle<-uploadAndAddToCacheMap(file@filePath)
+        fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, contentType=contentType)
       } else { # ... we are storing a new file which we are linking, but not uploading
         # link external URL in Synapse, get back fileHandle	
         fileName <- basename(file@filePath)
-        contentType<-getMimeTypeForFile(fileName)
+        if (is.null(contentType)) {
+          contentType<-getMimeTypeForFile(fileName)
+        }
         fileHandle<-synapseLinkExternalFile(file@filePath, fileName, contentType)
         # note, there's no cache map entry to create
       }
@@ -280,7 +282,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T) {
         # since local file matches Synapse file (or was not actually retrieved) nothing to store
       } else {
         #	load file into Synapse, get back fileHandle (save in slot, put id in properties)
-        fileHandle<-uploadAndAddToCacheMap(file@filePath)
+        fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, contentType=contentType)
         file@fileHandle<-fileHandle
         propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
       }
