@@ -13,9 +13,11 @@ This constructor is not called directly, rather an instance is returned by synGe
 }
 
 \examples{
+\dontrun{
 status<-synGetSubmissionStatus("12345")
 propertyValue(status, "STATUS")<-"SCORED"
 status<-synStore(status)
+}
 }
 \seealso{
 \code{\link{synGetSubmissions}}

@@ -32,10 +32,12 @@ Bruce Hoff
 \code{\link{hmacSecretKey}}
 }
 \examples{
+\dontrun{
 	synapseLogin("user.name@sagebase.org", "foo", mode="hmac")
 	key <- hmacSecretKey()
 	synapseLogout()
 	setApiCredentials("user.name@sagebase.org", key)
 	# you may now make authenticated requests to Synapse
+}
 }
 

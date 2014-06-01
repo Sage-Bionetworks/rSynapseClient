@@ -28,6 +28,7 @@
   \code{\link{synapseQuery}}
 }
 \examples{
+\dontrun{
   ## get a QueryResult object back from a query
   qr <- synapseQuery("select id, name, parentId from file limit 1000", blockSize=100)
 
@@ -49,7 +50,7 @@
   ## accumulate the remaining results.
   ## df will be a data.frame with all 1000 accumulated rows
   df <- qr$collectAll()
-
+}
 }
 \keyword{query}
 \keyword{results}

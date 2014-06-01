@@ -17,6 +17,7 @@ while email address is private.  When retrieving ones own user profile, all fiel
 another's profile, only the public fields are returned.
 }
 \examples{
+\dontrun{
 # get my own user profile
 profile<-synGetUserProfile()
 propertyValue(profile, "position")<-"Imperial Vice Duke of all Engineering"
@@ -24,6 +25,7 @@ profile<-synStore(profile)
 # get someone else's profile
 principalId<-"123456"
 profile<-synGetUserProfile(principalId)
+}
 }
 \seealso{
 \code{\link{UserProfile}}

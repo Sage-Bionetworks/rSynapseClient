@@ -70,6 +70,7 @@
   Bruce Hoff <bruce.hoff@sagebase.org>
 }
 \examples{
+\dontrun{
   ## execute code in a local file
   resultEntity <- synapseExecute(
   		executable="/path/to/file.R", 
@@ -87,5 +88,6 @@
   		codeParentId="syn987654", 
   		resultEntityProperties=list(a="foo", b="bar),  
   		resultEntityName="exampleOutput")
+}
 }
 

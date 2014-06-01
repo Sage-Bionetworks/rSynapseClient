@@ -71,7 +71,7 @@
   
   ## create a plot that will be added to the Media entity
   datFile <- tempfile(fileext=".txt")
-  write.table(data.frame(diag(10)), file=datFile, row.names=F, col.names=F)
+  write.table(data.frame(diag(10)), file=datFile, row.names=FALSE, col.names=FALSE)
 
   ## add the file to the root of the entity's cache
   ## BE SURE TO CAPTURE THE RETURN VALUE

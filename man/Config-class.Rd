@@ -28,6 +28,7 @@
 }
 
 \examples{
+\dontrun{
   # Logging into Synapse with loaded credentials
   config <- ConfigParser("~/.synapseConfig")
   
@@ -37,4 +38,5 @@
     password <- Config.getOption(config, "authentication", "password")
     synapseLogin(username, password)
   }
+ }
 }

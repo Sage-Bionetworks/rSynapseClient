@@ -23,8 +23,10 @@ The name of the property or value to be set/retrieved.
 The attribute value.
 }
 \examples{
+\dontrun{
 	synAnnot(entity, "name")<-"syn101"
 	synAnnot(entity, "tissueType")<-"plasma"
 	synAnnot(entity, "id")
+}
 }
 

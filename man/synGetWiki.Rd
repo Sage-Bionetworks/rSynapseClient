@@ -15,8 +15,10 @@ Retrieves a WikiPage given its owner (Entity or Evaluation) and, optionally, its
 the root ID is returned.   To get the IDs of all the WikiPages for an owner, see synGetWikiHeaders.
 }
 \examples{
+\dontrun{
 entity<-synGet("syn123456")
 wikiPage<-synGetWiki(entity)
+}
 }
 \seealso{
 \code{\link{synGetWikiHeaders}}

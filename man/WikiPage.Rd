@@ -34,9 +34,11 @@ This creates a wiki page (in memory), or sub-page beneath an existing page for t
 
 
 \examples{
+\dontrun{
 entity<-synGet("syn123456")
 page<-WikiPage(owner=entity, title="Wiki Page for Entity", markdown="markdown goes here")
 page<-synStore(page)
+}
 }
 \seealso{
 \code{\link{synGetWiki}}
