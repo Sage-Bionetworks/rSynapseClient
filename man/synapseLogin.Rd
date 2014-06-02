@@ -35,6 +35,7 @@ it is likely that the user will be logged out for all web clients currently in u
 To logout globally across all analytical clients, use invalidateAPIKey().
 }
 \examples{
+\dontrun{
   # Logging into Synapse with the rememberMe flag
   synapseLogin(username, password, rememberMe=TRUE)
   
@@ -43,6 +44,7 @@ To logout globally across all analytical clients, use invalidateAPIKey().
   
   # Login with remembered credentials
   synapseLogin()
+}
 }
 \seealso{
   \code{\link{Config}}

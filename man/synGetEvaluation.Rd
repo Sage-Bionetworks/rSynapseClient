@@ -16,6 +16,7 @@ synGetEvaluation retrieves an Evaluation object, given its ID.
 synGetEvaluationByContentSource retrieves all Evaluations that derive their content from a Project, give its ID.  
 }
 \examples{
+\dontrun{
 # get an arbitrary Evaluation ID
 anEvaluationId<-synRestGET("/evaluation")$results[[1]]["id"]
 # retrieve the evaluation
@@ -31,6 +32,7 @@ evaluation<-synStore(evaluation)
 projectId <- "syn1720047" 
 paginatedEvaluations <- synGetEvaluationByContentSource(projectId)
 evaluation <- paginatedEvaluations@results[[1]]
+}
 }
 \seealso{
 \code{\link{synStore}}

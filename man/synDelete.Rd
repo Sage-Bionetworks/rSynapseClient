@@ -23,7 +23,9 @@ Deletes the given object from Synapse.
 \code{\link{synStore}}
 }
 \examples{
+\dontrun{
 	evaluation<-synGetEvaluation("123456")
 	synDelete(evaluation)
+}
 }
 

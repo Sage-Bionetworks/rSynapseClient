@@ -15,8 +15,10 @@ WikiHeader includes the Wiki's ID and that of its parent Wiki.  This information
 necessary to know the tree structure of the Wiki pages belonging to a given owner.
 }
 \examples{
+\dontrun{
 entity<-synGet("syn123456")
 wikiHeaders<-synGetWikiHeaders(entity)
+}
 }
 \seealso{
 \code{\link{synGetWiki}}

@@ -27,6 +27,8 @@ To send a message to the members of a Team, the sender must also be a member of 
 
 
 \examples{
+\dontrun{
  sendMessage(list("1234567"), "message subject", "message body")
+}
 }
 

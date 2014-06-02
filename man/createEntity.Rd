@@ -119,8 +119,6 @@ All other methods return a copy of the entity after performing the desired actio
 \author{
 Matt Furia
 }
-\note{
-%%  ~~further notes~~
-}
+
 
 
