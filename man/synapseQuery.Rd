@@ -60,7 +60,7 @@ Nicole Deflaux
   df <- qr$collect()
 
   ## accumulate the remaining results.
-  ## df will be a data.frame with 900 accumulated rows
+  ## df will be a data.frame with 1000 accumulated rows
   df <- qr$collectAll()
 }
 }
