@@ -3,3 +3,6 @@ src/*.o
 src/*.so
 .project
 .settings/*
+.Rproj.user
+.Rbuildignore
+rSynapseClient.Rproj
