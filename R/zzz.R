@@ -102,14 +102,17 @@ kSupportedDataLocationTypes <- c("external", "awss3")
       "org.sagebionetworks.repo.model.wiki.WikiHeader"
     )
     
-    for(ee in nonEntities){ 
-      synapseClient:::defineNONEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
-      synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+    for(ee in nonEntities) { 
+      # only define the class if it's not already defined
+      tryCatch(
+        new(ee),
+        error=function(e) {
+          synapseClient:::defineS4ClassForSchema(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+          #synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+        },
+        silent=T
+      )
     }
-    
-    # we override FileEntity, Submission with our own class constructor.  See also entitiesToLoad() in AAAschema.R
-addToEntityTypeMap(className="FileListConstructor", jsonSchemaName="org.sagebionetworks.repo.model.FileEntity")
-addToEntityTypeMap(className="SubmissionListConstructor", jsonSchemaName="org.sagebionetworks.evaluation.model.Submission")
 }
 
 

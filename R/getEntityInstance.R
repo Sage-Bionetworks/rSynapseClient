@@ -46,7 +46,7 @@ setMethod(
 
       cacheRoot <- gsub("[\\/]+", "/", normalizePath(cacheRoot))
 
-      if(cacheRoot %in% synapseClient:::availFileCaches()){
+      if(cacheRoot %in% availFileCaches()){
           ee@archOwn@fileCache <- getFileCache(cacheRoot)
       } else{
           setCacheRoot(ee@archOwn, cacheRoot, clean = FALSE)

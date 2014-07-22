@@ -23,7 +23,7 @@ setMethod(
       stop("all properties must be named")
     if(any(table(names(typeMap)) > 1L))
       stop("each name must appear only once")
-    if(!all(typeMap %in% TYPEMAP))
+    if(!all(typeMap %in% TYPEMAP_FOR_ENTITY_PROPS))
       stop("invalid data type specified")
 
     object <- new("SynapseProperties")

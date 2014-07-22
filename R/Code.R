@@ -75,7 +75,7 @@ setMethod(
     
     class(entity) <- "GithubCode"
     
-    destfile <- synapseClient:::.curlWriterDownload(url=url)
+    destfile <- .curlWriterDownload(url=url)
     
     if(!exists("destfile")){
       stop(paste("Downloaded file", destfile, "does not exists"))

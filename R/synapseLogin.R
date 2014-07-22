@@ -7,8 +7,8 @@
 setApiCredentials <-
     function(username, secretKey)
 {
-  synapseClient:::userName(username)
-  synapseClient:::hmacSecretKey(secretKey)
+  userName(username)
+  hmacSecretKey(secretKey)
 }
 
 synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey = "", rememberMe = FALSE) {

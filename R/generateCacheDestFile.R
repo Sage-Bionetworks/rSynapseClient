@@ -1,6 +1,6 @@
 .generateCacheDestFile <-
 	function(url, version = NULL)
 {
-	parsedUrl <- synapseClient:::.ParsedUrl(url)
+	parsedUrl <- .ParsedUrl(url)
   file.path(.generateCacheDestDir(url, version), parsedUrl@file)
 }

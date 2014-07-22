@@ -5,7 +5,7 @@
 
 synapseCacheDir <- function(cacheDir){
   if(missing(cacheDir)){
-    return(synapseClient:::.getCache("synapseCacheDir"))
+    return(.getCache("synapseCacheDir"))
   }
 
   if(is.null(cacheDir))
@@ -28,5 +28,5 @@ synapseCacheDir <- function(cacheDir){
   } else if(!isdir){
   	warning(sprintf("Could not set cache directory to '%s' since a regular file with that name\n already exists. Some features will\nnot be functional. Use the 'synapseCacheDir()'\nfunction to set a writable cache directory.", cacheDir))
   } 
-  synapseClient:::.setCache("synapseCacheDir", cacheDir)
+  .setCache("synapseCacheDir", cacheDir)
 }
