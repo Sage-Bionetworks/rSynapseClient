@@ -164,6 +164,18 @@ defineS4ClassForSchema <-
     package=package
   )
   
+  
+  # This generic constructor takes the form:
+  # ClassName(slot1=value1, slot2=value2, ...)
+  assign(name, function(...) {
+      args <-list(...)
+      obj<-new(name)
+      for (slot in names(args)) {
+        obj@slot<-args[[slot]]
+      }
+      obj      
+    })
+  
   setGeneric(
     name=name,
     def = function(...) {
@@ -171,23 +183,24 @@ defineS4ClassForSchema <-
     },
     package = package
   )
-  
-  # This generic constructor takes the form:
-  # ClassName(slot1=value1, slot2=value2, ...)
-  setMethod(
-    f = name,
-    signature = "missing",
-    definition = function(...) {
-      args <-list(...)
-      obj<-new(name)
-      for (slot in names(args)) {
-        obj@slot<-args[[slot]]
-      }
-      obj
-    },
-    where = where
-  )
-  
+
+#  # This generic constructor takes the form:
+#  # ClassName(slot1=value1, slot2=value2, ...)
+#  setMethod(
+#    f = name,
+#    signature = "missing",
+#    definition = function(...) {
+#      args <-list(...)
+#      obj<-new(name)
+#      for (slot in names(args)) {
+#        obj@slot<-args[[slot]]
+#      }
+#      obj
+#    },
+#    where = where
+#  )
+
+
 }
 
 defineEntityConstructors <-
