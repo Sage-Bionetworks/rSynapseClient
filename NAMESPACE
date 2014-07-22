@@ -68,7 +68,6 @@ export(
 	"Project",
 	"Activity",
 	"Evaluation",
-	"UserProfile",
 	"WikiPage"
 )
 

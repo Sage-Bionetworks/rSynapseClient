@@ -1,9 +1,18 @@
-# TODO: Add comment
+# This module generates S4 classes from JSON schemas.
+# Note:  There is similar code in AAAschema, but it specifically generates
+# classes which extend Entity.  This code is generic.
 # 
 # Author: brucehoff
 ###############################################################################
 
 
+# This maps the keyword found in the JSON schema to the 
+# type used in the S4 class. Note:  'array' maps to 'list'
+# not vector. Mapping to vector would have the advantage
+# of retaining the type of the field.  However the library
+# that maps objects to JSON (for HTTP requests) cannot differentiate
+# between scalars and vectors of unit length, which are the
+# same in R but very different in JSON.
 TYPEMAP_FOR_ALL_PRIMITIVES <- list(
   string = "character",
   integer = "integer",
@@ -13,6 +22,7 @@ TYPEMAP_FOR_ALL_PRIMITIVES <- list(
   boolean = "logical"
 )
 
+# Omit the part of the string preceding the last "." (if any)
 getClassNameFromSchemaName<-function(which) {
   if (is.null(which)) return(NULL)
   result<-gsub("^.+[\\.]", "", which)
@@ -20,6 +30,10 @@ getClassNameFromSchemaName<-function(which) {
   result
 }
 
+# 'which' is the full class name
+# 'name' is the Class name.  If omitted it's the suffix of 'which', e.g. 
+# if 'which' is "org.sagebionetworks.repo.model.Folder" and 'name' is omitted,
+# then the Class name is "Folder".
 defineS4ClassForSchema <- 
   function(which, name, where = parent.frame(), package)
 {
@@ -79,7 +93,6 @@ defineS4ClassForSchema <-
     package=package
   )
   
-  
   # This generic constructor takes the form:
   # ClassName(slot1=value1, slot2=value2, ...)
   assign(name, function(...) {
@@ -91,6 +104,9 @@ defineS4ClassForSchema <-
       obj      
     })
   
+  # If we don't define a 'generic' version of the constructor
+  # we get an error when we try to include it as an export in
+  # the NAMESPACE file.
   setGeneric(
     name=name,
     def = function(...) {
@@ -105,8 +121,7 @@ isPrimitiveType <- function(type) {
   !is.na(match(type, TYPEMAP_FOR_ALL_PRIMITIVES))
 }
 
-mapTypesForAllSlots <- 
-  function(types)
+mapTypesForAllSlots <- function(types)
 { 
   indx <- match(types, names(TYPEMAP_FOR_ALL_PRIMITIVES))
   retval <- TYPEMAP_FOR_ALL_PRIMITIVES[indx]
@@ -121,20 +136,22 @@ mapTypesForAllSlots <-
   retval
 }
 
-getImplements<-function(entityDef) {
-  if(is.null(entityDef))
+# get the parent class or NULL if none
+getImplements<-function(schema) {
+  if(is.null(schema))
     return(NULL)
-  entityDef$implements
+  schema$implements
 }
 
-getType<-function(entityDef) {
+getType<-function(schema) {
   if(is.null(which))
     return(NULL)
-  entityDef$type
+  schema$type
 }
 
-isVirtual<-function(entityDef) {
-  type<-getType(entityDef)
+# returns TRUE iff the schema defines an interface
+isVirtual<-function(schema) {
+  type<-getType(schema)
   !is.null(type) && type=="interface"
 }
 
