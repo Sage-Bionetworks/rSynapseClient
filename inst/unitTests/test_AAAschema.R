@@ -4,21 +4,21 @@
 #########################################################
 
 unitTestGetImplements<-function() {
-  checkTrue(is.null(getImplements(readEntityDef("org.sagebionetworks.repo.model.table.Row"))))
-  folderSchemaDef<-readEntityDef("org.sagebionetworks.repo.model.Folder")
-  checkTrue(!is.null(getImplements(folderSchemaDef)))
-  checkEquals("org.sagebionetworks.repo.model.Entity", getImplements(folderSchemaDef))
+  checkTrue(is.null(synapseClient:::getImplements(synapseClient:::readEntityDef("org.sagebionetworks.repo.model.table.Row"))))
+  folderSchemaDef<-synapseClient:::readEntityDef("org.sagebionetworks.repo.model.Folder")
+  checkTrue(!is.null(synapseClient:::getImplements(folderSchemaDef)))
+  checkEquals("org.sagebionetworks.repo.model.Entity", synapseClient:::getImplements(folderSchemaDef))
 }
 
 unitTestisVirtual<-function() {
-  checkTrue(!isVirtual(readEntityDef("org.sagebionetworks.repo.model.table.Row")))
-  checkTrue(!isVirtual(readEntityDef("org.sagebionetworks.repo.model.Folder")))
-  checkTrue(isVirtual(readEntityDef("org.sagebionetworks.repo.model.Entity")))
+  checkTrue(!synapseClient:::isVirtual(synapseClient:::readEntityDef("org.sagebionetworks.repo.model.table.Row")))
+  checkTrue(!synapseClient:::isVirtual(synapseClient:::readEntityDef("org.sagebionetworks.repo.model.Folder")))
+  checkTrue(synapseClient:::isVirtual(synapseClient:::readEntityDef("org.sagebionetworks.repo.model.Entity")))
 }
 
 unitTestGetPropertyTypes<-function() {
-  checkEquals(list(dataFileHandleId, "character"), getPropertyTypes(which="org.sagebionetworks.repo.model.FileEntity"))
-  upProperties<-getPropertyTypes(which="org.sagebionetworks.repo.model.UserProfile")
+  checkEquals(list(dataFileHandleId, "character"), synapseClient:::getPropertyTypes(which="org.sagebionetworks.repo.model.FileEntity"))
+  upProperties<-synapseClient:::getPropertyTypes(which="org.sagebionetworks.repo.model.UserProfile")
   checkEquals("character", upProperties$lastName)
   checkEquals("org.sagebionetworks.repo.model.message.Settings", upProperties$notificationSettings)
 }
