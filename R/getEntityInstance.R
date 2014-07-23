@@ -11,7 +11,7 @@ setMethod(
     if (is.null(entity$concreteType)) {
       class <- NULL
     } else {
-     class <- getClassNameFromSchemaName(entity$concreteType)
+     class <- getClassForConcreteType(entity$concreteType)
     }
 
     ## synapseEntity is the default

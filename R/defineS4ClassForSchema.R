@@ -92,11 +92,19 @@ defineS4ClassForSchema <-
     package=package
   )
   
-  # This generic constructor takes the form:
+  # This generic constructor takes one of two forms:
+  # ClassName(list(slot1=value1, slot2=value2, ...))
+  # or
   # ClassName(slot1=value1, slot2=value2, ...)
   assign(name, function(...) {
       args <-list(...)
       obj<-new(name)
+      
+      # this provides a list constructor
+      if (length(args)==1 && is.null(names(args)) && class(args[[1]])=="list") {
+        args<-args[[1]]
+      }
+      
       for (slotName in names(args)) {
         slot(obj, slotName)<-args[[slotName]]
       }
@@ -118,15 +126,34 @@ defineS4ClassForSchema <-
     f = "$",
     signature = name,
     definition = function(x, name){
-      x@name
+      slot(x,name)
     }
   )
   
   setReplaceMethod("$", 
     signature = name,
     definition = function(x, name, value) {
-      x@name<-value
+      slot(x, name)<-value
       x
+    }
+  )
+  
+  # for backwards compatibility
+  setMethod(
+    f = "propertyValue",
+    signature = signature(name, "character"),
+    definition = function(object, which){
+      slot(object, which)
+    }
+  )
+  
+  # for backwards compatibility
+  setReplaceMethod(
+    f = "propertyValue",
+    signature = signature(name, "character"),
+    definition = function(object, which, value) {
+      slot(object, which) <- value
+      object
     }
   )
   
@@ -141,10 +168,20 @@ mapTypesForAllSlots <- function(types)
   indx <- match(types, names(TYPEMAP_FOR_ALL_PRIMITIVES))
   retval <- TYPEMAP_FOR_ALL_PRIMITIVES[indx]
   
+  # find the indices null entries in 'retval'
   mk <- sapply(X=retval, FUN=function(x)is.null(x))
   
   if (any(mk)) {
-    retval[mk] <-types[mk]
+    for (i in which(mk)) {
+      fieldSchema <- readEntityDef(types[i])
+      if (is.null(fieldSchema$properties) && !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[fieldSchema$type])) {
+        # it's an 'enum' or similar.  use the type of the field's schema
+        retval[i] <- TYPEMAP_FOR_ALL_PRIMITIVES[fieldSchema$type]
+      } else {
+        # use the original type
+        retval[i] <- types[i]
+      }
+    }
   }
   
   names(retval) <- names(types)

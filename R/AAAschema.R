@@ -18,6 +18,11 @@ getResources <-
   RJSONIO::fromJSON(system.file("resources/Register.json", package="synapseClient"))
 }
 
+getClassForConcreteType<-function(concreteType) {
+  if (concreteType=="org.sagebionetworks.repo.model.FileEntity") return("FileListConstructor")
+  getClassNameFromSchemaName(concreteType)
+}
+
 entitiesToLoad <- 
     function(resources = getResources())
 {
