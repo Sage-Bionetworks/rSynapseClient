@@ -53,8 +53,8 @@ defineS4ClassForSchema <-
       tryCatch(new(implementsName), 
         error = function(e){
           defineS4ClassForSchema(which=i, where=where, package=package)
-        }, 
-        silent=TRUE)
+        }
+      )
     }
   }
   
@@ -75,7 +75,6 @@ defineS4ClassForSchema <-
           # if we can't instantiate it, it's not defined yet, so define it!
           defineS4ClassForSchema(which=propertyType, where=where, package=package)
         }
-      #,silent=TRUE
       )
     }
   }
@@ -98,11 +97,11 @@ defineS4ClassForSchema <-
   assign(name, function(...) {
       args <-list(...)
       obj<-new(name)
-      for (slot in names(args)) {
-        obj@slot<-args[[slot]]
+      for (slotName in names(args)) {
+        slot(obj, slotName)<-args[[slotName]]
       }
       obj      
-    })
+  })
   
   # If we don't define a 'generic' version of the constructor
   # we get an error when we try to include it as an export in
@@ -113,6 +112,22 @@ defineS4ClassForSchema <-
       do.call(name, list(...))
     },
     package = package
+  )
+  
+  setMethod(
+    f = "$",
+    signature = name,
+    definition = function(x, name){
+      x@name
+    }
+  )
+  
+  setReplaceMethod("$", 
+    signature = name,
+    definition = function(x, name, value) {
+      x@name<-value
+      x
+    }
   )
   
 }
