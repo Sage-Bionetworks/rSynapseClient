@@ -96,15 +96,26 @@ putSchemaToCache<-function(key, value) {
   setPackageVariable(schemaCacheName, schemaCache)
 }
 
+# Omit the part of the string preceding the last "." (if any)
+getClassNameFromSchemaName<-function(schemaName) {
+  if (is.null(schemaName)) return(NULL)
+  result<-gsub("^.+[\\.]", "", schemaName)
+  names(result)<-names(schemaName)
+  result
+}
+
 readEntityDef <-
     function(name, path = system.file("resources/schema",package="synapseClient"))
 {
-    if (class(name)=="list") {
+  if (class(name)=="list") {
       # TODO Why does this happen!?!??!
       message(sprintf("readEntityDef: unexpected list for name: %s", name))
       name<-name[[1]]
-    }
-  result<-getSchemaFromCache(name)
+  }
+  
+  className <- getClassNameFromSchemaName(name)
+  
+  result<-getSchemaFromCache(className)
   if (!is.null(result)) {
     return(result)
   }
@@ -116,7 +127,7 @@ readEntityDef <-
     stop(sprintf("Could not find file: %s for entity: %s", fullPath, name))
 
   schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
-  putSchemaToCache(name, schema)
+  putSchemaToCache(className, schema)
   message(sprintf("Wrote %s to schema cache", name))
   schema
 }

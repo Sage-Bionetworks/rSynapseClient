@@ -109,7 +109,7 @@ synUpdate<-function(object) {
   listResult<-synRestPUT(object@updateUri, object)
   #objectConstructor <- getMethod(class(object), signature = "list", where="synapseClient")
   #objectResult<-objectConstructor(listResult)
-  objectResult<-do.call(class(object), listResult)
+  objectResult<-createS4ObjectFromList(class(object), NULL, listResult)
   objectResult@updateUri<-object@updateUri
   objectResult
 }

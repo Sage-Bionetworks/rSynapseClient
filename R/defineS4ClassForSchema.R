@@ -22,14 +22,6 @@ TYPEMAP_FOR_ALL_PRIMITIVES <- list(
   boolean = "logical"
 )
 
-# Omit the part of the string preceding the last "." (if any)
-getClassNameFromSchemaName<-function(which) {
-  if (is.null(which)) return(NULL)
-  result<-gsub("^.+[\\.]", "", which)
-  names(result)<-names(which)
-  result
-}
-
 # 'which' is the full class name
 # 'name' is the Class name.  If omitted it's the suffix of 'which', e.g. 
 # if 'which' is "org.sagebionetworks.repo.model.Folder" and 'name' is omitted,
@@ -101,29 +93,27 @@ defineS4ClassForSchema <-
   )
   
   # This generic constructor takes one of two forms:
-  # ClassName(list(slot1=value1, slot2=value2, ...))
-  # or
   # ClassName(slot1=value1, slot2=value2, ...)
   assign(name, function(...) {
       args <-list(...)
       obj<-new(name)
       
-      # this provides a list constructor
-      if (length(args)==1 && is.null(names(args)) && class(args[[1]])=="list") {
-        args<-args[[1]]
-      }
+#      # this provides a list constructor
+#      if (length(args)==1 && is.null(names(args)) && class(args[[1]])=="list") {
+#        args<-args[[1]]
+#      }
       
       for (slotName in names(args)) {
-        slotClassName <- class(slot(obj, slotName))
-        if (is.na(match(slotClassName, TYPEMAP_FOR_ALL_PRIMITIVES))) {
-          # if the slot is not a primitive then pass the argument through the appropriate constructor
-          # perhaps this should be done in a special purpose 'setter' rather than in the generic constructor
-          # also, we don't handle the case of a 'list' field where the contents of the list might be
-          # non-primitive
-          slot(obj, slotName)<-do.call(slotClassName, args[[slotName]])
-        } else {
+#        slotClassName <- class(slot(obj, slotName))
+#        if (is.na(match(slotClassName, TYPEMAP_FOR_ALL_PRIMITIVES))) {
+#          # if the slot is not a primitive then pass the argument through the appropriate constructor
+#          # perhaps this should be done in a special purpose 'setter' rather than in the generic constructor
+#          # also, we don't handle the case of a 'list' field where the contents of the list might be
+#          # non-primitive
+#          slot(obj, slotName)<-do.call(slotClassName, args[[slotName]])
+#        } else {
           slot(obj, slotName)<-args[[slotName]]
-        }
+#        }
       }
       obj      
   })
@@ -205,8 +195,7 @@ mapTypesForAllSlots <- function(types) {
 }
 
 # for class slots which are lists this gives the type of the list elements
-mapTypesForListSlots <- function(schema) { 
-  
+mapTypesForListSlotsFromSchema <- function(schema) { 
   result<-list()
   for (name in names(schema$properties)) {
     prop<-schema$properties[[name]]
@@ -216,6 +205,58 @@ mapTypesForListSlots <- function(schema) {
   }
   result
 }
+
+mapTypesForListSlots <- function(className) {
+  schema <- getSchemaFromCache(className)
+  if (is.null(schema)) stop(sprintf("Missing schema for %s", className))
+  mapTypesForListSlotsFromSchema(schema)
+}
+
+
+# given the type (and of the list elements if type==list) 
+# and content represented in list form,
+# construct and return the object used the auto-generated S4 classes
+createS4ObjectFromList<-function(class, listElemType, content) {
+  if (isPrimitiveType(class)) {
+    if (class=="list") {
+      # recursively call this function for each list element
+      lapply(X=content, FUN=function(elem) {
+          if (isPrimitiveType(listElemType)) {
+            elem
+          } else {
+            createS4ObjectFromList(listElemType, NULL, elem)
+          }
+      })
+    } else {
+      # just return 'content', unmodified
+      content
+    }
+  } else {
+    constructorArgs<-list()
+    obj<-new(class)
+    typesForListSlots <- mapTypesForListSlots(class)
+    for (elemName in names(content)) {
+      slotType <- class(slot(obj, elemName))
+      slotValue <- content[[elemName]]
+      # if 'elem' is a primitive, no conversion is needed
+      if (isPrimitiveType(slotType)) {
+        if (slotType=="list") {
+          listElemType <- typesForListSlots[[elemName]]
+          if (listElemType=="list") stop(sprintf("Lists of lists not supported. Type: %s, slot: %s", class, elemName))
+          constructorArgs[[elemName]]<-createS4ObjectFromList(listElemType, NULL, slotValue)
+        } else {
+          # it's a simple primitive.  just pass it along
+          constructorArgs[[elemName]]<-content[[elemName]]
+        }
+      } else {
+        constructorArgs[[elemName]]<-createS4ObjectFromList(slotType, NULL, slotValue)
+      }
+    }
+    do.call(class, constructorArgs)
+  }
+}
+
+
 
 # get the parent class or NULL if none
 getImplements<-function(schema) {
