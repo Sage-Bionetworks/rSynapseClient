@@ -58,11 +58,13 @@ defineS4ClassForSchema <-
     }
   }
   
+  # these are the property types defined by the schema
   propertyTypes<-getPropertyTypes(entityDef=schemaDef)
-  propertyTypes<-mapTypesForAllSlots(propertyTypes)
+  # these are the types that will be used for the S4 class slots
+  s4PropertyTypes<-mapTypesForAllSlots(propertyTypes)
   
   # make sure they're all defined
-  for (propertyType in propertyTypes) {
+  for (propertyType in s4PropertyTypes) {
     # check whether the type is one of the known primitives
     if (!isPrimitiveType(propertyType)) {
       # if it is not one of the known primitives then try instantiating it
@@ -79,8 +81,13 @@ defineS4ClassForSchema <-
     }
   }
   
-  slots<-getClassNameFromSchemaName(propertyTypes)
-  slots<-append(slots, list(updateUri="character"))
+  # slots defined by the schema:
+  slots<-getClassNameFromSchemaName(s4PropertyTypes)
+  # metadata slots required by the client:
+  slots<-append(slots, list(
+      updateUri="character", # URI for updating objects of this type
+      slotTypes="list" # map from slot name to type.  Generally it's the same as class(slot(obj,name)) but for lists is the type of the list element
+  ))
   if (isVirtual(schemaDef)) {
     slots<-append(slots, "VIRTUAL")
   }
@@ -89,7 +96,8 @@ defineS4ClassForSchema <-
     Class = name,
     contains=getClassNameFromSchemaName(implements),
     representation = do.call("representation", slots),
-    package=package
+    package=package,
+    prototype=(slotType=list())
   )
   
   # This generic constructor takes one of two forms:
@@ -172,8 +180,7 @@ isPrimitiveType <- function(type) {
   !is.na(match(type, TYPEMAP_FOR_ALL_PRIMITIVES))
 }
 
-mapTypesForAllSlots <- function(types)
-{ 
+mapTypesForAllSlots <- function(types) { 
   indx <- match(types, names(TYPEMAP_FOR_ALL_PRIMITIVES))
   retval <- TYPEMAP_FOR_ALL_PRIMITIVES[indx]
   
@@ -195,6 +202,19 @@ mapTypesForAllSlots <- function(types)
   
   names(retval) <- names(types)
   retval
+}
+
+# for class slots which are lists this gives the type of the list elements
+mapTypesForListSlots <- function(schema) { 
+  
+  result<-list()
+  for (name in names(schema$properties)) {
+    prop<-schema$properties[[name]]
+    if (prop$type=="array") {
+      result[[name]]<-prop$items$type
+    }
+  }
+  result
 }
 
 # get the parent class or NULL if none

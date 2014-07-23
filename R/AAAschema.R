@@ -43,9 +43,71 @@ entitiesToLoad <-
   setdiff(paths, "DEFAULT")
 }
 
+# Utilities for setting and getting package level variables
+# 
+# Author: brucehoff
+###############################################################################
+
+
+getPackageEnvironment<-function() {
+  parent.env(environment(getClassForConcreteType)) # get the package's environment
+}
+
+# returns TRUE iff the given name exists in the package environment
+existsPackageVariable<-function(name) {
+  packageEnv<-getPackageEnvironment()
+  exists(x=name, envir=packageEnv)
+}
+
+# returns the value for the given name or NULL if the name is not defined
+getPackageVariable<-function(name) {
+  packageEnv<-getPackageEnvironment()
+  if (exists(x=name, envir=packageEnv)) {
+    get(x=name, envir=packageEnv)
+  } else {
+    NULL
+  }
+}
+
+setPackageVariable<-function(name, value) {
+  packageEnv<-getPackageEnvironment()
+  assign(x=name, value=value, envir=packageEnv)
+}
+
+###############################################################################
+
+getSchemaCacheName<-function() {"schema.cache"}
+
+getSchemaFromCache<-function(key) {
+  schemaCacheName <- getSchemaCacheName()
+  if (existsPackageVariable(schemaCacheName)) {
+    schemaCache<-getPackageVariable(schemaCacheName)
+    schemaCache[[key]]
+  } else {
+    NULL
+  }
+}
+
+putSchemaToCache<-function(key, value) {
+  schemaCacheName <- getSchemaCacheName()
+  schemaCache <- getPackageVariable(schemaCacheName)
+  if (is.null(schemaCache)) schemaCache<-list()
+  schemaCache[[key]]<-value
+  setPackageVariable(schemaCacheName, schemaCache)
+}
+
 readEntityDef <-
     function(name, path = system.file("resources/schema",package="synapseClient"))
 {
+    if (class(name)=="list") {
+      # TODO Why does this happen!?!??!
+      message(sprintf("readEntityDef: unexpected list for name: %s", name))
+      name<-name[[1]]
+    }
+  result<-getSchemaFromCache(name)
+  if (!is.null(result)) {
+    return(result)
+  }
   file <- sprintf("%s.json", gsub("[\\.]", "/", name))
   
   fullPath <- file.path(path,file)
@@ -54,7 +116,8 @@ readEntityDef <-
     stop(sprintf("Could not find file: %s for entity: %s", fullPath, name))
 
   schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
-  
+  putSchemaToCache(name, schema)
+  message(sprintf("Wrote %s to schema cache", name))
   schema
 }
 
@@ -167,8 +230,10 @@ getPropertyTypes <- function(which, entityDef)
       type<-theprop[["type"]]
       ref<-theprop[["$ref"]]
       if (!is.null(ref)) {
+        if (class(ref)!="character" || length(ref)!=1) stop(sprintf("Unexpected ref for %s", prop))
         ref
       } else {
+        if (class(type)!="character" || length(type)!=1) stop(sprintf("Unexpected type for %s", prop))
         type
       }
     }

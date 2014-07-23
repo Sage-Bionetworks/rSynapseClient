@@ -77,3 +77,14 @@ unitTestEnumField<-function() {
   checkEquals("syn987", submissionStatus$entityId)
   checkEquals("RECEIVED", submissionStatus$status)
 }
+
+unitTestMapTypesForListSlots<-function() {
+  schema<-synapseClient:::readEntityDef("org.sagebionetworks.repo.model.UserProfile")
+  result<-mapTypesForListSlots(schema)
+  checkEquals(list(emails="string", openIds="string"))
+  
+  schema<-synapseClient:::readEntityDef("org.sagebionetworks.repo.model.annotations.Annotations")
+  result<-mapTypesForListSlots(schema)
+  checkEquals(list(stringAnnos="StringAnnotation", longAnnos="LongAnnotation", doubleAnnos="DoubleAnnotation"))
+}
+
