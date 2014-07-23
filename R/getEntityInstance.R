@@ -8,7 +8,11 @@ setMethod(
   signature = signature("list"),
   definition = function(entity)
   {
-    class <- getClassFromSynapseEntityType(entity$concreteType)
+    if (is.null(entity$concreteType)) {
+      class <- NULL
+    } else {
+     class <- getClassNameFromSchemaName(entity$concreteType)
+    }
 
     ## synapseEntity is the default
     if(is.null(class))
