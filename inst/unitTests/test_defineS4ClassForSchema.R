@@ -59,6 +59,18 @@ unitTestNonPrimitiveField<-function() {
   checkEquals(TRUE, up$notificationSettings$sendEmailNotifications)
 }
 
+unitTestListConstructorNonPrimitiveField<-function() {
+  # simple case:  just primitive fields
+  up<-synapseClient:::UserProfile(list(ownerId="101", etag="10101010"))
+  checkEquals("101", up$ownerId)
+  checkEquals("10101010", up$etag)
+  # now try more complicated fields
+  up<-synapseClient:::UserProfile(list(ownerId="101", etag="10101010", notificationSettings=list(sendEmailNotifications=TRUE)))
+  checkEquals("101", up$ownerId)
+  checkEquals("10101010", up$etag)
+  checkEquals(TRUE, up$notificationSettings$sendEmailNotifications)
+}
+
 unitTestEnumField<-function() {
   submissionStatus<-synapseClient:::SubmissionStatus(id="101", entityId="syn987", status="RECEIVED")
   checkEquals("101", submissionStatus$id)

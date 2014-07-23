@@ -106,9 +106,10 @@ synStoreNonEntityObject<-function(object) {
 }
 
 synUpdate<-function(object) {
-  objectConstructor <- getMethod(class(object), signature = "list", where="synapseClient")
   listResult<-synRestPUT(object@updateUri, object)
-  objectResult<-objectConstructor(listResult)
+  #objectConstructor <- getMethod(class(object), signature = "list", where="synapseClient")
+  #objectResult<-objectConstructor(listResult)
+  objectResult<-do.call(class(object), listResult)
   objectResult@updateUri<-object@updateUri
   objectResult
 }

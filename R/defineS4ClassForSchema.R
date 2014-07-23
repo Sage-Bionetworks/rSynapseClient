@@ -106,7 +106,16 @@ defineS4ClassForSchema <-
       }
       
       for (slotName in names(args)) {
-        slot(obj, slotName)<-args[[slotName]]
+        slotClassName <- class(slot(obj, slotName))
+        if (is.na(match(slotClassName, TYPEMAP_FOR_ALL_PRIMITIVES))) {
+          # if the slot is not a primitive then pass the argument through the appropriate constructor
+          # perhaps this should be done in a special purpose 'setter' rather than in the generic constructor
+          # also, we don't handle the case of a 'list' field where the contents of the list might be
+          # non-primitive
+          slot(obj, slotName)<-do.call(slotClassName, args[[slotName]])
+        } else {
+          slot(obj, slotName)<-args[[slotName]]
+        }
       }
       obj      
   })
