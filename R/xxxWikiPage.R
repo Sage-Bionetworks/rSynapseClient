@@ -108,7 +108,7 @@ synGetWikiHeaders<-function(parent) {
   uri<-wikiHeadersUri(parent)
   result<-list()
   for (entry in synRestGET(uri)$results) {
-    result[[length(result)+1]]<-WikiHeader(as.list(entry))
+    result[[length(result)+1]]<-createS4ObjectFromList("WikiHeader", NULL, as.list(entry))
   }
   result
 }

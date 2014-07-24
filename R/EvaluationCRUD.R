@@ -5,14 +5,14 @@
 
 synCreateEvaluation<-function(evaluation) {
   evaluationAsList<-createListFromS4Object(evaluation)
-  result<-createS4ObjectFromList("Evaluation", NULL, synRestPOST("/evaluation", evaluation))
+  result<-createS4ObjectFromList("Evaluation", NULL, synRestPOST("/evaluation", evaluationAsList))
   result@updateUri<-sprintf("/evaluation/%s", propertyValue(result, "id"))
   result
 }
 
 synGetEvaluation<-function(id) {
   uri<-sprintf("/evaluation/%s", id)
-  result<-Evaluation(synRestGET(uri))
+  result<-createS4ObjectFromList("Evaluation", NULL, synRestGET(uri))
   result@updateUri<-uri
   result
 }
@@ -24,7 +24,7 @@ synGetEvaluationByContentSource <- function(id) {
     paginatedResults <- new("PaginatedResults")
     paginatedResults@totalNumberOfResults <- as.integer(content$totalNumberOfResults)
     for (s in content$results) {
-        result <- Evaluation(as.list(s))
+        result <- createS4ObjectFromList("Evaluation", NULL, as.list(s))
         result@updateUri <- sprintf("/evaluation/%s", propertyValue(result, "id"))
         
         n <- length(paginatedResults@results)
@@ -38,7 +38,7 @@ newParticipantPaginatedResults<-function(content) {
   paginatedResults@totalNumberOfResults<-as.integer(content$totalNumberOfResults)
   for (s in content$results) {
     n<-length(paginatedResults@results)
-    paginatedResults@results[[n+1]]<-Participant(as.list(s))
+    paginatedResults@results[[n+1]]<-createS4ObjectFromList("Participant", NULL, as.list(s))
   }
   paginatedResults
 }

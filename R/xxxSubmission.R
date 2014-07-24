@@ -92,7 +92,7 @@ synCreateSubmission<-function(submission, entityEtag) {
 }
 
 newSubmissionStatus<-function(content) {
-  submissionStatus<-SubmissionStatus(content)
+  submissionStatus<-createS4ObjectFromList("SubmissionStatus", NULL, content)
   submissionStatus@updateUri<-sprintf("/evaluation/submission/%s/status", content$id)
   submissionStatus
 }

@@ -286,7 +286,10 @@ createListFromS4Object<-function(obj) {
           result[[slotName]]<-lapply(value, FUN=function(elem){createListFromS4Object(elem)})
         }
       } else {
-        result[[slotName]]<-value
+        # take care of some edge cases
+        if (length(value)>0) {
+          result[[slotName]]<-value
+        }
       }
     } else {
       result[[slotName]]<-createListFromS4Object(value)
