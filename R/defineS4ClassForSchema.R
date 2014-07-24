@@ -42,7 +42,7 @@ defineS4ClassForSchema <-
   if (!is.null(implements)) {
     for (i in implements) {
       implementsName <- getClassNameFromSchemaName(i)
-      tryCatch(new(implementsName), 
+      tryCatch(new(implementsName),  # TODO check existence in another way.  Can't instantiate abstract classes
         error = function(e){
           defineS4ClassForSchema(which=i, where=where, package=package)
         }
@@ -63,7 +63,7 @@ defineS4ClassForSchema <-
       propertyTypeName <- getClassNameFromSchemaName(propertyType)
       tryCatch(
         {
-          new(propertyTypeName)
+          new(propertyTypeName) # TODO check existence in another way.  Can't instantiate abstract classes
         }, 
         error = function(e){
           # if we can't instantiate it, it's not defined yet, so define it!
@@ -80,7 +80,9 @@ defineS4ClassForSchema <-
       updateUri="character", # URI for updating objects of this type
       slotTypes="list" # map from slot name to type.  Generally it's the same as class(slot(obj,name)) but for lists is the type of the list element
   ))
-  if (isVirtual(schemaDef)) {
+
+  isVirtualClass <- isVirtual(schemaDef)
+  if (isVirtualClass) {
     slots<-append(slots, "VIRTUAL")
   }
   
@@ -92,84 +94,73 @@ defineS4ClassForSchema <-
     prototype=(slotType=list())
   )
   
-  # This generic constructor takes one of two forms:
-  # ClassName(slot1=value1, slot2=value2, ...)
-  assign(name, function(...) {
-      args <-list(...)
-      obj<-new(name)
-      
-#      # this provides a list constructor
-#      if (length(args)==1 && is.null(names(args)) && class(args[[1]])=="list") {
-#        args<-args[[1]]
-#      }
-      
-      for (slotName in names(args)) {
-#        slotClassName <- class(slot(obj, slotName))
-#        if (is.na(match(slotClassName, TYPEMAP_FOR_ALL_PRIMITIVES))) {
-#          # if the slot is not a primitive then pass the argument through the appropriate constructor
-#          # perhaps this should be done in a special purpose 'setter' rather than in the generic constructor
-#          # also, we don't handle the case of a 'list' field where the contents of the list might be
-#          # non-primitive
-#          slot(obj, slotName)<-do.call(slotClassName, args[[slotName]])
-#        } else {
-          slot(obj, slotName)<-args[[slotName]]
-#        }
+  if (!isVirtualClass) {
+    # This generic constructor takes one of two forms:
+    # ClassName(slot1=value1, slot2=value2, ...)
+    assign(name, function(...) {
+        args <-list(...)
+        obj<-new(name)     
+        for (slotName in names(args)) {
+            slot(obj, slotName)<-args[[slotName]]
+        }
+        obj      
+    })
+    
+    # If we don't define a 'generic' version of the constructor
+    # we get an error when we try to include it as an export in
+    # the NAMESPACE file.
+    setGeneric(
+      name=name,
+      def = function(...) {
+        do.call(name, list(...))
+      },
+      package = package
+    )
+    
+    setMethod(
+      f = "$",
+      signature = name,
+      definition = function(x, name){
+        slot(x,name)
       }
-      obj      
-  })
-  
-  # If we don't define a 'generic' version of the constructor
-  # we get an error when we try to include it as an export in
-  # the NAMESPACE file.
-  setGeneric(
-    name=name,
-    def = function(...) {
-      do.call(name, list(...))
-    },
-    package = package
-  )
-  
-  setMethod(
-    f = "$",
-    signature = name,
-    definition = function(x, name){
-      slot(x,name)
-    }
-  )
-  
-  setReplaceMethod("$", 
-    signature = name,
-    definition = function(x, name, value) {
-      slot(x, name)<-value
-      x
-    }
-  )
-  
-  # for backwards compatibility
-  setMethod(
-    f = "propertyValue",
-    signature = signature(name, "character"),
-    definition = function(object, which){
-      slot(object, which)
-    }
-  )
-  
-  # for backwards compatibility
-  setReplaceMethod(
-    f = "propertyValue",
-    signature = signature(name, "character"),
-    definition = function(object, which, value) {
-      slot(object, which) <- value
-      object
-    }
-  )
-  
+    )
+    
+    setReplaceMethod("$", 
+      signature = name,
+      definition = function(x, name, value) {
+        slot(x, name)<-value
+        x
+      }
+    )
+    
+    # for backwards compatibility
+    setMethod(
+      f = "propertyValue",
+      signature = signature(name, "character"),
+      definition = function(object, which){
+        slot(object, which)
+      }
+    )
+    
+    # for backwards compatibility
+    setReplaceMethod(
+      f = "propertyValue",
+      signature = signature(name, "character"),
+      definition = function(object, which, value) {
+        slot(object, which) <- value
+        object
+      }
+    )
+  } # end 'if(isVirtualClass)'
 }
 
 isPrimitiveType <- function(type) {
   !is.na(match(type, TYPEMAP_FOR_ALL_PRIMITIVES))
 }
 
+# the values in 'types' is taken from the range of types in the JSON schema
+# the names of 'types' are the names of the properties having the given type
+# the returned list maps the properties to their corresponding 'R' type
 mapTypesForAllSlots <- function(types) { 
   indx <- match(types, names(TYPEMAP_FOR_ALL_PRIMITIVES))
   retval <- TYPEMAP_FOR_ALL_PRIMITIVES[indx]
@@ -203,7 +194,7 @@ mapTypesForListSlotsFromSchema <- function(schema) {
       result[[name]]<-prop$items$type
     }
   }
-  result
+  mapTypesForAllSlots(result)
 }
 
 mapTypesForListSlots <- function(className) {
@@ -233,7 +224,7 @@ createS4ObjectFromList<-function(class, listElemType, content) {
     }
   } else {
     constructorArgs<-list()
-    obj<-new(class)
+    obj<-new(class) #TODO if there's a 'concreteType' element, use that instead
     typesForListSlots <- mapTypesForListSlots(class)
     for (elemName in names(content)) {
       slotType <- class(slot(obj, elemName))
@@ -243,10 +234,10 @@ createS4ObjectFromList<-function(class, listElemType, content) {
         if (slotType=="list") {
           listElemType <- typesForListSlots[[elemName]]
           if (listElemType=="list") stop(sprintf("Lists of lists not supported. Type: %s, slot: %s", class, elemName))
-          constructorArgs[[elemName]]<-createS4ObjectFromList(listElemType, NULL, slotValue)
+          constructorArgs[[elemName]]<-createS4ObjectFromList(slotType, listElemType, slotValue)
         } else {
           # it's a simple primitive.  just pass it along
-          constructorArgs[[elemName]]<-content[[elemName]]
+          constructorArgs[[elemName]]<-slotValue
         }
       } else {
         constructorArgs[[elemName]]<-createS4ObjectFromList(slotType, NULL, slotValue)

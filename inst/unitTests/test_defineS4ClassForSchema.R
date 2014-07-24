@@ -88,3 +88,54 @@ unitTestMapTypesForListSlots<-function() {
   checkEquals(list(stringAnnos="StringAnnotation", longAnnos="LongAnnotation", doubleAnnos="DoubleAnnotation"))
 }
 
+unitTestCreateS4ObjectFromList<-function() {
+  # simple case: list argument has just primitives
+  e<-synapseClient:::createS4ObjectFromList("Evaluation", NULL, list(name="name", description="description"))
+  checkEquals("name", e@name)
+  checkEquals("description", e@description)
+  
+  # list argument has list
+  up<-synapseClient:::createS4ObjectFromList("UserProfile", NULL, 
+    list(ownerId="101", 
+      emails=list("foo@bar.com", "bar@bas.com")
+    ))
+  checkEquals("101", up@ownerId)
+  checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails)
+  
+  # list argument has vector
+  up<-synapseClient:::createS4ObjectFromList("UserProfile", NULL, 
+    list(ownerId="101", 
+      emails=c("foo@bar.com", "bar@bas.com")
+    ))
+  checkEquals("101", up@ownerId)
+  checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails)
+  
+  # list argument has content of embedded S4 object
+  up<-synapseClient:::createS4ObjectFromList("UserProfile", NULL, 
+    list(ownerId="101", 
+      emails=list("foo@bar.com", "bar@bas.com"),
+      notificationSettings=list(sendEmailNotifications=T, markEmailedMessagesAsRead=F)
+    ))
+  checkEquals("101", up@ownerId)
+  checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails)
+  checkEquals(synapseClient:::Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F), up@notificationSettings)
+  
+  # list has array of embedded S4 objects
+  up<-synapseClient:::createS4ObjectFromList("UserProfile", NULL, 
+    list(ownerId="101", 
+      emails=list("foo@bar.com", "bar@bas.com"),
+      notificationSettings=list(sendEmailNotifications=T, markEmailedMessagesAsRead=F),
+      preferences=list(
+        list(concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean", name="foo", value=T),
+        list(concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean", name="bar", value=F)
+        )
+    ))
+  checkEquals("101", up@ownerId)
+  checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails)
+  checkEquals(Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F), up@notificationSettings)
+  prefs<-up@preferences
+  checkTrue(!is.null(prefs))
+  checkEquals(2, length(prefs))
+  checkEquals(UserPreferencesBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[1]])
+  checkEquals(UserPreferencesBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[2]])
+  }

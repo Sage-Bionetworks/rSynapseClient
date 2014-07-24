@@ -95,6 +95,8 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     
     nonEntities<-list(
       "org.sagebionetworks.repo.model.UserProfile",
+      "org.sagebionetworks.repo.model.UserPreference",
+      "org.sagebionetworks.repo.model.UserPreferenceBoolean",
       "org.sagebionetworks.evaluation.model.Evaluation",
       "org.sagebionetworks.evaluation.model.SubmissionStatus",
       "org.sagebionetworks.evaluation.model.SubmissionBundle",
