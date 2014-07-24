@@ -92,10 +92,8 @@ defineS4ClassForSchema <-  function(fullSchemaName)
     package="synapseClient"
   )
   
-  if (!isClassDefined(name)) stop(sprintf("Class definition failed for %s", name))
-  
   if (!isVirtualClass) {
-    # This generic constructor takes one of two forms:
+    # This generic constructor takes the form:
     # ClassName(slot1=value1, slot2=value2, ...)
     assign(name, function(...) {
         args <-list(...)
@@ -264,7 +262,38 @@ createS4ObjectFromList<-function(className, listElemType, content) {
   }
 }
 
-
+# create a list version suitable for serialization to JSON,
+# adhering to the schema
+createListFromS4Object<-function(obj) {
+  result <-list()
+  className<-class(obj)
+  typesForListSlots <- mapTypesForListSlots(className)
+  schemaDef<-getSchemaFromCache(className)
+  effectiveSlotTypes<-getEffectiveSchemaTypes(schemaDef)
+    
+  
+  # Note the slots are named after the schema properties, but may be a *superset*
+  # so we must make the list based on the schema rather than the slots
+  for (slotName in names(effectiveSlotTypes)) {
+    value<-slot(obj, slotName)
+    slotClass<-class(value)
+    if (isPrimitiveType(slotClass)) {
+      if (slotClass=="list") {
+        elemType<-typesForListSlots[[slotName]]
+        if (isPrimitiveType(elemType)) {
+          result[[slotName]]<-value
+        } else {
+          result[[slotName]]<-lapply(value, FUN=function(elem){createListFromS4Object(elem)})
+        }
+      } else {
+        result[[slotName]]<-value
+      }
+    } else {
+      result[[slotName]]<-createListFromS4Object(value)
+    }
+  }
+  result
+}
 
 # get the parent class or NULL if none
 getImplements<-function(schema) {

@@ -70,6 +70,7 @@ unitTestMapTypesForListSlots<-function() {
 
 unitTestCreateS4ObjectFromList<-function() {
   # simple case: list argument has just primitives
+  listRep<-list(name="name", description="description")
   e<-synapseClient:::createS4ObjectFromList("Evaluation", NULL, list(name="name", description="description"))
   checkEquals("name", e@name)
   checkEquals("description", e@description)
@@ -119,3 +120,24 @@ unitTestCreateS4ObjectFromList<-function() {
   checkEquals(synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[1]])
   checkEquals(synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[2]])
 }
+
+unitTestS4RoundTrip<-function() {
+  e<-Evaluation(name="name", description="description")
+  listRep<-synapseClient:::createListFromS4Object(e)
+  checkEquals(e, synapseClient:::createS4ObjectFromList("Evaluation", NULL, listRep))
+  
+  up<-synapseClient:::UserProfile(
+    ownerId="101", 
+    emails=list("foo@bar.com", "bar@bas.com"),
+    notificationSettings=synapseClient:::Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F),
+    preferences=list(
+      synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"),
+      synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean")
+    )
+  )
+  
+  listRep<-synapseClient:::createListFromS4Object(up)
+  checkEquals(up, synapseClient:::createS4ObjectFromList("UserProfile", NULL, listRep))
+  
+}
+

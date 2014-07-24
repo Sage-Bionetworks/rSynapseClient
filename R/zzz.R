@@ -33,14 +33,8 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   file.create(ff)
   zipfile <- tempfile()
 
-  tryCatch(
-    {
-      # use 'sink' to suppress the annoying message printed by the next line
-      sink(file=tempfile())
+  suppressWarnings(
       ans <- utils::zip(zipfile, ff)
-    }, 
-    # put the reset in a 'finally' block to make sure it's run
-    finally=sink(NULL)
   )
 
   unlink(ff)

@@ -143,7 +143,9 @@ defineEntityClass <-
   if(is.null(name) | name == "")
     stop("name must not be null")
   
-  implements <- unique(c(entityDef$implements[[1]][[1]], getAllInterfaces(entityDef$implements[[1]][[1]])))
+  implementsSchemaName <-entityDef$implements[[1]][[1]]
+  implementsSchema<-readEntityDef(implementsSchemaName)
+  implements <- unique(c(implementsSchemaName, getAllInterfaces(implementsSchema)))
   
   if ("org.sagebionetworks.repo.model.Locationable" %in% implements) {
     contains <- "Locationable"
@@ -247,24 +249,26 @@ getPropertyTypes <- function(which, entityDef)
   properties
 }
 
-getEffectivePropertyTypes <- function(which)
-{
-  implements <- c(which, getAllInterfaces(which))
-  
-  properties <- list()
-  i <- length(implements)
-  while(i > 0){
-    thisProp <- getPropertyTypes(implements[i])
-    thisProp<-mapTypes(thisProp)
-    for(n in names(thisProp))
-      properties[[n]] <- thisProp[[n]]
-    i <- i - 1
+getEffectivePropertyTypes <-function(which) {
+  schema<-readEntityDef(which)
+  mapTypes(getEffectiveSchemaTypes(schema))
+}
+
+getEffectiveSchemaTypes <- function(schema) {
+  # start with the properties for the immediate schema
+  properties<-getPropertyTypes(entityDef=schema)
+  implements <- getAllInterfaces(schema)
+  if (length(implements)>0) {
+    for (i in length(implements):1) {
+      thisProp <- getPropertyTypes(which=implements[i])
+      for (n in names(thisProp))
+        properties[[n]] <- thisProp[[n]]
+    }
   }
-  
   properties
 }
 
-mapTypes <-  function(types) { 
+mapTypes <- function(types) { 
   indx <- match(types, names(TYPEMAP))
   retval <- TYPEMAP[indx]
   
@@ -278,16 +282,14 @@ mapTypes <-  function(types) {
   retval
 }
 
-getAllInterfaces <- function(which){
-  if(is.null(which))
+getAllInterfaces <- function(schema) {
+  if(is.null(schema))
     return(NULL)
-  thisDef <- readEntityDef(which)
   implements <- NULL
-  while(!is.null(thisDef$implements)){
-    implements <- c(implements, thisDef$implements[[1]][[1]])
-    
+  while(!is.null(schema$implements)){
+    implements <- c(implements, schema$implements[[1]][[1]])
     try({
-        thisDef <- readEntityDef(thisDef$implements[[1]][[1]])
+        schema <- readEntityDef(schema$implements[[1]][[1]])
       }, silent = TRUE)
   }
   implements

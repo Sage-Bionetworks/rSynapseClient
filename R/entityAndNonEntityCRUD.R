@@ -86,9 +86,9 @@ synStoreNonEntityObject<-function(object) {
     } else {
       synUpdate(object)
     }
-  #} else if (is(object, "UserProfile")) { # SYNR-671 will restore this
+  } else if (is(object, "UserProfile")) {
     # note, user can't create a UserProfile, only update one
-   # synUpdateUserProfile(object) # SYNR-671 will restore this
+   synUpdate(object)
   } else if (is(object, "SubmissionStatus")) {
     # note, user can't create a SubmissionStatus, only update one
     synUpdate(object)   
@@ -106,9 +106,8 @@ synStoreNonEntityObject<-function(object) {
 }
 
 synUpdate<-function(object) {
-  listResult<-synRestPUT(object@updateUri, object)
-  #objectConstructor <- getMethod(class(object), signature = "list", where="synapseClient")
-  #objectResult<-objectConstructor(listResult)
+  objectAsList<-createListFromS4Object(object)
+  listResult<-synRestPUT(object@updateUri, objectAsList)
   objectResult<-createS4ObjectFromList(class(object), NULL, listResult)
   objectResult@updateUri<-object@updateUri
   objectResult
