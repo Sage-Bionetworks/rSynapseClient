@@ -22,31 +22,37 @@ TYPEMAP_FOR_ALL_PRIMITIVES <- list(
   boolean = "logical"
 )
 
-# 'which' is the full class name
-# 'name' is the Class name.  If omitted it's the suffix of 'which', e.g. 
-# if 'which' is "org.sagebionetworks.repo.model.Folder" and 'name' is omitted,
-# then the Class name is "Folder".
-defineS4ClassForSchema <- 
-  function(which, name, where = parent.frame(), package)
+isClassDefined<-function(className) {
+  tryCatch(
+    {
+      getClass(Class=className)
+      return(TRUE)
+    },
+    error = function(e) {
+      return(FALSE)
+    }
+  )
+}
+
+defineS4ClassForSchema <-  function(fullSchemaName)
 {
-  if(missing(name))
-    name <- getClassNameFromSchemaName(which)
+  name <- getClassNameFromSchemaName(fullSchemaName)
   
   if(is.null(name) | name == "")
     stop("name must not be null")
   
-  schemaDef <- readEntityDef(which)
+  schemaDef <- readEntityDef(fullSchemaName)
   
   # make sure all extended classes are defined
+  superClasses<-character()
   implements <- getImplements(schemaDef)
   if (!is.null(implements)) {
     for (i in implements) {
       implementsName <- getClassNameFromSchemaName(i)
-      tryCatch(new(implementsName),  # TODO check existence in another way.  Can't instantiate abstract classes
-        error = function(e){
-          defineS4ClassForSchema(which=i, where=where, package=package)
-        }
-      )
+      superClasses<-c(superClasses, implementsName)
+      if (!isClassDefined(implementsName)) {
+        defineS4ClassForSchema(i)
+      }
     }
   }
   
@@ -61,15 +67,9 @@ defineS4ClassForSchema <-
     if (!isPrimitiveType(propertyType)) {
       # if it is not one of the known primitives then try instantiating it
       propertyTypeName <- getClassNameFromSchemaName(propertyType)
-      tryCatch(
-        {
-          new(propertyTypeName) # TODO check existence in another way.  Can't instantiate abstract classes
-        }, 
-        error = function(e){
-          # if we can't instantiate it, it's not defined yet, so define it!
-          defineS4ClassForSchema(which=propertyType, where=where, package=package)
-        }
-      )
+      if (!isClassDefined(propertyTypeName)) {
+        defineS4ClassForSchema(propertyType)
+      }
     }
   }
   
@@ -77,22 +77,22 @@ defineS4ClassForSchema <-
   slots<-getClassNameFromSchemaName(s4PropertyTypes)
   # metadata slots required by the client:
   slots<-append(slots, list(
-      updateUri="character", # URI for updating objects of this type
-      slotTypes="list" # map from slot name to type.  Generally it's the same as class(slot(obj,name)) but for lists is the type of the list element
+      updateUri="character" # URI for updating objects of this type
   ))
 
   isVirtualClass <- isVirtual(schemaDef)
   if (isVirtualClass) {
-    slots<-append(slots, "VIRTUAL")
+    superClasses<-c(superClasses, "VIRTUAL")
   }
   
   setClass(
     Class = name,
-    contains=getClassNameFromSchemaName(implements),
-    representation = do.call("representation", slots),
-    package=package,
-    prototype=(slotType=list())
+    contains=superClasses,
+    slots = slots,
+    package="synapseClient"
   )
+  
+  if (!isClassDefined(name)) stop(sprintf("Class definition failed for %s", name))
   
   if (!isVirtualClass) {
     # This generic constructor takes one of two forms:
@@ -113,8 +113,7 @@ defineS4ClassForSchema <-
       name=name,
       def = function(...) {
         do.call(name, list(...))
-      },
-      package = package
+      }
     )
     
     setMethod(
@@ -169,14 +168,15 @@ mapTypesForAllSlots <- function(types) {
   mk <- sapply(X=retval, FUN=function(x)is.null(x))
   
   if (any(mk)) {
+    # go through all the non-primitives
     for (i in which(mk)) {
-      fieldSchema <- readEntityDef(types[i])
+      fieldSchema <- readEntityDef(types[[i]])
       if (is.null(fieldSchema$properties) && !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[fieldSchema$type])) {
         # it's an 'enum' or similar.  use the type of the field's schema
         retval[i] <- TYPEMAP_FOR_ALL_PRIMITIVES[fieldSchema$type]
       } else {
-        # use the original type
-        retval[i] <- types[i]
+        # use the class name for this schema
+        retval[i] <- getClassNameFromSchemaName(types[i])
       }
     }
   }
@@ -191,7 +191,13 @@ mapTypesForListSlotsFromSchema <- function(schema) {
   for (name in names(schema$properties)) {
     prop<-schema$properties[[name]]
     if (prop$type=="array") {
-      result[[name]]<-prop$items$type
+      type<-prop$items[["type"]]
+      ref<-prop$items[["$ref"]]
+      if (!is.null(ref)) {
+        result[[name]]<-ref
+      } else {
+        result[[name]]<-type
+      }
     }
   }
   mapTypesForAllSlots(result)
@@ -207,9 +213,20 @@ mapTypesForListSlots <- function(className) {
 # given the type (and of the list elements if type==list) 
 # and content represented in list form,
 # construct and return the object used the auto-generated S4 classes
-createS4ObjectFromList<-function(class, listElemType, content) {
-  if (isPrimitiveType(class)) {
-    if (class=="list") {
+createS4ObjectFromList<-function(className, listElemType, content) {
+  # if the list specifies a concrete type, then use it instead
+  if (class(content)=="list") {
+    concreteTypeSchemaName<-content$concreteType
+    if (!is.null(concreteTypeSchemaName)) {
+      concreteTypeClassName<-getClassNameFromSchemaName(concreteTypeSchemaName)
+      if (is.null(getClass(concreteTypeClassName)@contains[[className]])) {
+        stop(sprintf("concreteType %s specified for class %s", concreteTypeClassName, className))
+      }
+      className<-concreteTypeClassName
+    }
+  }
+  if (isPrimitiveType(className)) {
+    if (className=="list") {
       # recursively call this function for each list element
       lapply(X=content, FUN=function(elem) {
           if (isPrimitiveType(listElemType)) {
@@ -224,8 +241,8 @@ createS4ObjectFromList<-function(class, listElemType, content) {
     }
   } else {
     constructorArgs<-list()
-    obj<-new(class) #TODO if there's a 'concreteType' element, use that instead
-    typesForListSlots <- mapTypesForListSlots(class)
+    obj<-new(className)
+    typesForListSlots <- mapTypesForListSlots(className)
     for (elemName in names(content)) {
       slotType <- class(slot(obj, elemName))
       slotValue <- content[[elemName]]
@@ -233,7 +250,7 @@ createS4ObjectFromList<-function(class, listElemType, content) {
       if (isPrimitiveType(slotType)) {
         if (slotType=="list") {
           listElemType <- typesForListSlots[[elemName]]
-          if (listElemType=="list") stop(sprintf("Lists of lists not supported. Type: %s, slot: %s", class, elemName))
+          if (listElemType=="list") stop(sprintf("Lists of lists not supported. Type: %s, slot: %s", className, elemName))
           constructorArgs[[elemName]]<-createS4ObjectFromList(slotType, listElemType, slotValue)
         } else {
           # it's a simple primitive.  just pass it along
@@ -243,7 +260,7 @@ createS4ObjectFromList<-function(class, listElemType, content) {
         constructorArgs[[elemName]]<-createS4ObjectFromList(slotType, NULL, slotValue)
       }
     }
-    do.call(class, constructorArgs)
+    do.call(className, constructorArgs)
   }
 }
 

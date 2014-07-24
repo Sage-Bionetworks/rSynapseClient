@@ -106,19 +106,15 @@ getClassNameFromSchemaName<-function(schemaName) {
 
 readEntityDef <-
     function(name, path = system.file("resources/schema",package="synapseClient"))
-{
-  if (class(name)=="list") {
-      # TODO Why does this happen!?!??!
-      message(sprintf("readEntityDef: unexpected list for name: %s", name))
-      name<-name[[1]]
-  }
-  
+{ 
   className <- getClassNameFromSchemaName(name)
   
+
   result<-getSchemaFromCache(className)
   if (!is.null(result)) {
     return(result)
   }
+  
   file <- sprintf("%s.json", gsub("[\\.]", "/", name))
   
   fullPath <- file.path(path,file)
@@ -127,8 +123,8 @@ readEntityDef <-
     stop(sprintf("Could not find file: %s for entity: %s", fullPath, name))
 
   schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
+  
   putSchemaToCache(className, schema)
-  message(sprintf("Wrote %s to schema cache", name))
   schema
 }
 
@@ -241,10 +237,8 @@ getPropertyTypes <- function(which, entityDef)
       type<-theprop[["type"]]
       ref<-theprop[["$ref"]]
       if (!is.null(ref)) {
-        if (class(ref)!="character" || length(ref)!=1) stop(sprintf("Unexpected ref for %s", prop))
         ref
       } else {
-        if (class(type)!="character" || length(type)!=1) stop(sprintf("Unexpected type for %s", prop))
         type
       }
     }

@@ -4,21 +4,21 @@
 #########################################################
 
 unitTestGetImplements<-function() {
-  checkTrue(is.null(synapseClient:::getImplements(synapseClient:::readEntityDef("org.sagebionetworks.repo.model.table.Row"))))
-  folderSchemaDef<-synapseClient:::readEntityDef("org.sagebionetworks.repo.model.Folder")
+  checkTrue(is.null(synapseClient:::getImplements(synapseClient:::getSchemaFromCache("UserProfile"))))
+  folderSchemaDef<-synapseClient:::getSchemaFromCache("Folder")
   checkTrue(!is.null(synapseClient:::getImplements(folderSchemaDef)))
   checkEquals("org.sagebionetworks.repo.model.Entity", synapseClient:::getImplements(folderSchemaDef)[[1]][[1]])
 }
 
 unitTestisVirtual<-function() {
-  checkTrue(!synapseClient:::isVirtual(synapseClient:::readEntityDef("org.sagebionetworks.repo.model.table.Row")))
-  checkTrue(!synapseClient:::isVirtual(synapseClient:::readEntityDef("org.sagebionetworks.repo.model.Folder")))
-  checkTrue(synapseClient:::isVirtual(synapseClient:::readEntityDef("org.sagebionetworks.repo.model.Entity")))
+  checkTrue(!synapseClient:::isVirtual(synapseClient:::getSchemaFromCache("Row")))
+  checkTrue(!synapseClient:::isVirtual(synapseClient:::getSchemaFromCache("Folder")))
+  checkTrue(synapseClient:::isVirtual(synapseClient:::getSchemaFromCache("Entity")))
 }
 
 unitTestGetPropertyTypes<-function() {
-  checkEquals(list(dataFileHandleId="string"), synapseClient:::getPropertyTypes(which="org.sagebionetworks.repo.model.FileEntity"))
-  upProperties<-synapseClient:::getPropertyTypes(which="org.sagebionetworks.repo.model.UserProfile")
+  checkEquals(list(name="string", concreteType="string"), synapseClient:::getPropertyTypes(which="UserPreference"))
+  upProperties<-synapseClient:::getPropertyTypes(which="UserProfile")
   checkEquals("string", upProperties$lastName)
   checkEquals("org.sagebionetworks.repo.model.message.Settings", upProperties$notificationSettings)
 }
@@ -45,29 +45,11 @@ unitTestInstantiateGetAndSet<-function() {
   checkEquals("description", e@description)
 }
 
-unitTestListConstructor<-function() {
-  e<-Evaluation(list(name="name", description="description"))
-  checkEquals("name", e@name)
-  checkEquals("description", e$description)
-}
-
 unitTestNonPrimitiveField<-function() {
   up<-synapseClient:::UserProfile(ownerId="101")
   settings<-synapseClient:::Settings(sendEmailNotifications=TRUE)
   up$notificationSettings<-settings
   checkEquals("101", up$ownerId)
-  checkEquals(TRUE, up$notificationSettings$sendEmailNotifications)
-}
-
-unitTestListConstructorNonPrimitiveField<-function() {
-  # simple case:  just primitive fields
-  up<-synapseClient:::UserProfile(list(ownerId="101", etag="10101010"))
-  checkEquals("101", up$ownerId)
-  checkEquals("10101010", up$etag)
-  # now try more complicated fields
-  up<-synapseClient:::UserProfile(list(ownerId="101", etag="10101010", notificationSettings=list(sendEmailNotifications=TRUE)))
-  checkEquals("101", up$ownerId)
-  checkEquals("10101010", up$etag)
   checkEquals(TRUE, up$notificationSettings$sendEmailNotifications)
 }
 
@@ -79,13 +61,11 @@ unitTestEnumField<-function() {
 }
 
 unitTestMapTypesForListSlots<-function() {
-  schema<-synapseClient:::readEntityDef("org.sagebionetworks.repo.model.UserProfile")
-  result<-mapTypesForListSlots(schema)
-  checkEquals(list(emails="string", openIds="string"))
+  result<-synapseClient:::mapTypesForListSlots("UserProfile")
+  checkEquals(list(emails="character", openIds="character", preferences="UserPreference"), result)
   
-  schema<-synapseClient:::readEntityDef("org.sagebionetworks.repo.model.annotations.Annotations")
-  result<-mapTypesForListSlots(schema)
-  checkEquals(list(stringAnnos="StringAnnotation", longAnnos="LongAnnotation", doubleAnnos="DoubleAnnotation"))
+  result<-synapseClient:::mapTypesForListSlots("Annotations")
+  checkEquals(list(stringAnnos="StringAnnotation", longAnnos="LongAnnotation", doubleAnnos="DoubleAnnotation"), result)
 }
 
 unitTestCreateS4ObjectFromList<-function() {
@@ -132,10 +112,10 @@ unitTestCreateS4ObjectFromList<-function() {
     ))
   checkEquals("101", up@ownerId)
   checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails)
-  checkEquals(Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F), up@notificationSettings)
+  checkEquals(synapseClient:::Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F), up@notificationSettings)
   prefs<-up@preferences
   checkTrue(!is.null(prefs))
   checkEquals(2, length(prefs))
-  checkEquals(UserPreferencesBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[1]])
-  checkEquals(UserPreferencesBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[2]])
-  }
+  checkEquals(synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[1]])
+  checkEquals(synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[2]])
+}
