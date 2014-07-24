@@ -252,7 +252,13 @@ createS4ObjectFromList<-function(className, listElemType, content) {
           constructorArgs[[elemName]]<-createS4ObjectFromList(slotType, listElemType, slotValue)
         } else {
           # it's a simple primitive.  just pass it along
-          constructorArgs[[elemName]]<-slotValue
+          # handle some edge cases:
+          if (slotType=="integer") {
+            # a value may come in as 'numeric'
+            constructorArgs[[elemName]]<-as.integer(slotValue)
+          } else {
+            constructorArgs[[elemName]]<-slotValue
+          }
         }
       } else {
         constructorArgs[[elemName]]<-createS4ObjectFromList(slotType, NULL, slotValue)
