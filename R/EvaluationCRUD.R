@@ -5,7 +5,7 @@
 
 synCreateEvaluation<-function(evaluation) {
   evaluationAsList<-createListFromS4Object(evaluation)
-  result<-createS4ObjectFromList(synRestPOST("/evaluation", evaluation))
+  result<-createS4ObjectFromList("Evaluation", NULL, synRestPOST("/evaluation", evaluation))
   result@updateUri<-sprintf("/evaluation/%s", propertyValue(result, "id"))
   result
 }

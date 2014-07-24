@@ -15,11 +15,10 @@ integrationTestUserProfile<-function() {
   profile<-synGetUserProfile()
   origSummary<-propertyValue(profile, "summary")
   
-  # will be restored under SYNR-671
-  #propertyValue(profile, "summary")<-"test summary text"
-  # profile2<-synStore(profile)
-  # propertyValue(profile, "etag")<-propertyValue(profile2, "etag")
-  # checkEqualsUserProfiles(profile2, profile)
+  propertyValue(profile, "summary")<-"test summary text"
+  profile2<-synStore(profile)
+  propertyValue(profile, "etag")<-propertyValue(profile2, "etag")
+  checkEqualsUserProfiles(profile2, profile)
   
   profile3<-synGetUserProfile()
   checkEqualsUserProfiles(profile3, profile)
@@ -29,6 +28,6 @@ integrationTestUserProfile<-function() {
   
   # restore to original settings
   propertyValue(profile, "summary")<-origSummary
-  # synStore(profile) will be restored under SYNR-671
+  synStore(profile)
 }
 

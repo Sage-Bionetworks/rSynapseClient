@@ -18,11 +18,6 @@ getResources <-
   RJSONIO::fromJSON(system.file("resources/Register.json", package="synapseClient"))
 }
 
-getClassForConcreteType<-function(concreteType) {
-  if (concreteType=="org.sagebionetworks.repo.model.FileEntity") return("FileListConstructor")
-  getClassNameFromSchemaName(concreteType)
-}
-
 entitiesToLoad <- 
     function(resources = getResources())
 {
@@ -50,7 +45,7 @@ entitiesToLoad <-
 
 
 getPackageEnvironment<-function() {
-  parent.env(environment(getClassForConcreteType)) # get the package's environment
+  parent.env(environment(entitiesToLoad)) # get the package's environment
 }
 
 # returns TRUE iff the given name exists in the package environment

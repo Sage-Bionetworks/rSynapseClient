@@ -81,7 +81,7 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
 
 synStoreNonEntityObject<-function(object) {
   if (is(object, "Evaluation")) {
-    if (is.null(propertyValue(object, "id"))) {
+    if (is.null(object$id) || length(object$id)==0) {
       synCreateEvaluation(object)
     } else {
       synUpdate(object)

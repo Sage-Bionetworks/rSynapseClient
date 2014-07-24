@@ -3,6 +3,11 @@
 # Author: furia
 ###############################################################################
 
+getConstructorForConcreteType<-function(concreteType) {
+  if (concreteType=="org.sagebionetworks.repo.model.FileEntity") return("FileListConstructor")
+  getClassNameFromSchemaName(concreteType)
+}
+
 setMethod(
   f = "getEntityInstance",
   signature = signature("list"),
@@ -11,7 +16,7 @@ setMethod(
     if (is.null(entity$concreteType)) {
       class <- NULL
     } else {
-     class <- getClassForConcreteType(entity$concreteType)
+     class <- getConstructorForConcreteType(entity$concreteType)
     }
 
     ## synapseEntity is the default
