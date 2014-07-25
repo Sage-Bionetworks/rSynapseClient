@@ -34,6 +34,15 @@ isClassDefined<-function(className) {
   )
 }
 
+getOrCreateUnionOfTypeWithNull<-function(type) {
+  if (missing(type) || is.null(type) || length(type)==0) stop("getOrCreateUnionOfTypeWithNull: type is missing, null, or empty.")
+  unionName<-sprintf("synapseClient_%sOrNull",type)
+  if (!isClassUnion(unionName)) {
+    setClassUnion(unionName, c(type, "NULL"))
+  }
+  unionName
+}
+
 defineS4ClassForSchema <-  function(fullSchemaName)
 {
   name <- getClassNameFromSchemaName(fullSchemaName)
@@ -78,20 +87,21 @@ defineS4ClassForSchema <-  function(fullSchemaName)
   # slots defined by the schema:
   slots<-list()
   for (propertyName in names(s4PropertyTypes)) {
-    unionName<-sprintf("%sOrNull",propertyName)
-    setClassUnion(unionName, c(s4PropertyTypes[[propertyName]], "NULL"))
-    slots[[propertyName]]<-unionName
+    unionTypeName<-getOrCreateUnionOfTypeWithNull(s4PropertyTypes[[propertyName]])
+    slots[[propertyName]]<-unionTypeName
   }
   # metadata slots required by the client:
-  setClassUnion("characterOrNull", c("character", "NULL"))
+  characterAndNullTypeName<-getOrCreateUnionOfTypeWithNull("character")
   slots<-append(slots, list(
-      updateUri="characterOrNull" # URI for updating objects of this type
+    updateUri=characterAndNullTypeName # URI for updating objects of this type
   ))
 
-isVirtualClass <- isVirtual(schemaDef)
+  isVirtualClass <- isVirtual(schemaDef)
   if (isVirtualClass) {
     superClasses<-c(superClasses, "VIRTUAL")
   }
+  
+  message(sprintf("Defining class for %s", name))
   
   setClass(
     Class = name,
@@ -220,6 +230,7 @@ mapTypesForListSlots <- function(className) {
 # and content represented in list form,
 # construct and return the object used the auto-generated S4 classes
 createS4ObjectFromList<-function(className, listElemType, content) {
+  if (is.null(content)) return(NULL)
   # if the list specifies a concrete type, then use it instead
   if (class(content)=="list") {
     concreteTypeSchemaName<-content$concreteType
