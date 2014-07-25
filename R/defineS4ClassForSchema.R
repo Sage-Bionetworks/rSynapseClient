@@ -34,14 +34,14 @@ isClassDefined<-function(className) {
   )
 }
 
-getOrCreateUnionOfTypeWithNull<-function(type) {
-  if (missing(type) || is.null(type) || length(type)==0) stop("getOrCreateUnionOfTypeWithNull: type is missing, null, or empty.")
-  unionName<-sprintf("synapseClient_%sOrNull",type)
-  if (!isClassUnion(unionName)) {
-    setClassUnion(unionName, c(type, "NULL"))
-  }
-  unionName
-}
+#getOrCreateUnionOfTypeWithNull<-function(type) {
+#  if (missing(type) || is.null(type) || length(type)==0) stop("getOrCreateUnionOfTypeWithNull: type is missing, null, or empty.")
+#  unionName<-sprintf("synapseClient_%sOrNull",type)
+#  if (!isClassUnion(unionName)) {
+#    setClassUnion(unionName, c(type, "NULL"))
+#  }
+#  unionName
+#}
 
 defineS4ClassForSchema <-  function(fullSchemaName)
 {
@@ -87,21 +87,19 @@ defineS4ClassForSchema <-  function(fullSchemaName)
   # slots defined by the schema:
   slots<-list()
   for (propertyName in names(s4PropertyTypes)) {
-    unionTypeName<-getOrCreateUnionOfTypeWithNull(s4PropertyTypes[[propertyName]])
-    slots[[propertyName]]<-unionTypeName
+    #unionTypeName<-getOrCreateUnionOfTypeWithNull(s4PropertyTypes[[propertyName]])
+    slots[[propertyName]]<-s4PropertyTypes[[propertyName]]
   }
   # metadata slots required by the client:
-  characterAndNullTypeName<-getOrCreateUnionOfTypeWithNull("character")
+  #characterAndNullTypeName<-getOrCreateUnionOfTypeWithNull("character")
   slots<-append(slots, list(
-    updateUri=characterAndNullTypeName # URI for updating objects of this type
+    updateUri="character" #characterAndNullTypeName # URI for updating objects of this type
   ))
 
   isVirtualClass <- isVirtual(schemaDef)
   if (isVirtualClass) {
     superClasses<-c(superClasses, "VIRTUAL")
   }
-  
-  message(sprintf("Defining class for %s", name))
   
   setClass(
     Class = name,
@@ -232,7 +230,7 @@ mapTypesForListSlots <- function(className) {
 createS4ObjectFromList<-function(className, listElemType, content) {
   if (is.null(content)) return(NULL)
   # if the list specifies a concrete type, then use it instead
-  if (class(content)=="list") {
+  if (is.list(content)) {
     concreteTypeSchemaName<-content$concreteType
     if (!is.null(concreteTypeSchemaName)) {
       concreteTypeClassName<-getClassNameFromSchemaName(concreteTypeSchemaName)
@@ -267,7 +265,11 @@ createS4ObjectFromList<-function(className, listElemType, content) {
     
     for (elemName in names(s4PropertyTypes)) {
       slotType <- s4PropertyTypes[[elemName]]
-      slotValue <- content[[elemName]]
+      if (is.list(content)) {
+        slotValue <- content[[elemName]]
+      } else {
+        slotValue <- as.list(content)[[elemName]]
+      }
       # if 'elem' is a primitive, no conversion is needed
       if (isPrimitiveType(slotType)) {
         if (slotType=="list") {
@@ -295,6 +297,7 @@ createS4ObjectFromList<-function(className, listElemType, content) {
 # create a list version suitable for serialization to JSON,
 # adhering to the schema
 createListFromS4Object<-function(obj) {
+  if (is.null(obj) || length(obj)==0) return(NULL)
   result <-list()
   className<-class(obj)
   typesForListSlots <- mapTypesForListSlots(className)
