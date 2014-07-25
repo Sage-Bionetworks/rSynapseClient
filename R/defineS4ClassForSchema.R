@@ -61,26 +61,34 @@ defineS4ClassForSchema <-  function(fullSchemaName)
   # these are the types that will be used for the S4 class slots
   s4PropertyTypes<-mapTypesForAllSlots(propertyTypes)
   
+  
   # make sure they're all defined
-  for (propertyType in s4PropertyTypes) {
+  for (propertyTypeName in names(s4PropertyTypes)) {
+    propertyType<-propertyTypes[[propertyTypeName]]
+    s4PropertyType<-s4PropertyTypes[[propertyTypeName]] # notably this provides the fully qualified schema name
     # check whether the type is one of the known primitives
-    if (!isPrimitiveType(propertyType)) {
+    if (!isPrimitiveType(s4PropertyType)) {
       # if it is not one of the known primitives then try instantiating it
-      propertyTypeName <- getClassNameFromSchemaName(propertyType)
-      if (!isClassDefined(propertyTypeName)) {
+      if (!isClassDefined(s4PropertyType)) {
         defineS4ClassForSchema(propertyType)
       }
     }
   }
   
   # slots defined by the schema:
-  slots<-getClassNameFromSchemaName(s4PropertyTypes)
+  slots<-list()
+  for (propertyName in names(s4PropertyTypes)) {
+    unionName<-sprintf("%sOrNull",propertyName)
+    setClassUnion(unionName, c(s4PropertyTypes[[propertyName]], "NULL"))
+    slots[[propertyName]]<-unionName
+  }
   # metadata slots required by the client:
+  setClassUnion("characterOrNull", c("character", "NULL"))
   slots<-append(slots, list(
-      updateUri="character" # URI for updating objects of this type
+      updateUri="characterOrNull" # URI for updating objects of this type
   ))
 
-  isVirtualClass <- isVirtual(schemaDef)
+isVirtualClass <- isVirtual(schemaDef)
   if (isVirtualClass) {
     superClasses<-c(superClasses, "VIRTUAL")
   }
@@ -239,17 +247,22 @@ createS4ObjectFromList<-function(className, listElemType, content) {
     }
   } else {
     constructorArgs<-list()
-    obj<-new(className)
     typesForListSlots <- mapTypesForListSlots(className)
-    for (elemName in names(content)) {
-      slotType <- class(slot(obj, elemName))
+    
+    schema <- getSchemaFromCache(className)
+    if (is.null(schema)) stop(sprintf("Missing schema for %s", className))
+    # these are the types that will be used for the S4 class slots
+    s4PropertyTypes<-mapTypesForAllSlots(getEffectiveSchemaTypes(schema))
+    
+    for (elemName in names(s4PropertyTypes)) {
+      slotType <- s4PropertyTypes[[elemName]]
       slotValue <- content[[elemName]]
       # if 'elem' is a primitive, no conversion is needed
       if (isPrimitiveType(slotType)) {
         if (slotType=="list") {
-          listElemType <- typesForListSlots[[elemName]]
-          if (listElemType=="list") stop(sprintf("Lists of lists not supported. Type: %s, slot: %s", className, elemName))
-          constructorArgs[[elemName]]<-createS4ObjectFromList(slotType, listElemType, slotValue)
+          subListElemType <- typesForListSlots[[elemName]]
+          if (subListElemType=="list") stop(sprintf("Lists of lists not supported. Type: %s, slot: %s", className, elemName))
+          constructorArgs[[elemName]]<-createS4ObjectFromList(slotType, subListElemType, slotValue)
         } else {
           # it's a simple primitive.  just pass it along
           # handle some edge cases:
@@ -282,23 +295,27 @@ createListFromS4Object<-function(obj) {
   # so we must make the list based on the schema rather than the slots
   for (slotName in names(effectiveSlotTypes)) {
     value<-slot(obj, slotName)
-    slotClass<-class(value)
-    if (isPrimitiveType(slotClass)) {
-      if (slotClass=="list") {
-        elemType<-typesForListSlots[[slotName]]
-        if (isPrimitiveType(elemType)) {
-          result[[slotName]]<-value
+    if (is.null(value)) {
+      # skip this field
+    } else {
+      slotClass<-class(value)
+      if (isPrimitiveType(slotClass)) {
+        if (slotClass=="list") {
+          elemType<-typesForListSlots[[slotName]]
+          if (isPrimitiveType(elemType)) {
+            result[[slotName]]<-value
+          } else {
+            result[[slotName]]<-lapply(value, FUN=function(elem){createListFromS4Object(elem)})
+          }
         } else {
-          result[[slotName]]<-lapply(value, FUN=function(elem){createListFromS4Object(elem)})
+          # take care of some edge cases
+          if (length(value)>0) {
+            result[[slotName]]<-value
+          }
         }
       } else {
-        # take care of some edge cases
-        if (length(value)>0) {
-          result[[slotName]]<-value
-        }
+        result[[slotName]]<-createListFromS4Object(value)
       }
-    } else {
-      result[[slotName]]<-createListFromS4Object(value)
     }
   }
   result
