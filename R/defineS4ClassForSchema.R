@@ -34,14 +34,6 @@ isClassDefined<-function(className) {
   )
 }
 
-#getOrCreateUnionOfTypeWithNull<-function(type) {
-#  if (missing(type) || is.null(type) || length(type)==0) stop("getOrCreateUnionOfTypeWithNull: type is missing, null, or empty.")
-#  unionName<-sprintf("synapseClient_%sOrNull",type)
-#  if (!isClassUnion(unionName)) {
-#    setClassUnion(unionName, c(type, "NULL"))
-#  }
-#  unionName
-#}
 
 defineS4ClassForSchema <-  function(fullSchemaName)
 {
@@ -87,13 +79,11 @@ defineS4ClassForSchema <-  function(fullSchemaName)
   # slots defined by the schema:
   slots<-list()
   for (propertyName in names(s4PropertyTypes)) {
-    #unionTypeName<-getOrCreateUnionOfTypeWithNull(s4PropertyTypes[[propertyName]])
     slots[[propertyName]]<-s4PropertyTypes[[propertyName]]
   }
   # metadata slots required by the client:
-  #characterAndNullTypeName<-getOrCreateUnionOfTypeWithNull("character")
   slots<-append(slots, list(
-    updateUri="character" #characterAndNullTypeName # URI for updating objects of this type
+    updateUri="character" # URI for updating objects of this type
   ))
 
   isVirtualClass <- isVirtual(schemaDef)
@@ -332,7 +322,14 @@ createListFromS4Object<-function(obj) {
       }
     }
   }
-  result
+  # An object with no field values becomes an empty list.
+  # To keep RJSONIO from erroneously encoding as an empty _JSON_ list ("[]")
+  # we replace it with NULL
+  if (length(result)==0) {
+    NULL
+  } else {
+    result
+  }
 }
 
 # get the parent class or NULL if none

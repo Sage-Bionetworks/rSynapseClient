@@ -141,3 +141,25 @@ unitTestS4RoundTrip<-function() {
   
 }
 
+unitTestMissingS4Field<-function() {
+  # note:  there's no 'notificationSettings' field
+  up<-synapseClient:::UserProfile(
+    ownerId="101", 
+    emails=list("foo@bar.com", "bar@bas.com"),
+    preferences=list(
+      synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"),
+      synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean")
+    )
+  )
+  
+  listRep<-synapseClient:::createListFromS4Object(up)
+  
+  # There should not be a list entry for 'notificationSettings'
+  checkTrue(is.null(listRep$notificationSettings))
+  
+  # Also double check that it generates the original UserProfile
+  checkEquals(up, synapseClient:::createS4ObjectFromList("UserProfile", NULL, listRep))
+  
+  
+}
+
