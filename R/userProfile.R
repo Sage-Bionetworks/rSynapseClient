@@ -11,7 +11,7 @@ synGetUserProfile<-function(id) {
     getOrUpdateUri<-sprintf("/userProfile/%s", id)
   }
   response<-synRestGET(getOrUpdateUri)  
-  objectResult<-createS4ObjectFromList("UserProfile", NULL, response)
+  objectResult<-createS4ObjectFromList(response, "UserProfile")
   objectResult@updateUri<-getOrUpdateUri
   objectResult
 }

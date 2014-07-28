@@ -38,12 +38,9 @@ entitiesToLoad <-
   setdiff(paths, "DEFAULT")
 }
 
+#------------------------------------------------------------
 # Utilities for setting and getting package level variables
 # 
-# Author: brucehoff
-###############################################################################
-
-
 getPackageEnvironment<-function() {
   parent.env(environment(entitiesToLoad)) # get the package's environment
 }
@@ -68,16 +65,15 @@ setPackageVariable<-function(name, value) {
   packageEnv<-getPackageEnvironment()
   assign(x=name, value=value, envir=packageEnv)
 }
-
-###############################################################################
+#------------------------------------------------------------
 
 getSchemaCacheName<-function() {"schema.cache"}
 
-getSchemaFromCache<-function(key) {
+getSchemaFromCache<-function(className) {
   schemaCacheName <- getSchemaCacheName()
   if (existsPackageVariable(schemaCacheName)) {
     schemaCache<-getPackageVariable(schemaCacheName)
-    schemaCache[[key]]
+    schemaCache[[className]]
   } else {
     NULL
   }
@@ -219,6 +215,48 @@ defineEntityConstructors <-
   }
 }
 
+
+mapTypes <- function(types) { 
+  indx <- match(types, names(TYPEMAP))
+  retval <- TYPEMAP[indx]
+  
+  mk <- sapply(X=retval, FUN=function(x)is.null(x))
+  
+  if (any(mk)) {
+    retval[mk] <- "character"
+  }
+  
+  names(retval) <- names(types)
+  retval
+}
+
+
+#-----------------------------------
+# utilities for parsing schemas
+
+# get the parent class for the given schema or NULL if none
+getImplements<-function(schema) {
+  if(is.null(schema))
+    return(NULL)
+  schema$implements
+}
+
+# returns TRUE iff the schema defines an interface
+isVirtual<-function(schema) {
+  type<-schema$type
+  !is.null(type) && type=="interface"
+}
+
+schemaTypeFromProperty<-function(property) {
+  type<-property[["type"]]
+  ref<-property[["$ref"]]
+  if (!is.null(ref)) {
+    ref
+  } else {
+    type
+  }
+}
+
 getPropertyTypes <- function(which, entityDef)
 {
   if(!missing(which) && !missing(entityDef))
@@ -231,13 +269,7 @@ getPropertyTypes <- function(which, entityDef)
     X = names(entityDef$properties), 
     FUN = function(prop){
       theprop <- entityDef$properties[[prop]]
-      type<-theprop[["type"]]
-      ref<-theprop[["$ref"]]
-      if (!is.null(ref)) {
-        ref
-      } else {
-        type
-      }
+      schemaTypeFromProperty(theprop)
     }
   )
   names(properties) <- names(entityDef$properties)
@@ -263,20 +295,6 @@ getEffectiveSchemaTypes <- function(schema) {
   properties
 }
 
-mapTypes <- function(types) { 
-  indx <- match(types, names(TYPEMAP))
-  retval <- TYPEMAP[indx]
-  
-  mk <- sapply(X=retval, FUN=function(x)is.null(x))
-  
-  if (any(mk)) {
-    retval[mk] <- "character"
-  }
-  
-  names(retval) <- names(types)
-  retval
-}
-
 getAllInterfaces <- function(schema) {
   if(is.null(schema))
     return(NULL)
@@ -289,4 +307,5 @@ getAllInterfaces <- function(schema) {
   }
   implements
 }
+
 

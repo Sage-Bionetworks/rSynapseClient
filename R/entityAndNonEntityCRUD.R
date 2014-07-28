@@ -108,7 +108,7 @@ synStoreNonEntityObject<-function(object) {
 synUpdate<-function(object) {
   objectAsList<-createListFromS4Object(object)
   listResult<-synRestPUT(object@updateUri, objectAsList)
-  objectResult<-createS4ObjectFromList(class(object), NULL, listResult)
+  objectResult<-createS4ObjectFromList(listResult, class(object))
   objectResult@updateUri<-object@updateUri
   objectResult
 }

@@ -60,7 +60,7 @@ defineS4ClassForSchema <-  function(fullSchemaName)
   # these are the property types defined by the schema
   propertyTypes<-getPropertyTypes(entityDef=schemaDef)
   # these are the types that will be used for the S4 class slots
-  s4PropertyTypes<-mapTypesForAllSlots(propertyTypes)
+  s4PropertyTypes<-mapSchemaTypeToS4Type(propertyTypes)
   
   
   # make sure they're all defined
@@ -164,7 +164,7 @@ isPrimitiveType <- function(type) {
 # the values in 'types' is taken from the range of types in the JSON schema
 # the names of 'types' are the names of the properties having the given type
 # the returned list maps the properties to their corresponding 'R' type
-mapTypesForAllSlots <- function(types) { 
+mapSchemaTypeToS4Type <- function(types) { 
   indx <- match(types, names(TYPEMAP_FOR_ALL_PRIMITIVES))
   retval <- TYPEMAP_FOR_ALL_PRIMITIVES[indx]
   
@@ -189,95 +189,116 @@ mapTypesForAllSlots <- function(types) {
   retval
 }
 
-# for class slots which are lists this gives the type of the list elements
-mapTypesForListSlotsFromSchema <- function(schema) { 
-  result<-list()
-  for (name in names(schema$properties)) {
-    prop<-schema$properties[[name]]
-    if (prop$type=="array") {
-      type<-prop$items[["type"]]
-      ref<-prop$items[["$ref"]]
-      if (!is.null(ref)) {
-        result[[name]]<-ref
-      } else {
-        result[[name]]<-type
-      }
+# we define the schema for an 'element' of an S4 class to be
+# the map labeled by the property 'propertyName' within the
+# 'properties' array
+getElemSchemaFromS4ClassSchema<-function(schema, propertyName) {
+  schema$properties[[propertyName]]
+}
+
+# given the schema for an element which is an array,
+# the array's "subschema" is the map labeled by "items"
+getArraySubSchema<-function(schema) {
+  schema$items
+}
+
+# get all the properties in the effective schema for the given schema
+getEffectiveSchemaProperties <- function(schema) {
+  # start with the properties for the immediate schema
+  properties<-schema$properties
+  implements <- getAllInterfaces(schema)
+  if (length(implements)>0) {
+    for (i in length(implements):1) {
+      implementedSchema <- readEntityDef(implements[[i]])
+      implementedProperties <- implementedSchema$properties
+      for (n in names(implementedProperties))
+        properties[[n]] <- implementedProperties[[n]]
     }
   }
-  mapTypesForAllSlots(result)
+  properties
 }
 
-mapTypesForListSlots <- function(className) {
-  schema <- getSchemaFromCache(className)
-  if (is.null(schema)) stop(sprintf("Missing schema for %s", className))
-  mapTypesForListSlotsFromSchema(schema)
+getRTypeFromPropertySchema<-function(schema) {
+  mapSchemaTypeToS4Type(schemaTypeFromProperty(schema))
 }
 
-
-# given the type (and of the list elements if type==list) 
-# and content represented in list form,
+# given the content represented in list form and the type
 # construct and return the object used the auto-generated S4 classes
-createS4ObjectFromList<-function(className, listElemType, content) {
+createS4ObjectFromList<-function(content, className) {
+  createS4ObjectFromListIntern(content, className, NULL)
+}
+
+# This creates the pieces of an S4 object, whether they are primitives, lists, or S4 objects themselves
+# 'schema' is not needed when 'className' is an auto-generated S4 class name
+createS4ObjectFromListIntern<-function(content, className, schema) {
   if (is.null(content)) return(NULL)
-  # if the list specifies a concrete type, then use it instead
-  if (is.list(content)) {
-    concreteTypeSchemaName<-content$concreteType
-    if (!is.null(concreteTypeSchemaName)) {
-      concreteTypeClassName<-getClassNameFromSchemaName(concreteTypeSchemaName)
-      if (is.null(getClass(concreteTypeClassName)@contains[[className]])) {
-        stop(sprintf("concreteType %s specified for class %s", concreteTypeClassName, className))
-      }
-      className<-concreteTypeClassName
-    }
-  }
   if (isPrimitiveType(className)) {
     if (className=="list") {
-      # recursively call this function for each list element
+      # recursively call 'createS4ObjectFromListIntern' for each list element
+      arraySubSchema<-getArraySubSchema(schema)
+      listElemType <- getRTypeFromPropertySchema(arraySubSchema)
+      if (is.list(listElemType)) {
+        if (length(listElemType)==1) {
+          listElemType<-listElemType[[1]]
+        } else {
+          stop(sprintf("length(listElemType)=%s", length(listElemType)))
+        }
+      }
       lapply(X=content, FUN=function(elem) {
-          if (isPrimitiveType(listElemType)) {
-            elem
-          } else {
-            createS4ObjectFromList(listElemType, NULL, elem)
-          }
+          createS4ObjectFromListIntern(elem, listElemType, arraySubSchema)
       })
     } else {
-      # just return 'content', unmodified
-      content
+      # just return 'content', but do handle some edge cases:
+      if (schemaTypeFromProperty(schema)=="integer") {
+        # a value may come in as 'numeric'
+        as.integer(content)
+      } else {
+        content
+      }
     }
-  } else {
-    constructorArgs<-list()
-    typesForListSlots <- mapTypesForListSlots(className)
+  } else { # the element it itself an S4 object
+    # if the list specifies a concrete type, then use it instead of the given class name
+    if (is.list(content)) {
+      concreteTypeSchemaName<-content$concreteType
+      if (!is.null(concreteTypeSchemaName)) {
+        concreteTypeClassName<-getClassNameFromSchemaName(concreteTypeSchemaName)
+        if (is.null(getClass(concreteTypeClassName)@contains[[className]])) {
+          stop(sprintf("concreteType %s specified for class %s", concreteTypeClassName, className))
+        }
+        className<-concreteTypeClassName
+      }
+    }
     
     schema <- getSchemaFromCache(className)
-    if (is.null(schema)) stop(sprintf("Missing schema for %s", className))
-    # these are the types that will be used for the S4 class slots
-    s4PropertyTypes<-mapTypesForAllSlots(getEffectiveSchemaTypes(schema))
+    if (is.null(schema)) stop(sprintf("Missing schema for %s", className))  
+    effectiveProperties <- getEffectiveSchemaProperties(schema)
+    # now replace the schema with its effective schema:
+    schema <-list(properties=effectiveProperties)
     
-    for (elemName in names(s4PropertyTypes)) {
-      slotType <- s4PropertyTypes[[elemName]]
-      if (is.list(content)) {
-        slotValue <- content[[elemName]]
-      } else {
-        slotValue <- as.list(content)[[elemName]]
-      }
-      # if 'elem' is a primitive, no conversion is needed
-      if (isPrimitiveType(slotType)) {
-        if (slotType=="list") {
-          subListElemType <- typesForListSlots[[elemName]]
-          if (subListElemType=="list") stop(sprintf("Lists of lists not supported. Type: %s, slot: %s", className, elemName))
-          constructorArgs[[elemName]]<-createS4ObjectFromList(slotType, subListElemType, slotValue)
+    # these are the types that will be used for the S4 class slots
+    schemaTypes<-getEffectiveSchemaTypes(schema)
+    
+    constructorArgs<-list()   
+    for (schemaSlotName in names(schemaTypes)) {
+      schemaSlotType<-schemaTypes[[schemaSlotName]] # type of the slot in schema 'language'
+      s4SlotType <- mapSchemaTypeToS4Type(schemaSlotType) # type of the slot in R
+      if (is.list(s4SlotType)) {
+        if (length(s4SlotType)==1) {
+          s4SlotType<-s4SlotType[[1]]
         } else {
-          # it's a simple primitive.  just pass it along
-          # handle some edge cases:
-          if (slotType=="integer") {
-            # a value may come in as 'numeric'
-            constructorArgs[[elemName]]<-as.integer(slotValue)
-          } else {
-            constructorArgs[[elemName]]<-slotValue
-          }
+          stop(sprintf("length(s4SlotType)=%s", length(s4SlotType)))
         }
+      }
+      if (is.list(content)) {
+        slotValue <- content[[schemaSlotName]]
       } else {
-        constructorArgs[[elemName]]<-createS4ObjectFromList(slotType, NULL, slotValue)
+        slotValue <- as.list(content)[[schemaSlotName]]
+      }
+      if (isPrimitiveType(s4SlotType)) {
+        elemSchema<-getElemSchemaFromS4ClassSchema(schema, schemaSlotName)
+        constructorArgs[[schemaSlotName]]<-createS4ObjectFromListIntern(slotValue, s4SlotType, elemSchema)
+      } else {
+        constructorArgs[[schemaSlotName]]<-createS4ObjectFromList(slotValue, s4SlotType)
       }
     }
     do.call(className, constructorArgs)
@@ -288,12 +309,18 @@ createS4ObjectFromList<-function(className, listElemType, content) {
 # adhering to the schema
 createListFromS4Object<-function(obj) {
   if (is.null(obj) || length(obj)==0) return(NULL)
+  if (isPrimitiveType(class(obj))) {
+    if (is.list(obj)) {
+      result<-lapply(X=obj, FUN=createListFromS4Object)
+      return(result)
+    } else {
+      return(obj)
+    }
+  }
   result <-list()
   className<-class(obj)
-  typesForListSlots <- mapTypesForListSlots(className)
   schemaDef<-getSchemaFromCache(className)
   effectiveSlotTypes<-getEffectiveSchemaTypes(schemaDef)
-    
   
   # Note the slots are named after the schema properties, but may be a *superset*
   # so we must make the list based on the schema rather than the slots
@@ -303,19 +330,10 @@ createListFromS4Object<-function(obj) {
       # skip this field
     } else {
       slotClass<-class(value)
-      if (isPrimitiveType(slotClass)) {
-        if (slotClass=="list") {
-          elemType<-typesForListSlots[[slotName]]
-          if (isPrimitiveType(elemType)) {
-            result[[slotName]]<-value
-          } else {
-            result[[slotName]]<-lapply(value, FUN=function(elem){createListFromS4Object(elem)})
-          }
-        } else {
-          # take care of some edge cases
-          if (length(value)>0) {
-            result[[slotName]]<-value
-          }
+      if (isPrimitiveType(slotClass) && slotClass!="list") {
+        # take care of some edge cases
+        if (length(value)>0) {
+          result[[slotName]]<-value
         }
       } else {
         result[[slotName]]<-createListFromS4Object(value)
@@ -332,23 +350,5 @@ createListFromS4Object<-function(obj) {
   }
 }
 
-# get the parent class or NULL if none
-getImplements<-function(schema) {
-  if(is.null(schema))
-    return(NULL)
-  schema$implements
-}
-
-getType<-function(schema) {
-  if(is.null(which))
-    return(NULL)
-  schema$type
-}
-
-# returns TRUE iff the schema defines an interface
-isVirtual<-function(schema) {
-  type<-getType(schema)
-  !is.null(type) && type=="interface"
-}
 
 
