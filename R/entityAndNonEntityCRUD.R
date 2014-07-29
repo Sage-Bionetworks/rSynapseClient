@@ -81,14 +81,14 @@ synStore <- function(entity, activity=NULL, used=NULL, executed=NULL, activityNa
 
 synStoreNonEntityObject<-function(object) {
   if (is(object, "Evaluation")) {
-    if (is.null(propertyValue(object, "id"))) {
+    if (is.null(object$id) || length(object$id)==0) {
       synCreateEvaluation(object)
     } else {
       synUpdate(object)
     }
-  #} else if (is(object, "UserProfile")) { # SYNR-671 will restore this
+  } else if (is(object, "UserProfile")) {
     # note, user can't create a UserProfile, only update one
-   # synUpdateUserProfile(object) # SYNR-671 will restore this
+   synUpdate(object)
   } else if (is(object, "SubmissionStatus")) {
     # note, user can't create a SubmissionStatus, only update one
     synUpdate(object)   
@@ -106,9 +106,9 @@ synStoreNonEntityObject<-function(object) {
 }
 
 synUpdate<-function(object) {
-  objectConstructor <- getMethod(class(object), signature = "list", where="synapseClient")
-  listResult<-synRestPUT(object@updateUri, object)
-  objectResult<-objectConstructor(listResult)
+  objectAsList<-createListFromS4Object(object)
+  listResult<-synRestPUT(object@updateUri, objectAsList)
+  objectResult<-createS4ObjectFromList(listResult, class(object))
   objectResult@updateUri<-object@updateUri
   objectResult
 }

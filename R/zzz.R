@@ -29,14 +29,14 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   function(libname, pkgname)
 {  
   ##set the R_OBJECT cache directory. check for a functional zip first
-  packageStartupMessage("Verifying zip installation...")
-
   ff <- tempfile()
   file.create(ff)
   zipfile <- tempfile()
+
   suppressWarnings(
-    ans <- utils::zip(zipfile, ff)
+      ans <- utils::zip(zipfile, ff)
   )
+
   unlink(ff)
   unlink(zipfile, recursive = TRUE)
   if(ans != 0){
@@ -44,7 +44,6 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     .setCache("rObjCacheDir", .Platform$file.sep)
     .setCache("hasZip", FALSE)
   }else{
-    packageStartupMessage("OK")
     .setCache("rObjCacheDir", ".R_OBJECTS/")
     .setCache("hasZip", TRUE)
   }
@@ -88,28 +87,31 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   synapseCacheDir(gsub("[\\/]+", "/", path.expand("~/.synapseCache")))
 
   entities <- synapseClient:::entitiesToLoad()
-    for(ee in entities){ 
-      synapseClient:::defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
-      synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
-    }
-    
-    nonEntities<-list(
-      "org.sagebionetworks.repo.model.UserProfile",
-      "org.sagebionetworks.evaluation.model.Evaluation",
-      "org.sagebionetworks.evaluation.model.SubmissionStatus",
-      "org.sagebionetworks.evaluation.model.SubmissionBundle",
-      "org.sagebionetworks.evaluation.model.Participant",
-      "org.sagebionetworks.repo.model.wiki.WikiHeader"
+  for(ee in entities){ 
+    synapseClient:::defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+    synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+  }
+  
+  nonEntities<-list(
+    "org.sagebionetworks.repo.model.UserProfile",
+    "org.sagebionetworks.repo.model.UserPreferenceBoolean",
+    "org.sagebionetworks.evaluation.model.Evaluation",
+    "org.sagebionetworks.evaluation.model.SubmissionStatus",
+    "org.sagebionetworks.evaluation.model.SubmissionBundle",
+    "org.sagebionetworks.evaluation.model.Participant",
+    "org.sagebionetworks.repo.model.wiki.WikiHeader",
+    "org.sagebionetworks.repo.model.annotation.Annotations",
+    "org.sagebionetworks.repo.model.annotation.DoubleAnnotation",
+    "org.sagebionetworks.repo.model.annotation.LongAnnotation",
+    "org.sagebionetworks.repo.model.annotation.StringAnnotation"
     )
-    
-    for(ee in nonEntities){ 
-      synapseClient:::defineNONEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
-      synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+  
+  for(ee in nonEntities) { 
+    # only define the class if it's not already defined
+    if (!isClassDefined(ee)) {
+      synapseClient:::defineS4ClassForSchema(ee)
     }
-    
-    # we override FileEntity, Submission with our own class constructor.  See also entitiesToLoad() in AAAschema.R
-addToEntityTypeMap(className="FileListConstructor", jsonSchemaName="org.sagebionetworks.repo.model.FileEntity")
-addToEntityTypeMap(className="SubmissionListConstructor", jsonSchemaName="org.sagebionetworks.evaluation.model.Submission")
+  }
 }
 
 

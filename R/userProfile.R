@@ -10,20 +10,16 @@ synGetUserProfile<-function(id) {
   } else {
     getOrUpdateUri<-sprintf("/userProfile/%s", id)
   }
-  response<-synRestGET(getOrUpdateUri)
-  populateUserProfile(response, getOrUpdateUri)
+  response<-synRestGET(getOrUpdateUri)  
+  objectResult<-createS4ObjectFromList(response, "UserProfile")
+  objectResult@updateUri<-getOrUpdateUri
+  objectResult
 }
 
 synUpdateUserProfile<-function(userProfile) {
-  listResult<-synRestPUT(userProfile@updateUri, userProfile)
-  populateUserProfile(listResult, userProfile@updateUri)
+  synUpdate(userProfile)
 }
 
-populateUserProfile<-function(listResult, getOrUpdateUri) {
-  if (!is.null(listResult$pic)) listResult$pic<-as.list(listResult$pic)
-  result<-UserProfile(listResult)
-  result@updateUri<-getOrUpdateUri
-  result
-}
+
 
 

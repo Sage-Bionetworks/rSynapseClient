@@ -363,8 +363,8 @@ setMethod(
     function(object, objectName)
   {
     object@fileCache <- moveFile(object@fileCache, 
-      synapseClient:::.generateCacheFileRelativePath(object, objectName), 
-      synapseClient:::.generateTmpCacheFileRelativePath(object, objectName)
+      .generateCacheFileRelativePath(object, objectName), 
+      .generateTmpCacheFileRelativePath(object, objectName)
     )
     invisible(object)
   }

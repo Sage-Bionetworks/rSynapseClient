@@ -205,7 +205,7 @@ setMethod(
   ## clean up the subdirectories
   if(length(path) > 1L || path != "/")
     path <- cleanPath(path)
-  file <- unlist(lapply(file, function(f) as.character(synapseClient:::.cleanFilePath(f))))
+  file <- unlist(lapply(file, function(f) as.character(.cleanFilePath(f))))
 
   ## get a full listing of the files
   srcfiles <- lapply(file, function(f){
@@ -217,7 +217,7 @@ setMethod(
       if(length(ff) == 0L)
         return(ff)
       for(i in 1:length(ff))
-        ff[i] <- synapseClient:::.cleanFilePath(ff[i])
+        ff[i] <- .cleanFilePath(ff[i])
       ff
     }
   )

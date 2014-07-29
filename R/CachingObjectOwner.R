@@ -244,14 +244,6 @@ setReplaceMethod("[[",
   }
 )
 
-#
-#setMethod(
-#  f = "$",
-#  signature = "CachingObjectOwner",
-#  definition = function(x, name){
-#    x[[name]]
-#  }
-#)
 
 
 

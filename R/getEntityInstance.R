@@ -3,12 +3,21 @@
 # Author: furia
 ###############################################################################
 
+getConstructorForConcreteType<-function(concreteType) {
+  if (concreteType=="org.sagebionetworks.repo.model.FileEntity") return("FileListConstructor")
+  getClassNameFromSchemaName(concreteType)
+}
+
 setMethod(
   f = "getEntityInstance",
   signature = signature("list"),
   definition = function(entity)
   {
-    class <- getClassFromSynapseEntityType(entity$concreteType)
+    if (is.null(entity$concreteType)) {
+      class <- NULL
+    } else {
+     class <- getConstructorForConcreteType(entity$concreteType)
+    }
 
     ## synapseEntity is the default
     if(is.null(class))
@@ -46,7 +55,7 @@ setMethod(
 
       cacheRoot <- gsub("[\\/]+", "/", normalizePath(cacheRoot))
 
-      if(cacheRoot %in% synapseClient:::availFileCaches()){
+      if(cacheRoot %in% availFileCaches()){
           ee@archOwn@fileCache <- getFileCache(cacheRoot)
       } else{
           setCacheRoot(ee@archOwn, cacheRoot, clean = FALSE)

@@ -38,9 +38,74 @@ entitiesToLoad <-
   setdiff(paths, "DEFAULT")
 }
 
+#------------------------------------------------------------
+# Utilities for setting and getting package level variables
+# 
+getPackageEnvironment<-function() {
+  parent.env(environment(entitiesToLoad)) # get the package's environment
+}
+
+# returns TRUE iff the given name exists in the package environment
+existsPackageVariable<-function(name) {
+  packageEnv<-getPackageEnvironment()
+  exists(x=name, envir=packageEnv)
+}
+
+# returns the value for the given name or NULL if the name is not defined
+getPackageVariable<-function(name) {
+  packageEnv<-getPackageEnvironment()
+  if (exists(x=name, envir=packageEnv)) {
+    get(x=name, envir=packageEnv)
+  } else {
+    NULL
+  }
+}
+
+setPackageVariable<-function(name, value) {
+  packageEnv<-getPackageEnvironment()
+  assign(x=name, value=value, envir=packageEnv)
+}
+#------------------------------------------------------------
+
+getSchemaCacheName<-function() {"schema.cache"}
+
+getSchemaFromCache<-function(className) {
+  schemaCacheName <- getSchemaCacheName()
+  if (existsPackageVariable(schemaCacheName)) {
+    schemaCache<-getPackageVariable(schemaCacheName)
+    schemaCache[[className]]
+  } else {
+    NULL
+  }
+}
+
+putSchemaToCache<-function(key, value) {
+  schemaCacheName <- getSchemaCacheName()
+  schemaCache <- getPackageVariable(schemaCacheName)
+  if (is.null(schemaCache)) schemaCache<-list()
+  schemaCache[[key]]<-value
+  setPackageVariable(schemaCacheName, schemaCache)
+}
+
+# Omit the part of the string preceding the last "." (if any)
+getClassNameFromSchemaName<-function(schemaName) {
+  if (is.null(schemaName)) return(NULL)
+  result<-gsub("^.+[\\.]", "", schemaName)
+  names(result)<-names(schemaName)
+  result
+}
+
 readEntityDef <-
     function(name, path = system.file("resources/schema",package="synapseClient"))
-{
+{ 
+  className <- getClassNameFromSchemaName(name)
+  
+
+  result<-getSchemaFromCache(className)
+  if (!is.null(result)) {
+    return(result)
+  }
+  
   file <- sprintf("%s.json", gsub("[\\.]", "/", name))
   
   fullPath <- file.path(path,file)
@@ -50,21 +115,28 @@ readEntityDef <-
 
   schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
   
+  putSchemaToCache(className, schema)
   schema
 }
 
+# 'which' is the full class name
+# 'name' is the Class name.  If omitted it's the suffix of 'which', e.g. 
+# if 'which' is "org.sagebionetworks.repo.model.Folder" and 'name' is omitted,
+# then the Class name is "Folder".
 defineEntityClass <- 
   function(which, name, where = parent.frame(), package)
 {
   entityDef <- readEntityDef(which)
   
   if(missing(name))
-    name <- gsub("^.+[\\.]", "", which)
+    name <- getClassNameFromSchemaName(which)
   
   if(is.null(name) | name == "")
     stop("name must not be null")
   
-  implements <- unique(c(entityDef$implements[[1]][[1]], synapseClient:::getImplements(entityDef$implements[[1]][[1]])))
+  implementsSchemaName <-entityDef$implements[[1]][[1]]
+  implementsSchema<-readEntityDef(implementsSchemaName)
+  implements <- unique(c(implementsSchemaName, getAllInterfaces(implementsSchema)))
   
   if ("org.sagebionetworks.repo.model.Locationable" %in% implements) {
     contains <- "Locationable"
@@ -83,44 +155,8 @@ defineEntityClass <-
     ),
     package=package
   )
-  
-  # now add the new class to the list of defined ones
-  addToEntityTypeMap(className=name, jsonSchemaName=which)
 }
 
-# this could be eliminated (just using 'defineEntityClass' instead) if object received from server had a 'uri' field
-defineNONEntityClass <- 
-  function(which, name, where = parent.frame(), package)
-{
-  if(missing(name))
-    name <- gsub("^.+[\\.]", "", which)
-  
-  if(is.null(name) | name == "")
-    stop("name must not be null")
-  
-  setClass(
-    Class = name,
-    contains = "SimplePropertyOwner",
-    representation = representation(
-      updateUri="character"
-    ),
-    prototype = prototype(
-      synapseEntityKind = name,
-      properties = SynapseProperties(getEffectivePropertyTypes(which))
-    ),
-    package=package
-  )
-  
-  # now add the new class to the list of defined ones
-  addToEntityTypeMap(className=name, jsonSchemaName=which)
-}
-
-addToEntityTypeMap<-function(className, jsonSchemaName) {
-  synapseEntityTypeMap<-.getCache("synapseEntityTypeMap")
-  if (is.null(synapseEntityTypeMap)) synapseEntityTypeMap<-list()
-  synapseEntityTypeMap[[jsonSchemaName]]<-className
-  .setCache("synapseEntityTypeMap", synapseEntityTypeMap)
-}
 
 defineEntityConstructors <-
   function(which, name, overrideExiting = FALSE, where = parent.frame(), package)
@@ -179,71 +215,97 @@ defineEntityConstructors <-
   }
 }
 
-getPropertyTypes <- 
-  function(which, entityDef, mapTypes=TRUE)
-{
-  if(!missing(which) && !missing(entityDef))
-    stop("must specifiy either 'which' or 'entityDef', but not both")
-  
-  if(!missing(which))
-    entityDef <- synapseClient:::readEntityDef(which)
-  
-  properties <- lapply(
-    X = names(entityDef$properties), 
-    FUN = function(prop){
-      entityDef$properties[[prop]][["type"]]
-    }
-  )
-  names(properties) <- names(entityDef$properties)
-  if(mapTypes)
-    return(mapTypes(properties))
-  properties
-}
 
-getEffectivePropertyTypes <-
-  function(which, mapTypes = TRUE)
-{
-  implements <- c(which, synapseClient:::getImplements(which))
-  
-  properties <- list()
-  i <- length(implements)
-  while(i > 0){
-    thisProp <- synapseClient:::getPropertyTypes(implements[i], mapTypes = mapTypes)
-    for(n in names(thisProp))
-      properties[[n]] <- thisProp[[n]]
-    i <- i - 1
-  }
-  
-  properties
-}
-
-
-mapTypes <- 
-    function(types)
-{ 
+mapTypes <- function(types) { 
   indx <- match(types, names(TYPEMAP))
   retval <- TYPEMAP[indx]
   
-  mk <- is.na(retval)
-  if(any(mk))
+  mk <- sapply(X=retval, FUN=function(x)is.null(x))
+  
+  if (any(mk)) {
     retval[mk] <- "character"
+  }
   
   names(retval) <- names(types)
   retval
 }
 
-getImplements <- function(which){
-  if(is.null(which))
+
+#-----------------------------------
+# utilities for parsing schemas
+
+# get the parent class for the given schema or NULL if none
+getImplements<-function(schema) {
+  if(is.null(schema))
     return(NULL)
-  thisDef <- synapseClient:::readEntityDef(which)
+  schema$implements
+}
+
+# returns TRUE iff the schema defines an interface
+isVirtual<-function(schema) {
+  type<-schema$type
+  !is.null(type) && type=="interface"
+}
+
+schemaTypeFromProperty<-function(property) {
+  type<-property[["type"]]
+  ref<-property[["$ref"]]
+  if (!is.null(ref)) {
+    ref
+  } else {
+    type
+  }
+}
+
+getPropertyTypes <- function(which, entityDef)
+{
+  if(!missing(which) && !missing(entityDef))
+    stop("must specify either 'which' or 'entityDef', but not both")
+  
+  if(!missing(which))
+    entityDef <- readEntityDef(which)
+  
+  properties <- lapply(
+    X = names(entityDef$properties), 
+    FUN = function(prop){
+      theprop <- entityDef$properties[[prop]]
+      schemaTypeFromProperty(theprop)
+    }
+  )
+  names(properties) <- names(entityDef$properties)
+  properties
+}
+
+getEffectivePropertyTypes <-function(which) {
+  schema<-readEntityDef(which)
+  mapTypes(getEffectiveSchemaTypes(schema))
+}
+
+getEffectiveSchemaTypes <- function(schema) {
+  # start with the properties for the immediate schema
+  properties<-getPropertyTypes(entityDef=schema)
+  implements <- getAllInterfaces(schema)
+  if (length(implements)>0) {
+    for (i in length(implements):1) {
+      thisProp <- getPropertyTypes(which=implements[i])
+      for (n in names(thisProp))
+        properties[[n]] <- thisProp[[n]]
+    }
+  }
+  properties
+}
+
+getAllInterfaces <- function(schema) {
+  if(is.null(schema))
+    return(NULL)
   implements <- NULL
-  while(!is.null(thisDef$implements)){
-    implements <- c(implements, thisDef$implements[[1]][[1]])
-    
+  while(!is.null(schema$implements)){
+    implements <- c(implements, schema$implements[[1]][[1]])
     try({
-        thisDef <- synapseClient:::readEntityDef(thisDef$implements[[1]][[1]])
+        schema <- readEntityDef(schema$implements[[1]][[1]])
       }, silent = TRUE)
   }
   implements
 }
+
 
