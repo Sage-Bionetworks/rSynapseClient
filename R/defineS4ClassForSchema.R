@@ -189,9 +189,9 @@ mapSchemaTypeToS4Type <- function(types) {
   retval
 }
 
-# we define the schema for an 'element' of an S4 class to be
-# the map labeled by the property 'propertyName' within the
-# 'properties' array
+# we define the schema for a slot of an S4 class to be
+# the map ({...}) labeled by the property 'propertyName' within the
+# 'properties' array of the overarching schema
 getElemSchemaFromS4ClassSchema<-function(schema, propertyName) {
   schema$properties[[propertyName]]
 }
@@ -317,6 +317,7 @@ createListFromS4Object<-function(obj) {
       return(obj)
     }
   }
+  # at this point we know obj is an S4 class
   result <-list()
   className<-class(obj)
   schemaDef<-getSchemaFromCache(className)
