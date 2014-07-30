@@ -184,3 +184,11 @@ unitTestMissingS4Field<-function() {
   checkEquals(up, synapseClient:::createS4ObjectFromList(listRep, "UserProfile"))
 }
 
+unitTestRoundTripWithEnumField<-function() {
+  # Note:  'status' is defined as an enum field
+  s<-synapseClient:::SubmissionStatus(id="12345", status="SCORED", entityId="syn101")
+  li<-synapseClient:::createListFromS4Object(s)
+  s2<-synapseClient:::createS4ObjectFromList(li, "SubmissionStatus")
+  checkEquals(s,s2)
+}
+
