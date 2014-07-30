@@ -94,7 +94,10 @@ defineS4ClassForSchema <-  function(fullSchemaName)
   setClass(
     Class = name,
     contains=superClasses,
-    slots = slots,
+    # This is the way to define the slots as of R 3.0.0
+    #slots = slots,
+    # This is the deprecated way.  We have to use it to support pre-3.0 versions of R
+    representation = do.call("representation", slots),
     package="synapseClient"
   )
   
@@ -225,83 +228,69 @@ getRTypeFromPropertySchema<-function(schema) {
 # given the content represented in list form and the type
 # construct and return the object used the auto-generated S4 classes
 createS4ObjectFromList<-function(content, className) {
-  createS4ObjectFromListIntern(content, className, NULL)
+  if (is.null(content)) return(NULL)
+  # if the list specifies a concrete type, then use it instead of the given class name
+  if (is.list(content)) {
+    concreteTypeSchemaName<-content$concreteType
+    if (!is.null(concreteTypeSchemaName)) {
+      concreteTypeClassName<-getClassNameFromSchemaName(concreteTypeSchemaName)
+      if (is.null(getClass(concreteTypeClassName)@contains[[className]])) {
+        stop(sprintf("concreteType %s specified for class %s", concreteTypeClassName, className))
+      }
+      className<-concreteTypeClassName
+    }
+  }
+  
+  schema <- getSchemaFromCache(className)
+  if (is.null(schema)) stop(sprintf("Missing schema for %s", className))  
+  effectiveProperties <- getEffectiveSchemaProperties(schema)
+  # now replace the schema with its effective schema:
+  schema <-list(properties=effectiveProperties)
+  
+  # these are the types that will be used for the S4 class slots
+  schemaTypes<-getEffectiveSchemaTypes(schema)
+  
+  constructorArgs<-list()   
+  for (schemaSlotName in names(schemaTypes)) {
+    schemaSlotType<-schemaTypes[[schemaSlotName]] # type of the slot in schema 'language'
+    s4SlotType <- mapSchemaTypeToS4Type(schemaSlotType) # type of the slot in R
+    if (is.list(s4SlotType) && length(s4SlotType)==1) s4SlotType<-s4SlotType[[1]]
+    if (is.list(content)) {
+      slotValue <- content[[schemaSlotName]]
+    } else {
+      slotValue <- as.list(content)[[schemaSlotName]]
+    }
+    if (isPrimitiveType(s4SlotType)) {
+      elemSchema<-getElemSchemaFromS4ClassSchema(schema, schemaSlotName)
+      constructorArgs[[schemaSlotName]]<-createS4SlotValueFromList(slotValue, s4SlotType, elemSchema)
+    } else {
+      constructorArgs[[schemaSlotName]]<-createS4ObjectFromList(slotValue, s4SlotType)
+    }
+  }
+  do.call(className, constructorArgs)
 }
 
-# This creates the pieces of an S4 object, whether they are primitives, lists, or S4 objects themselves
+# This creates the slot content of an S4 object which is primitives or a list
 # 'schema' is not needed when 'className' is an auto-generated S4 class name
-createS4ObjectFromListIntern<-function(content, className, schema) {
+createS4SlotValueFromList<-function(content, className, schema) {
   if (is.null(content)) return(NULL)
-  if (isPrimitiveType(className)) {
-    if (className=="list") {
-      # recursively call 'createS4ObjectFromListIntern' for each list element
-      arraySubSchema<-getArraySubSchema(schema)
-      listElemType <- getRTypeFromPropertySchema(arraySubSchema)
-      if (is.list(listElemType)) {
-        if (length(listElemType)==1) {
-          listElemType<-listElemType[[1]]
-        } else {
-          stop(sprintf("length(listElemType)=%s", length(listElemType)))
-        }
-      }
-      lapply(X=content, FUN=function(elem) {
-          createS4ObjectFromListIntern(elem, listElemType, arraySubSchema)
-      })
+  if (!isPrimitiveType(className)) return(createS4ObjectFromList(content, className))
+  if (className=="list") {
+    # recursively call 'createS4ObjectFromListIntern' for each list element
+    arraySubSchema<-getArraySubSchema(schema)
+    listElemType <- getRTypeFromPropertySchema(arraySubSchema)
+    if (is.list(listElemType) && length(listElemType)==1) listElemType<-listElemType[[1]]
+    lapply(X=content, FUN=function(elem) {
+        createS4SlotValueFromList(elem, listElemType, arraySubSchema)
+    })
+  } else {
+    # just return 'content', but do handle some edge cases:
+    if (schemaTypeFromProperty(schema)=="integer") {
+      # a value may come in as 'numeric'
+      as.integer(content)
     } else {
-      # just return 'content', but do handle some edge cases:
-      if (schemaTypeFromProperty(schema)=="integer") {
-        # a value may come in as 'numeric'
-        as.integer(content)
-      } else {
-        content
-      }
+      content
     }
-  } else { # the element it itself an S4 object
-    # if the list specifies a concrete type, then use it instead of the given class name
-    if (is.list(content)) {
-      concreteTypeSchemaName<-content$concreteType
-      if (!is.null(concreteTypeSchemaName)) {
-        concreteTypeClassName<-getClassNameFromSchemaName(concreteTypeSchemaName)
-        if (is.null(getClass(concreteTypeClassName)@contains[[className]])) {
-          stop(sprintf("concreteType %s specified for class %s", concreteTypeClassName, className))
-        }
-        className<-concreteTypeClassName
-      }
-    }
-    
-    schema <- getSchemaFromCache(className)
-    if (is.null(schema)) stop(sprintf("Missing schema for %s", className))  
-    effectiveProperties <- getEffectiveSchemaProperties(schema)
-    # now replace the schema with its effective schema:
-    schema <-list(properties=effectiveProperties)
-    
-    # these are the types that will be used for the S4 class slots
-    schemaTypes<-getEffectiveSchemaTypes(schema)
-    
-    constructorArgs<-list()   
-    for (schemaSlotName in names(schemaTypes)) {
-      schemaSlotType<-schemaTypes[[schemaSlotName]] # type of the slot in schema 'language'
-      s4SlotType <- mapSchemaTypeToS4Type(schemaSlotType) # type of the slot in R
-      if (is.list(s4SlotType)) {
-        if (length(s4SlotType)==1) {
-          s4SlotType<-s4SlotType[[1]]
-        } else {
-          stop(sprintf("length(s4SlotType)=%s", length(s4SlotType)))
-        }
-      }
-      if (is.list(content)) {
-        slotValue <- content[[schemaSlotName]]
-      } else {
-        slotValue <- as.list(content)[[schemaSlotName]]
-      }
-      if (isPrimitiveType(s4SlotType)) {
-        elemSchema<-getElemSchemaFromS4ClassSchema(schema, schemaSlotName)
-        constructorArgs[[schemaSlotName]]<-createS4ObjectFromListIntern(slotValue, s4SlotType, elemSchema)
-      } else {
-        constructorArgs[[schemaSlotName]]<-createS4ObjectFromList(slotValue, s4SlotType)
-      }
-    }
-    do.call(className, constructorArgs)
   }
 }
 
