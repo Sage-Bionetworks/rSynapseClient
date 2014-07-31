@@ -1,0 +1,78 @@
+# given the content represented in list form and the type
+# construct and return the object used the auto-generated S4 classes
+# 
+# Author: brucehoff
+###############################################################################
+
+createS4ObjectFromList<-function(content, className) {
+  if (is.null(content)) return(NULL)
+  # if the list specifies a concrete type, then use it instead of the given class name
+  if (is.list(content)) {
+    concreteTypeSchemaName<-content$concreteType
+    if (!is.null(concreteTypeSchemaName)) {
+      concreteTypeClassName<-getClassNameFromSchemaName(concreteTypeSchemaName)
+      if (!extends(concreteTypeClassName, className)) {
+        stop(sprintf("concreteType %s specified for class %s", concreteTypeClassName, className))
+      }
+      className<-concreteTypeClassName
+    }
+  }
+  
+  constructorArgs<-list()   
+  #sampleInstance<-new(className)
+  slotTypes<-getSlots(className)
+  for (slotName in names(content)) {
+    s4SlotType <- slotTypes[[slotName]]
+    
+    # TODO is this still necessary?
+    if (is.list(content)) {
+      slotValue <- content[[slotName]]
+    } else {
+      slotValue <- as.list(content)[[slotName]]
+    }
+    
+    if (isPrimitiveType(s4SlotType)) {
+      if (s4SlotType=="integer") {
+        # a value may come in as 'numeric'
+        slotValue<-as.integer(slotValue)
+      }
+      constructorArgs[[slotName]]<-slotValue
+    } else {
+      if (!isNullableType(s4SlotType)) {
+        # something has gone wrong.  Non-primitive slots should extend a nullable type
+        stop("%s is not a 'nullable' type.", s4SlotType)
+      }
+      # want to make one of these:
+      s4SlotType <- getNonNullableType(s4SlotType)
+      if (extends(s4SlotType, "TypedList")) {
+        constructorArgs[[slotName]]<-createTypedListFromList(slotValue, s4SlotType)
+      } else {
+        constructorArgs[[slotName]]<-createS4ObjectFromList(slotValue, s4SlotType)
+      }
+    }
+  }
+  do.call(className, constructorArgs)
+}
+
+createTypedListFromList<-function(content, className) {
+  if (!extends(className, "TypedList")) 
+    stop(sprintf("Expected TypeList subclass but found %s", className))
+  result<-new(className)
+  listElementType <- result@type
+  isPrimitive<-isPrimitiveType(listElementType)
+  isTypedList<-extends(listElementType, "TypedList")
+  
+  for (elem in content) {
+    value<-NULL
+    if (isPrimitive) {
+      value<-elem
+    } else if (isTypedList) {
+      value<-createTypedListFromList(content, listElementType)
+    } else {
+      value<-createS4ObjectFromList(content, listElementType)
+    }
+    result[[length(result)+1]]<-value
+  }
+  result
+}
+
