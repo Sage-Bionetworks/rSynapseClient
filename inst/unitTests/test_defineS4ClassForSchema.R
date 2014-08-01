@@ -98,9 +98,10 @@ unitTestTypedList<-function() {
   t<-new("characterTypedList")
   t[[1]]<-"a"
   t[[2]]<-"b"
+  checkEquals(2, length(t))
   checkEquals(t[[1]], "a")
   checkEquals(t[[2]], "b")
-  checkEquals(list("a", "b"), t@content)
+  checkEquals(list("a", "b"), synapseClient:::getList(t))
 }
 
 

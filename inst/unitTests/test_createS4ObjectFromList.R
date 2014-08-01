@@ -17,7 +17,7 @@ unitTestCreateS4ObjectFromList<-function() {
       emails=list("foo@bar.com", "bar@bas.com")
     ),"UserProfile")
   checkEquals("101", up@ownerId)
-  checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails@content)
+  checkEquals(list("foo@bar.com", "bar@bas.com"), getList(up@emails))
   
   # list argument has vector
   up<-synapseClient:::createS4ObjectFromList( 
@@ -25,7 +25,7 @@ unitTestCreateS4ObjectFromList<-function() {
       emails=c("foo@bar.com", "bar@bas.com")
     ), "UserProfile")
   checkEquals("101", up@ownerId)
-  checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails@content)
+  checkEquals(list("foo@bar.com", "bar@bas.com"), getList(up@emails))
   
   # list argument has content of embedded S4 object
   up<-synapseClient:::createS4ObjectFromList( 
@@ -34,7 +34,7 @@ unitTestCreateS4ObjectFromList<-function() {
       notificationSettings=list(sendEmailNotifications=T, markEmailedMessagesAsRead=F)
     ), "UserProfile")
   checkEquals("101", up@ownerId)
-  checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails@content)
+  checkEquals(list("foo@bar.com", "bar@bas.com"), getList(up@emails))
   checkEquals(synapseClient:::Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F), up@notificationSettings)
   
   # list has array of embedded S4 objects
@@ -49,11 +49,11 @@ unitTestCreateS4ObjectFromList<-function() {
       )
     ), "UserProfile")
   checkEquals("101", up@ownerId)
-  checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails@content)
+  checkEquals(list("foo@bar.com", "bar@bas.com"), getList(up@emails))
   checkEquals(synapseClient:::Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F), up@notificationSettings)
   prefs<-up@preferences
   checkTrue(!is.null(prefs))
-  checkEquals(2, length(prefs@content))
+  checkEquals(2, length(prefs))
   checkEquals(synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[1]])
   checkEquals(synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[2]])
 }

@@ -3,7 +3,12 @@
 # Author: brucehoff
 ###############################################################################
 
-
+setMethod(
+  f = "length",
+  signature = "TypedList",
+  definition = function(x) {
+    length(x@content)
+})
 
 setMethod(
   f = "$",
@@ -65,4 +70,18 @@ setReplaceMethod("[[",
     x
   }
 )
+
+setMethod(
+  f = "length",
+  signature = "TypedList",
+  definition = function(x) {
+    length(x@content)
+  })
+
+setMethod(
+  f = "getList",
+  signature = "TypedList",
+  definition = function(x) {
+    x@content
+  })
 

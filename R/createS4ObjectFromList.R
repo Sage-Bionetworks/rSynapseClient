@@ -23,12 +23,6 @@ createS4ObjectFromList<-function(content, className) {
   for (slotName in names(content)) {
     s4SlotType <- slotTypes[[slotName]]
     
-    # TODO is this still necessary?
-#    if (is.list(content)) {
-#      slotValue <- content[[slotName]]
-#    } else {
-#      slotValue <- as.list(content)[[slotName]]
-#    }
     slotValue <- content[[slotName]]
     
     if (isPrimitiveType(s4SlotType)) {
@@ -71,7 +65,7 @@ createTypedListFromList<-function(content, className) {
     } else {
       value<-createS4ObjectFromList(elem, listElementType)
     }
-    result[[length(result@content)+1]]<-value # TODO should define a 'length' method for TypedList
+    result[[length(result)+1]]<-value
   }
   result
 }

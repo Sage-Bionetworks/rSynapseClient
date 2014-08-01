@@ -113,7 +113,7 @@ getUpdateURI<-function(obj) {
   } else if (is(obj, "SubmissionStatus")) {
     sprintf("/evaluation/submission/%s/status",obj$id)
   } else if (is(obj, "UserProfile")) {
-    sprintf("/userProfile/%s",obj$ownerId)
+    sprintf("/userProfile",obj$ownerId)
   } else if (is(obj, "WikiPage")) {
     obj@updateUri
   } else {

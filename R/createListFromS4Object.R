@@ -11,7 +11,7 @@ createListFromS4Object<-function(obj) {
   }
   result <-list()
   if (is(obj, "TypedList")) {
-    for (i in 1:length(obj@content)) {
+    for (i in 1:length(obj)) {
       result[[1+length(result)]]<-createListFromS4Object(obj[[i]])
     }
     return(result)
