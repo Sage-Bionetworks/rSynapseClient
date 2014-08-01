@@ -483,3 +483,24 @@ setClass(
   Class="Config", 
   representation=list(data="list")
 )
+
+# This is an abstract class for a typed list
+# Concrete extensions should fill the 'type' slot
+# with the class of the elements in the list
+setClass(
+  Class="TypedList", 
+  contains = "VIRTUAL",
+  representation=representation(type="character", content="list"), 
+  prototype=list(content=list())
+)
+
+# This class is used to represent a null S4 value in a slot in another S4 class
+# Normally S4 classes don't allow S4 slots to be null.  The recommended workaround
+# is to create a class union, e.g. setClassUnion("myClassOrNULL", c("MyClass", "NULL"))
+# However since this makes the class union a super-class of NULL, R 'breaks' when
+# the package namespace is unloaded.  So rather than use NULL to represent a NULL
+# object we use an instance of this special placeholder class.
+setClass(
+  Class = "NullS4Object",
+  representation=representation(placeholder="character") # if omitted it's a 'virtual' class!!
+)

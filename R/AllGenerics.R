@@ -912,3 +912,10 @@ setGeneric(
   }
 )
 
+setGeneric(
+  name = "getList",
+  def = function(x) {
+    standardGeneric("getList")
+  }
+)
+

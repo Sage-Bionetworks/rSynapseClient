@@ -12,7 +12,6 @@ synGetUserProfile<-function(id) {
   }
   response<-synRestGET(getOrUpdateUri)  
   objectResult<-createS4ObjectFromList(response, "UserProfile")
-  objectResult@updateUri<-getOrUpdateUri
   objectResult
 }
 

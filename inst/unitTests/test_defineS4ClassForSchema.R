@@ -53,6 +53,10 @@ unitTestNonPrimitiveField<-function() {
   checkEquals(TRUE, up$notificationSettings$sendEmailNotifications)
 }
 
+unitTestListofS4<-function() {
+  checkEquals(getSlots("UserProfile")[["preferences"]],  "UserPreferenceTypedListOrNull")
+}
+
 unitTestEnumField<-function() {
   submissionStatus<-synapseClient:::SubmissionStatus(id="101", entityId="syn987", status="RECEIVED")
   checkEquals("101", submissionStatus$id)
@@ -62,10 +66,10 @@ unitTestEnumField<-function() {
 
 unitTestSchemaTypeFromProperty<-function() {
   upSchema<-synapseClient:::getSchemaFromCache("UserProfile")
-  propertySchema<-synapseClient:::getElemSchemaFromS4ClassSchema(upSchema, "lastName")
+  propertySchema<-upSchema$properties[["lastName"]]
   checkEquals("string", synapseClient:::schemaTypeFromProperty(propertySchema))
   
-  propertySchema<-synapseClient:::getElemSchemaFromS4ClassSchema(upSchema, "notificationSettings")
+  propertySchema<-upSchema$properties[["notificationSettings"]]
   checkEquals("org.sagebionetworks.repo.model.message.Settings", 
     synapseClient:::schemaTypeFromProperty(propertySchema))
 }
@@ -73,122 +77,31 @@ unitTestSchemaTypeFromProperty<-function() {
 unitTestArraySubSchema<-function() {
   upSchema<-synapseClient:::getSchemaFromCache("UserProfile")
   
-  propertySchema<-synapseClient:::getElemSchemaFromS4ClassSchema(upSchema, "emails")
+  propertySchema<-upSchema$properties[["emails"]]
   checkEquals("string", synapseClient:::schemaTypeFromProperty(
       synapseClient:::getArraySubSchema(propertySchema)))
   
-  propertySchema<-synapseClient:::getElemSchemaFromS4ClassSchema(upSchema, "preferences")
+  propertySchema<-upSchema$properties[["preferences"]]
   checkEquals("org.sagebionetworks.repo.model.UserPreference", 
     synapseClient:::schemaTypeFromProperty(
       synapseClient:::getArraySubSchema(propertySchema)))
   
 }
 
-unitTestGetEffectiveSchemaProperties<-function() {
-  schema <- synapseClient:::getSchemaFromCache("UserPreferenceBoolean")
-  effectiveSchemaProperties <- synapseClient:::getEffectiveSchemaProperties(schema)
-  checkTrue(!is.null(effectiveSchemaProperties$name))
-  checkTrue(!is.null(effectiveSchemaProperties$value))
+unitTestTypedList<-function() {
+  t<-new("characterTypedList")
+  t$foo<-"bar"
+  checkEquals(t$foo, "bar")
+  t[["foo"]]<-"bas"
+  checkEquals(t$foo, "bas")
+  
+  t<-new("characterTypedList")
+  t[[1]]<-"a"
+  t[[2]]<-"b"
+  checkEquals(2, length(t))
+  checkEquals(t[[1]], "a")
+  checkEquals(t[[2]], "b")
+  checkEquals(list("a", "b"), synapseClient:::getList(t))
 }
 
-unitTestCreateS4ObjectFromList<-function() {
-  # simple case: list argument has just primitives
-  listRep<-list(name="name", description="description")
-  e<-synapseClient:::createS4ObjectFromList(list(name="name", description="description"), "Evaluation")
-  checkEquals("name", e@name)
-  checkEquals("description", e@description)
-  
-  # list argument has list
-  up<-synapseClient:::createS4ObjectFromList( 
-    list(ownerId="101", 
-      emails=list("foo@bar.com", "bar@bas.com")
-    ),"UserProfile")
-  checkEquals("101", up@ownerId)
-  checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails)
-  
-  # list argument has vector
-  up<-synapseClient:::createS4ObjectFromList( 
-    list(ownerId="101", 
-      emails=c("foo@bar.com", "bar@bas.com")
-    ), "UserProfile")
-  checkEquals("101", up@ownerId)
-  checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails)
-  
-  # list argument has content of embedded S4 object
-  up<-synapseClient:::createS4ObjectFromList( 
-    list(ownerId="101", 
-      emails=list("foo@bar.com", "bar@bas.com"),
-      notificationSettings=list(sendEmailNotifications=T, markEmailedMessagesAsRead=F)
-    ), "UserProfile")
-  checkEquals("101", up@ownerId)
-  checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails)
-  checkEquals(synapseClient:::Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F), up@notificationSettings)
-  
-  # list has array of embedded S4 objects
-  up<-synapseClient:::createS4ObjectFromList( 
-    list(ownerId="101", 
-      emails=list("foo@bar.com", "bar@bas.com"),
-      notificationSettings=list(sendEmailNotifications=T, markEmailedMessagesAsRead=F),
-      preferences=list(
-        list(concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean", name="foo", value=T),
-        list(concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean", name="bar", value=F)
-        )
-    ), "UserProfile")
-  checkEquals("101", up@ownerId)
-  checkEquals(list("foo@bar.com", "bar@bas.com"), up@emails)
-  checkEquals(synapseClient:::Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F), up@notificationSettings)
-  prefs<-up@preferences
-  checkTrue(!is.null(prefs))
-  checkEquals(2, length(prefs))
-  checkEquals(synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[1]])
-  checkEquals(synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[2]])
-}
-
-unitTestS4RoundTrip<-function() {
-  e<-Evaluation(name="name", description="description")
-  listRep<-synapseClient:::createListFromS4Object(e)
-  checkEquals(e, synapseClient:::createS4ObjectFromList(listRep, "Evaluation"))
-  
-  up<-synapseClient:::UserProfile(
-    ownerId="101", 
-    emails=list("foo@bar.com", "bar@bas.com"),
-    notificationSettings=synapseClient:::Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F),
-    preferences=list(
-      synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"),
-      synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean")
-    )
-  )
-  
-  listRep<-synapseClient:::createListFromS4Object(up)
-  checkEquals(up, synapseClient:::createS4ObjectFromList(listRep, "UserProfile"))
-  
-}
-
-unitTestMissingS4Field<-function() {
-  # note:  there's no 'notificationSettings' field
-  up<-synapseClient:::UserProfile(
-    ownerId="101", 
-    emails=list("foo@bar.com", "bar@bas.com"),
-    preferences=list(
-      synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"),
-      synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean")
-    )
-  )
-  
-  listRep<-synapseClient:::createListFromS4Object(up)
-  
-  # There should not be a list entry for 'notificationSettings'
-  checkTrue(is.null(listRep$notificationSettings))
-  
-  # Also double check that it generates the original UserProfile
-  checkEquals(up, synapseClient:::createS4ObjectFromList(listRep, "UserProfile"))
-}
-
-unitTestRoundTripWithEnumField<-function() {
-  # Note:  'status' is defined as an enum field
-  s<-synapseClient:::SubmissionStatus(id="12345", status="SCORED", entityId="syn101")
-  li<-synapseClient:::createListFromS4Object(s)
-  s2<-synapseClient:::createS4ObjectFromList(li, "SubmissionStatus")
-  checkEquals(s,s2)
-}
 
