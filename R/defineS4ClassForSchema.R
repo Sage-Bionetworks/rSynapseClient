@@ -168,7 +168,7 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     primitiveRType
   } else if (schemaPropertyType=="array") {
     elemRType <- defineRTypeFromPropertySchema(getArraySubSchema(propertySchema))
-    typeListClassName<-sprintf("%sTypedList", elemRType)
+    typeListClassName<-sprintf("%sList", elemRType)
     if (!isClassDefined(typeListClassName)) {
       setClass(
         Class=typeListClassName, 

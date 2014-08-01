@@ -54,7 +54,7 @@ unitTestNonPrimitiveField<-function() {
 }
 
 unitTestListofS4<-function() {
-  checkEquals(getSlots("UserProfile")[["preferences"]],  "UserPreferenceTypedListOrNull")
+  checkEquals(getSlots("UserProfile")[["preferences"]],  "UserPreferenceListOrNull")
 }
 
 unitTestEnumField<-function() {
@@ -89,13 +89,13 @@ unitTestArraySubSchema<-function() {
 }
 
 unitTestTypedList<-function() {
-  t<-new("characterTypedList")
+  t<-new("characterList")
   t$foo<-"bar"
   checkEquals(t$foo, "bar")
   t[["foo"]]<-"bas"
   checkEquals(t$foo, "bas")
   
-  t<-new("characterTypedList")
+  t<-new("characterList")
   t[[1]]<-"a"
   t[[2]]<-"b"
   checkEquals(2, length(t))
