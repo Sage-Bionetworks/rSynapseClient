@@ -1,5 +1,5 @@
-# given the content represented in list form and the type
-# construct and return the object used the auto-generated S4 classes
+# given the content represented in list form and the type,
+# construct and return the object using the auto-generated S4 classes
 # 
 # Author: brucehoff
 ###############################################################################
@@ -19,17 +19,17 @@ createS4ObjectFromList<-function(content, className) {
   }
   
   constructorArgs<-list()   
-  #sampleInstance<-new(className)
   slotTypes<-getSlots(className)
   for (slotName in names(content)) {
     s4SlotType <- slotTypes[[slotName]]
     
     # TODO is this still necessary?
-    if (is.list(content)) {
-      slotValue <- content[[slotName]]
-    } else {
-      slotValue <- as.list(content)[[slotName]]
-    }
+#    if (is.list(content)) {
+#      slotValue <- content[[slotName]]
+#    } else {
+#      slotValue <- as.list(content)[[slotName]]
+#    }
+    slotValue <- content[[slotName]]
     
     if (isPrimitiveType(s4SlotType)) {
       if (s4SlotType=="integer") {

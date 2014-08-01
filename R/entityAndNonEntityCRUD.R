@@ -105,11 +105,26 @@ synStoreNonEntityObject<-function(object) {
   }
 }
 
+getUpdateURI<-function(obj) {
+  if (is(obj, "Evaluation")) {
+    sprintf("/evaluation/%s",obj$id)
+  } else if (is(obj, "Submission")) {
+    sprintf("/evaluation/submission/%s",obj$id)
+  } else if (is(obj, "SubmissionStatus")) {
+    sprintf("/evaluation/submission/%s/status",obj$id)
+  } else if (is(obj, "UserProfile")) {
+    sprintf("/userProfile/%s",obj$id)
+  } else if (is(obj, "WikiPage")) {
+    obj@updateUri
+  } else {
+    stop(sprintf("Cannot update %s", class(obj)))
+  }
+}
+
 synUpdate<-function(object) {
   objectAsList<-createListFromS4Object(object)
-  listResult<-synRestPUT(object@updateUri, objectAsList)
+  listResult<-synRestPUT(getUpdateURI(object), objectAsList)
   objectResult<-createS4ObjectFromList(listResult, class(object))
-  objectResult@updateUri<-object@updateUri
   objectResult
 }
 
@@ -117,7 +132,7 @@ synDelete<-function(object) {
   if (isSynapseId(object) || is(object, "Entity") || is(object, "Activity")) {
     deleteEntity(object)
   } else if (is(object, "Evaluation") || is(object, "WikiPage") || is(object, "Submission")){
-    synRestDELETE(object@updateUri)
+    synRestDELETE(getUpdateURI(object))
   } else {
     stop(sprintf("%s is not supported.", class(object)))
   }

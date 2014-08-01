@@ -8,8 +8,6 @@ setClass(
   contains = "SimplePropertyOwner",
   representation = representation(
     # fields:
-    # uri for update and delete operations
-    updateUri = "character",
     # filePath: full path to local file.
     filePath = "character",
     # fileHandle (generated from JSON schema, empty before entity is created)
@@ -34,7 +32,6 @@ setMethod(
     submission <- new("Submission")
     for (prop in names(propertiesList))
       propertyValue(submission, prop)<-propertiesList[[prop]]
-    if (!is.null(submission$id)) submission@updateUri<-sprintf("/evaluation/submission/%s", submission$id)
     fileHandle<-as.list(getFileHandleFromEntityBundleJSON(submission$entityBundleJSON))
     submission@fileHandle<-fileHandle
     

@@ -18,7 +18,6 @@ createListFromS4Object<-function(obj) {
   }
   
   # at this point we know obj is an S4 class
-  className<-class(obj)
   for (slotName in slotNames(obj)) {
     value<-slot(obj, slotName)
     result[[slotName]]<-createListFromS4Object(value)
