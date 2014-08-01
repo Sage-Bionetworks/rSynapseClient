@@ -20,61 +20,6 @@ isPrimitiveType <- function(rType) {
   !is.na(match(rType, TYPEMAP_FOR_ALL_PRIMITIVES))
 }
 
-## the values in 'types' is taken from the range of types in the JSON schema
-## the names of 'types' are the names of the properties having the given type
-## the returned list maps the properties to their corresponding 'R' type
-#mapSchemaTypeToS4Type <- function(types) { 
-#  indx <- match(types, names(TYPEMAP_FOR_ALL_PRIMITIVES))
-#  retval <- TYPEMAP_FOR_ALL_PRIMITIVES[indx]
-#  
-#  # find the indices null entries in 'retval'
-#  mk <- sapply(X=retval, FUN=function(x)is.null(x))
-#  
-#  if (any(mk)) {
-#    # go through all the non-primitives
-#    for (i in which(mk)) {
-#      fieldSchema <- readEntityDef(types[[i]])
-#      if (is.null(fieldSchema$properties) && !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[fieldSchema$type])) {
-#        # it's an 'enum' or similar.  use the type of the field's schema
-#        retval[i] <- TYPEMAP_FOR_ALL_PRIMITIVES[fieldSchema$type]
-#      } else {
-#        # use the class name for this schema
-#        retval[i] <- getClassNameFromSchemaName(types[i])
-#      }
-#    }
-#  }
-#  
-#  names(retval) <- names(types)
-#  retval
-#}
-#
-## we define the schema for a slot of an S4 class to be
-## the map ({...}) labeled by the property 'propertyName' within the
-## 'properties' array of the overarching schema
-#getElemSchemaFromS4ClassSchema<-function(schema, propertyName) {
-#  schema$properties[[propertyName]]
-#}
-#
-## get all the properties in the effective schema for the given schema
-#getEffectiveSchemaProperties <- function(schema) {
-#  # start with the properties for the immediate schema
-#  properties<-schema$properties
-#  implements <- getAllInterfaces(schema)
-#  if (length(implements)>0) {
-#    for (i in length(implements):1) {
-#      implementedSchema <- readEntityDef(implements[[i]])
-#      implementedProperties <- implementedSchema$properties
-#      for (n in names(implementedProperties))
-#        properties[[n]] <- implementedProperties[[n]]
-#    }
-#  }
-#  properties
-#}
-
-#getRTypeFromPropertySchema<-function(schema) {
-#  mapSchemaTypeToS4Type(schemaTypeFromProperty(schema))
-#}
-
 
 isClassDefined<-function(className) {
   tryCatch(
@@ -88,7 +33,7 @@ isClassDefined<-function(className) {
   )
 }
 
-defineS4ClassForSchema <-  function(fullSchemaName) {
+defineS4ClassForSchema <- function(fullSchemaName) {
   name <- getClassNameFromSchemaName(fullSchemaName)
   
   if(is.null(name) | name == "")
@@ -223,7 +168,7 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     primitiveRType
   } else if (schemaPropertyType=="array") {
     elemRType <- defineRTypeFromPropertySchema(getArraySubSchema(propertySchema))
-    typeListClassName<-sprintf("%sTypedList", class(elemRType))
+    typeListClassName<-sprintf("%sTypedList", elemRType)
     if (!isClassDefined(typeListClassName)) {
       setClass(
         Class=typeListClassName, 
@@ -234,6 +179,13 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     }
     typeListClassName
   } else {
+    # check for an enum
+    fieldSchema <- readEntityDef(schemaPropertyType)
+    if (is.null(fieldSchema$properties) && !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])) {
+      # it's an 'enum' or similar. use the type of the field's schema
+      return(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])
+    }
+    
     rType<-getClassNameFromSchemaName(schemaPropertyType)
     if (!isClassDefined(rType)) {
       defineS4ClassForSchema(schemaPropertyType)

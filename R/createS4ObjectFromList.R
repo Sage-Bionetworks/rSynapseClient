@@ -56,7 +56,7 @@ createS4ObjectFromList<-function(content, className) {
 
 createTypedListFromList<-function(content, className) {
   if (!extends(className, "TypedList")) 
-    stop(sprintf("Expected TypeList subclass but found %s", className))
+    stop(sprintf("Expected TypedList subclass but found %s", className))
   result<-new(className)
   listElementType <- result@type
   isPrimitive<-isPrimitiveType(listElementType)
@@ -67,11 +67,11 @@ createTypedListFromList<-function(content, className) {
     if (isPrimitive) {
       value<-elem
     } else if (isTypedList) {
-      value<-createTypedListFromList(content, listElementType)
+      value<-createTypedListFromList(elem, listElementType)
     } else {
-      value<-createS4ObjectFromList(content, listElementType)
+      value<-createS4ObjectFromList(elem, listElementType)
     }
-    result[[length(result)+1]]<-value
+    result[[length(result@content)+1]]<-value # TODO should define a 'length' method for TypedList
   }
   result
 }

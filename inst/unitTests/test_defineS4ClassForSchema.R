@@ -53,6 +53,10 @@ unitTestNonPrimitiveField<-function() {
   checkEquals(TRUE, up$notificationSettings$sendEmailNotifications)
 }
 
+unitTestListofS4<-function() {
+  checkEquals(getSlots("UserProfile")[["preferences"]],  "UserPreferenceTypedListOrNull")
+}
+
 unitTestEnumField<-function() {
   submissionStatus<-synapseClient:::SubmissionStatus(id="101", entityId="syn987", status="RECEIVED")
   checkEquals("101", submissionStatus$id)
