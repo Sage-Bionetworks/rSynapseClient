@@ -4,13 +4,6 @@
 ###############################################################################
 
 setMethod(
-  f = "length",
-  signature = "TypedList",
-  definition = function(x) {
-    length(x@content)
-})
-
-setMethod(
   f = "$",
   signature = "TypedList",
   definition = function(x, name){
@@ -21,7 +14,7 @@ setMethod(
 setReplaceMethod("$",
   signature = "TypedList",
   definition = function(x, name, value) {
-    if (class(value)!=x@type) stop(sprintf("Expected %s but found %s.", x@type, class(value)))
+    if (!is(value, x@type)) stop(sprintf("Expected %s but found %s.", x@type, class(value)))
     x@content[[name]]<-value
     x
   }
@@ -42,6 +35,7 @@ setReplaceMethod("[[",
   )
   ,
   function(x, i, value) {
+    if (!is(value, x@type)) stop(sprintf("Expected %s but found %s.", x@type, class(value)))
     x@content[[i]]<-value
     x
   }
@@ -54,6 +48,7 @@ setReplaceMethod("[[",
   )
   ,
   function(x, i, value) {
+    if (!is(value, x@type)) stop(sprintf("Expected %s but found %s.", x@type, class(value)))
     x@content[[i]]<-value
     x
   }
@@ -66,6 +61,7 @@ setReplaceMethod("[[",
   )
   ,
   function(x, i, value) {
+    if (!is(value, x@type)) stop(sprintf("Expected %s but found %s.", x@type, class(value)))
     x@content[[i]]<-value
     x
   }
@@ -76,12 +72,14 @@ setMethod(
   signature = "TypedList",
   definition = function(x) {
     length(x@content)
-  })
+  }
+)
 
 setMethod(
   f = "getList",
   signature = "TypedList",
   definition = function(x) {
     x@content
-  })
+  }
+)
 
