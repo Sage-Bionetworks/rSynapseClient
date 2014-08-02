@@ -58,6 +58,12 @@ unitTestCreateS4ObjectFromList<-function() {
   checkEquals(synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[2]])
 }
 
+unitTestEmptyTypedList<-function() {
+  openIds<-new("characterTypedList")
+  p<-synapseClient:::UserProfile(openIds=openIds)
+  synapseClient:::createListFromS4Object(p)
+}
+
 unitTestS4RoundTrip<-function() {
   e<-Evaluation(name="name", description="description")
   listRep<-synapseClient:::createListFromS4Object(e)
