@@ -261,7 +261,7 @@ setMethod(
   f = "synStore",
   signature = "Activity",
   definition = function(entity) {
-    storeEntity(object)
+    storeEntity(entity)
   }
 )
 
@@ -330,6 +330,14 @@ setMethod(
       activity <- updateEntity(activity)
     }
     activity
+  }
+)
+
+setMethod(
+  f = "synDelete",
+  signature = "Activity",
+  definition = function(entity) {
+    deleteEntity(entity)
   }
 )
 

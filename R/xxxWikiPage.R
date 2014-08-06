@@ -93,10 +93,10 @@ setMethod(
   f = "synStore",
   signature = "WikiPage",
   definition = function(entity) {
-    if (is.null(propertyValue(object, "id"))) {
-      synCreateWiki(object)
+    if (is.null(propertyValue(entity, "id"))) {
+      synCreateWiki(entity)
     } else {
-      synUpdateWiki(object)
+      synUpdateWiki(entity)
     }
   }
 )
@@ -105,7 +105,7 @@ setMethod(
   f = "synDelete",
   signature = "WikiPage",
   definition = function(entity) {
-    synRESTDelete(entity$updateUri)
+    synRestDELETE(entity$updateUri)
   }
 )
 

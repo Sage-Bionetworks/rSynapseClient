@@ -419,6 +419,14 @@ setMethod(
 )
 
 setMethod(
+  f = "synDelete",
+  signature = "Entity",
+  definition = function(entity) {
+    deleteEntity(entity)
+  }
+)
+
+setMethod(
   f = "getEntity",
   signature = signature("Entity", "missing"),
   definition = function(entity){

@@ -106,7 +106,7 @@ setMethod(
   f = "synDelete",
   signature = "Submission",
   definition = function(entity) {
-    synRESTDelete(sprintf("/evaluation/submission/%s",entity$id))
+    synRestDELETE(sprintf("/evaluation/submission/%s",entity$id))
   }
 )
 
