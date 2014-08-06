@@ -34,10 +34,10 @@ setMethod(
   f = "synStore",
   signature = "Evaluation",
   definition = function(entity) {
-    if (is.null(object$id) || length(object$id)==0) {
-      synCreateEvaluation(object)
+    if (is.null(entity$id) || length(entity$id)==0) {
+      synCreateEvaluation(entity)
     } else {
-      synUpdateS4Object(object, sprintf("/evaluation/%s",obj$id))
+      synUpdateS4Object(entity, sprintf("/evaluation/%s",entity$id))
     }
   }
 )

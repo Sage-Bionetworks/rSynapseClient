@@ -427,6 +427,18 @@ setMethod(
 )
 
 setMethod(
+  f = "synDelete",
+  signature = "chracter",
+  definition = function(entity) {
+    if (isSynapseId(entity)) {
+      deleteEntity(entity)      
+    } else {
+      stop(sprintf("%s is not a Synapse entity ID.", entity))
+    }
+  }
+)
+
+setMethod(
   f = "getEntity",
   signature = signature("Entity", "missing"),
   definition = function(entity){

@@ -89,7 +89,7 @@ setMethod(
   signature = "Submission",
   definition = function(entity) {
     # note, user can't create a SubmissionStatus, only update one
-    synUpdateS4Object(object, sprintf("/evaluation/submission/%s",obj$id))   
+    synUpdateS4Object(entity, sprintf("/evaluation/submission/%s",entity$id))   
   }
 )
 
@@ -98,7 +98,7 @@ setMethod(
   signature = "SubmissionStatus",
   definition = function(entity) {
     # note, user can't create a SubmissionStatus, only update one
-    synUpdateS4Object(object, sprintf("/evaluation/submission/%s/status",obj$id))   
+    synUpdateS4Object(entity, sprintf("/evaluation/submission/%s/status",entity$id))   
   }
 )
 
