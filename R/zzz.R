@@ -86,10 +86,10 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   synapseDataLocationPreferences(kSupportedDataLocationTypes)
   synapseCacheDir(gsub("[\\/]+", "/", path.expand("~/.synapseCache")))
 
-  entities <- synapseClient:::entitiesToLoad()
+  entities <- entitiesToLoad()
   for(ee in entities){ 
-    synapseClient:::defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
-    synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+    defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+    defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
   }
   
   nonEntities<-list(
@@ -105,21 +105,28 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     c("org.sagebionetworks.repo.model.annotation.LongAnnotation", "LongAnnotation"),
     c("org.sagebionetworks.repo.model.annotation.StringAnnotation", "StringAnnotation"),
     c("org.sagebionetworks.repo.model.annotation.Annotations", "Annotations"),
-    c("org.sagebionetworks.evaluation.model.Submission", "Submission"),
+    c("org.sagebionetworks.evaluation.model.Submission", "SubmissionMetadata"),
     c("org.sagebionetworks.evaluation.model.SubmissionStatus", "SubmissionStatus"),
-    c("org.sagebionetworks.evaluation.model.SubmissionBundle", "SubmissionBundle"),
     c("org.sagebionetworks.evaluation.model.Participant", "Participant"),
     c("org.sagebionetworks.repo.model.wiki.WikiHeader", "WikiHeader"),
     c("org.sagebionetworks.repo.model.annotation.Annotations", "Annotations"),
     c("org.sagebionetworks.repo.model.annotation.DoubleAnnotation", "DoubleAnnotation"),
     c("org.sagebionetworks.repo.model.annotation.LongAnnotation", "LongAnnotation"),
-    c("org.sagebionetworks.repo.model.annotation.StringAnnotation", "StringAnnotation")
+    c("org.sagebionetworks.repo.model.annotation.StringAnnotation", "StringAnnotation"),
+    # Table classes
+    c("org.sagebionetworks.repo.model.table.Row", "Row"),
+    c("org.sagebionetworks.repo.model.table.RowReference", "RowReference"),
+    c("org.sagebionetworks.repo.model.table.RowReferenceSet", "RowReferenceSet"),
+    c("org.sagebionetworks.repo.model.table.RowSet", "TableRowSet"),
+    c("org.sagebionetworks.repo.model.table.ColumnModel", "TableColumn")
+    #c("org.sagebionetworks.repo.model.table.", ""),
     )
+    
   
   for(ee in nonEntities) { 
     # only define the class if it's not already defined
     if (!isClassDefined(ee)) {
-      synapseClient:::defineS4ClassForSchema(ee[1], ee[2])
+      defineS4ClassForSchema(ee[1], ee[2])
     }
   }
 }

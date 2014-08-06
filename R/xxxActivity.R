@@ -39,7 +39,6 @@ setMethod(
   }
 )
 
-
 combineUsedAndExecutedLists<-function(used, executed) {
   usedAndExecuted<-list()
   if (!missing(used) && !is.null(used)) {
@@ -255,6 +254,14 @@ setMethod(
   definition = function(activity){
     ee<-Activity(synapseGet(.generateActivityUri(activity)))
     ee
+  }
+)
+
+setMethod(
+  f = "synStore",
+  signature = "Activity",
+  definition = function(entity) {
+    storeEntity(object)
   }
 )
 

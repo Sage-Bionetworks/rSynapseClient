@@ -26,6 +26,111 @@ setClass(
 defineEntityConstructors("org.sagebionetworks.repo.model.Entity", package="synapseClient")
 
 setMethod(
+  f = "synStore",
+  signature = "Entity",
+  definition = function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL) {
+    if (is(entity, "Locationable")) {
+      stop("For 'Locationable' entities you must use createEntity, storeEntity, or updateEntity.")
+    }
+    
+    if (is.null(propertyValue(entity, "id")) && createOrUpdate) {
+      entityAsList<-try(findExistingEntity(propertyValue(entity, "name"), propertyValue(entity, "parentId")), silent=TRUE)
+      if (class(entityAsList)!='try-error') {
+        # Found it!
+        # This copies retrieved properties not overwritten by the given entity
+        mergedProperties<-copyProperties(as.list.SimplePropertyOwner(entity), entityAsList)
+        
+        # This also includes ID, which turns a "create" into an "update"
+        propertyValues(entity)<-mergedProperties
+        if (class(entity)=="File") {
+          entity@fileHandle<-getFileHandle(entity)
+        }
+        
+        # But the create-or-update logic lies in the "create" operation
+        # So the ID must be nullified before proceeding
+        propertyValue(entity, "id") <- NULL
+      }
+    }
+    
+    if (class(entity)=="File") {
+      entity<-synStoreFile(file=entity, createOrUpdate=createOrUpdate, forceVersion=forceVersion, contentType=contentType)
+    }
+    # Now save the metadata
+    generatingActivity<-NULL
+    if (!is.null(activity)) {
+      generatingActivity<-activity
+    } else if (!is.null(used) || !is.null(executed)) {
+      generatingActivity<-Activity(name=activityName, description=activityDescription, used=used, executed=executed)
+    } else if (entity@generatedByChanged) {
+      # this takes care of the case in which generatedBy(entity)<- 
+      # is called rather than specifying the activity in the synStore() parameters
+      generatingActivity<-generatedBy(entity)
+    }
+    if (is.null(propertyValue(entity, "id"))) {
+      storedEntity<-createEntityMethod(entity, generatingActivity, createOrUpdate, forceVersion)
+    } else {
+      storedEntity<-updateEntityMethod(entity, generatingActivity, forceVersion)
+    }
+    if (class(entity)=="File") {
+      # now copy the class-specific fields into the newly created object
+      if (fileHasFilePath(entity)) storedEntity@filePath <- entity@filePath
+      storedEntity@synapseStore <- entity@synapseStore
+      storedEntity@fileHandle <- entity@fileHandle
+      storedEntity@objects <- entity@objects
+      if (class(storedEntity)=="File" && isRestricted) {
+        # check to see if access restriction(s) is/are in place already
+        id<-propertyValue(storedEntity, "id")
+        if (!.hasAccessRequirement(id)) {
+          # nothing in place, so we create the restriction
+          .createLockAccessRequirement(id)
+        }
+      }
+    }
+    storedEntity
+    
+  }
+)
+
+synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
+  if (isSynapseId(id)) {
+    if (is.null(version)) {
+      entity<-getEntity(id)
+    } else {
+      entity<-getEntity(id, version=version)
+    }   
+    if ((class(entity)=="File")) {
+      entity<-synGetFile(entity, downloadFile, downloadLocation, ifcollision, load)
+    } else {
+      if (is (entity, "Locationable") && downloadFile) {
+        if (!is.null(downloadLocation)) {
+          warning("Cannot specify download location for 'Locationable' entities")
+        }
+        if (load) {
+          loadEntity(entity)
+        } else {
+          downloadEntity(entity)
+        }
+      } else {
+        entity
+      }
+    }
+  } else {
+    stop(sprintf("%s is not a Synapse ID.", id))
+  }
+}
+
+
+# we define these functions to allow mocking during testing
+.hasAccessRequirement<-function(entityId) {
+  currentAccessRequirements<-synRestGET(sprintf("/entity/%s/accessRequirement", entityId))
+  currentAccessRequirements$totalNumberOfResults>0
+}
+
+.createLockAccessRequirement<-function(entityId) {
+  synRestPOST(sprintf("/entity/%s/lockAccessRequirement", entityId), list())
+}
+
+setMethod(
   f = "getParentEntity",
   signature = "Entity",
   definition = function(entity){
@@ -279,7 +384,7 @@ createEntityMethod<-function(entity, generatingActivity, createOrUpdate, forceVe
 setMethod(
   f = "createEntity",
   signature = "Entity",
-  # without the wrapper I get this error in R 2.15: methods can add arguments to the generic ÔcreateEntityÕ only if '...' is an argument to the generic
+  # without the wrapper I get this error in R 2.15: methods can add arguments to the generic ï¿½createEntityï¿½ only if '...' is an argument to the generic
   definition = function(entity){createEntityMethod(entity=entity, generatingActivity=generatedBy(entity), createOrUpdate=FALSE, forceVersion=FALSE)}
 )
 

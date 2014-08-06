@@ -30,6 +30,26 @@ synGetEvaluationByContentSource <- function(id) {
     return(paginatedResults)
 }
 
+setMethod(
+  f = "synStore",
+  signature = "Evaluation",
+  definition = function(entity) {
+    if (is.null(object$id) || length(object$id)==0) {
+      synCreateEvaluation(object)
+    } else {
+      synUpdateS4Object(object, sprintf("/evaluation/%s",obj$id))
+    }
+  }
+)
+
+setMethod(
+  f = "synDelete",
+  signature = "Evaluation",
+  definition = function(entity) {
+    synRESTDelete(sprintf("/evaluation/%s",entity$id))
+  }
+)
+
 newParticipantPaginatedResults<-function(content) {
   paginatedResults<-new("PaginatedResults")
   paginatedResults@totalNumberOfResults<-as.integer(content$totalNumberOfResults)

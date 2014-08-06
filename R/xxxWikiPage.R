@@ -89,6 +89,26 @@ synGetWiki<-function(parent, id) {
   populateWikiPage(createUri, synRestGET(getUri))
 }
 
+setMethod(
+  f = "synStore",
+  signature = "WikiPage",
+  definition = function(entity) {
+    if (is.null(propertyValue(object, "id"))) {
+      synCreateWiki(object)
+    } else {
+      synUpdateWiki(object)
+    }
+  }
+)
+
+setMethod(
+  f = "synDelete",
+  signature = "WikiPage",
+  definition = function(entity) {
+    synRESTDelete(entity$updateUri)
+  }
+)
+
 synUpdateWiki<-function(wikiPage) {
   listResult<-synRestPUT(wikiPage@updateUri, wikiPage)
   populateWikiPage(wikiPage@createUri, listResult)

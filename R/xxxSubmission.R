@@ -84,6 +84,32 @@ synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollisio
   submission
 }
 
+setMethod(
+  f = "synStore",
+  signature = "Submission",
+  definition = function(entity) {
+    # note, user can't create a SubmissionStatus, only update one
+    synUpdateS4Object(object, sprintf("/evaluation/submission/%s",obj$id))   
+  }
+)
+
+setMethod(
+  f = "synStore",
+  signature = "SubmissionStatus",
+  definition = function(entity) {
+    # note, user can't create a SubmissionStatus, only update one
+    synUpdateS4Object(object, sprintf("/evaluation/submission/%s/status",obj$id))   
+  }
+)
+
+setMethod(
+  f = "synDelete",
+  signature = "Submission",
+  definition = function(entity) {
+    synRESTDelete(sprintf("/evaluation/submission/%s",entity$id))
+  }
+)
+
 synCreateSubmission<-function(submission, entityEtag) {
   SubmissionListConstructor(synRestPOST(sprintf("/evaluation/submission?etag=%s", entityEtag), submission))
 }

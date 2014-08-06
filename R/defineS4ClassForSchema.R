@@ -113,64 +113,68 @@ defineS4ClassForSchema <- function(fullSchemaName, name) {
   )
   
   if (!isVirtualClass) {
-    # This generic constructor takes the form:
-    # ClassName(slot1=value1, slot2=value2, ...)
-    assign(name, function(...) {
-        args <-list(...)
-        obj<-new(name)     
-        for (slotName in names(args)) {
-            slot(obj, slotName)<-args[[slotName]]
-        }
-        obj      
-    })
-    
-    # If we don't define a 'generic' version of the constructor
-    # we get an error when we try to include it as an export in
-    # the NAMESPACE file.
-    setGeneric(
-      name=name,
-      def = function(...) {
-        do.call(name, list(...))
-      }
-    )
-    
-    setMethod(
-      f = "$",
-      signature = name,
-      definition = function(x, name){
-        slot(x,name)
-      }
-    )
-    
-    setReplaceMethod("$", 
-      signature = name,
-      definition = function(x, name, value) {
-        slot(x, name)<-value
-        x
-      }
-    )
-    
-    # for backwards compatibility
-    setMethod(
-      f = "propertyValue",
-      signature = signature(name, "character"),
-      definition = function(object, which){
-        slot(object, which)
-      }
-    )
-    
-    # for backwards compatibility
-    setReplaceMethod(
-      f = "propertyValue",
-      signature = signature(name, "character"),
-      definition = function(object, which, value) {
-        slot(object, which) <- value
-        object
-      }
-    )
+    defineS4ConstructorAndAccessors(name)
   } # end 'if(isVirtualClass)'
   
   name
+}
+
+defineS4ConstructorAndAccessors<-function(name) {
+  # This generic constructor takes the form:
+  # ClassName(slot1=value1, slot2=value2, ...)
+  assign(name, function(...) {
+      args <-list(...)
+      obj<-new(name)     
+      for (slotName in names(args)) {
+        slot(obj, slotName)<-args[[slotName]]
+      }
+      obj      
+    })
+  
+  # If we don't define a 'generic' version of the constructor
+  # we get an error when we try to include it as an export in
+  # the NAMESPACE file.
+  setGeneric(
+    name=name,
+    def = function(...) {
+      do.call(name, list(...))
+    }
+  )
+  
+  setMethod(
+    f = "$",
+    signature = name,
+    definition = function(x, name){
+      slot(x,name)
+    }
+  )
+  
+  setReplaceMethod("$", 
+    signature = name,
+    definition = function(x, name, value) {
+      slot(x, name)<-value
+      x
+    }
+  )
+  
+  # for backwards compatibility
+  setMethod(
+    f = "propertyValue",
+    signature = signature(name, "character"),
+    definition = function(object, which){
+      slot(object, which)
+    }
+  )
+  
+  # for backwards compatibility
+  setReplaceMethod(
+    f = "propertyValue",
+    signature = signature(name, "character"),
+    definition = function(object, which, value) {
+      slot(object, which) <- value
+      object
+    }
+  )  
 }
 
 getArraySubSchema<-function(propertySchema) {
