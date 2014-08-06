@@ -105,7 +105,7 @@ setMethod(
   f = "synDelete",
   signature = "WikiPage",
   definition = function(entity) {
-    synRestDELETE(entity$updateUri)
+    synRestDELETE(entity@updateUri)
   }
 )
 

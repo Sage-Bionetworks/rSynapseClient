@@ -428,7 +428,7 @@ setMethod(
 
 setMethod(
   f = "synDelete",
-  signature = "chracter",
+  signature = "character",
   definition = function(entity) {
     if (isSynapseId(entity)) {
       deleteEntity(entity)      
