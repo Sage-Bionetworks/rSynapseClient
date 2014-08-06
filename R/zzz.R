@@ -113,6 +113,9 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     c("org.sagebionetworks.repo.model.annotation.DoubleAnnotation", "DoubleAnnotation"),
     c("org.sagebionetworks.repo.model.annotation.LongAnnotation", "LongAnnotation"),
     c("org.sagebionetworks.repo.model.annotation.StringAnnotation", "StringAnnotation"),
+    c("org.sagebionetworks.repo.model.ResourceAccess", "ResourceAccess"),
+    c("org.sagebionetworks.repo.model.AccessControlList", "AccessControlList"),
+    
     # Table classes
     c("org.sagebionetworks.repo.model.table.Row", "Row"),
     c("org.sagebionetworks.repo.model.table.RowReference", "RowReference"),
