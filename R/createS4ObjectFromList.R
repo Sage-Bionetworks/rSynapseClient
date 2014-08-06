@@ -10,7 +10,7 @@ createS4ObjectFromList<-function(content, className) {
   if (is.list(content)) {
     concreteTypeSchemaName<-content$concreteType
     if (!is.null(concreteTypeSchemaName)) {
-      concreteTypeClassName<-getClassNameFromSchemaName(concreteTypeSchemaName)
+      concreteTypeClassName<-getS4ClassNameFromSchemaName(concreteTypeSchemaName)
       if (!extends(concreteTypeClassName, className)) {
         stop(sprintf("concreteType %s specified for class %s", concreteTypeClassName, className))
       }

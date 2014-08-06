@@ -15,8 +15,21 @@ synGetUserProfile<-function(id) {
   objectResult
 }
 
+userProfileUpdateAndDeleteUri<-function(obj) {
+  sprintf("/userProfile",obj$ownerId)
+}
+
+setMethod(
+  f = "synStore",
+  signature = "UserProfile",
+  definition = function(entity) {
+    # note, user can't create a UserProfile, only update one
+    synUpdateS4Object(entity, userProfileUpdateAndDeleteUri(entity))
+  }
+)
+
 synUpdateUserProfile<-function(userProfile) {
-  synUpdate(userProfile)
+  synUpdateS4Object(userProfile, userProfileUpdateAndDeleteUri(userProfile))
 }
 
 

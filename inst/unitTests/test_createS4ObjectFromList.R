@@ -59,7 +59,7 @@ unitTestCreateS4ObjectFromList<-function() {
 }
 
 unitTestEmptyTypedList<-function() {
-  openIds<-new("characterTypedList")
+  openIds<-new("characterList")
   p<-synapseClient:::UserProfile(openIds=openIds)
   synapseClient:::createListFromS4Object(p)
 }
@@ -69,9 +69,9 @@ unitTestS4RoundTrip<-function() {
   listRep<-synapseClient:::createListFromS4Object(e)
   checkEquals(e, synapseClient:::createS4ObjectFromList(listRep, "Evaluation"))
    
-  emails<-new("characterTypedList")
+  emails<-new("characterList")
   emails@content<-list("foo@bar.com", "bar@bas.com")
-  preferences<-new("UserPreferenceTypedList")
+  preferences<-new("UserPreferenceList")
   preferences@content<-list(
     synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"),
     synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean")
@@ -91,9 +91,9 @@ unitTestS4RoundTrip<-function() {
 
 unitTestMissingS4Field<-function() {
   # note:  there's no 'notificationSettings' field
-  emails<-new("characterTypedList")
+  emails<-new("characterList")
   emails@content<-list("foo@bar.com", "bar@bas.com")
-  preferences<-new("UserPreferenceTypedList")
+  preferences<-new("UserPreferenceList")
   preferences@content<-list(
     synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"),
     synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean")
@@ -120,4 +120,6 @@ unitTestRoundTripWithEnumField<-function() {
   s2<-synapseClient:::createS4ObjectFromList(li, "SubmissionStatus")
   checkEquals(s,s2)
 }
+
+
 

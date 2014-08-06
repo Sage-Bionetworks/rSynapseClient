@@ -843,9 +843,23 @@ setGeneric(
 )
 
 setGeneric(
-  name="FileListConstructor",
+  name="synStore",
+  def = function(entity, ...) {
+    standardGeneric("synStore")
+  }
+)
+
+setGeneric(
+  name="synDelete",
+  def = function(entity, ...) {
+    standardGeneric("synDelete")
+  }
+)
+
+setGeneric(
+  name="createFileFromProperties",
   def = function(propertiesList) {
-    standardGeneric("FileListConstructor")
+    standardGeneric("createFileFromProperties")
   }
 )
 

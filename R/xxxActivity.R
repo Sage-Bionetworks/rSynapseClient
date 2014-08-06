@@ -39,7 +39,6 @@ setMethod(
   }
 )
 
-
 combineUsedAndExecutedLists<-function(used, executed) {
   usedAndExecuted<-list()
   if (!missing(used) && !is.null(used)) {
@@ -259,6 +258,14 @@ setMethod(
 )
 
 setMethod(
+  f = "synStore",
+  signature = "Activity",
+  definition = function(entity) {
+    storeEntity(entity)
+  }
+)
+
+setMethod(
   f = "synGetActivity",
   signature = signature("character", "missing"),
   definition = function(entity){
@@ -323,6 +330,14 @@ setMethod(
       activity <- updateEntity(activity)
     }
     activity
+  }
+)
+
+setMethod(
+  f = "synDelete",
+  signature = "Activity",
+  definition = function(entity) {
+    deleteEntity(entity)
   }
 )
 

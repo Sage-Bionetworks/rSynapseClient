@@ -109,7 +109,7 @@ mockable.file.exists <- function (filepath) {
 # this is the required constructor for a metadata Entity, taking a list of properties
 # the logic is based on definedEntityConstructors in AAAschema
 setMethod(
-    f = "FileListConstructor",
+    f = "createFileFromProperties",
     signature = signature("list"),
     definition = function(propertiesList) {
         file <- new("File")

@@ -69,11 +69,11 @@ setPackageVariable<-function(name, value) {
 
 getSchemaCacheName<-function() {"schema.cache"}
 
-getSchemaFromCache<-function(className) {
+getSchemaFromCache<-function(schemaName) {
   schemaCacheName <- getSchemaCacheName()
   if (existsPackageVariable(schemaCacheName)) {
     schemaCache<-getPackageVariable(schemaCacheName)
-    schemaCache[[className]]
+    schemaCache[[schemaName]]
   } else {
     NULL
   }
@@ -98,10 +98,7 @@ getClassNameFromSchemaName<-function(schemaName) {
 readEntityDef <-
     function(name, path = system.file("resources/schema",package="synapseClient"))
 { 
-  className <- getClassNameFromSchemaName(name)
-  
-
-  result<-getSchemaFromCache(className)
+  result<-getSchemaFromCache(name)
   if (!is.null(result)) {
     return(result)
   }
@@ -115,7 +112,7 @@ readEntityDef <-
 
   schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
   
-  putSchemaToCache(className, schema)
+  putSchemaToCache(name, schema)
   schema
 }
 
@@ -257,14 +254,7 @@ schemaTypeFromProperty<-function(property) {
   }
 }
 
-getPropertyTypes <- function(which, entityDef)
-{
-  if(!missing(which) && !missing(entityDef))
-    stop("must specify either 'which' or 'entityDef', but not both")
-  
-  if(!missing(which))
-    entityDef <- readEntityDef(which)
-  
+getPropertyTypes <- function(entityDef) {
   properties <- lapply(
     X = names(entityDef$properties), 
     FUN = function(prop){
@@ -283,11 +273,11 @@ getEffectivePropertyTypes <-function(which) {
 
 getEffectiveSchemaTypes <- function(schema) {
   # start with the properties for the immediate schema
-  properties<-getPropertyTypes(entityDef=schema)
+  properties<-getPropertyTypes(schema)
   implements <- getAllInterfaces(schema)
   if (length(implements)>0) {
     for (i in length(implements):1) {
-      thisProp <- getPropertyTypes(which=implements[i])
+      thisProp <- getPropertyTypes(readEntityDef(implements[i]))
       for (n in names(thisProp))
         properties[[n]] <- thisProp[[n]]
     }

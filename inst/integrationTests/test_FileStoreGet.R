@@ -629,7 +629,7 @@ integrationTestAddToNewFILEEntity <-
   pid <- propertyValue(project, "id")
   checkTrue(!is.null(pid))
   filePath<- createFile()
-  file<-synapseClient:::FileListConstructor(list(parentId=pid))
+  file<-synapseClient:::createFileFromProperties(list(parentId=pid))
   file<-addFile(file, filePath)
   storedFile<-storeEntity(file)
   scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
@@ -689,7 +689,7 @@ integrationTestAddToNewFILEEntity <-
 integrationTestReplaceFile<-function() {
     project <- synapseClient:::.getCache("testProject")
     filePath<- createFile()
-    file<-synapseClient:::FileListConstructor(list(parentId=propertyValue(project, "id")))
+    file<-synapseClient:::createFileFromProperties(list(parentId=propertyValue(project, "id")))
     file<-addFile(file, filePath)
     # replace storeEntity with createEntity
     storedFile<-createEntity(file)
@@ -723,7 +723,7 @@ integrationTestReplaceFile<-function() {
 integrationTestLoadEntity<-function() {
   project <- synapseClient:::.getCache("testProject")
   filePath<- createFile()
-  file<-synapseClient:::FileListConstructor(list(parentId=propertyValue(project, "id")))
+  file<-synapseClient:::createFileFromProperties(list(parentId=propertyValue(project, "id")))
   dataObject<-list(a="A", b="B", c="C")
   file<-addObject(file, dataObject, "dataObjectName")
   storedFile<-createEntity(file)

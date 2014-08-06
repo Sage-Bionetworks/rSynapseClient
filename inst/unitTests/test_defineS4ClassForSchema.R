@@ -4,21 +4,23 @@
 #########################################################
 
 unitTestGetImplements<-function() {
-  checkTrue(is.null(synapseClient:::getImplements(synapseClient:::getSchemaFromCache("UserProfile"))))
-  folderSchemaDef<-synapseClient:::getSchemaFromCache("Folder")
+  checkTrue(is.null(synapseClient:::getImplements(synapseClient:::getSchemaFromCache("org.sagebionetworks.repo.model.UserProfile"))))
+  folderSchemaDef<-synapseClient:::getSchemaFromCache("org.sagebionetworks.repo.model.Folder")
   checkTrue(!is.null(synapseClient:::getImplements(folderSchemaDef)))
-  checkEquals("org.sagebionetworks.repo.model.Entity", synapseClient:::getImplements(folderSchemaDef)[[1]][[1]])
+  checkEquals("org.sagebionetworks.repo.model.Entity", synapseClient:::getImplements(folderSchemaDef)[[1]][["$ref"]])
 }
 
 unitTestisVirtual<-function() {
-  checkTrue(!synapseClient:::isVirtual(synapseClient:::getSchemaFromCache("Row")))
-  checkTrue(!synapseClient:::isVirtual(synapseClient:::getSchemaFromCache("Folder")))
-  checkTrue(synapseClient:::isVirtual(synapseClient:::getSchemaFromCache("Entity")))
+  checkTrue(!synapseClient:::isVirtual(synapseClient:::getSchemaFromCache("org.sagebionetworks.repo.model.table.Row")))
+  checkTrue(!synapseClient:::isVirtual(synapseClient:::getSchemaFromCache("org.sagebionetworks.repo.model.Folder")))
+  checkTrue(synapseClient:::isVirtual(synapseClient:::getSchemaFromCache("org.sagebionetworks.repo.model.Entity")))
 }
 
 unitTestGetPropertyTypes<-function() {
-  checkEquals(list(name="string", concreteType="string"), synapseClient:::getPropertyTypes(which="UserPreference"))
-  upProperties<-synapseClient:::getPropertyTypes(which="UserProfile")
+  userPreference <- synapseClient:::getSchemaFromCache("org.sagebionetworks.repo.model.UserPreference")
+  checkEquals(list(name="string", concreteType="string"), synapseClient:::getPropertyTypes(userPreference))
+  userProfileSchema <- synapseClient:::getSchemaFromCache("org.sagebionetworks.repo.model.UserProfile")
+  upProperties<-synapseClient:::getPropertyTypes(userProfileSchema)
   checkEquals("string", upProperties$lastName)
   checkEquals("org.sagebionetworks.repo.model.message.Settings", upProperties$notificationSettings)
 }
@@ -54,7 +56,7 @@ unitTestNonPrimitiveField<-function() {
 }
 
 unitTestListofS4<-function() {
-  checkEquals(getSlots("UserProfile")[["preferences"]],  "UserPreferenceTypedListOrNull")
+  checkEquals(getSlots("UserProfile")[["preferences"]],  "UserPreferenceListOrNull")
 }
 
 unitTestEnumField<-function() {
@@ -65,7 +67,7 @@ unitTestEnumField<-function() {
 }
 
 unitTestSchemaTypeFromProperty<-function() {
-  upSchema<-synapseClient:::getSchemaFromCache("UserProfile")
+  upSchema<-synapseClient:::getSchemaFromCache("org.sagebionetworks.repo.model.UserProfile")
   propertySchema<-upSchema$properties[["lastName"]]
   checkEquals("string", synapseClient:::schemaTypeFromProperty(propertySchema))
   
@@ -75,7 +77,7 @@ unitTestSchemaTypeFromProperty<-function() {
 }
 
 unitTestArraySubSchema<-function() {
-  upSchema<-synapseClient:::getSchemaFromCache("UserProfile")
+  upSchema<-synapseClient:::getSchemaFromCache("org.sagebionetworks.repo.model.UserProfile")
   
   propertySchema<-upSchema$properties[["emails"]]
   checkEquals("string", synapseClient:::schemaTypeFromProperty(
@@ -89,13 +91,13 @@ unitTestArraySubSchema<-function() {
 }
 
 unitTestTypedList<-function() {
-  t<-new("characterTypedList")
+  t<-new("characterList")
   t$foo<-"bar"
   checkEquals(t$foo, "bar")
   t[["foo"]]<-"bas"
   checkEquals(t$foo, "bas")
   
-  t<-new("characterTypedList")
+  t<-new("characterList")
   t[[1]]<-"a"
   t[[2]]<-"b"
   checkEquals(2, length(t))
@@ -103,5 +105,11 @@ unitTestTypedList<-function() {
   checkEquals(t[[2]], "b")
   checkEquals(list("a", "b"), synapseClient:::getList(t))
 }
+
+unitTestConcreteType<-function() {
+  booleanPref<-new("UserPreferenceBoolean")
+  checkEquals("org.sagebionetworks.repo.model.UserPreferenceBoolean", booleanPref$concreteType)
+}
+
 
 

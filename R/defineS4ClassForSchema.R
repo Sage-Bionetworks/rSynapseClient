@@ -32,12 +32,36 @@ isClassDefined<-function(className) {
     }
   )
 }
+getS4MapName<-function() {"s4.map"}
 
-defineS4ClassForSchema <- function(fullSchemaName) {
-  name <- getClassNameFromSchemaName(fullSchemaName)
-  
+getS4ClassNameFromSchemaName<-function(schemaName) {
+  s4MapName <- getS4MapName()
+  if (existsPackageVariable(s4MapName)) {
+    s4Map<-getPackageVariable(s4MapName)
+    result<-s4Map[[schemaName]]
+  } else {
+    result<-NULL
+  }
+  if (is.null(result)) {
+    stop(sprintf("No S4 class name for %s", schemaName)) 
+  } else {
+    result
+  }
+}
+
+setS4ClassNameForSchemaName<-function(schemaName, className) {
+  s4MapName <- getS4MapName()
+  s4Map <- getPackageVariable(s4MapName)
+  if (is.null(s4Map)) s4Map<-list()
+  s4Map[[schemaName]]<-className
+  setPackageVariable(s4MapName, s4Map)
+}
+
+
+defineS4ClassForSchema <- function(fullSchemaName, name) {  
   if(is.null(name) | name == "")
     stop("name must not be null")
+  setS4ClassNameForSchemaName(fullSchemaName, name)
   
   schemaDef <- readEntityDef(fullSchemaName)
   
@@ -46,12 +70,9 @@ defineS4ClassForSchema <- function(fullSchemaName) {
   implements <- getImplements(schemaDef)
   if (!is.null(implements)) {
     for (i in implements) {
-      implementsName <- getClassNameFromSchemaName(i)
+      implementsName <- getS4ClassNameFromSchemaName(i[["$ref"]])
       superClasses<-c(superClasses, implementsName)
-      if (!isClassDefined(implementsName)) {
-        defineS4ClassForSchema(i)
-      }
-    }
+     }
   }
   
   # slots defined by the schema:
@@ -75,6 +96,9 @@ defineS4ClassForSchema <- function(fullSchemaName) {
   isVirtualClass <- isVirtual(schemaDef)
   if (isVirtualClass) {
     superClasses<-c(superClasses, "VIRTUAL")
+  } else {
+    if (length(implements)>0)
+    prototype[["concreteType"]]<-fullSchemaName
   }
   
   setClass(
@@ -89,64 +113,68 @@ defineS4ClassForSchema <- function(fullSchemaName) {
   )
   
   if (!isVirtualClass) {
-    # This generic constructor takes the form:
-    # ClassName(slot1=value1, slot2=value2, ...)
-    assign(name, function(...) {
-        args <-list(...)
-        obj<-new(name)     
-        for (slotName in names(args)) {
-            slot(obj, slotName)<-args[[slotName]]
-        }
-        obj      
-    })
-    
-    # If we don't define a 'generic' version of the constructor
-    # we get an error when we try to include it as an export in
-    # the NAMESPACE file.
-    setGeneric(
-      name=name,
-      def = function(...) {
-        do.call(name, list(...))
-      }
-    )
-    
-    setMethod(
-      f = "$",
-      signature = name,
-      definition = function(x, name){
-        slot(x,name)
-      }
-    )
-    
-    setReplaceMethod("$", 
-      signature = name,
-      definition = function(x, name, value) {
-        slot(x, name)<-value
-        x
-      }
-    )
-    
-    # for backwards compatibility
-    setMethod(
-      f = "propertyValue",
-      signature = signature(name, "character"),
-      definition = function(object, which){
-        slot(object, which)
-      }
-    )
-    
-    # for backwards compatibility
-    setReplaceMethod(
-      f = "propertyValue",
-      signature = signature(name, "character"),
-      definition = function(object, which, value) {
-        slot(object, which) <- value
-        object
-      }
-    )
+    defineS4ConstructorAndAccessors(name)
   } # end 'if(isVirtualClass)'
   
   name
+}
+
+defineS4ConstructorAndAccessors<-function(name) {
+  # This generic constructor takes the form:
+  # ClassName(slot1=value1, slot2=value2, ...)
+  assign(name, function(...) {
+      args <-list(...)
+      obj<-new(name)     
+      for (slotName in names(args)) {
+        slot(obj, slotName)<-args[[slotName]]
+      }
+      obj      
+    })
+  
+  # If we don't define a 'generic' version of the constructor
+  # we get an error when we try to include it as an export in
+  # the NAMESPACE file.
+  setGeneric(
+    name=name,
+    def = function(...) {
+      do.call(name, list(...))
+    }
+  )
+  
+  setMethod(
+    f = "$",
+    signature = name,
+    definition = function(x, name){
+      slot(x,name)
+    }
+  )
+  
+  setReplaceMethod("$", 
+    signature = name,
+    definition = function(x, name, value) {
+      slot(x, name)<-value
+      x
+    }
+  )
+  
+  # for backwards compatibility
+  setMethod(
+    f = "propertyValue",
+    signature = signature(name, "character"),
+    definition = function(object, which){
+      slot(object, which)
+    }
+  )
+  
+  # for backwards compatibility
+  setReplaceMethod(
+    f = "propertyValue",
+    signature = signature(name, "character"),
+    definition = function(object, which, value) {
+      slot(object, which) <- value
+      object
+    }
+  )  
 }
 
 getArraySubSchema<-function(propertySchema) {
@@ -168,7 +196,7 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     primitiveRType
   } else if (schemaPropertyType=="array") {
     elemRType <- defineRTypeFromPropertySchema(getArraySubSchema(propertySchema))
-    typeListClassName<-sprintf("%sTypedList", elemRType)
+    typeListClassName<-sprintf("%sList", elemRType)
     if (!isClassDefined(typeListClassName)) {
       setClass(
         Class=typeListClassName, 
@@ -186,11 +214,8 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
       return(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])
     }
     
-    rType<-getClassNameFromSchemaName(schemaPropertyType)
-    if (!isClassDefined(rType)) {
-      defineS4ClassForSchema(schemaPropertyType)
-    }
-    rType
+    # The following will 'stop' if the S4 class is not defined
+    getS4ClassNameFromSchemaName(schemaPropertyType)
   }
 }
 

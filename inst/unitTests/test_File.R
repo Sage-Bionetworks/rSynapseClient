@@ -98,7 +98,7 @@ unitTestConstructor<-function() {
 unitTestListConstructor<-function() {
   description<-"this describes my File"
   annotValue<-"assigned annotation value"
-  file<-synapseClient:::FileListConstructor(list(description=description, anAnnotation=annotValue))
+  file<-synapseClient:::createFileFromProperties(list(description=description, anAnnotation=annotValue))
   checkEquals(description, propertyValue(file, "description"))
   checkEquals(annotValue, annotValue(file, "anAnnotation"))
 }
