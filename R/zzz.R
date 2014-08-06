@@ -93,23 +93,33 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   }
   
   nonEntities<-list(
-    "org.sagebionetworks.repo.model.UserProfile",
-    "org.sagebionetworks.repo.model.UserPreferenceBoolean",
-    "org.sagebionetworks.evaluation.model.Evaluation",
-    "org.sagebionetworks.evaluation.model.SubmissionStatus",
-    "org.sagebionetworks.evaluation.model.SubmissionBundle",
-    "org.sagebionetworks.evaluation.model.Participant",
-    "org.sagebionetworks.repo.model.wiki.WikiHeader",
-    "org.sagebionetworks.repo.model.annotation.Annotations",
-    "org.sagebionetworks.repo.model.annotation.DoubleAnnotation",
-    "org.sagebionetworks.repo.model.annotation.LongAnnotation",
-    "org.sagebionetworks.repo.model.annotation.StringAnnotation"
+    # Note:  each class must come after its dependenciesboolean
+    c("org.sagebionetworks.repo.model.attachment.AttachmentData", "AttachmentData"),
+    c("org.sagebionetworks.repo.model.message.Settings", "Settings"),
+    c("org.sagebionetworks.repo.model.UserPreference", "UserPreference"),
+    c("org.sagebionetworks.repo.model.UserPreferenceBoolean", "UserPreferenceBoolean"),
+    c("org.sagebionetworks.repo.model.UserProfile", "UserProfile"),
+    c("org.sagebionetworks.evaluation.model.Evaluation", "Evaluation"),
+    c("org.sagebionetworks.repo.model.annotation.AnnotationBase", "AnnotationBase"),
+    c("org.sagebionetworks.repo.model.annotation.DoubleAnnotation", "DoubleAnnotation"),
+    c("org.sagebionetworks.repo.model.annotation.LongAnnotation", "LongAnnotation"),
+    c("org.sagebionetworks.repo.model.annotation.StringAnnotation", "StringAnnotation"),
+    c("org.sagebionetworks.repo.model.annotation.Annotations", "Annotations"),
+    c("org.sagebionetworks.evaluation.model.Submission", "Submission"),
+    c("org.sagebionetworks.evaluation.model.SubmissionStatus", "SubmissionStatus"),
+    c("org.sagebionetworks.evaluation.model.SubmissionBundle", "SubmissionBundle"),
+    c("org.sagebionetworks.evaluation.model.Participant", "Participant"),
+    c("org.sagebionetworks.repo.model.wiki.WikiHeader", "WikiHeader"),
+    c("org.sagebionetworks.repo.model.annotation.Annotations", "Annotations"),
+    c("org.sagebionetworks.repo.model.annotation.DoubleAnnotation", "DoubleAnnotation"),
+    c("org.sagebionetworks.repo.model.annotation.LongAnnotation", "LongAnnotation"),
+    c("org.sagebionetworks.repo.model.annotation.StringAnnotation", "StringAnnotation")
     )
   
   for(ee in nonEntities) { 
     # only define the class if it's not already defined
     if (!isClassDefined(ee)) {
-      synapseClient:::defineS4ClassForSchema(ee)
+      synapseClient:::defineS4ClassForSchema(ee[1], ee[2])
     }
   }
 }

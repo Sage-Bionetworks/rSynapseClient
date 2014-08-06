@@ -843,9 +843,9 @@ setGeneric(
 )
 
 setGeneric(
-  name="FileListConstructor",
+  name="createFileFromProperties",
   def = function(propertiesList) {
-    standardGeneric("FileListConstructor")
+    standardGeneric("createFileFromProperties")
   }
 )
 

@@ -3,8 +3,10 @@
 # Author: furia
 ###############################################################################
 
-getConstructorForConcreteType<-function(concreteType) {
-  if (concreteType=="org.sagebionetworks.repo.model.FileEntity") return("FileListConstructor")
+getFactoryForConcreteType<-function(concreteType) {
+  if (concreteType=="org.sagebionetworks.repo.model.FileEntity") return("createFileFromProperties")
+  if (concreteType=="org.sagebionetworks.repo.model.TableEntity") return("createTableSchemaFromProperties")
+  # by default the factory is a class constructor
   getClassNameFromSchemaName(concreteType)
 }
 
@@ -14,23 +16,18 @@ setMethod(
   definition = function(entity)
   {
     if (is.null(entity$concreteType)) {
-      class <- NULL
+      if (!is.null(entity$locations) && length(entity$locations) > 0) {
+        factoryName <- "Locationable"
+      } else {
+        stop("Entity metadata is missing 'concreteType'.");
+      }
     } else {
-     class <- getConstructorForConcreteType(entity$concreteType)
-    }
-
-    ## synapseEntity is the default
-    if(is.null(class))
-      class <- "Entity"
-
-    if (class == "Entity"){
-      if(!is.null(entity$locations) && length(entity$locations) > 0)
-        class <- "Locationable"
+      factoryName <- getFactoryForConcreteType(entity$concreteType)
     }
     
     ## call the appropriate constructor and pass the list
     ## representation of the entity
-    fun <- getMethod(class, signature = "list", where="synapseClient")
+    fun <- getMethod(factoryName, signature = "list", where="synapseClient")
     ee <- fun(entity)
     ee@synapseWebUrl <- .buildSynapseUrl(propertyValue(ee, "id"))
 

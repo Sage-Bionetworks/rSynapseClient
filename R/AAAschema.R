@@ -69,11 +69,11 @@ setPackageVariable<-function(name, value) {
 
 getSchemaCacheName<-function() {"schema.cache"}
 
-getSchemaFromCache<-function(className) {
+getSchemaFromCache<-function(schemaName) {
   schemaCacheName <- getSchemaCacheName()
   if (existsPackageVariable(schemaCacheName)) {
     schemaCache<-getPackageVariable(schemaCacheName)
-    schemaCache[[className]]
+    schemaCache[[schemaName]]
   } else {
     NULL
   }
@@ -98,10 +98,7 @@ getClassNameFromSchemaName<-function(schemaName) {
 readEntityDef <-
     function(name, path = system.file("resources/schema",package="synapseClient"))
 { 
-  className <- getClassNameFromSchemaName(name)
-  
-
-  result<-getSchemaFromCache(className)
+  result<-getSchemaFromCache(name)
   if (!is.null(result)) {
     return(result)
   }
@@ -115,7 +112,7 @@ readEntityDef <-
 
   schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
   
-  putSchemaToCache(className, schema)
+  putSchemaToCache(name, schema)
   schema
 }
 

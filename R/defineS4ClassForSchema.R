@@ -32,12 +32,36 @@ isClassDefined<-function(className) {
     }
   )
 }
+getS4MapName<-function() {"s4.map"}
 
-defineS4ClassForSchema <- function(fullSchemaName) {
-  name <- getClassNameFromSchemaName(fullSchemaName)
-  
+getS4ClassNameFromSchemaName<-function(schemaName) {
+  s4MapName <- getS4MapName()
+  if (existsPackageVariable(s4MapName)) {
+    s4Map<-getPackageVariable(s4MapName)
+    result<-s4Map[[schemaName]]
+  } else {
+    result<-NULL
+  }
+  if (is.null(result)) {
+    stop(sprintf("No S4 class name for %s", schemaName)) 
+  } else {
+    result
+  }
+}
+
+setS4ClassNameForSchemaName<-function(schemaName, className) {
+  s4MapName <- getS4MapName()
+  s4Map <- getPackageVariable(s4MapName)
+  if (is.null(s4Map)) s4Map<-list()
+  s4Map[[schemaName]]<-className
+  setPackageVariable(s4MapName, s4Map)
+}
+
+
+defineS4ClassForSchema <- function(fullSchemaName, name) {  
   if(is.null(name) | name == "")
     stop("name must not be null")
+  setS4ClassNameForSchemaName(fullSchemaName, name)
   
   schemaDef <- readEntityDef(fullSchemaName)
   
@@ -46,12 +70,9 @@ defineS4ClassForSchema <- function(fullSchemaName) {
   implements <- getImplements(schemaDef)
   if (!is.null(implements)) {
     for (i in implements) {
-      implementsName <- getClassNameFromSchemaName(i)
+      implementsName <- getS4ClassNameFromSchemaName(i[["$ref"]])
       superClasses<-c(superClasses, implementsName)
-      if (!isClassDefined(implementsName)) {
-        defineS4ClassForSchema(i)
-      }
-    }
+     }
   }
   
   # slots defined by the schema:
@@ -75,6 +96,9 @@ defineS4ClassForSchema <- function(fullSchemaName) {
   isVirtualClass <- isVirtual(schemaDef)
   if (isVirtualClass) {
     superClasses<-c(superClasses, "VIRTUAL")
+  } else {
+    if (length(implements)>0)
+    prototype[["concreteType"]]<-fullSchemaName
   }
   
   setClass(
@@ -186,11 +210,8 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
       return(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])
     }
     
-    rType<-getClassNameFromSchemaName(schemaPropertyType)
-    if (!isClassDefined(rType)) {
-      defineS4ClassForSchema(schemaPropertyType)
-    }
-    rType
+    # The following will 'stop' if the S4 class is not defined
+    getS4ClassNameFromSchemaName(schemaPropertyType)
   }
 }
 
