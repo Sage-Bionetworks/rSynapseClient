@@ -17,8 +17,10 @@ unitTestisVirtual<-function() {
 }
 
 unitTestGetPropertyTypes<-function() {
-  checkEquals(list(name="string", concreteType="string"), synapseClient:::getPropertyTypes(which="UserPreference"))
-  upProperties<-synapseClient:::getPropertyTypes(which="UserProfile")
+  userPreference <- synapseClient:::getSchemaFromCache("org.sagebionetworks.repo.model.UserPreference")
+  checkEquals(list(name="string", concreteType="string"), synapseClient:::getPropertyTypes(userPreference))
+  userProfileSchema <- synapseClient:::getSchemaFromCache("org.sagebionetworks.repo.model.UserProfile")
+  upProperties<-synapseClient:::getPropertyTypes(userProfileSchema)
   checkEquals("string", upProperties$lastName)
   checkEquals("org.sagebionetworks.repo.model.message.Settings", upProperties$notificationSettings)
 }

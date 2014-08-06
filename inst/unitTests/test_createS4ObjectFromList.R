@@ -59,7 +59,7 @@ unitTestCreateS4ObjectFromList<-function() {
 }
 
 unitTestEmptyTypedList<-function() {
-  openIds<-new("characterTypedList")
+  openIds<-new("characterList")
   p<-synapseClient:::UserProfile(openIds=openIds)
   synapseClient:::createListFromS4Object(p)
 }
