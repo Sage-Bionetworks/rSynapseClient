@@ -2,32 +2,18 @@
 \alias{WikiHeader}
 \docType{methods}
 \title{
-WikiHeader Constructor
+Constructor for WikiHeader
 }
-\usage{WikiHeader(id, title, parentId)}
-\arguments{
-  \item{id}{
-  The ID of this wiki page. (string)
-  }
-  \item{title}{
-  The title to of this page. (string)
-  }
-  \item{parentId}{
-  The parentID to of this page. (string)
-  }
+\description{
+Constructor for WikiHeader
 }
-\section{Slots}{
-  \describe{
-    \item{\code{id}}{
-    The ID of this wiki page. (string)
-    }
-    \item{\code{title}}{
-    The title to of this page. (string)
-    }
-    \item{\code{parentId}}{
-    The parentID to of this page. (string)
-    }
-  }
+\usage{
+WikiHeader(id, title, parentId)
+}
+\details{
+This constructor is not used directly. Instances are returned by synGetWkiHeaders().
 }
 \seealso{
+\code{\link{synGetWikiHeaders}}
+\code{\link{synGetWiki}}
 }

@@ -13,7 +13,7 @@ Annotations	org.sagebionetworks.repo.model.annotation.Annotations	false
 SubmissionMetadata	org.sagebionetworks.evaluation.model.Submission	false
 SubmissionStatus	org.sagebionetworks.evaluation.model.SubmissionStatus	false
 Participant	org.sagebionetworks.evaluation.model.Participant	false
-WikiHeader	org.sagebionetworks.repo.model.wiki.WikiHeader	true
+WikiHeader	org.sagebionetworks.repo.model.wiki.WikiHeader	false
 ResourceAccess	org.sagebionetworks.repo.model.ResourceAccess	true
 AccessControlList	org.sagebionetworks.repo.model.AccessControlList	true
 TableRowSet	org.sagebionetworks.repo.model.table.RowSet	true
