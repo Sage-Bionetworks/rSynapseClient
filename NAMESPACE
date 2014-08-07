@@ -68,7 +68,8 @@ export(
 	"Project",
 	"Activity",
 	"Evaluation",
-	"WikiPage"
+	"WikiPage",
+	"TableColumn"
 )
 
 ## entity S4 methods

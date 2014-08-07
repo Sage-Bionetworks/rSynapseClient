@@ -91,49 +91,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
     defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
   }
-  
-  nonEntities<-list(
-    # Note:  each class must come after its dependenciesboolean
-    c("org.sagebionetworks.repo.model.attachment.AttachmentData", "AttachmentData"),
-    c("org.sagebionetworks.repo.model.message.Settings", "Settings"),
-    c("org.sagebionetworks.repo.model.UserPreference", "UserPreference"),
-    c("org.sagebionetworks.repo.model.UserPreferenceBoolean", "UserPreferenceBoolean"),
-    c("org.sagebionetworks.repo.model.UserProfile", "UserProfile"),
-    c("org.sagebionetworks.evaluation.model.Evaluation", "Evaluation"),
-    c("org.sagebionetworks.repo.model.annotation.AnnotationBase", "AnnotationBase"),
-    c("org.sagebionetworks.repo.model.annotation.DoubleAnnotation", "DoubleAnnotation"),
-    c("org.sagebionetworks.repo.model.annotation.LongAnnotation", "LongAnnotation"),
-    c("org.sagebionetworks.repo.model.annotation.StringAnnotation", "StringAnnotation"),
-    c("org.sagebionetworks.repo.model.annotation.Annotations", "Annotations"),
-    c("org.sagebionetworks.evaluation.model.Submission", "SubmissionMetadata"),
-    c("org.sagebionetworks.evaluation.model.SubmissionStatus", "SubmissionStatus"),
-    c("org.sagebionetworks.evaluation.model.Participant", "Participant"),
-    c("org.sagebionetworks.repo.model.wiki.WikiHeader", "WikiHeader"),
-    c("org.sagebionetworks.repo.model.annotation.Annotations", "Annotations"),
-    c("org.sagebionetworks.repo.model.annotation.DoubleAnnotation", "DoubleAnnotation"),
-    c("org.sagebionetworks.repo.model.annotation.LongAnnotation", "LongAnnotation"),
-    c("org.sagebionetworks.repo.model.annotation.StringAnnotation", "StringAnnotation"),
-    c("org.sagebionetworks.repo.model.ResourceAccess", "ResourceAccess"),
-    c("org.sagebionetworks.repo.model.AccessControlList", "AccessControlList"),
-    
-    # Table classes
-    c("org.sagebionetworks.repo.model.table.Row", "Row"),
-    c("org.sagebionetworks.repo.model.table.RowReference", "RowReference"),
-    c("org.sagebionetworks.repo.model.table.RowReferenceSet", "RowReferenceSet"),
-    c("org.sagebionetworks.repo.model.table.RowSet", "TableRowSet"),
-    c("org.sagebionetworks.repo.model.table.ColumnModel", "TableColumn")
-    #c("org.sagebionetworks.repo.model.table.", ""),
-    )
-    
-  
-  for(ee in nonEntities) { 
-    # only define the class if it's not already defined
-    if (!isClassDefined(ee)) {
-      defineS4ClassForSchema(ee[1], ee[2])
-    }
-  }
 }
-
 
 .userAgent<-function() {
   myOwnVersion<-packageDescription("synapseClient", fields="Version")

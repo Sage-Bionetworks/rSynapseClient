@@ -266,8 +266,8 @@ getPropertyTypes <- function(entityDef) {
   properties
 }
 
-getEffectivePropertyTypes <-function(which) {
-  schema<-readEntityDef(which)
+getEffectivePropertyTypes <-function(schemaName) {
+  schema<-readEntityDef(schemaName)
   mapTypes(getEffectiveSchemaTypes(schema))
 }
 
@@ -278,6 +278,20 @@ getEffectiveSchemaTypes <- function(schema) {
   if (length(implements)>0) {
     for (i in length(implements):1) {
       thisProp <- getPropertyTypes(readEntityDef(implements[i]))
+      for (n in names(thisProp))
+        properties[[n]] <- thisProp[[n]]
+    }
+  }
+  properties
+}
+
+getEffectivePropertySchemas<-function(schemaName) {
+  schema<-readEntityDef(schemaName)
+  properties<-schema$properties
+  implements <- getAllInterfaces(schema)
+  if (length(implements)>0) {
+    for (i in length(implements):1) {
+      thisProp <- readEntityDef(implements[i])$properties
       for (n in names(thisProp))
         properties[[n]] <- thisProp[[n]]
     }

@@ -58,10 +58,9 @@ setS4ClassNameForSchemaName<-function(schemaName, className) {
 }
 
 
-defineS4ClassForSchema <- function(fullSchemaName, name) {  
-  if(is.null(name) | name == "")
-    stop("name must not be null")
-  setS4ClassNameForSchemaName(fullSchemaName, name)
+defineS4ClassForSchema <- function(fullSchemaName) { 
+  name<-getS4ClassNameFromSchemaName(fullSchemaName)
+  cat(sprintf("defineS4ClassForSchema %s %s\n", name, fullSchemaName))
   
   schemaDef <- readEntityDef(fullSchemaName)
   
@@ -111,10 +110,6 @@ defineS4ClassForSchema <- function(fullSchemaName, name) {
     prototype = prototype,
     package="synapseClient"
   )
-  
-  if (!isVirtualClass) {
-    defineS4ConstructorAndAccessors(name)
-  } # end 'if(isVirtualClass)'
   
   name
 }
@@ -214,7 +209,6 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
       return(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])
     }
     
-    # The following will 'stop' if the S4 class is not defined
     getS4ClassNameFromSchemaName(schemaPropertyType)
   }
 }
