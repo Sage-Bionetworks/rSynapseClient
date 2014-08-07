@@ -10,7 +10,7 @@ s4ClassesToAutoGenerate<-read.table(
 for(i in 1:(dim(s4ClassesToAutoGenerate)[1])) { 
   className<-s4ClassesToAutoGenerate[i,"className"]
   schemaName<-s4ClassesToAutoGenerate[i,"schemaName"]
-  if (!isVirtual(readEntityDef(schemaName))) {
+  if (!isVirtual(readEntityDef(schemaName, getSchemaPath()))) {
     defineS4ConstructorAndAccessors(className)
   }
 }

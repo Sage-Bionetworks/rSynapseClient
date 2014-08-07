@@ -87,10 +87,13 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   synapseCacheDir(gsub("[\\/]+", "/", path.expand("~/.synapseCache")))
 
   entities <- entitiesToLoad()
+  where<-.Internal(getRegisteredNamespace(as.name("synapseClient")))
   for(ee in entities){ 
-    defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
-    defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
+    defineEntityClass(ee, package="synapseClient", where=where)
+    defineEntityConstructors(ee, package="synapseClient", where=where)
   }
+  
+  populateSchemaToClassMap()
 }
 
 .userAgent<-function() {

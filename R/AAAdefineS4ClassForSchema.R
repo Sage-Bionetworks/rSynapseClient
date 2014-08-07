@@ -57,12 +57,40 @@ setS4ClassNameForSchemaName<-function(schemaName, className) {
   setPackageVariable(s4MapName, s4Map)
 }
 
+readS4ClassesToGenerate<-function() {
+  read.table(
+    system.file("resources/s4ClassesToGenerate.txt",package="synapseClient"), 
+    header=TRUE, colClasses=c("character", "character", "logical"))
+}
+
+populateSchemaToClassMap<-function() {
+  s4ClassesToAutoGenerate<-readS4ClassesToGenerate()
+  
+  for(i in 1:(dim(s4ClassesToAutoGenerate)[1])) { 
+    schemaName<-s4ClassesToAutoGenerate[i,"schemaName"]
+    className<-s4ClassesToAutoGenerate[i,"className"]
+    setS4ClassNameForSchemaName(schemaName, className)
+  }
+}
+
+# this is actually called in AAAschema, after other classes as defined
+defineS4Classes<-function() {
+  populateSchemaToClassMap()
+  
+  s4ClassesToAutoGenerate<-readS4ClassesToGenerate()
+  
+  for(i in 1:(dim(s4ClassesToAutoGenerate)[1])) { 
+    schemaName<-s4ClassesToAutoGenerate[i,"schemaName"]
+    defineS4ClassForSchema(schemaName)
+  }
+}
+
+
 
 defineS4ClassForSchema <- function(fullSchemaName) { 
   name<-getS4ClassNameFromSchemaName(fullSchemaName)
-  cat(sprintf("defineS4ClassForSchema %s %s\n", name, fullSchemaName))
   
-  schemaDef <- readEntityDef(fullSchemaName)
+  schemaDef <- readEntityDef(fullSchemaName, getSchemaPath())
   
   # make sure all extended classes are defined
   superClasses<-character()
@@ -203,7 +231,7 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     typeListClassName
   } else {
     # check for an enum
-    fieldSchema <- readEntityDef(schemaPropertyType)
+    fieldSchema <- readEntityDef(schemaPropertyType, getSchemaPath())
     if (is.null(fieldSchema$properties) && !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])) {
       # it's an 'enum' or similar. use the type of the field's schema
       return(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])

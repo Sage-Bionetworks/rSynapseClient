@@ -128,7 +128,7 @@ defineEntityClass <-
   
   implementsSchemaName <-entityDef$implements[[1]][[1]]
   implementsSchema<-readEntityDef(implementsSchemaName, getSchemaPath())
-  implements <- unique(c(implementsSchemaName, getAllInterfaces(implementsSchema)))
+  implements <- unique(c(implementsSchemaName, getAllInterfaces(implementsSchema, getSchemaPath())))
   
   if ("org.sagebionetworks.repo.model.Locationable" %in% implements) {
     contains <- "Locationable"
