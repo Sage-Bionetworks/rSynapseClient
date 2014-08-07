@@ -200,10 +200,6 @@ defineS4ConstructorAndAccessors<-function(name) {
   )  
 }
 
-getArraySubSchema<-function(propertySchema) {
-  propertySchema$items
-}
-
 # define (or just return, for primitives) the class
 # for the given property schema. There are three cases:
 # 1) type is primitive.  Just return the R type

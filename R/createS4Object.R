@@ -1,11 +1,11 @@
-# update method for auto-generated S4 objects
+# create method for auto-generated S4 objects
 # 
 # Author: brucehoff
 ###############################################################################
 
-synUpdateS4Object<-function(object, updateUri) {
+createS4Object<-function(object, createUri) {
   objectAsList<-createListFromS4Object(object)
-  listResult<-synRestPUT(updateUri, objectAsList)
+  listResult<-synRestPOST(createUri, objectAsList)
   objectResult<-createS4ObjectFromList(listResult, class(object))
   objectResult
 }
