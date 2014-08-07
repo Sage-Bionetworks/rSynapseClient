@@ -71,3 +71,8 @@ getAllInterfaces <- function(schema, schemaPath) {
   implements
 }
 
+getArraySubSchema<-function(propertySchema) {
+  propertySchema$items
+}
+
+

@@ -12,8 +12,8 @@ unitTestGetImplements<-function() {
 }
 
 unitTestisVirtual<-function() {
-  checkTrue(!synapseClient:::readSchema("org.sagebionetworks.repo.model.table.Row", synapseClient:::getSchemaPath()))
-  checkTrue(!synapseClient:::readSchema("org.sagebionetworks.repo.model.Folder", synapseClient:::getSchemaPath()))
+  checkTrue(!synapseClient:::isVirtual(synapseClient:::readSchema("org.sagebionetworks.repo.model.table.Row", synapseClient:::getSchemaPath())))
+  checkTrue(!synapseClient:::isVirtual(synapseClient:::readSchema("org.sagebionetworks.repo.model.Folder", synapseClient:::getSchemaPath())))
   checkTrue(synapseClient:::isVirtual(synapseClient:::readSchema("org.sagebionetworks.repo.model.Entity", synapseClient:::getSchemaPath())))
 }
 
