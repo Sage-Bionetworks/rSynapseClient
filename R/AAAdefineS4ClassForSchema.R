@@ -6,21 +6,6 @@
 ###############################################################################
 
 
-# This maps the keyword found in the JSON schema to the 
-# type used in the S4 class.
-TYPEMAP_FOR_ALL_PRIMITIVES <- list(
-  string = "character",
-  integer = "integer",
-  float = "numeric",
-  number = "numeric",
-  boolean = "logical"
-)
-
-isPrimitiveType <- function(rType) {
-  !is.na(match(rType, TYPEMAP_FOR_ALL_PRIMITIVES))
-}
-
-
 isClassDefined<-function(className) {
   tryCatch(
     {
@@ -227,7 +212,7 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
       # ClassName(value1, value2, ...)
       assign(typeListClassName, function(...) {
           args <-list(...)
-          obj<-new(name)    
+          obj<-new(typeListClassName)    
           set(obj, args)     
         })
       # If we don't define a 'generic' version of the constructor
