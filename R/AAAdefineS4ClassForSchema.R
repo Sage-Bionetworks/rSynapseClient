@@ -190,7 +190,7 @@ defineS4ConstructorAndAccessors<-function(name) {
 # 3) type is defined by a schema.  Define and return an S4 class
 # return the R class name for the propertySchema
 defineRTypeFromPropertySchema <- function(propertySchema) {
-  # This is the type of the elements of the array 'in the language of the schema'
+  # This is the type 'in the language of the schema'
   schemaPropertyType<-schemaTypeFromProperty(propertySchema)
   primitiveRType<-TYPEMAP_FOR_ALL_PRIMITIVES[[schemaPropertyType]]
   if(length(primitiveRType)>0) {
@@ -228,10 +228,10 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     typeListClassName
   } else {
     # check for an enum
-    fieldSchema <- readEntityDef(schemaPropertyType, getSchemaPath())
-    if (is.null(fieldSchema$properties) && !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])) {
-      # it's an 'enum' or similar. use the type of the field's schema
-      return(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])
+    propertySchema <- readEntityDef(schemaPropertyType, getSchemaPath())
+    if (isEnum(propertySchema)) {
+      # it's an 'enum' or similar. use the type of the property's schema
+      return(TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]])
     }
     
     getS4ClassNameFromSchemaName(schemaPropertyType)

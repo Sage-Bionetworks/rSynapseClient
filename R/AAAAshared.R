@@ -91,6 +91,10 @@ isPrimitiveType <- function(rType) {
   !is.na(match(rType, TYPEMAP_FOR_ALL_PRIMITIVES))
 }
 
+isEnum<-function(propertySchema) {
+  is.null(propertySchema$properties) && !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]])
+}
+
 
 # This is the our approach to naming typed lists:
 # We append "List" to the type and make sure the first character
