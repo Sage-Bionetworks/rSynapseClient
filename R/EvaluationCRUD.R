@@ -37,7 +37,7 @@ setMethod(
     if (is.null(entity$id) || length(entity$id)==0) {
       synCreateEvaluation(entity)
     } else {
-      synUpdateS4Object(entity, sprintf("/evaluation/%s",entity$id))
+      updateS4Object(entity, sprintf("/evaluation/%s",entity$id))
     }
   }
 )

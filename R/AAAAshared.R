@@ -1,0 +1,78 @@
+# Collection of functions used both by the R client and by
+# external scripts that can access the code base but run before
+# the package is built
+# 
+# Author: brucehoff
+#########################################################################
+
+readSchema <- function(name, path) { 
+  file <- sprintf("%s.json", gsub("[\\.]", "/", name))
+  
+  fullPath <- file.path(path,file)
+  
+  if(!file.exists(fullPath))
+    stop(sprintf("Could not find file: %s for entity: %s", fullPath, name))
+  
+  schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
+  schema
+}
+
+
+#-----------------------------------
+# utilities for parsing schemas
+
+# get the parent class for the given schema or NULL if none
+getImplements<-function(schema) {
+  if(is.null(schema))
+    return(NULL)
+  schema$implements
+}
+
+# returns TRUE iff the schema defines an interface
+isVirtual<-function(schema) {
+  type<-schema$type
+  !is.null(type) && type=="interface"
+}
+
+schemaTypeFromProperty<-function(property) {
+  type<-property[["type"]]
+  ref<-property[["$ref"]]
+  if (!is.null(ref)) {
+    ref
+  } else {
+    type
+  }
+}
+
+getEffectivePropertySchemas<-function(schemaName, schemaPath) {
+  schema<-readSchema(schemaName, schemaPath)
+  properties<-schema$properties
+  implements <- getAllInterfaces(schema)
+  if (length(implements)>0) {
+    for (i in length(implements):1) {
+      thisProp <- readSchema(implements[i], schemaPath)$properties
+      for (n in names(thisProp))
+        properties[[n]] <- thisProp[[n]]
+    }
+  }
+  properties
+}
+
+getAllInterfaces <- function(schema, schemaPath) {
+  if(is.null(schema))
+    return(NULL)
+  implements <- NULL
+  while(!is.null(schema$implements)){
+    implements <- c(implements, schema$implements[[1]][[1]])
+    try({
+        schema <- readSchema(schema$implements[[1]][[1]], schemaPath)
+      }, silent = TRUE)
+  }
+  implements
+}
+
+getArraySubSchema<-function(propertySchema) {
+  propertySchema$items
+}
+
+

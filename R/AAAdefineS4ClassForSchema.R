@@ -57,13 +57,40 @@ setS4ClassNameForSchemaName<-function(schemaName, className) {
   setPackageVariable(s4MapName, s4Map)
 }
 
+readS4ClassesToGenerate<-function() {
+  read.table(
+    system.file("resources/s4ClassesToGenerate.txt",package="synapseClient"), 
+    header=TRUE, colClasses=c("character", "character", "logical"))
+}
 
-defineS4ClassForSchema <- function(fullSchemaName, name) {  
-  if(is.null(name) | name == "")
-    stop("name must not be null")
-  setS4ClassNameForSchemaName(fullSchemaName, name)
+populateSchemaToClassMap<-function() {
+  s4ClassesToAutoGenerate<-readS4ClassesToGenerate()
   
-  schemaDef <- readEntityDef(fullSchemaName)
+  for(i in 1:(dim(s4ClassesToAutoGenerate)[1])) { 
+    schemaName<-s4ClassesToAutoGenerate[i,"schemaName"]
+    className<-s4ClassesToAutoGenerate[i,"className"]
+    setS4ClassNameForSchemaName(schemaName, className)
+  }
+}
+
+# this is actually called in AAAschema, after other classes as defined
+defineS4Classes<-function() {
+  populateSchemaToClassMap()
+  
+  s4ClassesToAutoGenerate<-readS4ClassesToGenerate()
+  
+  for(i in 1:(dim(s4ClassesToAutoGenerate)[1])) { 
+    schemaName<-s4ClassesToAutoGenerate[i,"schemaName"]
+    defineS4ClassForSchema(schemaName)
+  }
+}
+
+
+
+defineS4ClassForSchema <- function(fullSchemaName) { 
+  name<-getS4ClassNameFromSchemaName(fullSchemaName)
+  
+  schemaDef <- readEntityDef(fullSchemaName, getSchemaPath())
   
   # make sure all extended classes are defined
   superClasses<-character()
@@ -111,10 +138,6 @@ defineS4ClassForSchema <- function(fullSchemaName, name) {
     prototype = prototype,
     package="synapseClient"
   )
-  
-  if (!isVirtualClass) {
-    defineS4ConstructorAndAccessors(name)
-  } # end 'if(isVirtualClass)'
   
   name
 }
@@ -177,10 +200,6 @@ defineS4ConstructorAndAccessors<-function(name) {
   )  
 }
 
-getArraySubSchema<-function(propertySchema) {
-  propertySchema$items
-}
-
 # define (or just return, for primitives) the class
 # for the given property schema. There are three cases:
 # 1) type is primitive.  Just return the R type
@@ -208,13 +227,12 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     typeListClassName
   } else {
     # check for an enum
-    fieldSchema <- readEntityDef(schemaPropertyType)
+    fieldSchema <- readEntityDef(schemaPropertyType, getSchemaPath())
     if (is.null(fieldSchema$properties) && !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])) {
       # it's an 'enum' or similar. use the type of the field's schema
       return(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])
     }
     
-    # The following will 'stop' if the S4 class is not defined
     getS4ClassNameFromSchemaName(schemaPropertyType)
   }
 }

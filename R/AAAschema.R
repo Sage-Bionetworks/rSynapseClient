@@ -95,23 +95,18 @@ getClassNameFromSchemaName<-function(schemaName) {
   result
 }
 
+getSchemaPath<-function() {
+  system.file("resources/schema",package="synapseClient")
+}
+
 readEntityDef <-
-    function(name, path = system.file("resources/schema",package="synapseClient"))
+    function(name, path)
 { 
   result<-getSchemaFromCache(name)
   if (!is.null(result)) {
     return(result)
   }
-  
-  file <- sprintf("%s.json", gsub("[\\.]", "/", name))
-  
-  fullPath <- file.path(path,file)
-  
-  if(!file.exists(fullPath))
-    stop(sprintf("Could not find file: %s for entity: %s", fullPath, name))
-
-  schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
-  
+  schema<-readSchema(name, path)  
   putSchemaToCache(name, schema)
   schema
 }
@@ -123,7 +118,7 @@ readEntityDef <-
 defineEntityClass <- 
   function(which, name, where = parent.frame(), package)
 {
-  entityDef <- readEntityDef(which)
+  entityDef <- readEntityDef(which, getSchemaPath())
   
   if(missing(name))
     name <- getClassNameFromSchemaName(which)
@@ -132,8 +127,8 @@ defineEntityClass <-
     stop("name must not be null")
   
   implementsSchemaName <-entityDef$implements[[1]][[1]]
-  implementsSchema<-readEntityDef(implementsSchemaName)
-  implements <- unique(c(implementsSchemaName, getAllInterfaces(implementsSchema)))
+  implementsSchema<-readEntityDef(implementsSchemaName, getSchemaPath())
+  implements <- unique(c(implementsSchemaName, getAllInterfaces(implementsSchema, getSchemaPath())))
   
   if ("org.sagebionetworks.repo.model.Locationable" %in% implements) {
     contains <- "Locationable"
@@ -227,31 +222,9 @@ mapTypes <- function(types) {
   retval
 }
 
-
-#-----------------------------------
-# utilities for parsing schemas
-
-# get the parent class for the given schema or NULL if none
-getImplements<-function(schema) {
-  if(is.null(schema))
-    return(NULL)
-  schema$implements
-}
-
-# returns TRUE iff the schema defines an interface
-isVirtual<-function(schema) {
-  type<-schema$type
-  !is.null(type) && type=="interface"
-}
-
-schemaTypeFromProperty<-function(property) {
-  type<-property[["type"]]
-  ref<-property[["$ref"]]
-  if (!is.null(ref)) {
-    ref
-  } else {
-    type
-  }
+getEffectivePropertyTypes <-function(schemaName) {
+  schema<-readEntityDef(schemaName, getSchemaPath())
+  mapTypes(getEffectiveSchemaTypes(schema, getSchemaPath()))
 }
 
 getPropertyTypes <- function(entityDef) {
@@ -266,18 +239,13 @@ getPropertyTypes <- function(entityDef) {
   properties
 }
 
-getEffectivePropertyTypes <-function(which) {
-  schema<-readEntityDef(which)
-  mapTypes(getEffectiveSchemaTypes(schema))
-}
-
-getEffectiveSchemaTypes <- function(schema) {
+getEffectiveSchemaTypes <- function(schema, schemaPath) {
   # start with the properties for the immediate schema
   properties<-getPropertyTypes(schema)
-  implements <- getAllInterfaces(schema)
+  implements <- getAllInterfaces(schema, schemaPath)
   if (length(implements)>0) {
     for (i in length(implements):1) {
-      thisProp <- getPropertyTypes(readEntityDef(implements[i]))
+      thisProp <- getPropertyTypes(readEntityDef(implements[i], getSchemaPath()))
       for (n in names(thisProp))
         properties[[n]] <- thisProp[[n]]
     }
@@ -285,17 +253,8 @@ getEffectiveSchemaTypes <- function(schema) {
   properties
 }
 
-getAllInterfaces <- function(schema) {
-  if(is.null(schema))
-    return(NULL)
-  implements <- NULL
-  while(!is.null(schema$implements)){
-    implements <- c(implements, schema$implements[[1]][[1]])
-    try({
-        schema <- readEntityDef(schema$implements[[1]][[1]])
-      }, silent = TRUE)
-  }
-  implements
-}
+
+
+
 
 
