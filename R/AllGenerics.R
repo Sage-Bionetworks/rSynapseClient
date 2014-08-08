@@ -873,7 +873,7 @@ setGeneric(
 setGeneric(
   name="createTableSchemaFromProperties",
   def = function(propertiesList) {
-    standardGeneric("createSubmissionFromProperties")
+    standardGeneric("createTableSchemaFromProperties")
   }
 )
 
