@@ -181,6 +181,31 @@ defineS4ConstructorAndAccessors<-function(name) {
       object
     }
   )  
+  
+  setMethod(
+    f = "==", 
+    signature = c(name,name), 
+    definition = function(e1,e2) {
+      slots<-getSlots(e1)
+      for (slotName in slots(e1)) {
+        if (isPrimitiveType(slots[[slotName]])) {
+          if (!identical(e1[[slotName]], e2[[slotName]])) return(FALSE)
+        } else {
+          # recursively call our "==" method
+          if (!(e1[[slotName]]==e2[[slotName]])) return(FALSE)
+        }
+      }
+      TRUE
+    }
+  )
+  
+  setMethod(
+    f = "!=", 
+    signature = c(name,name), 
+    definition = function(e1,e2) {
+      !(e1==e2)
+    }
+  )
 }
 
 # define (or just return, for primitives) the class

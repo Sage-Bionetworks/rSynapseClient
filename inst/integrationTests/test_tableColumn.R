@@ -14,4 +14,6 @@ integrationTestCreateColumn<-function() {
     maximumSize=as.integer(30), 
     enumValues=enumValues)
   
+  tableColumn<-synStore(tableColumn)
+  
 }
