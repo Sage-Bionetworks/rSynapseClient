@@ -9,10 +9,6 @@
 
 library(RJSONIO)
 
-readSchema<-function(schemaName) {
-  file <- sprintf("%s.json", gsub("[\\.]", "/", name))
-  
-}
 # This generates one .Rd file for an auto-generated S4 class using its JSON schema
 createRdFromSchema<-function(className, schemaName, schemaPath, classToSchemaMap) {
   nameLine<-paste("\\name{", className, "}", sep="")
@@ -111,32 +107,16 @@ propertyTypeToString<-function(propertyType) {
   }
 }
 
-createdTypedListRd<-function(referencedTypedLists) {
-  nameLine<-paste("\\name{TODO}", sep="")
+# use a template here and just insert the names of the typed lists where appropriate (e.g. as aliases)
+createdTypedListRd<-function(referencedTypedLists, srcRootDir) {
+  templateFile<-sprintf("%s/inst/docGen/typedListTemplate.Rd", srcRootDir)
+  connection<-file(templateFile, open="r")
+  template<-paste(readLines(connection), collapse="\n")
+  close(connection)
+
   aliasLines<-paste(lapply(X=referencedTypedLists, FUN=function(x){paste("\\alias{",x,"}",sep="")}), collapse="\n")
-  docTypeLine<-paste("\\docType{methods}", sep="")
-  titleLine<-paste("\\title{\nTODO\n}", sep="")
-  descriptionLine<-paste("\\description{constructor and methods for typed lists}", sep="")
-  usageLine<-paste("\\usage{", "TODO", ")}", sep="")
   
-  arguments<-"\\arguments{"
-  arguments<-paste(arguments, "}", sep="\n")
-  slots<-"\\section{Slots}{\n  \\describe{"
-  slots<-paste(slots, "  }\n}", sep="\n")
-  seealso<-"\\seealso{"
-  seealso<-paste(seealso, "}", sep="\n")
-  
-  content<-paste(
-    nameLine, 
-    aliasLines, 
-    docTypeLine, 
-    titleLine, 
-    descriptionLine,
-    usageLine,
-    arguments,
-    slots,
-    seealso,
-    sep="\n")
+  content<-gsub("##alias##", aliasLines, template, fixed=TRUE)
   content
 }
 
@@ -168,15 +148,15 @@ autoGenerateRdFiles<-function(srcRootDir) {
       writeContent(rdResult$content, className, srcRootDir)
     }
   }
-  rdContent<-createdTypedListRd(referencedTypedLists)
+  rdContent<-createdTypedListRd(referencedTypedLists, srcRootDir)
   writeContent(rdContent, "TypedList", srcRootDir)
-  referencedTypedLists
 }
 
 writeContent<-function(content, className, srcRootDir) {
   fileName<-sprintf("%s/man/%s.Rd", srcRootDir, className)
-  connection<-file(fileName)
+  connection<-file(fileName, open="w")
   writeChar(content, connection, eos=NULL)
+  writeChar("\n", connection, eos=NULL)
   close(connection)
   cat(sprintf("Created %s\n", fileName))
 }

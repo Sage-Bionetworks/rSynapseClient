@@ -92,8 +92,6 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     defineEntityClass(ee, package="synapseClient", where=where)
     defineEntityConstructors(ee, package="synapseClient", where=where)
   }
-  
-  populateSchemaToClassMap()
 }
 
 .userAgent<-function() {
