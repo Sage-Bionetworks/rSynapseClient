@@ -12,7 +12,7 @@ synStore(entity, activity=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F
 }
 \arguments{
  \item{entity}{
-The object to store.  May be an entity (\code{\link{File}}, \code{\link{Folder}}, \code{\link{Project}}) or another object (\code{\link{Activity}}, \code{\link{Evaluation}}, \code{\link{SubmissionStatus}}, \code{\link{WikiPage}})
+The object to store.  May be an entity (\code{\link{File}}, \code{\link{Folder}}, \code{\link{Project}}) or another object (\code{\link{Activity}}, \code{\link{Evaluation}}, \code{\link{SubmissionStatus}}, \code{\link{WikiPage}}, \code{\link{TableColumn}})
 }
  \item{used}{
 For entities, this is the list of other entities (URLs, objects and/or IDs) 'used' as inputs when generating the entity.  For non-entities, this parameter is ignored
@@ -58,5 +58,6 @@ Bruce Hoff
 \code{\link{Evaluation}}
 \code{\link{SubmissionStatus}}
 \code{\link{WikiPage}}
+\code{\link{TableColumn}}
 \code{\link{synGet}}
 }

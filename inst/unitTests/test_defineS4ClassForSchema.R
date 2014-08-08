@@ -92,19 +92,28 @@ unitTestArraySubSchema<-function() {
 }
 
 unitTestTypedList<-function() {
-  t<-new("characterList")
+  t<-new("CharacterList")
   t$foo<-"bar"
   checkEquals(t$foo, "bar")
   t[["foo"]]<-"bas"
   checkEquals(t$foo, "bas")
   
-  t<-new("characterList")
+  t<-new("CharacterList")
   t[[1]]<-"a"
   t[[2]]<-"b"
   checkEquals(2, length(t))
   checkEquals(t[[1]], "a")
   checkEquals(t[[2]], "b")
   checkEquals(list("a", "b"), synapseClient:::getList(t))
+  
+  # test 'add'
+  t<-new("CharacterList")
+  t[[1]]<-"foo"
+  t<-synapseClient:::add(t, "bar")
+  checkEquals(list("foo", "bar"), synapseCLient:::getList(t))
+  t<-synapseClient:::set(t, list("a", "b"))
+  checkEquals(list("a", "b"), synapseCLient:::getList(t))
+  
 }
 
 unitTestConcreteType<-function() {

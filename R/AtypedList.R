@@ -11,10 +11,14 @@ setMethod(
   }
 )
 
+validateTypedListElement<-function(typedList, value) {
+  if (!is(value, typedList@type)) stop(sprintf("Expected %s but found %s.", typedList@type, class(value)))
+}
+
 setReplaceMethod("$",
   signature = "TypedList",
   definition = function(x, name, value) {
-    if (!is(value, x@type)) stop(sprintf("Expected %s but found %s.", x@type, class(value)))
+    validateTypedListElement(x, value)
     x@content[[name]]<-value
     x
   }
@@ -35,7 +39,7 @@ setReplaceMethod("[[",
   )
   ,
   function(x, i, value) {
-    if (!is(value, x@type)) stop(sprintf("Expected %s but found %s.", x@type, class(value)))
+    validateTypedListElement(x, value)
     x@content[[i]]<-value
     x
   }
@@ -48,7 +52,7 @@ setReplaceMethod("[[",
   )
   ,
   function(x, i, value) {
-    if (!is(value, x@type)) stop(sprintf("Expected %s but found %s.", x@type, class(value)))
+    validateTypedListElement(x, value)
     x@content[[i]]<-value
     x
   }
@@ -61,11 +65,34 @@ setReplaceMethod("[[",
   )
   ,
   function(x, i, value) {
-    if (!is(value, x@type)) stop(sprintf("Expected %s but found %s.", x@type, class(value)))
+    validateTypedListElement(x, value)
     x@content[[i]]<-value
     x
   }
 )
+
+setMethod(
+  f = "add",
+  signature = signature("TypedList", "ANY"),
+  definition = function(x, value) {
+    validateTypedListElement(x, value)
+    x@content[[1+length(x@content)]]<-value
+    x
+  }
+)
+
+setMethod(
+  f = "set",
+  signature = signature("TypedList", "list"),
+  definition = function(x, values) {
+    # make sure all values have the right type
+    lapply(X=values, FUN=function(value){validateTypedListElement(x, value)})
+    x@content<-values
+    x
+  }
+)
+
+
 
 setMethod(
   f = "length",

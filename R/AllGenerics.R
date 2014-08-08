@@ -864,9 +864,16 @@ setGeneric(
 )
 
 setGeneric(
-  name="SubmissionListConstructor",
+  name="createSubmissionFromProperties",
   def = function(propertiesList) {
-    standardGeneric("SubmissionListConstructor")
+    standardGeneric("createSubmissionFromProperties")
+  }
+)
+
+setGeneric(
+  name="createTableSchemaFromProperties",
+  def = function(propertiesList) {
+    standardGeneric("createSubmissionFromProperties")
   }
 )
 
@@ -927,9 +934,24 @@ setGeneric(
 )
 
 setGeneric(
+  name = "set",
+  def = function(x, values) {
+    standardGeneric("set")
+  }
+)
+
+setGeneric(
+  name = "add",
+  def = function(x, value) {
+    standardGeneric("add")
+  }
+)
+
+setGeneric(
   name = "getList",
   def = function(x) {
     standardGeneric("getList")
   }
 )
+
 

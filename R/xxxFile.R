@@ -8,16 +8,10 @@
 # Error in `$<-`(`*tmp*`, "entityType", value = "org.sagebionetworks.repo.model.FileEntity") : 
 #  no method for assigning subsets of this S4 class
 
-
-
-initializeProperties<-function(synapseType) {
-  SynapseProperties(getEffectivePropertyTypes(synapseType))
-}
-
-initializeFileProperties<-function() {
-  synapseType<-"org.sagebionetworks.repo.model.FileEntity"
-  properties<-initializeProperties(synapseType)
-  properties$concreteType <- synapseType
+initializeProperties<-function(synapseType, hasConcreteType) {
+  propertyTypes<-getEffectivePropertyTypes(synapseType)
+  properties<-SynapseProperties(propertyTypes)
+  if (hasConcreteType) properties$concreteType <- synapseType
   properties
 }
 
@@ -41,7 +35,7 @@ setClass(
   # This is modeled after defineEntityClass in AAAschema
   prototype = prototype(
     synapseEntityKind = "File",
-    properties = initializeFileProperties(),
+    properties = initializeProperties("org.sagebionetworks.repo.model.FileEntity", TRUE),
     synapseStore = TRUE,
     objects = NULL
   )
@@ -102,6 +96,7 @@ File<-function(path, synapseStore=T, ...) {
         file@synapseStore <- synapseStore
     file
 }
+
 mockable.file.exists <- function (filepath) {
     base::file.exists(filepath)
 }

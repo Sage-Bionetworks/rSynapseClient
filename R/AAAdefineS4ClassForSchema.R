@@ -73,7 +73,7 @@ populateSchemaToClassMap<-function() {
   }
 }
 
-# this is actually called in AAAschema, after other classes as defined
+# this is actually called in AAAschema, after other classes are defined
 defineS4Classes<-function() {
   populateSchemaToClassMap()
   
@@ -84,8 +84,6 @@ defineS4Classes<-function() {
     defineS4ClassForSchema(schemaName)
   }
 }
-
-
 
 defineS4ClassForSchema <- function(fullSchemaName) { 
   name<-getS4ClassNameFromSchemaName(fullSchemaName)
@@ -215,13 +213,31 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     primitiveRType
   } else if (schemaPropertyType=="array") {
     elemRType <- defineRTypeFromPropertySchema(getArraySubSchema(propertySchema))
-    typeListClassName<-sprintf("%sList", elemRType)
+    typeListClassName<-listClassName(elemRType)
     if (!isClassDefined(typeListClassName)) {
+      # define the class
       setClass(
         Class=typeListClassName, 
         contains=list("TypedList"), 
         prototype=list(type=elemRType),
         package="synapseClient"
+      )
+      # define the constructor
+      # This generic constructor takes the form:
+      # ClassName(value1, value2, ...)
+      assign(typeListClassName, function(...) {
+          args <-list(...)
+          obj<-new(name)    
+          set(obj, args)     
+        })
+      # If we don't define a 'generic' version of the constructor
+      # we get an error when we try to include it as an export in
+      # the NAMESPACE file.
+      setGeneric(
+        name=typeListClassName,
+        def = function(...) {
+          do.call(typeListClassName, list(...))
+        }
       )
     }
     typeListClassName

@@ -14,7 +14,7 @@ unitTestSubmit_no_submissionReceiptMessage <- function() {
     # Intercept all the calls to other methods
     accessRequirementUnfulfilled_called <- FALSE
     synGetEvaluation_called <- FALSE
-    SubmissionListConstructor_called <- FALSE
+    createSubmissionFromProperties_called <- FALSE
     synCreateSubmission_called <- FALSE
     synapseClient:::.mock("synapseGet", function(uri, ...) {
         if (!grep("accessRequirementUnfulfilled", uri)) {
@@ -27,7 +27,7 @@ unitTestSubmit_no_submissionReceiptMessage <- function() {
         synGetEvaluation_called <<- TRUE
         return(Evaluation(id=id))
     })
-    synapseClient:::.mock("SubmissionListConstructor", function(...) {SubmissionListConstructor_called <<- TRUE})
+    synapseClient:::.mock("createSubmissionFromProperties", function(...) {createSubmissionFromProperties_called <<- TRUE})
     synapseClient:::.mock("synCreateSubmission", function(...) {synCreateSubmission_called <<- TRUE})
     
     # As per SYNR-626, pass in an ID, not an Evaluation object
@@ -37,7 +37,7 @@ unitTestSubmit_no_submissionReceiptMessage <- function() {
     submit(evaluation, entity)
     checkTrue(accessRequirementUnfulfilled_called)
     checkTrue(synGetEvaluation_called)
-    checkTrue(SubmissionListConstructor_called)
+    checkTrue(createSubmissionFromProperties_called)
     checkTrue(synCreateSubmission_called)
 }
 

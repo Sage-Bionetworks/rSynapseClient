@@ -244,7 +244,7 @@ getEffectiveSchemaTypes <- function(schema, schemaPath) {
   properties<-getPropertyTypes(schema)
   implements <- getAllInterfaces(schema, schemaPath)
   if (length(implements)>0) {
-    for (i in length(implements):1) {
+     for (i in length(implements):1) {
       thisProp <- getPropertyTypes(readEntityDef(implements[i], getSchemaPath()))
       for (n in names(thisProp))
         properties[[n]] <- thisProp[[n]]
