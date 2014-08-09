@@ -48,6 +48,37 @@ unitTestInstantiateGetAndSet<-function() {
   checkEquals("description", e@description)
 }
 
+unitTestS4Equals<-function() {
+  e1<-Evaluation()
+  e2<-Evaluation()
+  checkTrue(e1==e2)
+  e2<-Evaluation(name="foo")
+  checkTrue(e1!=e2)
+  e1<-Evaluation(name="foo", description="bar")
+  e1<-Evaluation(name="foo", description="bas")
+  checkTrue(e1!=e2)
+  
+  up1<-UserProfile()
+  up2<-UserProfile()
+  checkTrue(up1==up2)
+  
+  up1<-UserProfile(ownerId="foo", openIds=CharacterList("foo1", "foo2"), 
+    notificationSettings=Settings(sendEmailNotifications=TRUE, markEmailedMessagesAsRead=FALSE),
+    preferences=UserPreferenceList(UserPreferenceBoolean("foo", TRUE)))
+  up2<-UserProfile(ownerId="foo", openIds=CharacterList("foo1", "foo2"), 
+    notificationSettings=Settings(sendEmailNotifications=TRUE, markEmailedMessagesAsRead=FALSE),
+    preferences=UserPreferenceList(UserPreferenceBoolean("foo", TRUE)))
+  checkTrue(up1==up2)
+  
+  up1<-UserProfile(ownerId="foo", openIds=CharacterList("foo1", "foo2"), 
+    notificationSettings=Settings(sendEmailNotifications=TRUE, markEmailedMessagesAsRead=FALSE),
+    preferences=UserPreferenceList(UserPreferenceBoolean("foo", TRUE)))
+  up2<-UserProfile(openIds=CharacterList("foo1", "foo2"), 
+    notificationSettings=Settings(sendEmailNotifications=TRUE, markEmailedMessagesAsRead=FALSE),
+    preferences=UserPreferenceList(UserPreferenceBoolean("foo", TRUE)))
+  checkTrue(up1!=up2)
+}
+
 unitTestNonPrimitiveField<-function() {
   up<-synapseClient:::UserProfile(ownerId="101")
   settings<-synapseClient:::Settings(sendEmailNotifications=TRUE)

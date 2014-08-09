@@ -95,7 +95,7 @@ defineS4ClassForSchema <- function(fullSchemaName) {
       slots[[propertyName]]<-slotType
     } else {
       nullableType <- nullableType(slotType)
-      if (!isClassDefined(nullabeType)) {
+      if (!isClassDefined(nullableType)) {
         setClassUnion(nullableType, c("NullS4Object", slotType))
       }
       slots[[propertyName]]<-nullableType
@@ -121,6 +121,12 @@ defineS4ClassForSchema <- function(fullSchemaName) {
     prototype = prototype,
     package="synapseClient"
   )
+  
+  # the 'nullable type' may or may not be used
+  myNullableType<-nullableType(name)
+  if (!isClassDefined(myNullableType)) {
+    setClassUnion(myNullableType, c("NullS4Object", name))
+  }
   
   name
 }
@@ -184,15 +190,21 @@ defineS4ConstructorAndAccessors<-function(name) {
   
   setMethod(
     f = "==", 
-    signature = c(name,name), 
+    signature = c(nullableType(name),nullableType(name)), 
     definition = function(e1,e2) {
-      slots<-getSlots(e1)
-      for (slotName in slots(e1)) {
+      if (is(e1,"NullS4Object")) {
+        return(is(e2,"NullS4Object"))
+      } else {
+        if (is(e2,"NullS4Object")) return(FALSE)
+      }
+      # at this point, neither is a NullS4Object
+      slots<-getSlots(name)
+      for (slotName in names(slots)) {
         if (isPrimitiveType(slots[[slotName]])) {
-          if (!identical(e1[[slotName]], e2[[slotName]])) return(FALSE)
+          if (!identical(slot(e1,slotName), slot(e2,slotName))) return(FALSE)
         } else {
           # recursively call our "==" method
-          if (!(e1[[slotName]]==e2[[slotName]])) return(FALSE)
+          if (!(slot(e1,slotName)==slot(e2,slotName))) return(FALSE)
         }
       }
       TRUE
@@ -201,7 +213,7 @@ defineS4ConstructorAndAccessors<-function(name) {
   
   setMethod(
     f = "!=", 
-    signature = c(name,name), 
+    signature = c(nullableType(name),nullableType(name)), 
     definition = function(e1,e2) {
       !(e1==e2)
     }
@@ -284,3 +296,7 @@ getNonNullableType<-function(type) {
   }
   result
 }
+
+
+
+

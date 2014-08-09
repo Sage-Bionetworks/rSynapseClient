@@ -5,7 +5,8 @@
 
 integrationTestCreateColumn<-function() {
   name<-sprintf("R_Client_Integration_Test_%s", sample(999999999, 1))
-  enumValues<-synapseClient:::CharacterList("foo", "bar", "bas")
+  # note, for the test to work they must be in alphabetical order
+  enumValues<-synapseClient:::CharacterList("bar", "bas", "foo")
    
   tableColumn<-TableColumn(
     name=name, 
@@ -14,6 +15,17 @@ integrationTestCreateColumn<-function() {
     maximumSize=as.integer(30), 
     enumValues=enumValues)
   
-  tableColumn<-synStore(tableColumn)
+  storedColumn<-synStore(tableColumn)
   
+  # should be the same except for the ID
+  checkTrue(!is.null(storedColumn$id))
+  id<-storedColumn$id
+  
+  storedColumn$id<-character(0)
+  checkTrue(storedColumn==tableColumn)
+  checkEquals(storedColumn, tableColumn)
+  
+  retrievedColumn<-synapseClient:::synGetColumn(id)
+  storedColumn$id<-id
+  checkEquals(retrievedColumn, storedColumn)
 }

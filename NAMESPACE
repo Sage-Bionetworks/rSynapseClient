@@ -75,7 +75,12 @@ export(
 	"TableColumn",
 	"Row",
 	"RowReference",
-	"RowReferenceSet"
+	"RowReferenceSet",
+	"CharacterList",
+	"UserPreferenceBoolean",
+	"UserPreferenceList",
+	"RowList",
+	"Settings"
 )
 
 ## entity S4 methods
