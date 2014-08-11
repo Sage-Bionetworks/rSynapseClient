@@ -92,8 +92,6 @@ setMethod(
   }
 )
 
-
-
 setMethod(
   f = "length",
   signature = "TypedList",
@@ -107,23 +105,6 @@ setMethod(
   signature = "TypedList",
   definition = function(x) {
     x@content
-  }
-)
-
-setMethod(
-  f = "==", 
-  signature = c("TypedList","TypedList"), 
-  definition = function(e1,e2) {
-    if (!identical(e1@type,e2@type)) return(FALSE)
-    identical(e1@content, e2@content)
-  }
-)
-
-setMethod(
-  f = "!=", 
-  signature = c("TypedList","TypedList"), 
-  definition = function(e1,e2) {
-    !(e1==e2)
   }
 )
 

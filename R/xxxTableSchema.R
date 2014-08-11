@@ -32,8 +32,21 @@ setMethod(
   }
 )
 
-TableSchema<-function() {
+TableSchema<-function(name, parent, columns, ...) {
   result<-TableSchema()
+  propertyValue(result, "name")<-name
+  if (is(parent, "Entity")) {
+    parentId<-propertyValue(parent, "id")
+  } else if (isSynapseId(parent)) {
+    parentId<-parent
+  } else {
+    stop("Illegal 'parent' parameter.")
+  }
+  propertyValue(result, "parentId")<-parentId
+  # TODO columns
+  # TODO additional annotations
   result
 }
+
+
   

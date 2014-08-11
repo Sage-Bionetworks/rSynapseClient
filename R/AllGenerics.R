@@ -871,13 +871,6 @@ setGeneric(
 )
 
 setGeneric(
-  name="createTableSchemaFromProperties",
-  def = function(propertiesList) {
-    standardGeneric("createTableSchemaFromProperties")
-  }
-)
-
-setGeneric(
   name = "synGetAnnotations",
   def = function(object){
     standardGeneric("synGetAnnotations")
@@ -951,6 +944,20 @@ setGeneric(
   name = "getList",
   def = function(x) {
     standardGeneric("getList")
+  }
+)
+
+setGeneric(
+  name="createTableSchemaFromProperties",
+  def = function(propertiesList) {
+    standardGeneric("createTableSchemaFromProperties")
+  }
+)
+
+setGeneric(
+  name="Table",
+  def = function(tableSchema, values) {
+    standardGeneric("Table")
   }
 )
 
