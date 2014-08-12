@@ -3,7 +3,7 @@
 # Author: furia
 ###############################################################################
 
-
+# Note:  This is defined in "AllClasses" but we have to repeat here in order to define the 'prototype'
 setClass(
   Class = "Entity",
   contains = "SimplePropertyOwner",
@@ -24,6 +24,7 @@ setClass(
 )
 
 defineEntityConstructors("org.sagebionetworks.repo.model.Entity", package="synapseClient")
+
 
 setMethod(
   f = "synStore",

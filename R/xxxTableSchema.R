@@ -32,7 +32,18 @@ TableSchema<-function(name, parent, columns, ...) {
     stop("Illegal 'parent' parameter.")
   }
   propertyValue(result, "parentId")<-parentId
-  # TODO columns
+  if (missing(columns) || length(columns)==0) {
+    stop("'columns' is required.")
+  }
+  columnIds<-list()
+  for (column in columns) {
+    if (is(column, "TableColumn")) {
+      columnIds<-append(columnIds, column$id)
+    } else {
+      columnIds<-apend(columnIds, column)
+    }
+  }
+  propertyValue(result, "columnIds")<-columnIds
   # TODO additional annotations
   result
 }

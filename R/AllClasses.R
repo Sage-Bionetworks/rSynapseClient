@@ -484,10 +484,20 @@ setClass(
   representation=list(data="list")
 )
 
-# Entity is actually defined in Entity.R.  We just create a reference here:
 setClass(
-  Class = "Entity"
+  Class = "Entity",
+  contains = "SimplePropertyOwner",
+  representation = representation(
+    attachOwn = "AttachmentOwner",
+    annotations = "SynapseAnnotations",
+    synapseEntityKind = "character",
+    synapseWebUrl = "character",
+    generatedBy = "activityOrNULL",
+    generatedByChanged = "logical"
+  )
 )
+
+
 
 setClass(
   Class = "TableSchema",
@@ -512,6 +522,14 @@ setClass(
   Class = "TableValuesMatrix",
   contains = c("TableValues"),
   representation=representation(values="matrix")
+)
+
+setClass(
+  Class = "TableFilePath",
+  representation=representation(
+    schema="TableSchema",
+    filePath="character"
+    )
 )
 
 # This is an abstract class for a typed list

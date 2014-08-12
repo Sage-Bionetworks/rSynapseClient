@@ -37,6 +37,27 @@ setMethod(
 )
 
 setMethod(
+  f = "Table",
+  signature = signature("TableSchema", "character"),
+  definition = function(tableSchema, values) {
+    result<-new("TableFilePath")
+    result@schema<-tableSchema
+    result@filePath<-values
+    result
+  }
+)
+
+setMethod(
+  f = "Table",
+  signature = signature("TableRowSet"),
+  definition = function(tableSchema) {
+    result<-tableSchema
+    # TODO do we just return the TableRowSet as the result?
+    result
+  }
+)
+
+setMethod(
   f = "synStore",
   signature = "TableValuesRowList",
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {

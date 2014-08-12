@@ -21,8 +21,8 @@ getS4MapName<-function() {"s4.map"}
 
 getS4ClassNameFromSchemaName<-function(schemaName) {
   s4MapName <- getS4MapName()
-  if (existsPackageVariable(s4MapName)) {
-    s4Map<-getPackageVariable(s4MapName)
+  s4Map<-.getCache(s4MapName)
+  if (!is.null(s4Map)) {
     result<-s4Map[[schemaName]]
   } else {
     result<-NULL
@@ -36,10 +36,10 @@ getS4ClassNameFromSchemaName<-function(schemaName) {
 
 setS4ClassNameForSchemaName<-function(schemaName, className) {
   s4MapName <- getS4MapName()
-  s4Map <- getPackageVariable(s4MapName)
+  s4Map <- .getCache(s4MapName)
   if (is.null(s4Map)) s4Map<-list()
   s4Map[[schemaName]]<-className
-  setPackageVariable(s4MapName, s4Map)
+  .setCache(s4MapName, s4Map)
 }
 
 readS4ClassesToGenerate<-function() {
@@ -187,38 +187,6 @@ defineS4ConstructorAndAccessors<-function(name) {
       object
     }
   )  
-  
-# If this is needed it should be defined as 'identical' not '=='
-#  setMethod(
-#    f = "==", 
-#    signature = c(nullableType(name),nullableType(name)), 
-#    definition = function(e1,e2) {
-#      if (is(e1,"NullS4Object")) {
-#        return(is(e2,"NullS4Object"))
-#      } else {
-#        if (is(e2,"NullS4Object")) return(FALSE)
-#      }
-#      # at this point, neither is a NullS4Object
-#      slots<-getSlots(name)
-#      for (slotName in names(slots)) {
-#        if (isPrimitiveType(slots[[slotName]])) {
-#          if (!identical(slot(e1,slotName), slot(e2,slotName))) return(FALSE)
-#        } else {
-#          # recursively call our "==" method
-#          if (!(slot(e1,slotName)==slot(e2,slotName))) return(FALSE)
-#        }
-#      }
-#      TRUE
-#    }
-#  )
-#  
-#  setMethod(
-#    f = "!=", 
-#    signature = c(nullableType(name),nullableType(name)), 
-#    definition = function(e1,e2) {
-#      !(e1==e2)
-#    }
-#  )
 }
 
 # define (or just return, for primitives) the class
