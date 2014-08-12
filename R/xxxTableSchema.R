@@ -3,8 +3,6 @@
 # Author: brucehoff
 ###############################################################################
 
-
-
 # creates a TableSchema from the JSON response body received from Synapse
 # this is referenced by 'getEntityInstance' which dispatches based on
 # concreteType
@@ -23,7 +21,7 @@ setMethod(
 )
 
 TableSchema<-function(name, parent, columns, ...) {
-  result<-TableSchema()
+  result<-new("TableSchema")
   result@properties <- initializeProperties("org.sagebionetworks.repo.model.table.TableEntity", TRUE)
   propertyValue(result, "name")<-name
   if (is(parent, "Entity")) {

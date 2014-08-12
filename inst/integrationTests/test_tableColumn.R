@@ -22,7 +22,6 @@ integrationTestCreateColumn<-function() {
   checkTrue(!is.null(storedColumn$id))
   id<-storedColumn$id
   storedColumn$id<-character(0)
-  checkTrue(storedColumn==tableColumn)
   checkIdentical(storedColumn, tableColumn)
   
   retrievedColumn<-synapseClient:::synGetColumn(id)

@@ -34,7 +34,7 @@ integrationTestCreateTableSchema<-function() {
   
   project<-synapseClient:::.getCache("testProject")
 
-  tableSchema<-TableSchema(name, getProperty(project, "id"), tableColumns,  foo="bar", "pi"=3.14)
+  tableSchema<-TableSchema(name, propertyValue(project, "id"), tableColumns,  foo="bar", "pi"=3.14)
   for (i in 1:3) {
     checkEquals(tableColumns[[i]]$id, propertyValue(tableSchema, "columnIds")[[i]])
   }
