@@ -6,7 +6,7 @@
 getFactoryForConcreteType<-function(concreteType) {
   factoryName<-NULL
   if (concreteType=="org.sagebionetworks.repo.model.FileEntity") factoryName<-"createFileFromProperties"
-  if (concreteType=="org.sagebionetworks.repo.model.TableEntity") factoryName<-"createTableSchemaFromProperties"
+  if (concreteType=="org.sagebionetworks.repo.model.table.TableEntity") factoryName<-"createTableSchemaFromProperties"
   # by default the factory is a class constructor
   if (is.null(factoryName)) factoryName<-getClassNameFromSchemaName(concreteType)
   getMethod(factoryName, signature = "list", where="synapseClient")

@@ -21,4 +21,12 @@ test_tableSchema<-function() {
     checkEquals(tableColumns[[i]]$id, propertyValue(tableSchema, "columnIds")[[i]])
   }
   
+  checkEquals(FALSE, tableSchema@generatedByChanged)
+  
+}
+
+test_createTableSchemaFromProperties<-function() {
+  id<-"syn101"
+  ts<-createTableSchemaFromProperties(list(id=id))
+  checkEquals(id, ts$properties$id)
 }

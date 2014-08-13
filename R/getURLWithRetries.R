@@ -58,7 +58,7 @@ getURLWithRetries<-function(url,
       }
     } else {
       httpStatus<-.getCurlInfo(curl)$response.code
-      if (httpStatus==503 || httpStatus==502) {
+      if (httpStatus==504 || httpStatus==503 || httpStatus==502) {
         # then we retry
         Sys.sleep(backoff)
         backoff <- backoff * BACKOFF_MULTIPLIER

@@ -2,10 +2,6 @@
 # Author: brucehoff
 ###############################################################################
 
-columnName<-function(i) {
-  sprintf("R_Client_Integration_Test_Column_Name_%d", i)
-}
-
 .setUp <- function() {
   # create project
   project <- createEntity(Project())
@@ -20,20 +16,20 @@ columnName<-function(i) {
 }
 
 integrationTestCreateTableSchema<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  
   tableColumns<-list()
   for (i in 1:3) {
     tableColumn<-TableColumn(
-      name=columnName(i), 
+      name=sprintf("R_Client_Integration_Test_Column_Name_%d", i), 
       columnType="STRING")
     stored<-synStore(tableColumn)
     tableColumns<-append(tableColumns, stored)
   }
   
-  
   name<-sprintf("R_Client_Integration_Test_Create_Schema_%s", sample(999999999, 1))
-  
-  project<-synapseClient:::.getCache("testProject")
-
+ 
   tableSchema<-TableSchema(name, propertyValue(project, "id"), tableColumns,  foo="bar", "pi"=3.14)
   for (i in 1:3) {
     checkEquals(tableColumns[[i]]$id, propertyValue(tableSchema, "columnIds")[[i]])
