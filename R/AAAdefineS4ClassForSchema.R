@@ -6,21 +6,6 @@
 ###############################################################################
 
 
-# This maps the keyword found in the JSON schema to the 
-# type used in the S4 class.
-TYPEMAP_FOR_ALL_PRIMITIVES <- list(
-  string = "character",
-  integer = "integer",
-  float = "numeric",
-  number = "numeric",
-  boolean = "logical"
-)
-
-isPrimitiveType <- function(rType) {
-  !is.na(match(rType, TYPEMAP_FOR_ALL_PRIMITIVES))
-}
-
-
 isClassDefined<-function(className) {
   tryCatch(
     {
@@ -36,8 +21,8 @@ getS4MapName<-function() {"s4.map"}
 
 getS4ClassNameFromSchemaName<-function(schemaName) {
   s4MapName <- getS4MapName()
-  if (existsPackageVariable(s4MapName)) {
-    s4Map<-getPackageVariable(s4MapName)
+  s4Map<-.getCache(s4MapName)
+  if (!is.null(s4Map)) {
     result<-s4Map[[schemaName]]
   } else {
     result<-NULL
@@ -51,10 +36,10 @@ getS4ClassNameFromSchemaName<-function(schemaName) {
 
 setS4ClassNameForSchemaName<-function(schemaName, className) {
   s4MapName <- getS4MapName()
-  s4Map <- getPackageVariable(s4MapName)
+  s4Map <- .getCache(s4MapName)
   if (is.null(s4Map)) s4Map<-list()
   s4Map[[schemaName]]<-className
-  setPackageVariable(s4MapName, s4Map)
+  .setCache(s4MapName, s4Map)
 }
 
 readS4ClassesToGenerate<-function() {
@@ -73,7 +58,7 @@ populateSchemaToClassMap<-function() {
   }
 }
 
-# this is actually called in AAAschema, after other classes as defined
+# this is actually called in AAAschema, after other classes are defined
 defineS4Classes<-function() {
   populateSchemaToClassMap()
   
@@ -84,8 +69,6 @@ defineS4Classes<-function() {
     defineS4ClassForSchema(schemaName)
   }
 }
-
-
 
 defineS4ClassForSchema <- function(fullSchemaName) { 
   name<-getS4ClassNameFromSchemaName(fullSchemaName)
@@ -112,7 +95,7 @@ defineS4ClassForSchema <- function(fullSchemaName) {
       slots[[propertyName]]<-slotType
     } else {
       nullableType <- nullableType(slotType)
-      if (!isClassDefined(nullabeType)) {
+      if (!isClassDefined(nullableType)) {
         setClassUnion(nullableType, c("NullS4Object", slotType))
       }
       slots[[propertyName]]<-nullableType
@@ -138,6 +121,12 @@ defineS4ClassForSchema <- function(fullSchemaName) {
     prototype = prototype,
     package="synapseClient"
   )
+  
+  # the 'nullable type' may or may not be used
+  myNullableType<-nullableType(name)
+  if (!isClassDefined(myNullableType)) {
+    setClassUnion(myNullableType, c("NullS4Object", name))
+  }
   
   name
 }
@@ -207,7 +196,7 @@ defineS4ConstructorAndAccessors<-function(name) {
 # 3) type is defined by a schema.  Define and return an S4 class
 # return the R class name for the propertySchema
 defineRTypeFromPropertySchema <- function(propertySchema) {
-  # This is the type of the elements of the array 'in the language of the schema'
+  # This is the type 'in the language of the schema'
   schemaPropertyType<-schemaTypeFromProperty(propertySchema)
   primitiveRType<-TYPEMAP_FOR_ALL_PRIMITIVES[[schemaPropertyType]]
   if(length(primitiveRType)>0) {
@@ -215,22 +204,40 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     primitiveRType
   } else if (schemaPropertyType=="array") {
     elemRType <- defineRTypeFromPropertySchema(getArraySubSchema(propertySchema))
-    typeListClassName<-sprintf("%sList", elemRType)
+    typeListClassName<-listClassName(elemRType)
     if (!isClassDefined(typeListClassName)) {
+      # define the class
       setClass(
         Class=typeListClassName, 
         contains=list("TypedList"), 
         prototype=list(type=elemRType),
         package="synapseClient"
       )
+      # define the constructor
+      # This generic constructor takes the form:
+      # ClassName(value1, value2, ...)
+      assign(typeListClassName, function(...) {
+          args <-list(...)
+          obj<-new(typeListClassName)    
+          set(obj, args)     
+        })
+      # If we don't define a 'generic' version of the constructor
+      # we get an error when we try to include it as an export in
+      # the NAMESPACE file.
+      setGeneric(
+        name=typeListClassName,
+        def = function(...) {
+          do.call(typeListClassName, list(...))
+        }
+      )
     }
     typeListClassName
   } else {
     # check for an enum
-    fieldSchema <- readEntityDef(schemaPropertyType, getSchemaPath())
-    if (is.null(fieldSchema$properties) && !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])) {
-      # it's an 'enum' or similar. use the type of the field's schema
-      return(TYPEMAP_FOR_ALL_PRIMITIVES[[fieldSchema$type]])
+    propertySchema <- readEntityDef(schemaPropertyType, getSchemaPath())
+    if (isEnum(propertySchema)) {
+      # it's an 'enum' or similar. use the type of the property's schema
+      return(TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]])
     }
     
     getS4ClassNameFromSchemaName(schemaPropertyType)
@@ -258,3 +265,7 @@ getNonNullableType<-function(type) {
   }
   result
 }
+
+
+
+

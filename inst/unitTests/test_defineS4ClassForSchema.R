@@ -48,6 +48,24 @@ unitTestInstantiateGetAndSet<-function() {
   checkEquals("description", e@description)
 }
 
+unitTestS4Equals<-function() {
+  e1<-Evaluation()
+  e2<-Evaluation()
+  checkTrue(identical(e1, e2))
+  
+  up1<-UserProfile()
+  up2<-UserProfile()
+  checkTrue(identical(up1, up2))
+  
+  up1<-UserProfile(ownerId="foo", openIds=CharacterList("foo1", "foo2"), 
+    notificationSettings=Settings(sendEmailNotifications=TRUE, markEmailedMessagesAsRead=FALSE),
+    preferences=UserPreferenceList(UserPreferenceBoolean("foo", TRUE)))
+  up2<-UserProfile(ownerId="foo", openIds=CharacterList("foo1", "foo2"), 
+    notificationSettings=Settings(sendEmailNotifications=TRUE, markEmailedMessagesAsRead=FALSE),
+    preferences=UserPreferenceList(UserPreferenceBoolean("foo", TRUE)))
+  checkTrue(identical(up1, up2))
+}
+
 unitTestNonPrimitiveField<-function() {
   up<-synapseClient:::UserProfile(ownerId="101")
   settings<-synapseClient:::Settings(sendEmailNotifications=TRUE)
@@ -92,18 +110,29 @@ unitTestArraySubSchema<-function() {
 }
 
 unitTestTypedList<-function() {
-  t<-new("characterList")
+  t<-synapseClient:::CharacterList()
   t$foo<-"bar"
   checkEquals(t$foo, "bar")
   t[["foo"]]<-"bas"
   checkEquals(t$foo, "bas")
   
-  t<-new("characterList")
+  t<-synapseClient:::CharacterList()
   t[[1]]<-"a"
   t[[2]]<-"b"
   checkEquals(2, length(t))
   checkEquals(t[[1]], "a")
   checkEquals(t[[2]], "b")
+  checkEquals(list("a", "b"), synapseClient:::getList(t))
+  
+  # test 'add'
+  t<-synapseClient:::CharacterList()
+  t[[1]]<-"foo"
+  t<-synapseClient:::add(t, "bar")
+  checkEquals(list("foo", "bar"), synapseClient:::getList(t))
+  t<-synapseClient:::set(t, list("a", "b"))
+  checkEquals(list("a", "b"), synapseClient:::getList(t))
+  
+  t<-synapseClient:::CharacterList("a", "b")
   checkEquals(list("a", "b"), synapseClient:::getList(t))
 }
 

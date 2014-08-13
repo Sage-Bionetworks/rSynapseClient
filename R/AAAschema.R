@@ -38,41 +38,12 @@ entitiesToLoad <-
   setdiff(paths, "DEFAULT")
 }
 
-#------------------------------------------------------------
-# Utilities for setting and getting package level variables
-# 
-getPackageEnvironment<-function() {
-  parent.env(environment(entitiesToLoad)) # get the package's environment
-}
-
-# returns TRUE iff the given name exists in the package environment
-existsPackageVariable<-function(name) {
-  packageEnv<-getPackageEnvironment()
-  exists(x=name, envir=packageEnv)
-}
-
-# returns the value for the given name or NULL if the name is not defined
-getPackageVariable<-function(name) {
-  packageEnv<-getPackageEnvironment()
-  if (exists(x=name, envir=packageEnv)) {
-    get(x=name, envir=packageEnv)
-  } else {
-    NULL
-  }
-}
-
-setPackageVariable<-function(name, value) {
-  packageEnv<-getPackageEnvironment()
-  assign(x=name, value=value, envir=packageEnv)
-}
-#------------------------------------------------------------
-
 getSchemaCacheName<-function() {"schema.cache"}
 
 getSchemaFromCache<-function(schemaName) {
   schemaCacheName <- getSchemaCacheName()
-  if (existsPackageVariable(schemaCacheName)) {
-    schemaCache<-getPackageVariable(schemaCacheName)
+  schemaCache <- .getCache(schemaCacheName)
+  if (!is.null(schemaCache)) {
     schemaCache[[schemaName]]
   } else {
     NULL
@@ -81,10 +52,10 @@ getSchemaFromCache<-function(schemaName) {
 
 putSchemaToCache<-function(key, value) {
   schemaCacheName <- getSchemaCacheName()
-  schemaCache <- getPackageVariable(schemaCacheName)
+  schemaCache <- .getCache(schemaCacheName)
   if (is.null(schemaCache)) schemaCache<-list()
   schemaCache[[key]]<-value
-  setPackageVariable(schemaCacheName, schemaCache)
+ .setCache(schemaCacheName, schemaCache)
 }
 
 # Omit the part of the string preceding the last "." (if any)
@@ -244,7 +215,7 @@ getEffectiveSchemaTypes <- function(schema, schemaPath) {
   properties<-getPropertyTypes(schema)
   implements <- getAllInterfaces(schema, schemaPath)
   if (length(implements)>0) {
-    for (i in length(implements):1) {
+     for (i in length(implements):1) {
       thisProp <- getPropertyTypes(readEntityDef(implements[i], getSchemaPath()))
       for (n in names(thisProp))
         properties[[n]] <- thisProp[[n]]

@@ -67,6 +67,24 @@ unitTestGetSetVectorProperties <-
   checkEquals(synapseClient:::getProperty(ps, "foo"), "bar")
 }
 
+unitTestIdentical<- function() {
+  ps1 <- synapseClient:::TypedPropertyStore()
+  ps1 <- synapseClient:::setProperty(ps1, "foo", "bar")
+  ps2 <- synapseClient:::TypedPropertyStore()
+  ps2 <- synapseClient:::setProperty(ps2, "foo", "bar")
+  checkTrue(identical(ps1, ps2))
+  
+  # assign values in a different order
+  ps1 <- synapseClient:::TypedPropertyStore()
+  ps1 <- synapseClient:::setProperty(ps1, "foo", "bar")
+  ps1 <- synapseClient:::setProperty(ps1, "bas", "goo")
+  ps2 <- synapseClient:::TypedPropertyStore()
+  ps2 <- synapseClient:::setProperty(ps2, "bas", "goo")
+  ps2 <- synapseClient:::setProperty(ps2, "foo", "bar")
+  checkTrue(identical(ps1, ps2))
+  
+}
+
 unitTestPropertyValues <-
   function()
 {

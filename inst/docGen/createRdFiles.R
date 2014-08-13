@@ -9,10 +9,6 @@
 
 library(RJSONIO)
 
-readSchema<-function(schemaName) {
-  file <- sprintf("%s.json", gsub("[\\.]", "/", name))
-  
-}
 # This generates one .Rd file for an auto-generated S4 class using its JSON schema
 createRdFromSchema<-function(className, schemaName, schemaPath, classToSchemaMap) {
   nameLine<-paste("\\name{", className, "}", sep="")
@@ -25,48 +21,40 @@ createRdFromSchema<-function(className, schemaName, schemaPath, classToSchemaMap
   usageLine<-paste("\\usage{", className, "(", paste(names(propertySchemas), collapse=", "), ")}", sep="")
   
   arguments<-"\\arguments{"
+  slots<-"\\section{Slots}{\n  \\describe{"
+  seeAlsoClasses<-NULL
+  referencedTypedLists<-NULL
   for (propertyName in names(propertySchemas)) {
     propertySchema <- propertySchemas[[propertyName]]
+    propertyType <- getPropertyType(propertySchema, schemaPath, classToSchemaMap)
+    if (propertyType$isTypedList) {
+      referencedTypedLists<-append(referencedTypedLists, propertyType$type)
+    }
     arguments<-paste(arguments, 
-      itemRdEntry(propertyName, propertySchema$description, propertySchema$type), sep="\n")
+      itemRdEntry(propertyName, propertySchema$description, propertyTypeToString(propertyType)), sep="\n")
+    slots<-paste(slots, slotRdEntry(propertyName, propertySchema$description, propertyTypeToString(propertyType)), sep="\n")
+    if (!isPrimitiveType(propertyType$type)) seeAlsoClasses<-append(seeAlsoClasses, propertyType$type)
   }
   arguments<-paste(arguments, "}", sep="\n")
-  slots<-"\\section{Slots}{\n  \\describe{"
-  for (propertyName in names(propertySchemas)) {
-    propertySchema <- propertySchemas[[propertyName]]
-    slots<-paste(slots, slotRdEntry(propertyName, propertySchema$description, propertySchema$type), sep="\n")
-  }
   slots<-paste(slots, "  }\n}", sep="\n")
   seealso<-"\\seealso{"
-  for (property in propertySchemas) {
-    referencedSchema<-NULL
-    if (property$type=="array") {
-      arraySubSchema<-getArraySubSchema(property)
-      referencedSchema<-arraySubSchema[["$ref"]]
-    } else {
-      referencedSchema<- property[["$ref"]]
-    }
-    referencedClass<-NULL
-    if (!is.null(referencedSchema)) {
-      referencedClass<- classToSchemaMap[[referencedSchema]]
-    }
-    if (!is.null(referencedClass)) {
-      seealso<-paste(seealso, paste("\\code{\\link{",referencedClass, "}}", sep=""), sep="\n")
-    }
+  for (seeAlsoClass in seeAlsoClasses) {
+      seealso<-paste(seealso, paste("\\code{\\link{", seeAlsoClass, "}}", sep=""), sep="\n")
   }
   seealso<-paste(seealso, "}", sep="\n")
-  result<-paste(
+  content<-paste(
     nameLine, 
     aliasLine, 
     docTypeLine, 
     titleLine, 
+    descriptionLine,
     usageLine,
     arguments,
     slots,
     seealso,
     sep="\n")
   
-  result
+  result<-list(content=content, referencedTypedLists=referencedTypedLists)
 }
 
 itemRdEntry<-function(itemName, itemDescription, itemType) {
@@ -75,6 +63,61 @@ itemRdEntry<-function(itemName, itemDescription, itemType) {
 
 slotRdEntry<-function(itemName, itemDescription, itemType) {
   paste("    \\item{\\code{", itemName, "}}{\n    ", itemDescription, " (", itemType, ")\n    }", sep="")
+}
+
+# given a 'propertySchema' return the R type
+# the result could be a primitive type, an S-4 class, or a Typed List
+# result has three fields, 
+# (1) type and 
+# (2) enum: If the type is an enum or a list of enums, this field enumerates the allowed types
+# (3) isTypedList: TRUE iff the type is a TypedList 
+# Note:  This closely parallels the logic in defineRTypeFromPropertySchema
+getPropertyType<-function(propertySchema, schemaPath, classToSchemaMap) {
+  # This is the type 'in the language of the schema'
+  schemaPropertyType<-schemaTypeFromProperty(propertySchema)
+  primitiveRType<-TYPEMAP_FOR_ALL_PRIMITIVES[[schemaPropertyType]]
+  if(length(primitiveRType)>0) {
+    # No S4 class to define, just return type name
+    list(type=primitiveRType, isTypedList=FALSE)
+  } else if (schemaPropertyType=="array") {
+    elemRType <- getPropertyType(getArraySubSchema(propertySchema), schemaPath, classToSchemaMap)
+    list(type=listClassName(elemRType$type), enum=elemRType$enum, isTypedList=TRUE)
+  } else {
+    # check for an enum
+    propertySchema <- readSchema(schemaPropertyType, schemaPath)
+    if (isEnum(propertySchema)) {
+      # it's an 'enum' or similar
+      list(type=TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]], enum=propertySchema$enum, isTypedList=FALSE)
+    } else {
+      list(type=classToSchemaMap[[schemaPropertyType]], isTypedList=FALSE)
+    }
+  }  
+}
+
+propertyTypeToString<-function(propertyType) {
+  if (is.null(propertyType$enum)) {
+    propertyType$type
+  } else {
+    enumString<-paste(propertyType$enum, collapse=", ")
+    if (isPrimitiveType(propertyType$type)) {
+      sprintf("one of %s", enumString)
+    } else {
+      sprintf("%s of %s", propertyType$type, enumString)
+    }
+  }
+}
+
+# use a template here and just insert the names of the typed lists where appropriate (e.g. as aliases)
+createdTypedListRd<-function(referencedTypedLists, srcRootDir) {
+  templateFile<-sprintf("%s/inst/docGen/typedListTemplate.Rd", srcRootDir)
+  connection<-file(templateFile, open="r")
+  template<-paste(readLines(connection), collapse="\n")
+  close(connection)
+
+  aliasLines<-paste(lapply(X=referencedTypedLists, FUN=function(x){paste("\\alias{",x,"}",sep="")}), collapse="\n")
+  
+  content<-gsub("##alias##", aliasLines, template, fixed=TRUE)
+  content
 }
 
 # create the autogenerated files
@@ -95,18 +138,27 @@ autoGenerateRdFiles<-function(srcRootDir) {
     className<-s4ClassesToAutoGenerate[i,"className"]
     classToSchemaMap[[schemaName]]<-className
   }
+  referencedTypedLists<-NULL
   for(i in 1:(dim(s4ClassesToAutoGenerate)[1])) { 
     schemaName<-s4ClassesToAutoGenerate[i,"schemaName"]
     className<-s4ClassesToAutoGenerate[i,"className"]
     if (s4ClassesToAutoGenerate[i,"genDoc"]) {
-      rdContent<-createRdFromSchema(className, schemaName, schemaPath, classToSchemaMap)
-      fileName<-sprintf("%s/man/%s.Rd", srcRootDir, className)
-      connection<-file(fileName)
-      writeChar(rdContent, connection, eos=NULL)
-      close(connection)
-      cat(sprintf("Created %s\n", fileName))
+      rdResult<-createRdFromSchema(className, schemaName, schemaPath, classToSchemaMap)
+      referencedTypedLists<-append(referencedTypedLists, rdResult$referencedTypedLists)
+      writeContent(rdResult$content, className, srcRootDir)
     }
   }
+  rdContent<-createdTypedListRd(referencedTypedLists, srcRootDir)
+  writeContent(rdContent, "TypedList", srcRootDir)
+}
+
+writeContent<-function(content, className, srcRootDir) {
+  fileName<-sprintf("%s/man/%s.Rd", srcRootDir, className)
+  connection<-file(fileName, open="w")
+  writeChar(content, connection, eos=NULL)
+  writeChar("\n", connection, eos=NULL)
+  close(connection)
+  cat(sprintf("Created %s\n", fileName))
 }
 
 # now call autoGenerateRdFiles

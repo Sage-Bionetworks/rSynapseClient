@@ -17,7 +17,7 @@ setClass(
   ),
   # This is modeled after defineEntityClass in AAAschema
   prototype = prototype(
-    properties = initializeProperties("org.sagebionetworks.evaluation.model.Submission"),
+    properties = initializeProperties("org.sagebionetworks.evaluation.model.Submission", FALSE),
     objects = NULL
   )
 )
@@ -26,7 +26,7 @@ setClass(
 # taking a list of properties as its argument
 # the logic is based on definedEntityConstructors in AAAschema
 setMethod(
-  f = "SubmissionListConstructor",
+  f = "createSubmissionFromProperties",
   signature = signature("list"),
   definition = function(propertiesList) {
     submission <- new("Submission")
@@ -58,7 +58,7 @@ getFileHandleFromEntityBundleJSON<-function(entityBundleJSON) {
 }
 
 synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
-  submission<-SubmissionListConstructor(synRestGET(sprintf("/evaluation/submission/%s", id)))
+  submission<-createSubmissionFromProperties(synRestGET(sprintf("/evaluation/submission/%s", id)))
   
   if (!is.null(submission@fileHandle$id)) { # otherwise it's not a File
     downloadUri<-sprintf("/evaluation/submission/%s/file/%s", submission$id, submission@fileHandle$id)
@@ -111,7 +111,7 @@ setMethod(
 )
 
 synCreateSubmission<-function(submission, entityEtag) {
-  SubmissionListConstructor(synRestPOST(sprintf("/evaluation/submission?etag=%s", entityEtag), submission))
+  createSubmissionFromProperties(synRestPOST(sprintf("/evaluation/submission?etag=%s", entityEtag), submission))
 }
 
 newSubmissionStatus<-function(content) {
@@ -132,7 +132,7 @@ newSubmissionPaginatedResults<-function(content) {
   paginatedResults@totalNumberOfResults<-as.integer(content$totalNumberOfResults)
   for (s in content$results) {
     n<-length(paginatedResults@results)
-    paginatedResults@results[[n+1]]<-SubmissionListConstructor(as.list(s))
+    paginatedResults@results[[n+1]]<-createSubmissionFromProperties(as.list(s))
   }
   paginatedResults
 }

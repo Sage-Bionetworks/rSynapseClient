@@ -93,6 +93,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     defineEntityConstructors(ee, package="synapseClient", where=where)
   }
   
+  # This is done during class generation but seems to be lost at package load time.  So we do it again.
   populateSchemaToClassMap()
 }
 
@@ -100,6 +101,5 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   myOwnVersion<-packageDescription("synapseClient", fields="Version")
   paste("synapseRClient", myOwnVersion, sep="/")
 }
-
 
 

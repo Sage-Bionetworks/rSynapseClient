@@ -8,8 +8,6 @@ importFrom(utils, edit, compareVersion, packageDescription, install.packages, in
 ## package has a dynamic library
 useDynLib(synapseClient)
 
-## NOTE - WE NEED TO EXPORT CLASSES
-
 ## commands defined in C-4
 export(
   "synGet",
@@ -34,7 +32,8 @@ export(
   "synGetActivity",
   "synAnnot",
   "synAnnot<-",
-  "onWeb"
+  "onWeb",
+  "identical"
 )
 
 ## S3 utility methods
@@ -69,7 +68,21 @@ export(
 	"Activity",
 	"Evaluation",
 	"WikiPage",
-	"TableColumn"
+	"TableColumn",
+	"UserProfile",
+	"ResourceAccess",
+	"AccessControlList",
+	"TableSchema",
+	"TableRowSet",
+	"TableColumn",
+	"Row",
+	"RowReference",
+	"RowReferenceSet",
+	"CharacterList",
+	"UserPreferenceBoolean",
+	"UserPreferenceList",
+	"RowList",
+	"Settings"
 )
 
 ## entity S4 methods
@@ -81,7 +94,12 @@ exportMethods(
 	"used",
 	"used<-",
 	"executed",
-	"executed<-"
+	"executed<-",
+	# methods for TypeList
+	"add",
+	"set",
+	"getList",
+	"identical"
 )
 
 ## entity property/annotation setters and getters

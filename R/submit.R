@@ -42,12 +42,12 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
   }
 
   if (missing(teamName)) {
-    submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
+    submission<-createSubmissionFromProperties(list(evaluationId=evaluationId, 
         entityId=entityId, 
         versionNumber=entityVersion, 
         name=submissionName))
   } else {
-    submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
+    submission<-createSubmissionFromProperties(list(evaluationId=evaluationId, 
         entityId=entityId, 
         versionNumber=entityVersion, 
         name=submissionName,

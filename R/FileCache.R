@@ -449,5 +449,16 @@ setMethod(
   }
 )
 
-
+#setMethod("identical",
+#  signature=signature("FileCache", "FileCache", "logical", "logical", "logical", "logical", "logical"),
+#  definition = function(x, y, num.eq=TRUE, single.NA = TRUE, attrib.as.set = TRUE,
+#    ignore.bytecode = TRUE, ignore.environment = FALSE) {
+#    identicalSimplePropertyOwner(x, y, num.eq, single.NA, attrib.as.set, ignore.bytecode, ignore.environment)
+#    if (!identical(x$cacheRoot, y$cacheRoot, num.eq, single.NA, attrib.as.set, ignore.bytecode, ignore.environment)) return(FALSE)
+#    if (!identical(x$cacheDir, y$cacheDir, num.eq, single.NA, attrib.as.set, ignore.bytecode, ignore.environment)) return(FALSE)
+#    if (!identical(x$metaData, y$metaData, num.eq, single.NA, attrib.as.set, ignore.bytecode, ignore.environment)) return(FALSE)
+#    if (!identical(x$archiveFile, y$archiveFile, num.eq, single.NA, attrib.as.set, ignore.bytecode, ignore.environment)) return(FALSE)
+#    TRUE
+#  }
+#)
 

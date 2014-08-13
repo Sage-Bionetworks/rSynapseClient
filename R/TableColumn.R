@@ -1,4 +1,4 @@
-# TODO: Add comment
+# methods relating to the TableColumn class
 # 
 # Author: brucehoff
 ###############################################################################

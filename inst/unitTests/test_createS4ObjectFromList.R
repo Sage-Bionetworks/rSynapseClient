@@ -59,7 +59,7 @@ unitTestCreateS4ObjectFromList<-function() {
 }
 
 unitTestEmptyTypedList<-function() {
-  openIds<-new("characterList")
+  openIds<-new("CharacterList")
   p<-synapseClient:::UserProfile(openIds=openIds)
   synapseClient:::createListFromS4Object(p)
 }
@@ -69,7 +69,7 @@ unitTestS4RoundTrip<-function() {
   listRep<-synapseClient:::createListFromS4Object(e)
   checkEquals(e, synapseClient:::createS4ObjectFromList(listRep, "Evaluation"))
    
-  emails<-new("characterList")
+  emails<-new("CharacterList")
   emails@content<-list("foo@bar.com", "bar@bas.com")
   preferences<-new("UserPreferenceList")
   preferences@content<-list(
@@ -91,7 +91,7 @@ unitTestS4RoundTrip<-function() {
 
 unitTestMissingS4Field<-function() {
   # note:  there's no 'notificationSettings' field
-  emails<-new("characterList")
+  emails<-new("CharacterList")
   emails@content<-list("foo@bar.com", "bar@bas.com")
   preferences<-new("UserPreferenceList")
   preferences@content<-list(

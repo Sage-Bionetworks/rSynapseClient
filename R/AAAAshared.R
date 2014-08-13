@@ -75,4 +75,33 @@ getArraySubSchema<-function(propertySchema) {
   propertySchema$items
 }
 
+#-----------------------------------
+
+# This maps the keyword found in the JSON schema to the 
+# type used in the S4 class.
+TYPEMAP_FOR_ALL_PRIMITIVES <- list(
+  string = "character",
+  integer = "integer",
+  float = "numeric",
+  number = "numeric",
+  boolean = "logical"
+)
+
+isPrimitiveType <- function(rType) {
+  !is.na(match(rType, TYPEMAP_FOR_ALL_PRIMITIVES))
+}
+
+isEnum<-function(propertySchema) {
+  is.null(propertySchema$properties) && !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]])
+}
+
+
+# This is the our approach to naming typed lists:
+# We append "List" to the type and make sure the first character
+# is upper case. So a typed list of "character" is "CharacterList"
+listClassName<-function(rType) {
+  sprintf("%s%sList", toupper(substring(rType, 1, 1)), substring(rType, 2))
+}
+
+
 
