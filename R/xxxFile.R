@@ -93,7 +93,7 @@ File<-function(path, synapseStore=T, ...) {
         }
     }
     for (key in names(entityParams)) file<-synAnnotSetMethod(file, key, entityParams[[key]])
-        file@synapseStore <- synapseStore
+    file@synapseStore <- synapseStore
     file
 }
 

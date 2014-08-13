@@ -51,11 +51,15 @@ TableSchema<-function(name, parent, columns, ...) {
     if (is(column, "TableColumn")) {
       columnIds<-append(columnIds, column$id)
     } else {
-      columnIds<-apend(columnIds, column)
+      columnIds<-append(columnIds, column)
     }
   }
   propertyValue(result, "columnIds")<-columnIds
-  # TODO additional annotations
+  entityParams<-list(...)
+  for (key in names(entityParams)) {
+    result<-synAnnotSetMethod(result, key, entityParams[[key]])
+  }
+  
   result
 }
 

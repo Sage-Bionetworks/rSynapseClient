@@ -30,24 +30,29 @@ integrationTestCreateTableSchema<-function() {
   
   name<-sprintf("R_Client_Integration_Test_Create_Schema_%s", sample(999999999, 1))
  
-  tableSchema<-TableSchema(name, propertyValue(project, "id"), tableColumns,  foo="bar", "pi"=3.14)
+  tableSchema<-TableSchema(name=name, parent=propertyValue(project, "id"), columns=tableColumns,  foo="bar", "pi"=3.14)
   for (i in 1:3) {
     checkEquals(tableColumns[[i]]$id, propertyValue(tableSchema, "columnIds")[[i]])
   }
   
   storedSchema<-synStore(tableSchema)
   id<-propertyValue(storedSchema, "id")
+  checkTrue(!is.null(id))
+  checkTrue(!is.null(propertyValue(storedSchema, "etag")))
+  checkTrue(!is.null(propertyValue(storedSchema, "createdOn")))
+  checkTrue(!is.null(propertyValue(storedSchema, "modifiedOn")))
+  checkTrue(!is.null(propertyValue(storedSchema, "uri")))
+  checkTrue(!is.null(propertyValue(storedSchema, "createdBy")))
+  checkTrue(!is.null(propertyValue(storedSchema, "modifiedBy")))
   checkEquals(propertyValue(storedSchema, "name"), name)
-  
-  # should be identical except for the ids, so we fill in the ID and check that they're identical
-  propertyValue(tableSchema, "id")<-id
-  checkIdentical(storedSchema, tableSchema)
+  checkEquals(propertyValue(storedSchema, "parentId"), propertyValue(project, "id"))
+  checkEquals(synGetAnnotations(storedSchema), synGetAnnotations(tableSchema))
   
   retrievedSchema<-synGet(id)
-  checkIdentical(retrievedSchema, storedSchema)
+  checkTrue(identical(retrievedSchema, storedSchema))
   
-  checkEquals(synGetAnnotations(retrievedSchema, "foo"), "bar")
-  checkEquals(synGetAnnotations(retrievedSchema, "pi"), 3.14)
+  checkEquals(synGetAnnotation(retrievedSchema, "foo"), "bar")
+  checkEquals(synGetAnnotation(retrievedSchema, "pi"), 3.14)
   
   synDelete(storedSchema)
   

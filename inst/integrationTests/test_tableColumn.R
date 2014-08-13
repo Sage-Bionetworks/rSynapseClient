@@ -22,9 +22,9 @@ integrationTestCreateColumn<-function() {
   checkTrue(!is.null(storedColumn$id))
   id<-storedColumn$id
   storedColumn$id<-character(0)
-  checkIdentical(storedColumn, tableColumn)
+  checkTrue(identical(storedColumn, tableColumn))
   
   retrievedColumn<-synapseClient:::synGetColumn(id)
   storedColumn$id<-id
-  checkIdentical(retrievedColumn, storedColumn)
+  checkTrue(identical(retrievedColumn, storedColumn))
 }

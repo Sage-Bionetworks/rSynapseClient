@@ -25,6 +25,28 @@ setClass(
 
 defineEntityConstructors("org.sagebionetworks.repo.model.Entity", package="synapseClient")
 
+# we want to be able to check "identical" on two entities, but don't want to be 'tripped up'
+# by the "AttachmentOwner" field which is (1) defunct (only kept for deprecated entity types)
+# and (2) is always different for two objects.
+setMethod("identical",
+  signature=signature("Entity", "Entity"),
+  definition = function(x, y, num.eq=TRUE, single.NA = TRUE, attrib.as.set = TRUE,
+    ignore.bytecode = TRUE, ignore.environment = FALSE) {
+    
+    slotNames<-slotNames(x)
+    if (!identical(slotNames, slotNames(y), single.NA, attrib.as.set, ignore.bytecode, ignore.environment)) return(FALSE)
+    for (name in slotNames) {
+      if (is(slot(x,name), "AttachmentOwner")) {
+        # don't compare
+      } else {
+        # all other slot types
+        if(!identical(slot(x, name), slot(y, name), single.NA, 
+            attrib.as.set, ignore.bytecode, ignore.environment)) return(FALSE)
+      }
+    }
+    TRUE
+  }
+)
 
 setMethod(
   f = "synStore",

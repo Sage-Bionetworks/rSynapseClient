@@ -32,7 +32,8 @@ export(
   "synGetActivity",
   "synAnnot",
   "synAnnot<-",
-  "onWeb"
+  "onWeb",
+  "identical"
 )
 
 ## S3 utility methods
@@ -97,7 +98,8 @@ exportMethods(
 	# methods for TypeList
 	"add",
 	"set",
-	"getList"
+	"getList",
+	"identical"
 )
 
 ## entity property/annotation setters and getters
