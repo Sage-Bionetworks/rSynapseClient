@@ -163,7 +163,7 @@ setReplaceMethod("$",
 )
 
 identicalSimplePropertyOwner<-function(x, y, num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
-  ignore.bytecode = TRUE, ignore.environment = FALSE) {
+  ignore.bytecode = TRUE) {
   sortedNamesX <- sort(names(properties(x)))
   sortedNamesY <- sort(names(properties(y)))
   if (!identical(sortedNamesX, sortedNamesY)) return(FALSE)
@@ -174,9 +174,9 @@ identicalSimplePropertyOwner<-function(x, y, num.eq = TRUE, single.NA = TRUE, at
 }
 
 setMethod("identical",
-  signature=signature("SimplePropertyOwner", "SimplePropertyOwner", "logical", "logical", "logical", "logical", "logical"),
+  signature=signature("SimplePropertyOwner", "SimplePropertyOwner"),
   definition = function(x, y, num.eq=TRUE, single.NA = TRUE, attrib.as.set = TRUE,
-    ignore.bytecode = TRUE, ignore.environment = FALSE) {
-    identicalSimplePropertyOwner(x, y, num.eq, single.NA, attrib.as.set, ignore.bytecode, ignore.environment)
+    ignore.bytecode = TRUE) {
+    identicalSimplePropertyOwner(x, y, num.eq, single.NA, attrib.as.set, ignore.bytecode)
   }
 )

@@ -31,17 +31,17 @@ defineEntityConstructors("org.sagebionetworks.repo.model.Entity", package="synap
 setMethod("identical",
   signature=signature("Entity", "Entity"),
   definition = function(x, y, num.eq=TRUE, single.NA = TRUE, attrib.as.set = TRUE,
-    ignore.bytecode = TRUE, ignore.environment = FALSE) {
+    ignore.bytecode = TRUE) {
     
     slotNames<-slotNames(x)
-    if (!identical(slotNames, slotNames(y), single.NA, attrib.as.set, ignore.bytecode, ignore.environment)) return(FALSE)
+    if (!identical(slotNames, slotNames(y), single.NA, attrib.as.set, ignore.bytecode)) return(FALSE)
     for (name in slotNames) {
       if (is(slot(x,name), "AttachmentOwner")) {
         # don't compare
       } else {
         # all other slot types
         if(!identical(slot(x, name), slot(y, name), single.NA, 
-            attrib.as.set, ignore.bytecode, ignore.environment)) return(FALSE)
+            attrib.as.set, ignore.bytecode)) return(FALSE)
       }
     }
     TRUE

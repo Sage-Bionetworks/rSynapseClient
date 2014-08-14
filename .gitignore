@@ -6,3 +6,12 @@ src/*.so
 .Rproj.user
 .Rbuildignore
 rSynapseClient.Rproj
+man/AccessControlList.Rd
+man/ResourceAccess.Rd
+man/Row.Rd
+man/RowReference.Rd
+man/RowReferenceSet.Rd
+man/Settings.Rd
+man/TableColumn.Rd
+man/TableRowSet.Rd
+man/TypedList.Rd
