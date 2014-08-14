@@ -1,8 +1,6 @@
 # get the schemas
-# TODO
+# TODO download schemas from artifactory
 # build the .Rd files
-# TODO how do we specify the path?
 inst/docGen/createRdFiles.R .
 # Now build the package
-#R CMD INSTALL . --no-test-load
 R CMD INSTALL .
