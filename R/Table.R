@@ -56,26 +56,34 @@ setMethod(
 maxRowTransferForSchema<-function(schemaId) {
   if (!is(schemaId, "character") || length(schemaId)>1) stop("Illegal value for schemaid")
   # mask to retrieve max rows is x1000 or 4096 (decimal)
-  bundle<-synRestGET(sprintf("/entity/{id}/bundle?mask=4096",schemaId))
+  bundle<-synRestGET(sprintf("/entity/%s/bundle?mask=4096",schemaId))
   tableDataList<-bundle$tableBundle
-  tableData<-createS4ObjectFromList(tableDataList)
+  tableData<-createS4ObjectFromList(tableDataList, "TableBundle")
   tableData$maxRowsPerPage
 }
 
 # Given a schema and a list of columns, return the max number of rows that 
 # can be uploaded or downloaded at a time
-maxRowTransferForSchemaAndColumns<-function(schemaId, columnIds) {
+maxRowTransferForSchemaAndColumnNames<-function(schemaId, columnNames) {
   # to get the maxRowsPerPage use mask=8
-  query<-sprintf("select %s from %s", paste(columnIds, collapse=","), schemaId)
-  bundleAsList<-synRestPOST("/table/query/bundle?partsMask=8", list(query=query))
-  bundle<-createS4ObjectFromList(bundleAsList)
+  queryString<-sprintf("select %s from %s", paste(columnNames, collapse=","), schemaId)
+  query<-Query(sql=queryString)
+  bundleAsList<-synRestPOST("/table/query/bundle?partsMask=8", createListFromS4Object(query))
+  bundle<-createS4ObjectFromList(bundleAsList, "QueryResultBundle")
   bundle@maxRowsPerPage
 }
 
 setMethod(
   f = "synStore",
-  signature = "TableRowSet",
-  definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
+  signature = signature("TableRowSet"),
+  definition = function(entity, retrieveData, verbose) {
+#    #get the optional args.  Doesn't see to work to declare them in the line above
+#    args = list(...)
+#    retrieveData<-args[["retrieveData"]]
+#    if (is.null(retrieveData)) retrieveData<-FALSE
+#    verbose<-args[["verbose"]]
+#    if (is.null(verbose)) verbose<-TRUE
+    
     id<-entity@tableId # character
     columnIds<-entity@headers # CharacterList
     etag<-entity@etag # character 
@@ -91,19 +99,22 @@ setMethod(
       }
     }
     # store the values
-    maxRowsPerRequest<-maxRowTransferForSchema(id, columnIds)
+    # TODO it would be nice to do the following for just the columns being uploaded,
+    # but doing so requires retrieving all the column names.  For expediency we just
+    # get the max rows when uploading _all_ columns.
+    maxRowsPerRequest<-maxRowTransferForSchema(id)
     if (maxRowsPerRequest<r && length(etag)>0) stop("Row set is too large for an update operation.")
     currentRow<-1
-    rowReferenceSet<-RowReferenceSet()
-    tableRowSet<-TableRowSet()
+    rowReferenceSet<-RowReferenceSet(rows=RowReferenceList())
+    tableRowSet<-TableRowSet(rows=RowList())
     while (currentRow<=r) {
       rowLimit<-min(r, currentRow+maxRowsPerRequest)
       # updates can't be broken up into chunks
       chunk<-RowList()
       chunk@content<-rows@content[currentRow:rowLimit]
-      tableRowSet<-TableRowSet(headers=columnIds, etag=etag, tableId=id, rows=chunk)
-      if (verbose) cat(sprintf("Sending rows %d through %d of %d for TableSchema %s.", currentRow, rowLimit, r, id))
-      rowReferenceSetChunkAsList<-synRestPOST(sprintf("/entity/%s/table", id), tableRowSet)
+      tableRowSetChunk<-TableRowSet(headers=columnIds, etag=etag, tableId=id, rows=chunk)
+      if (verbose) cat(sprintf("Sending rows %d through %d of %d for TableSchema %s.\n", currentRow, rowLimit, r, id))
+      rowReferenceSetChunkAsList<-synRestPOST(sprintf("/entity/%s/table", id), createListFromS4Object(tableRowSetChunk))
       
       if (retrieveData) {
         # retrieve the data into a TableRowSet
@@ -112,15 +123,13 @@ setMethod(
         tableRowSet@tableId<-tableRowSetChunk@tableId
         if (r<=maxRowsPerRequest) tableRowSet@etag<-tableRowSetChunk@etag
         tableRowSet@headers<-tableRowSetChunk@headers
-        if (is.null(tableRowSet@rows)) tableRowSet@rows<-RowList()
         # TODO implement a strongly typed version of this
         tableRowSet@rows@content<-append(tableRowSet@rows@content, tableRowSetChunk@rows@content)
       } else {
-        rowReferenceSetChunk<-createS4ObjectFromList(rowReferenceSetChunkAsList)
+        rowReferenceSetChunk<-createS4ObjectFromList(rowReferenceSetChunkAsList, "RowReferenceSet")
         rowReferenceSet@tableId<-rowReferenceSetChunk@tableId
         if (r<=maxRowsPerRequest) rowReferenceSet@etag<-rowReferenceSetChunk@etag
         rowReferenceSet@headers<-rowReferenceSetChunk@headers
-        if (is.null(rowReference@rows)) rowReference@rows<-RowReferenceSet()
         # TODO implement a strongly typed version of this
         rowReferenceSet@rows@content<-append(rowReferenceSet@rows@content, rowReferenceSetChunk@rows@content)
       }
@@ -143,7 +152,9 @@ setMethod(
     if (is.null(id)) {
       entity@schema<-synStore(entity@schema)
     }
-    tableRowSet<-TableRowSet(tableId=id, headers=propertyValue(entity@schema, "columnIds"), rows=entity@values)
+    # create a CharacterList from a character vector
+    headers<-createTypedList(propertyValue(entity@schema, "columnIds"))
+    tableRowSet<-TableRowSet(tableId=id, headers=headers, rows=entity@values)
     synStore(tableRowSet)
   }
 )

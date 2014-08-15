@@ -21,5 +21,6 @@ TableColumn	org.sagebionetworks.repo.model.table.ColumnModel	true
 Row	org.sagebionetworks.repo.model.table.Row	true
 RowReference	org.sagebionetworks.repo.model.table.RowReference	true
 RowReferenceSet	org.sagebionetworks.repo.model.table.RowReferenceSet true
-TableBundle org.sagebionetworks.repo.model.table.TableBundle false
-QueryResultBundle org.sagebionetworks.repo.model.table.QueryResultBundle false
+TableBundle	org.sagebionetworks.repo.model.table.TableBundle	false
+Query	org.sagebionetworks.repo.model.table.Query	false
+QueryResultBundle	org.sagebionetworks.repo.model.table.QueryResultBundle	false

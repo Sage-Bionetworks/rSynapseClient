@@ -108,3 +108,22 @@ setMethod(
   }
 )
 
+createTypedList<-function(untyped) {
+  if (is.null(untyped) || length(untyped)==0) stop("Argument is empty.")
+  if (is(untyped, "list")) {
+    type<-class(untyped[[1]])
+    if (!all(sapply(X=untyped, FUN=function(x){is(x, type)}))) stop("list elements are not all of the same type.")
+    # we are not in the business of creating classes on the fly.
+    # if the class doesn't already exist the following will throw an exception
+    result<-do.call(listClassName(type), list())
+    result@content<-untyped
+  } else { # treat as a vector
+    type<-class(untyped)
+    # we are not in the business of creating classes on the fly.
+    # if the class doesn't already exist the following will throw an exception
+    result<-do.call(listClassName(type), list())
+    result@content<-as.list(untyped)
+  }
+  result
+}
+
