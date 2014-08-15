@@ -33,7 +33,11 @@ export(
   "synAnnot",
   "synAnnot<-",
   "onWeb",
-  "identical"
+  "identical",
+  "synCreateEntityACL",
+  "synGetEntityACL",
+  "synUpdateEntityACL",
+  "synDeleteEntityACL"
 )
 
 ## S3 utility methods

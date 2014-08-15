@@ -15,8 +15,6 @@ setMethod(
     for (prop in names(propertiesList))
       tableSchema<-synAnnotSetMethod(tableSchema, prop, propertiesList[[prop]])
     
-    propertyValue(tableSchema, "concreteType") <- "org.sagebionetworks.repo.model.TableEntity"
-    
     tableSchema
   }
 )
@@ -26,14 +24,13 @@ initializeTableSchemaSlots<-function(tableSchema) {
   tableSchema@annotations <- new("SynapseAnnotations")
   tableSchema@synapseWebUrl <- ""
   tableSchema@generatedByChanged <- FALSE
-  tableSchema@properties <- SynapseProperties(getEffectivePropertyTypes("org.sagebionetworks.repo.model.Entity"))
+  tableSchema@properties <- initializeProperties("org.sagebionetworks.repo.model.table.TableEntity", TRUE)
   tableSchema
 }
 
 TableSchema<-function(name, parent, columns, ...) {
   result<-new("TableSchema")
   result<-initializeTableSchemaSlots(result)
-  result@properties <- initializeProperties("org.sagebionetworks.repo.model.table.TableEntity", TRUE)
   propertyValue(result, "name")<-name
   if (is(parent, "Entity")) {
     parentId<-propertyValue(parent, "id")

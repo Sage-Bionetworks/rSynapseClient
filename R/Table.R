@@ -139,10 +139,11 @@ setMethod(
   signature = "TableRowList",
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
     # ensure that the schema is stored
-    if (is.null(entity@schema$id)) {
+    id<-propertyValue(entity@schema, "id")
+    if (is.null(id)) {
       entity@schema<-synStore(entity@schema)
     }
-    tableRowSet<-TableRowSet(tableId=entity@schema$id, headers=entity@schema$columnIds, rows=entity@values)
+    tableRowSet<-TableRowSet(tableId=id, headers=propertyValue(entity@schema, "columnIds"), rows=entity@values)
     synStore(tableRowSet)
   }
 )
