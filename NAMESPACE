@@ -74,7 +74,7 @@ export(
 	"AccessControlList",
 	"TableSchema",
 	"TableRowSet",
-	"TableColumn",
+	"Table",
 	"Row",
 	"RowReference",
 	"RowReferenceSet",
