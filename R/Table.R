@@ -76,13 +76,7 @@ maxRowTransferForSchemaAndColumnNames<-function(schemaId, columnNames) {
 setMethod(
   f = "synStore",
   signature = signature("TableRowSet"),
-  definition = function(entity, retrieveData, verbose) {
-#    #get the optional args.  Doesn't see to work to declare them in the line above
-#    args = list(...)
-#    retrieveData<-args[["retrieveData"]]
-#    if (is.null(retrieveData)) retrieveData<-FALSE
-#    verbose<-args[["verbose"]]
-#    if (is.null(verbose)) verbose<-TRUE
+  definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
     
     id<-entity@tableId # character
     columnIds<-entity@headers # CharacterList
@@ -155,7 +149,7 @@ setMethod(
     # create a CharacterList from a character vector
     headers<-createTypedList(propertyValue(entity@schema, "columnIds"))
     tableRowSet<-TableRowSet(tableId=id, headers=headers, rows=entity@values)
-    synStore(tableRowSet)
+    synStore(tableRowSet, retrieveData, verbose)
   }
 )
 

@@ -48,7 +48,7 @@ integrationTestSynStore <- function() {
   rowList<-add(rowList, Row(values=CharacterList("a1", "b1", "c1")))
   rowList<-add(rowList, Row(values=CharacterList("a2", "b2", "c2")))
   table<-Table(tableSchema, rowList)
-  rowReferenceSet<-synStore(entity=table, retrieveData=FALSE, verbose=FALSE)
+  rowReferenceSet<-synStore(table)
   checkEquals(rowReferenceSet$tableId, propertyValue(tableSchema, "id"))
   checkTrue(length(rowReferenceSet$etag)>0)
   checkEquals(as.list(propertyValue(tableSchema, "columnIds")), rowReferenceSet$headers@content)
@@ -59,11 +59,12 @@ integrationTestSynStore <- function() {
   rowList<-add(rowList, Row(values=CharacterList("a3", "b3", "c3")))
   rowList<-add(rowList, Row(values=CharacterList("a4", "b4", "c4")))
   table<-Table(tableSchema, rowList)
-  tableRowSet<-synStore(entity=table, retrieveData=TRUE, verbose=FALSE)
+  tableRowSet<-synStore(table, retrieveData=TRUE, verbose=FALSE)
   checkEquals(tableRowSet$tableId, propertyValue(tableSchema, "id"))
   checkTrue(length(tableRowSet$etag)>0)
   checkEquals(as.list(propertyValue(tableSchema, "columnIds")), tableRowSet$headers@content)
   checkEquals(length(tableRowSet$rows), 2)
   checkEquals(tableRowSet@rows[[1]]@values@content, list("a3", "b3", "c3"))
   checkEquals(tableRowSet@rows[[2]]@values@content, list("a4", "b4", "c4"))
-  }
+}
+  

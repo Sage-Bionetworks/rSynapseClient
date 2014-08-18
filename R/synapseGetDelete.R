@@ -11,7 +11,6 @@
     curlHandle=getCurlHandle(), 
     anonymous = .getCache("anonymous"), 
     opts = .getCache("curlOpts"), 
-    entity=NULL, 
     checkHttpStatus=T
 )
 {
@@ -74,8 +73,7 @@
   }
   
   ##curlSetOpt(opts,curl=curlHandle)
-  if(is.null(entity)){
-    response<-synapseRequestFollowingAllRedirects(
+  response<-synapseRequestFollowingAllRedirects(
       uri,
       endpoint,
       postfields = NULL, # the request body
@@ -85,29 +83,7 @@
       debugfunction=d$update,
       .opts=opts
       )
-  }else{
-    ## convert integers to characters
-    for(ii in 1:length(entity)){
-      if(all(checkInteger(entity[[ii]])))
-        entity[[ii]] <- as.character(as.integer(entity[[ii]]))
-    }	
-    
-    httpBody <- toJSON(entity)
-    if(.getCache("debug")) {
-      message("REQUEST_BODY: ", httpBody)
-    }
-    
-    response<-synapseRequestFollowingAllRedirects(
-      uri,
-      endpoint,
-      postfields = httpBody,
-      customrequest = requestMethod,
-      httpheader = header,
-      curl = curlHandle, # the curl handle
-      debugfunction=d$update,
-      .opts=opts
-    )
-  }
+
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
     message("RESPONSE_BODY: ", response$body)

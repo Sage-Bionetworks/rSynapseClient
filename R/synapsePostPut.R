@@ -40,34 +40,7 @@
 	  stop("no content for post/put")
   }
   
-  if(!is.list(entity)) {
-    stop("an entity must be supplied of R type list")
-  }
-  
-  if((any(names(entity) == "") || is.null(names(entity))) && length(entity) > 0){
-    stop("all entity elements must be named")
-  }
-  
-  if(length(entity) == 0)
-    entity <- emptyNamedList
-  
-  ## change dates to characters
-  indx <- grep("date", tolower(names(entity)))
-  indx <- indx[as.character(entity[indx]) != "NULL"]
-  indx <- indx[names(entity)[indx] != "dateAnnotations"]
-  for(ii in indx)
-    entity[ii] <- as.character(entity[ii])
-  
-  
-  ## convert integers to characters
-  if(length(entity) > 0){
-    for(ii in 1:length(entity)){
-      if(all(checkInteger(entity[[ii]])))
-        entity[[ii]] <- as.character(as.integer(entity[[ii]]))
-    }
-  }
-  
-  httpBody <- toJSON(entity)
+  httpBody <- synToJSON(entity)
   
   ## uris formed by the service already have their servlet prefix
   pathIndex<-regexpr(path, uri, fixed=T)
@@ -85,10 +58,6 @@
   header <- .getCache("curlHeader")
   if(is.null(anonymous) || !anonymous) {
     header <- .stuffHeader(header, paste(path, uriWithoutParams, sep=""))
-  }
-  if("PUT" == requestMethod) {
-    # Add the ETag header
-    header <- c(header, ETag = entity$etag)
   }
   
   if(length(path) > 1)
