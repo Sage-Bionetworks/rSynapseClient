@@ -40,7 +40,7 @@
 	  stop("no content for post/put")
   }
   
-  httpBody <- synToJSON(entity)
+  httpBody <- synToJson(entity)
   
   ## uris formed by the service already have their servlet prefix
   pathIndex<-regexpr(path, uri, fixed=T)

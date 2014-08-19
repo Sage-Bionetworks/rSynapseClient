@@ -16,9 +16,6 @@ synapseDelete <-
   ## constants
   kMethod <- "DELETE"
   ## end constants
-  
-  if(!missing(entity))
-    stop("Delete request should not have a request body.")
 
   .synapseGetDelete(uri = uri, 
       requestMethod = kMethod,

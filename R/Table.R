@@ -113,7 +113,7 @@ setMethod(
       if (retrieveData) {
         # retrieve the data into a TableRowSet
         tableRowSetChunkAsList<-synRestPOST(sprintf("/entity/%s/table/getRows", id), rowReferenceSetChunkAsList)
-        tableRowSetChunk<-createS4ObjectFromList(tableRowSetChunkAsList, "TableRowSet")
+          tableRowSetChunk<-createS4ObjectFromList(tableRowSetChunkAsList, "TableRowSet")
         tableRowSet@tableId<-tableRowSetChunk@tableId
         if (r<=maxRowsPerRequest) tableRowSet@etag<-tableRowSetChunk@etag
         tableRowSet@headers<-tableRowSetChunk@headers

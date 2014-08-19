@@ -19,7 +19,7 @@ synToJson<-function(toEncode) {
   ## change dates to characters
   toEncode<-convertDatesToCharacters(toEncode)
   toEncode<-convertIntegersToCharacters(toEncode)
-  toEncode
+  toJSON(toEncode)
 }
 
 # warning:  This is designed specifically for date annotations objects yet is embedded in a low level library
