@@ -76,6 +76,7 @@ export(
 	"UserProfile",
 	"ResourceAccess",
 	"AccessControlList",
+	"ResourceAccessList",
 	"TableSchema",
 	"TableRowSet",
 	"Table",
