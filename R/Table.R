@@ -97,13 +97,13 @@ setMethod(
     # but doing so requires retrieving all the column names.  For expediency we just
     # get the max rows when uploading _all_ columns.
     maxRowsPerRequest<-maxRowTransferForSchema(id)
+    # updates can't be broken up into chunks
     if (maxRowsPerRequest<r && length(etag)>0) stop("Row set is too large for an update operation.")
     currentRow<-1
     rowReferenceSet<-RowReferenceSet(rows=RowReferenceList())
     tableRowSet<-TableRowSet(rows=RowList())
     while (currentRow<=r) {
       rowLimit<-min(r, currentRow+maxRowsPerRequest)
-      # updates can't be broken up into chunks
       chunk<-RowList()
       chunk@content<-rows@content[currentRow:rowLimit]
       tableRowSetChunk<-TableRowSet(headers=columnIds, etag=etag, tableId=id, rows=chunk)

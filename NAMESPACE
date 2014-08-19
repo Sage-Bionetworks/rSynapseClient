@@ -79,6 +79,7 @@ export(
 	"ResourceAccessList",
 	"TableSchema",
 	"TableRowSet",
+	"TableColumn",
 	"Table",
 	"Row",
 	"RowReference",
