@@ -1,9 +1,0 @@
-{
-    "title":"Folder",
-    "description":"Folder is a hierarchical container for organizing data in Synapse.",
-    "implements":[
-        {
-            "$ref":"org.sagebionetworks.repo.model.Entity"
-        }
-    ]    
-}
