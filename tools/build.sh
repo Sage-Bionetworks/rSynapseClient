@@ -1,5 +1,5 @@
-# get the schemas
-# TODO download schemas from artifactory
+# download schemas from artifactory
+tools/retrieveDependencies.R .
 # build the .Rd files
 tools/docGen/createRdFiles.R .
 # Now build the package
