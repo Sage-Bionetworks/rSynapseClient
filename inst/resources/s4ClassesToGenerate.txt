@@ -24,3 +24,4 @@ RowReferenceSet	org.sagebionetworks.repo.model.table.RowReferenceSet true
 TableBundle	org.sagebionetworks.repo.model.table.TableBundle	false
 Query	org.sagebionetworks.repo.model.table.Query	false
 QueryResultBundle	org.sagebionetworks.repo.model.table.QueryResultBundle	false
+PaginatedColumnModels org.sagebionetworks.repo.model.table.PaginatedColumnModels	false

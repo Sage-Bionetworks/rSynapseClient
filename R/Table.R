@@ -137,27 +137,63 @@ setMethod(
   }
 )
 
+ensureTableSchemaStored<-function(tableSchema) {
+  # ensure that the schema is stored
+  id<-propertyValue(tableSchema, "id")
+  if (is.null(id)) {
+    tableSchema<-synStore(tableSchema)
+  }
+  tableSchema
+}
+
 setMethod(
   f = "synStore",
   signature = "TableRowList",
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
-    # ensure that the schema is stored
-    id<-propertyValue(entity@schema, "id")
-    if (is.null(id)) {
-      entity@schema<-synStore(entity@schema)
-    }
+    tableSchema<-ensureTableSchemaStored(entity@schema)
     # create a CharacterList from a character vector
-    headers<-createTypedList(propertyValue(entity@schema, "columnIds"))
-    tableRowSet<-TableRowSet(tableId=id, headers=headers, rows=entity@values)
+    headers<-createTypedList(propertyValue(tableSchema, "columnIds"))
+    tableRowSet<-TableRowSet(tableId=propertyValue(tableSchema, "id"), headers=headers, rows=entity@values)
     synStore(tableRowSet, retrieveData, verbose)
   }
 )
+
+synGetColumns<-function(id) {
+  listResult<-synRestGET(sprintf("/entity/%s/column", id))
+  objectResult<-reateS4ObjectFromList(listResult, "PaginatedColumnModels")
+  objectResult@results
+}
 
 setMethod(
   f = "synStore",
   signature = "TableMatrix",
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
-    stop("Not yet implemented.")
+    matrix<-entity@values
+    if (nrow(matrix)<1 | ncol(matrix<1)) stop("Matrix is empty.")
+    if (is.null(colnames(matrix))) stop("Matrix must have column names.")
+    
+    tableSchema<-ensureTableSchemaStored(entity@schema)
+    
+    # map column names to ids
+    schemaColumns<-synGetColumns(tableSchema@id)
+    schemaColumnMap<-list()
+    for (column in schemaColumns) schemaColumnMap[[column@name]]<-column@id
+    
+    # get the order of the TableColumns
+    headers<-CharacterList()
+    for (matrixColumnName in colnames(matrix)) {
+      schemaColumnId<-schemaColumnMap[[matrixColumnName]]
+      if (is.null(schemaColumnId)) stop(sprintf("Matrix has column %s but schema has no such column.", matrixColumnName))
+      headers<-add(headers, schemaColumnId)
+    }
+    
+    # now build up the Rows
+    rowList<-RowList()
+    for (i in 1:nrow(matrix)) {
+      rowList<-add(rowList, Row(values=createTypedList(as.character(matrix[i,]))))
+    }
+    tableRowSet<-TableRowSet(tableId=propertyValue(tableSchema, "id"), headers=headers, rows=rowList)
+    synStore(tableRowSet, retrieveData, verbose)
   }
 )
 

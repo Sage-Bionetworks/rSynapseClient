@@ -28,6 +28,16 @@
 	}
 }
 
+createFileInMemory<-function(project) {
+  filePath<- tempfile()
+  connection<-file(filePath)
+  writeChar("this is a test", connection, eos=NULL)
+  close(connection)  
+  synapseStore<-TRUE
+  file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
+  file
+}
+
 integrationTestCreateS4Files <- 
   function()
 {
