@@ -160,7 +160,7 @@ setMethod(
 
 synGetColumns<-function(id) {
   listResult<-synRestGET(sprintf("/entity/%s/column", id))
-  objectResult<-reateS4ObjectFromList(listResult, "PaginatedColumnModels")
+  objectResult<-createS4ObjectFromList(listResult, "PaginatedColumnModels")
   objectResult@results
 }
 
@@ -169,15 +169,15 @@ setMethod(
   signature = "TableMatrix",
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
     matrix<-entity@values
-    if (nrow(matrix)<1 | ncol(matrix<1)) stop("Matrix is empty.")
+    if (nrow(matrix)<1 | ncol(matrix)<1) stop("Matrix is empty.")
     if (is.null(colnames(matrix))) stop("Matrix must have column names.")
     
     tableSchema<-ensureTableSchemaStored(entity@schema)
     
     # map column names to ids
-    schemaColumns<-synGetColumns(tableSchema@id)
+    schemaColumns<-synGetColumns(propertyValue(tableSchema,"id"))
     schemaColumnMap<-list()
-    for (column in schemaColumns) schemaColumnMap[[column@name]]<-column@id
+    for (column in schemaColumns@content) schemaColumnMap[[column@name]]<-column@id
     
     # get the order of the TableColumns
     headers<-CharacterList()
