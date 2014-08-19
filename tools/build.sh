@@ -1,6 +1,4 @@
-# download schemas from artifactory
-tools/retrieveDependencies.R .
-# build the .Rd files
-tools/docGen/createRdFiles.R .
+# First, do everything that needs to be done before building the package.
+prebuild.sh
 # Now build the package
 R CMD INSTALL .
