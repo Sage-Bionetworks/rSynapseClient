@@ -529,7 +529,11 @@ setClass(
   contains = c("Table"),
   representation=representation(
     schema="TableSchema",
-    filePath="character"
+    filePath="character",
+    linesToSkip="integer",
+    quoteCharacter="character",
+    escapeCharacter="character",
+    separator="character"
     )
 )
 

@@ -41,10 +41,20 @@ setMethod(
 setMethod(
   f = "Table",
   signature = signature("TableSchema", "character"),
-  definition = function(tableSchema, values) {
+  definition = function(
+    tableSchema, 
+    values,
+    linesToSkip,
+    quoteCharacter,
+    escapeCharacter,
+    separator) {
     result<-new("TableFilePath")
     result@schema<-tableSchema
     result@filePath<-values
+    if (!missing(linesToSkip)) result@linesToSkip<-linesToSkip
+    if (!missing(quoteCharacter)) result@quoteCharacter<-quoteCharacter
+    if (!missing(escapeCharacter)) result@escapeCharacter<-escapeCharacter
+    if (!missing(separator)) result@separator<-separator
     result
   }
 )
@@ -164,36 +174,39 @@ synGetColumns<-function(id) {
   objectResult@results
 }
 
+storeMatrix<-function(tableSchema, matrix, retrieveData, verbose) {
+  if (nrow(matrix)<1 | ncol(matrix)<1) stop("Matrix is empty.")
+  if (is.null(colnames(matrix))) stop("Matrix must have column names.")
+  
+  tableSchema<-ensureTableSchemaStored(tableSchema)
+  
+  # map column names to ids
+  schemaColumns<-synGetColumns(propertyValue(tableSchema,"id"))
+  schemaColumnMap<-list()
+  for (column in schemaColumns@content) schemaColumnMap[[column@name]]<-column@id
+  
+  # get the order of the TableColumns
+  headers<-CharacterList()
+  for (matrixColumnName in colnames(matrix)) {
+    schemaColumnId<-schemaColumnMap[[matrixColumnName]]
+    if (is.null(schemaColumnId)) stop(sprintf("Matrix has column %s but schema has no such column.", matrixColumnName))
+    headers<-add(headers, schemaColumnId)
+  }
+  
+  # now build up the Rows
+  rowList<-RowList()
+  for (i in 1:nrow(matrix)) {
+    rowList<-add(rowList, Row(values=createTypedList(as.character(matrix[i,]))))
+  }
+  tableRowSet<-TableRowSet(tableId=propertyValue(tableSchema, "id"), headers=headers, rows=rowList)
+  synStore(tableRowSet, retrieveData, verbose)
+}
+
 setMethod(
   f = "synStore",
   signature = "TableMatrix",
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
-    matrix<-entity@values
-    if (nrow(matrix)<1 | ncol(matrix)<1) stop("Matrix is empty.")
-    if (is.null(colnames(matrix))) stop("Matrix must have column names.")
-    
-    tableSchema<-ensureTableSchemaStored(entity@schema)
-    
-    # map column names to ids
-    schemaColumns<-synGetColumns(propertyValue(tableSchema,"id"))
-    schemaColumnMap<-list()
-    for (column in schemaColumns@content) schemaColumnMap[[column@name]]<-column@id
-    
-    # get the order of the TableColumns
-    headers<-CharacterList()
-    for (matrixColumnName in colnames(matrix)) {
-      schemaColumnId<-schemaColumnMap[[matrixColumnName]]
-      if (is.null(schemaColumnId)) stop(sprintf("Matrix has column %s but schema has no such column.", matrixColumnName))
-      headers<-add(headers, schemaColumnId)
-    }
-    
-    # now build up the Rows
-    rowList<-RowList()
-    for (i in 1:nrow(matrix)) {
-      rowList<-add(rowList, Row(values=createTypedList(as.character(matrix[i,]))))
-    }
-    tableRowSet<-TableRowSet(tableId=propertyValue(tableSchema, "id"), headers=headers, rows=rowList)
-    synStore(tableRowSet, retrieveData, verbose)
+    storeMatrix(entity@schema, entity@values, retrieveData, verbose)
   }
 )
 
@@ -201,15 +214,43 @@ setMethod(
   f = "synStore",
   signature = "TableDataFrame",
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
-    stop("Not yet implemented.")
+    storeMatrix(entity@schema, as.matrix(entity@values), retrieveData, verbose)
   }
 )
 
 setMethod(
   f = "synStore",
   signature = "TableFilePath",
-  definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
-    stop("Not yet implemented.")
+  definition = function(entity, 
+    retrieveData=FALSE, 
+    verbose=TRUE) {
+    # TODO update this message once Table Query is implemented
+    if (retrieveData) stop("To retrieve uploaded data please use the Table Query command.")
+    s3FileHandle<-chunkedUploadFile(entity@filePath)
+    request<-AsynchUploadToTableRequestBody(
+      tableId=propertyValue(entity@schema, "id"),
+      concreteType="org.sagebionetworks.repo.model.table.AsynchUploadToTableRequestBody",
+      uploadFileHandleId=s3FileHandle$id,
+      linesToSkip=entity@linesToSkip,
+      quoteCharacter=entity@quoteCharacter,
+      escapeCharacter=entity@escapeCharacter,
+      separator=entity@separator
+    )
+    jobStatusAsList<-synRestPOST("/asynchronous/job", createListFromS4Object(request))
+    jobStatus<-createS4ObjectFromList(jobStatusAsList, "AsynchronousJobStatus")
+    asyncJobState<-jobStatus@jobState # PROCESSING, FAILED, or COMPLETE
+    while (asyncJobState=="PROCESSING") {
+      if (verbose) cat(sprintf("Completd %d of %d.  %s\n", 
+          jobStatus@progressCurrent, jobStatus@progressTotal, jobStatus@progressMessage))
+      jobStatus<-createS4ObjectFromList(
+        synRestGET(sprintf("/asynchronous/job/{jobId}", jobStatus$jobId)), "AsynchronousJobStatus")
+      if (asyncJobState=="PROCESSING") Sys.sleep(1);
+    }
+    if (asyncJobState=="FAILED") stop(jobStatus@errorMessage)
+    # TODO log jobStatus@errorDetails to the new client logging service
+    rowsProcessed<-jobStatus@responseBody@rowsProcessed
+    if (verbose) cat(sprintf("Complete.  Processed %d rows.\n", rowsProcessed))
+    rowsProcessed
   }
 )
 

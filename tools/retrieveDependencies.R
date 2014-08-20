@@ -11,6 +11,13 @@
 # the version, e.g. "54.0" needs to be filled in
 jsonSchemaURLTemplate<-"http://sagebionetworks.artifactoryonline.com/sagebionetworks/libs-releases-local/org/sagebionetworks/lib-auto-generated/%s/lib-auto-generated-%s.jar"
 
+move<-function(filename, sourcefolder, destfolder) {
+  src<-sprintf("%s/%s", sourcefolder, filename)
+  dst<-sprintf("%s/%s", destfolder, filename)
+  if (unlink(dst, recursive=T, force=T)!=0) stop(sprintf("Unable to delete %s", dst))
+  file.rename(src, dst)
+}
+
 retrieveDependencies<-function(srcRootDir) {
   # download dependencies and 'unzip' into <srcRootDir>/inst/resources
   jsonSchemaVersion<-"54.0"
@@ -21,8 +28,8 @@ retrieveDependencies<-function(srcRootDir) {
   unzipTarget<-tempdir()
   unzip(zipfile=destFile, overwrite=T, exdir=unzipTarget)
   packageTarget<-sprintf("%s/inst/resources", srcRootDir)
-  file.rename(sprintf("%s/Register.json", unzipTarget), sprintf("%s/Register.json", packageTarget))
-  file.rename(sprintf("%s/schema", unzipTarget), sprintf("%s/schema", packageTarget))
+  move("Register.json", unzipTarget, packageTarget)
+  move("schema", unzipTarget, packageTarget)
 }
 
 args <- commandArgs(TRUE)
