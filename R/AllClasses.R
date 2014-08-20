@@ -508,27 +508,32 @@ setClass(
 )
 
 setClass(
-  Class = "TableValues",
+  Class = "Table",
   representation=representation(schema="TableSchema")
 )
 
 setClass(
-  Class = "TableValuesDataFrame",
-  contains = c("TableValues"),
+  Class = "TableDataFrame",
+  contains = c("Table"),
   representation=representation(values="data.frame")
 )
 
 setClass(
-  Class = "TableValuesMatrix",
-  contains = c("TableValues"),
+  Class = "TableMatrix",
+  contains = c("Table"),
   representation=representation(values="matrix")
 )
 
 setClass(
   Class = "TableFilePath",
+  contains = c("Table"),
   representation=representation(
     schema="TableSchema",
-    filePath="character"
+    filePath="character",
+    linesToSkip="integer",
+    quoteCharacter="character",
+    escapeCharacter="character",
+    separator="character"
     )
 )
 
@@ -558,8 +563,8 @@ defineS4Classes()
 
 # ---- Classes dependent on auto-generated ones
 setClass(
-  Class = "TableValuesRowList",
-  contains = c("TableValues"),
+  Class = "TableRowList",
+  contains = c("Table"),
   representation=representation(values="RowList")
 )
 

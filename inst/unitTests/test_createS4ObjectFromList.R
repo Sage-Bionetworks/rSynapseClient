@@ -58,11 +58,6 @@ unitTestCreateS4ObjectFromList<-function() {
   checkEquals(synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"), prefs[[2]])
 }
 
-unitTestEmptyTypedList<-function() {
-  openIds<-new("CharacterList")
-  p<-synapseClient:::UserProfile(openIds=openIds)
-  synapseClient:::createListFromS4Object(p)
-}
 
 unitTestS4RoundTrip<-function() {
   e<-Evaluation(name="name", description="description")
@@ -119,6 +114,12 @@ unitTestRoundTripWithEnumField<-function() {
   li<-synapseClient:::createListFromS4Object(s)
   s2<-synapseClient:::createS4ObjectFromList(li, "SubmissionStatus")
   checkEquals(s,s2)
+}
+
+unitTestVector<-function() {
+  x<-c(concreteType="org.sagebionetworks.repo.model.table.AsynchUploadToTableRequestBody", tableId="syn12345", uploadFileHandleId="1111")
+  obj<-synapseClient:::createS4ObjectFromList(x, "AsynchronousRequestBody")
+  checkEquals("AsynchUploadToTableRequestBody", as.character(class(obj)))
 }
 
 

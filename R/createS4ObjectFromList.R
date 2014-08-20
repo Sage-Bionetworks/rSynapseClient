@@ -6,6 +6,10 @@
 
 createS4ObjectFromList<-function(content, className) {
   if (is.null(content)) return(NULL)
+  if (!is.list(content) && length(content)>0) {
+    # it's a vector.  Coerce to a list
+    content<-as.list(content)
+  }
   # if the list specifies a concrete type, then use it instead of the given class name
   if (is.list(content)) {
     concreteTypeSchemaName<-content$concreteType

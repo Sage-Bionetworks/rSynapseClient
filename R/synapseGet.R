@@ -8,8 +8,7 @@ synapseGet <-
     endpoint=synapseServiceEndpoint("REPO"), 
     curlHandle=getCurlHandle(), 
     anonymous = .getCache("anonymous"), 
-    opts = .getCache("curlOpts"), 
-    entity = NULL, 
+    opts = .getCache("curlOpts"),  
     checkHttpStatus=T
 )
 {
@@ -23,7 +22,6 @@ synapseGet <-
     curlHandle = curlHandle, 
     anonymous = anonymous, 
     opts = opts,
-    entity = entity,
     checkHttpStatus=checkHttpStatus
   )
 }

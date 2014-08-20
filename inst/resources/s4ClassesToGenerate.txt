@@ -21,3 +21,17 @@ TableColumn	org.sagebionetworks.repo.model.table.ColumnModel	true
 Row	org.sagebionetworks.repo.model.table.Row	true
 RowReference	org.sagebionetworks.repo.model.table.RowReference	true
 RowReferenceSet	org.sagebionetworks.repo.model.table.RowReferenceSet true
+TableBundle	org.sagebionetworks.repo.model.table.TableBundle	false
+Query	org.sagebionetworks.repo.model.table.Query	false
+QueryResultBundle	org.sagebionetworks.repo.model.table.QueryResultBundle	false
+PaginatedColumnModels org.sagebionetworks.repo.model.table.PaginatedColumnModels	false
+FileHandle	org.sagebionetworks.repo.model.file.FileHandle	false
+HasPreviewId	org.sagebionetworks.repo.model.file.HasPreviewId	false
+S3FileHandleInterface	org.sagebionetworks.repo.model.file.S3FileHandleInterface	false
+S3FileHandle	org.sagebionetworks.repo.model.file.S3FileHandle	false
+AsynchronousRequestBody	org.sagebionetworks.repo.model.asynch.AsynchronousRequestBody	false
+AsynchronousResponseBody	org.sagebionetworks.repo.model.asynch.AsynchronousResponseBody	false
+AsynchUploadToTableRequestBody	org.sagebionetworks.repo.model.table.AsynchUploadToTableRequestBody	false
+AsynchronousJobStatus	org.sagebionetworks.repo.model.asynch.AsynchronousJobStatus	false
+AsynchUploadToTableResponseBody	org.sagebionetworks.repo.model.table.AsynchUploadToTableResponseBody	false
+

@@ -15,3 +15,6 @@ man/Settings.Rd
 man/TableColumn.Rd
 man/TableRowSet.Rd
 man/TypedList.Rd
+inst/resources/Register.json
+inst/resources/schema
+

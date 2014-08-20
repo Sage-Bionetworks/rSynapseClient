@@ -956,7 +956,7 @@ setGeneric(
 
 setGeneric(
   name="Table",
-  def = function(tableSchema, values) {
+  def = function(tableSchema, values, ...) {
     standardGeneric("Table")
   }
 )

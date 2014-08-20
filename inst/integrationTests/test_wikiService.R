@@ -150,10 +150,5 @@ checkAndCleanUpWikiCRUD <- function(project, wikiPage, expectedAttachmentLength)
   #/{ownertObjectType}/{ownerObjectId}/wiki/{wikiId}
   synDelete(wikiPage2)
   checkException(synGetWiki(project, propertyValue(wikiPage2, "id")))
-  
-  # delete the file handles
-  # for (fileHandleId in fileHandleIds) {
-  #   handleUri<-sprintf("/fileHandle/%s", fileHandleId)
-  #   synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
-  # }
+
 }

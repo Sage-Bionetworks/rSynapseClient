@@ -117,5 +117,9 @@ unitTestListContainingLists <-
   checkTrue(all(res == synapseClient:::checkInteger(val)))
 }
 
-
+unitTestConvertIntegersToCharacters<-function() {
+  checkEquals(list(list(c(foo="1",bar="2"),c(foo="1",bar="2"))),
+    synapseClient:::convertIntegersToCharacters(list(list(c(foo=1,bar=2),c(foo=1,bar=2))))
+  )
+}
 

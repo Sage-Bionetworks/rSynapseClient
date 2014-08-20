@@ -266,6 +266,10 @@ getNonNullableType<-function(type) {
   result
 }
 
+isNullSlot<-function(slotValue) {
+  is(slotValue, "NullS4Object")
+}
+
 
 
 

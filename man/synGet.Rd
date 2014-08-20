@@ -32,8 +32,8 @@ telling the system what to do if a different file is found at the given local fi
 }
 }
 \details{
-Get an entity (File, Folder, etc.) from the Synapse server, with its attributes (properties, annotations) and, 
-optionally, with its associated file.
+Get an entity (File, Folder, TableSchema, etc.) from the Synapse server, with its attributes (properties, annotations) and, 
+optionally (for a File entity), with its associated file.
 }
 
 \author{
@@ -46,6 +46,8 @@ Bruce Hoff
 \code{\link{File}}
 \code{\link{Folder}}
 \code{\link{Project}}
+\code{\link{TableColumn}}
+\code{\link{TableSchema}}
 \code{\link{synStore}}
 \code{\link{getFileLocation}}
 \code{\link{getObject}}
