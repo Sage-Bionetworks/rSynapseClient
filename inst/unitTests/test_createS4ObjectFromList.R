@@ -119,7 +119,7 @@ unitTestRoundTripWithEnumField<-function() {
 unitTestVector<-function() {
   x<-c(concreteType="org.sagebionetworks.repo.model.table.AsynchUploadToTableRequestBody", tableId="syn12345", uploadFileHandleId="1111")
   obj<-synapseClient:::createS4ObjectFromList(x, "AsynchronousRequestBody")
-  checkEquals("AsynchUploadToTableRequestBody", class(obj))
+  checkEquals("AsynchUploadToTableRequestBody", as.character(class(obj)))
 }
 
 

@@ -240,10 +240,11 @@ setMethod(
     jobStatus<-createS4ObjectFromList(jobStatusAsList, "AsynchronousJobStatus")
     asyncJobState<-jobStatus@jobState # PROCESSING, FAILED, or COMPLETE
     while (asyncJobState=="PROCESSING") {
-      if (verbose) cat(sprintf("Completd %d of %d.  %s\n", 
+      if (verbose) cat(sprintf("Completed %d of %d.  %s\n", 
           jobStatus@progressCurrent, jobStatus@progressTotal, jobStatus@progressMessage))
       jobStatus<-createS4ObjectFromList(
-        synRestGET(sprintf("/asynchronous/job/{jobId}", jobStatus$jobId)), "AsynchronousJobStatus")
+        synRestGET(sprintf("/asynchronous/job/%s", jobStatus$jobId)), "AsynchronousJobStatus")
+      asyncJobState<-jobStatus@jobState
       if (asyncJobState=="PROCESSING") Sys.sleep(1);
     }
     if (asyncJobState=="FAILED") stop(jobStatus@errorMessage)
