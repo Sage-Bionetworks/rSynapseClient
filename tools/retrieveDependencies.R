@@ -22,14 +22,18 @@ retrieveDependencies<-function(srcRootDir) {
   # download dependencies and 'unzip' into <srcRootDir>/inst/resources
   jsonSchemaVersion<-"54.0"
   jarFileURL<-sprintf(jsonSchemaURLTemplate, jsonSchemaVersion, jsonSchemaVersion)
-  destFile<-tempfile()
+  scratchDir<-sprintf("%s/%s", srcRootDir, "temp")
+  dir.create(scratchDir)
+  if (!file.exists(scratchDir)) stop(sprintf("Could not create %s", scratchDir))
+  destFile<-sprintf("%s/%s", scratchDir, "temp.jar")
   returnCode<-download.file(jarFileURL, destFile, quiet=T)
   if (returnCode!=0) stop(sprintf("Failed to download %s.  Return code is %s", jarFileURL, returnCode))
-  unzipTarget<-tempdir()
+  unzipTarget<-scratchDir
   unzip(zipfile=destFile, overwrite=T, exdir=unzipTarget)
   packageTarget<-sprintf("%s/inst/resources", srcRootDir)
   move("Register.json", unzipTarget, packageTarget)
   move("schema", unzipTarget, packageTarget)
+  if (unlink(scratchDir, recursive=T, force=T)!=0) stop(sprintf("Unable to delete %s", scratchDir))
 }
 
 args <- commandArgs(TRUE)
