@@ -23,5 +23,5 @@ rm temp.jar
 
 
 # build the .Rd files
-tools/docGen/createRdFiles.R .
+Rscript tools/docGen/createRdFiles.R .
 
