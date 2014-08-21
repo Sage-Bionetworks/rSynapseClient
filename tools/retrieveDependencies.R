@@ -19,7 +19,7 @@ move<-function(filename, sourcefolder, destfolder) {
 }
 
 retrieveDependencies<-function(srcRootDir) {
-  # download dependencies and 'unzip' into <srcRootDir>/inst/resources
+  # download dependencies and 'unzip' into <srcRootDir>/temp
   jsonSchemaVersion<-"54.0"
   jarFileURL<-sprintf(jsonSchemaURLTemplate, jsonSchemaVersion, jsonSchemaVersion)
   scratchDir<-sprintf("%s/%s", srcRootDir, "temp")
@@ -33,7 +33,7 @@ retrieveDependencies<-function(srcRootDir) {
   packageTarget<-sprintf("%s/inst/resources", srcRootDir)
   move("Register.json", unzipTarget, packageTarget)
   move("schema", unzipTarget, packageTarget)
-  if (unlink(scratchDir, recursive=T, force=T)!=0) stop(sprintf("Unable to delete %s", scratchDir))
+ # if (unlink(scratchDir, recursive=T, force=T)!=0) stop(sprintf("Unable to delete %s", scratchDir))
 }
 
 args <- commandArgs(TRUE)
