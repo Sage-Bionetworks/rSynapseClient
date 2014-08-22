@@ -42,3 +42,10 @@ unitTestCreateTypedList<-function() {
   checkTrue(identical(CharacterList("1", "2", "3"), created))
 }
 
+unitTestAppendTwoLists<-function() {
+  r<-synapseClient:::RowReferenceList()
+  s<-synapseClient:::RowReferenceList(synapseClient:::RowReference(rowId=as.integer(1)), synapseClient:::RowReference(rowId=as.integer(2)))
+  t<-append(r, s)
+  checkEquals(length(t), length(r)+length(s))
+}
+

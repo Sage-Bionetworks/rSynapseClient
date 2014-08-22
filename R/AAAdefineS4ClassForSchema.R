@@ -235,7 +235,7 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
         f = "append",
         signature = signature(typeListClassName, typeListClassName),
         definition = function(x, values, after) {
-          x@content<-append(x@content, values, after)
+          x@content<-append(x@content, values@content, after)
           x
         }
       )
