@@ -230,6 +230,26 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
           do.call(typeListClassName, list(...))
         }
       )
+      
+      setMethod(
+        f = "append",
+        signature = signature(typeListClassName, typeListClassName),
+        definition = function(x, values, after) {
+          x@content<-append(x@content, values, after)
+          x
+        }
+      )
+      
+      setMethod(
+        f = "append",
+        signature = signature(typeListClassName, elemRType),
+        definition = function(x, values, after) {
+          x@content[[1+length(x@content)]]<-values
+          x
+        }
+      )
+      
+      
     }
     typeListClassName
   } else {

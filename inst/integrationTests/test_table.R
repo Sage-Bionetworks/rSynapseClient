@@ -54,8 +54,8 @@ integrationTestSynStore <- function() {
   checkTrue(synapseClient:::maxRowTransferForSchemaAndColumnNames(id, tableColumnNames)>0)
   
   rowList<-RowList()
-  rowList<-add(rowList, Row(values=CharacterList("a1", "b1", "c1")))
-  rowList<-add(rowList, Row(values=CharacterList("a2", "b2", "c2")))
+  rowList<-append(rowList, Row(values=CharacterList("a1", "b1", "c1")))
+  rowList<-append(rowList, Row(values=CharacterList("a2", "b2", "c2")))
   table<-Table(tableSchema, rowList)
   rowReferenceSet<-synStore(table, retrieveData=FALSE, verbose=FALSE)
   checkEquals(rowReferenceSet$tableId, propertyValue(tableSchema, "id"))
@@ -65,8 +65,8 @@ integrationTestSynStore <- function() {
   
   # rerun with retrieveData=TRUE
   rowList<-RowList()
-  rowList<-add(rowList, Row(values=CharacterList("a3", "b3", "c3")))
-  rowList<-add(rowList, Row(values=CharacterList("a4", "b4", "c4")))
+  rowList<-append(rowList, Row(values=CharacterList("a3", "b3", "c3")))
+  rowList<-append(rowList, Row(values=CharacterList("a4", "b4", "c4")))
   table<-Table(tableSchema, rowList)
   tableRowSet<-synStore(table, retrieveData=TRUE, verbose=FALSE)
   checkEquals(tableRowSet$tableId, propertyValue(tableSchema, "id"))

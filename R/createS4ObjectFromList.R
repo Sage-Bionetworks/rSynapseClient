@@ -69,7 +69,7 @@ createTypedListFromList<-function(content, className) {
     } else {
       value<-createS4ObjectFromList(elem, listElementType)
     }
-    result<-add(result, value)
+    result<-append(result, value)
   }
   result
 }

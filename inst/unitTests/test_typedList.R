@@ -25,16 +25,16 @@ unitTestTypedList<-function() {
   checkEquals(t[[2]], "b")
   checkEquals(list("a", "b"), synapseClient:::getList(t))
   
-  # test 'add'
+  # test 'append'
   t<-synapseClient:::CharacterList()
   t[[1]]<-"foo"
-  t<-synapseClient:::add(t, "bar")
-  checkEquals(list("foo", "bar"), synapseClient:::getList(t))
+  t<-append(t, "bar")
+  checkEquals(list("foo", "bar"), getList(t))
   t<-synapseClient:::set(t, list("a", "b"))
-  checkEquals(list("a", "b"), synapseClient:::getList(t))
+  checkEquals(list("a", "b"), getList(t))
   
   t<-synapseClient:::CharacterList("a", "b")
-  checkEquals(list("a", "b"), synapseClient:::getList(t))
+  checkEquals(list("a", "b"), getList(t))
 }
 
 unitTestCreateTypedList<-function() {

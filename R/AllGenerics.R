@@ -934,13 +934,6 @@ setGeneric(
 )
 
 setGeneric(
-  name = "add",
-  def = function(x, value) {
-    standardGeneric("add")
-  }
-)
-
-setGeneric(
   name = "getList",
   def = function(x) {
     standardGeneric("getList")

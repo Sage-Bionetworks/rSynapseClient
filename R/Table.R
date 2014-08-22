@@ -117,7 +117,8 @@ setMethod(
       tableRowSetChunk<-TableRowSet(headers=columnIds, etag=etag, tableId=id, rows=chunk)
       if (verbose) cat(sprintf("Sending rows %d through %d of %d for TableSchema %s.\n", currentRow, rowLimit, r, id))
       rowReferenceSetChunkAsList<-synRestPOST(sprintf("/entity/%s/table", id), createListFromS4Object(tableRowSetChunk))
-      etag<-tableRowSetChunk@etag # this etag will go in the next uploaded batch (if any)
+      rowReferenceSetChunk<-createS4ObjectFromList(rowReferenceSetChunkAsList, "RowReferenceSet")
+      etag<-rowReferenceSetChunk@etag # this etag will go in the next uploaded batch (if any)
       
       if (retrieveData) {
         # retrieve the data into a TableRowSet
@@ -126,15 +127,12 @@ setMethod(
         tableRowSet@tableId<-tableRowSetChunk@tableId
         tableRowSet@etag<-etag # each batch will overwrite this, and the final one will be returned
         tableRowSet@headers<-tableRowSetChunk@headers
-        # TODO implement a strongly typed version of this
-        tableRowSet@rows@content<-append(tableRowSet@rows@content, tableRowSetChunk@rows@content)
+        tableRowSet@rows<-append(tableRowSet@rows, tableRowSetChunk@rows)
       } else {
-        rowReferenceSetChunk<-createS4ObjectFromList(rowReferenceSetChunkAsList, "RowReferenceSet")
         rowReferenceSet@tableId<-rowReferenceSetChunk@tableId
         rowReferenceSet@etag<-etag # each batch will overwrite this, and the final one will be returned
         rowReferenceSet@headers<-rowReferenceSetChunk@headers
-        # TODO implement a strongly typed version of this
-        rowReferenceSet@rows@content<-append(rowReferenceSet@rows@content, rowReferenceSetChunk@rows@content)
+        rowReferenceSet@rows<-append(rowReferenceSet@rows, rowReferenceSetChunk@rows)
       }
       currentRow<-rowLimit+1
     }
@@ -189,13 +187,13 @@ storeMatrix<-function(tableSchema, matrix, retrieveData, verbose) {
   for (matrixColumnName in colnames(matrix)) {
     schemaColumnId<-schemaColumnMap[[matrixColumnName]]
     if (is.null(schemaColumnId)) stop(sprintf("Matrix has column %s but schema has no such column.", matrixColumnName))
-    headers<-add(headers, schemaColumnId)
+    headers<-append(headers, schemaColumnId)
   }
   
   # now build up the Rows
   rowList<-RowList()
   for (i in 1:nrow(matrix)) {
-    rowList<-add(rowList, Row(values=createTypedList(as.character(matrix[i,]))))
+    rowList<-append(rowList, Row(values=createTypedList(as.character(matrix[i,]))))
   }
   tableRowSet<-TableRowSet(tableId=propertyValue(tableSchema, "id"), headers=headers, rows=rowList)
   result<-synStore(tableRowSet, retrieveData, verbose)

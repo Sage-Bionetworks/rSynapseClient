@@ -72,16 +72,6 @@ setReplaceMethod("[[",
 )
 
 setMethod(
-  f = "add",
-  signature = signature("TypedList", "ANY"),
-  definition = function(x, value) {
-    validateTypedListElement(x, value)
-    x@content[[1+length(x@content)]]<-value
-    x
-  }
-)
-
-setMethod(
   f = "set",
   signature = signature("TypedList", "list"),
   definition = function(x, values) {

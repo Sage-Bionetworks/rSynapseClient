@@ -102,9 +102,9 @@ exportMethods(
 	"executed",
 	"executed<-",
 	# methods for TypeList
-	"add",
 	"set",
 	"getList",
+	"append",
 	"identical"
 )
 

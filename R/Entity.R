@@ -407,7 +407,7 @@ createEntityMethod<-function(entity, generatingActivity, createOrUpdate, forceVe
 setMethod(
   f = "createEntity",
   signature = "Entity",
-  # without the wrapper I get this error in R 2.15: methods can add arguments to the generic �createEntity� only if '...' is an argument to the generic
+  # without the wrapper I get this error in R 2.15: methods can add arguments to the generic 'createEntity' only if '...' is an argument to the generic
   definition = function(entity){createEntityMethod(entity=entity, generatingActivity=generatedBy(entity), createOrUpdate=FALSE, forceVersion=FALSE)}
 )
 
