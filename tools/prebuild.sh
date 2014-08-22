@@ -23,5 +23,6 @@ rm temp.jar
 
 
 # build the .Rd files
+# Note:  We want to just call 'tools/docGen/createRdFiles.R .' but it doesn't work on cygwin (Windows)
 Rscript tools/docGen/createRdFiles.R .
 

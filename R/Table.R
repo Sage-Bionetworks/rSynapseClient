@@ -199,7 +199,25 @@ storeMatrix<-function(tableSchema, matrix, retrieveData, verbose) {
     rowList<-add(rowList, Row(values=createTypedList(as.character(matrix[i,]))))
   }
   tableRowSet<-TableRowSet(tableId=propertyValue(tableSchema, "id"), headers=headers, rows=rowList)
-  synStore(tableRowSet, retrieveData, verbose)
+  result<-synStore(tableRowSet, retrieveData, verbose)
+  if (retrieveData) {
+    cols<-names(schemaColumnMap)[match(result@headers@content, schemaColumnMap)]
+    if (any(is.na(cols))) stop(sprintf("Unrecognized column IDs in %s", paste(result@headers@content, collapse=",")))
+    r<-length(result@rows)
+    if (r<1) {
+      # create an empty matrix
+      resultMatrix<-matrix(nrow=0, ncol=length(cols), dimnames=list(list(), cols))
+    } else {
+      resultMatrix<-matrix(nrow=r, ncol=length(cols), dimnames = list(1:r, cols))
+      for (i in 1:r) {
+        rowData<-result@rows[[i]]@values@content
+        resultMatrix[i,]<-unlist(as(rowData, class(matrix[i,1])))
+      }
+    }
+    resultMatrix
+  } else {
+    result
+  }
 }
 
 setMethod(
@@ -214,7 +232,7 @@ setMethod(
   f = "synStore",
   signature = "TableDataFrame",
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
-    storeMatrix(entity@schema, as.matrix(entity@values), retrieveData, verbose)
+    as.data.frame(storeMatrix(entity@schema, as.matrix(entity@values), retrieveData, verbose))
   }
 )
 
