@@ -107,9 +107,7 @@ setMethod(
     # but doing so requires retrieving all the column names.  For expediency we just
     # get the max rows when uploading _all_ columns.
     maxRowsPerRequest<-maxRowTransferForSchema(id)
-    # updates can't be broken up into chunks
-    if (maxRowsPerRequest<r && length(etag)>0) stop("Row set is too large for an update operation.")
-    currentRow<-1
+    currentRow <- 1
     rowReferenceSet<-RowReferenceSet(rows=RowReferenceList())
     tableRowSet<-TableRowSet(rows=RowList())
     while (currentRow<=r) {
@@ -119,23 +117,22 @@ setMethod(
       tableRowSetChunk<-TableRowSet(headers=columnIds, etag=etag, tableId=id, rows=chunk)
       if (verbose) cat(sprintf("Sending rows %d through %d of %d for TableSchema %s.\n", currentRow, rowLimit, r, id))
       rowReferenceSetChunkAsList<-synRestPOST(sprintf("/entity/%s/table", id), createListFromS4Object(tableRowSetChunk))
+      rowReferenceSetChunk<-createS4ObjectFromList(rowReferenceSetChunkAsList, "RowReferenceSet")
+      etag<-rowReferenceSetChunk@etag # this etag will go in the next uploaded batch (if any)
       
       if (retrieveData) {
         # retrieve the data into a TableRowSet
         tableRowSetChunkAsList<-synRestPOST(sprintf("/entity/%s/table/getRows", id), rowReferenceSetChunkAsList)
-          tableRowSetChunk<-createS4ObjectFromList(tableRowSetChunkAsList, "TableRowSet")
+        tableRowSetChunk<-createS4ObjectFromList(tableRowSetChunkAsList, "TableRowSet")
         tableRowSet@tableId<-tableRowSetChunk@tableId
-        if (r<=maxRowsPerRequest) tableRowSet@etag<-tableRowSetChunk@etag
+        tableRowSet@etag<-etag # each batch will overwrite this, and the final one will be returned
         tableRowSet@headers<-tableRowSetChunk@headers
-        # TODO implement a strongly typed version of this
-        tableRowSet@rows@content<-append(tableRowSet@rows@content, tableRowSetChunk@rows@content)
+        tableRowSet@rows<-append(tableRowSet@rows, tableRowSetChunk@rows)
       } else {
-        rowReferenceSetChunk<-createS4ObjectFromList(rowReferenceSetChunkAsList, "RowReferenceSet")
         rowReferenceSet@tableId<-rowReferenceSetChunk@tableId
-        if (r<=maxRowsPerRequest) rowReferenceSet@etag<-rowReferenceSetChunk@etag
+        rowReferenceSet@etag<-etag # each batch will overwrite this, and the final one will be returned
         rowReferenceSet@headers<-rowReferenceSetChunk@headers
-        # TODO implement a strongly typed version of this
-        rowReferenceSet@rows@content<-append(rowReferenceSet@rows@content, rowReferenceSetChunk@rows@content)
+        rowReferenceSet@rows<-append(rowReferenceSet@rows, rowReferenceSetChunk@rows)
       }
       currentRow<-rowLimit+1
     }
@@ -190,16 +187,34 @@ storeMatrix<-function(tableSchema, matrix, retrieveData, verbose) {
   for (matrixColumnName in colnames(matrix)) {
     schemaColumnId<-schemaColumnMap[[matrixColumnName]]
     if (is.null(schemaColumnId)) stop(sprintf("Matrix has column %s but schema has no such column.", matrixColumnName))
-    headers<-add(headers, schemaColumnId)
+    headers<-append(headers, schemaColumnId)
   }
   
   # now build up the Rows
   rowList<-RowList()
   for (i in 1:nrow(matrix)) {
-    rowList<-add(rowList, Row(values=createTypedList(as.character(matrix[i,]))))
+    rowList<-append(rowList, Row(values=createTypedList(as.character(matrix[i,]))))
   }
   tableRowSet<-TableRowSet(tableId=propertyValue(tableSchema, "id"), headers=headers, rows=rowList)
-  synStore(tableRowSet, retrieveData, verbose)
+  result<-synStore(tableRowSet, retrieveData, verbose)
+  if (retrieveData) {
+    cols<-names(schemaColumnMap)[match(result@headers@content, schemaColumnMap)]
+    if (any(is.na(cols))) stop(sprintf("Unrecognized column IDs in %s", paste(result@headers@content, collapse=",")))
+    r<-length(result@rows)
+    if (r<1) {
+      # create an empty matrix
+      resultMatrix<-matrix(nrow=0, ncol=length(cols), dimnames=list(list(), cols))
+    } else {
+      resultMatrix<-matrix(nrow=r, ncol=length(cols), dimnames = list(1:r, cols))
+      for (i in 1:r) {
+        rowData<-result@rows[[i]]@values@content
+        resultMatrix[i,]<-unlist(as(rowData, class(matrix[i,1])))
+      }
+    }
+    resultMatrix
+  } else {
+    result
+  }
 }
 
 setMethod(
@@ -214,7 +229,7 @@ setMethod(
   f = "synStore",
   signature = "TableDataFrame",
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
-    storeMatrix(entity@schema, as.matrix(entity@values), retrieveData, verbose)
+    as.data.frame(storeMatrix(entity@schema, as.matrix(entity@values), retrieveData, verbose))
   }
 )
 

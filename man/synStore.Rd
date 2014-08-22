@@ -9,10 +9,14 @@ Store an object in Synapse
 \usage{
 synStore(entity, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)
 synStore(entity, activity=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)
+synStore(table, retrieveData=F, verbose=T)
 }
 \arguments{
  \item{entity}{
-The object to store.  May be an entity (\code{\link{File}}, \code{\link{Folder}}, \code{\link{Project}}) or another object (\code{\link{Activity}}, \code{\link{Evaluation}}, \code{\link{SubmissionStatus}}, \code{\link{WikiPage}}, \code{\link{TableColumn}}, \code{\link{TableSchema}})
+The object to store.  May be an entity (\code{\link{File}}, \code{\link{Folder}}, 
+\code{\link{Project}}), (\code{\link{Activity}}, \code{\link{Evaluation}}, 
+\code{\link{SubmissionStatus}}, \code{\link{WikiPage}}, \code{\link{TableColumn}}, 
+\code{\link{Table}}, \code{\link{TableSchema}})
 }
  \item{used}{
 For entities, this is the list of other entities (URLs, objects and/or IDs) 'used' as inputs when generating the entity.  For non-entities, this parameter is ignored
@@ -41,9 +45,22 @@ For File entities only:  If TRUE then Download access by others is prevented and
 \item{contentType}{
 The (optional) contentType, stored when the File is uploaded. If omitted, it is the MIME type inferred from the file's suffix.
 }
+\item{retrieveData}{
+For tables:  If TRUE, returns a copy of the uploaded table.  Otherwise returns a RowReferenceSet, which supplies
+the row IDs for the uploaded rows.
+}
+\item{verbose}{
+For tables:  If TRUE, shows progress for uploading and retrieving data.
+}
 }
 \details{
 Stores an object crafted in memory, either creating it in Synapse anew, or updating an existing object.
+}
+\value{
+Returns the persisted copy of the object.  
+For TableRowSet, TableMatrix, and TableDataFrame, if retrieveData=TRUE, returns a RowSet, matrix or data frame, respectively.  
+If retrieveData=FALSE, returns a RowReferenceSet providing the row IDs for the created or updated rows.
+For TableFilePath, returns the number of rows uploaded.
 }
 
 \author{
@@ -61,4 +78,5 @@ Bruce Hoff
 \code{\link{TableColumn}}
 \code{\link{TableSchema}}
 \code{\link{synGet}}
+\code{\link{RowReferenceSet}}
 }

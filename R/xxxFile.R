@@ -420,12 +420,13 @@ synGetFileAttachment<-function(downloadUri, fileHandle, downloadFile=T, download
   			if (ifcollision=="overwrite.local") {
   				# download file from Synapse to downloadLocation
           # we first capture the existing file.  If the download fails, we'll move it back
-          temp<-tempfile()
+          temp<-file.path(downloadLocation, sample(999999999, 1))
           if (!file.rename(filePath, temp)) stop(sprintf("Failed to back up %s before downloading new version.", filePath))
           tryCatch(
             downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, externalURL, fileHandle),
             error = function(e) {file.rename(temp, filePath); stop(e)}
           )
+          unlink(temp)
         } else if (ifcollision=="keep.local") {
   				# nothing to do
         } else if (ifcollision=="keep.both") {

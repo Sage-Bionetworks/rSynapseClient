@@ -25,20 +25,27 @@ unitTestTypedList<-function() {
   checkEquals(t[[2]], "b")
   checkEquals(list("a", "b"), synapseClient:::getList(t))
   
-  # test 'add'
+  # test 'append'
   t<-synapseClient:::CharacterList()
   t[[1]]<-"foo"
-  t<-synapseClient:::add(t, "bar")
-  checkEquals(list("foo", "bar"), synapseClient:::getList(t))
+  t<-append(t, "bar")
+  checkEquals(list("foo", "bar"), getList(t))
   t<-synapseClient:::set(t, list("a", "b"))
-  checkEquals(list("a", "b"), synapseClient:::getList(t))
+  checkEquals(list("a", "b"), getList(t))
   
   t<-synapseClient:::CharacterList("a", "b")
-  checkEquals(list("a", "b"), synapseClient:::getList(t))
+  checkEquals(list("a", "b"), getList(t))
 }
 
 unitTestCreateTypedList<-function() {
   created<-synapseClient:::createTypedList(c("1", "2", "3"))
   checkTrue(identical(CharacterList("1", "2", "3"), created))
+}
+
+unitTestAppendTwoLists<-function() {
+  r<-synapseClient:::RowReferenceList()
+  s<-synapseClient:::RowReferenceList(synapseClient:::RowReference(rowId=as.integer(1)), synapseClient:::RowReference(rowId=as.integer(2)))
+  t<-append(r, s)
+  checkEquals(length(t), length(r)+length(s))
 }
 

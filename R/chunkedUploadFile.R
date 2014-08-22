@@ -52,6 +52,8 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   # with_retry = RetryRequest(retry_status_codes=[502,503], retries=4, wait=1, back_off=2, verbose=verbose)
   chunkResults<-list()
   connection<-file(filepath, open="rb")
+  fileSizeBytes<-file.info(filepath)$size
+  totalUploadedBytes<-0
   repeat {
     chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
     if (length(chunk)==0) break
@@ -70,6 +72,13 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
       httpheader=headers, # the headers
       opts=.getCache("curlOpts")
     )
+    
+    totalUploadedBytes <- totalUploadedBytes + length(chunk)
+    percentUploaded <- totalUploadedBytes*100/fileSizeBytes
+    # print progress, but only if there's more than one chunk
+    if (chunkNumber>1 | percentUploaded<100) {
+      cat(sprintf("Uploaded %d%%", percentUploaded))
+    }
     
     chunkResults[[length(chunkResults)+1]]<-chunkNumber
     chunkNumber <- chunkNumber + 1
