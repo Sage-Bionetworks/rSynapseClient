@@ -107,9 +107,7 @@ setMethod(
     # but doing so requires retrieving all the column names.  For expediency we just
     # get the max rows when uploading _all_ columns.
     maxRowsPerRequest<-maxRowTransferForSchema(id)
-    # updates can't be broken up into chunks
-    if (maxRowsPerRequest<r && length(etag)>0) stop("Row set is too large for an update operation.")
-    currentRow<-1
+    currentRow <- 1
     rowReferenceSet<-RowReferenceSet(rows=RowReferenceList())
     tableRowSet<-TableRowSet(rows=RowList())
     while (currentRow<=r) {
@@ -119,20 +117,21 @@ setMethod(
       tableRowSetChunk<-TableRowSet(headers=columnIds, etag=etag, tableId=id, rows=chunk)
       if (verbose) cat(sprintf("Sending rows %d through %d of %d for TableSchema %s.\n", currentRow, rowLimit, r, id))
       rowReferenceSetChunkAsList<-synRestPOST(sprintf("/entity/%s/table", id), createListFromS4Object(tableRowSetChunk))
+      etag<-tableRowSetChunk@etag # this etag will go in the next uploaded batch (if any)
       
       if (retrieveData) {
         # retrieve the data into a TableRowSet
         tableRowSetChunkAsList<-synRestPOST(sprintf("/entity/%s/table/getRows", id), rowReferenceSetChunkAsList)
-          tableRowSetChunk<-createS4ObjectFromList(tableRowSetChunkAsList, "TableRowSet")
+        tableRowSetChunk<-createS4ObjectFromList(tableRowSetChunkAsList, "TableRowSet")
         tableRowSet@tableId<-tableRowSetChunk@tableId
-        if (r<=maxRowsPerRequest) tableRowSet@etag<-tableRowSetChunk@etag
+        tableRowSet@etag<-etag # each batch will overwrite this, and the final one will be returned
         tableRowSet@headers<-tableRowSetChunk@headers
         # TODO implement a strongly typed version of this
         tableRowSet@rows@content<-append(tableRowSet@rows@content, tableRowSetChunk@rows@content)
       } else {
         rowReferenceSetChunk<-createS4ObjectFromList(rowReferenceSetChunkAsList, "RowReferenceSet")
         rowReferenceSet@tableId<-rowReferenceSetChunk@tableId
-        if (r<=maxRowsPerRequest) rowReferenceSet@etag<-rowReferenceSetChunk@etag
+        rowReferenceSet@etag<-etag # each batch will overwrite this, and the final one will be returned
         rowReferenceSet@headers<-rowReferenceSetChunk@headers
         # TODO implement a strongly typed version of this
         rowReferenceSet@rows@content<-append(rowReferenceSet@rows@content, rowReferenceSetChunk@rows@content)
