@@ -180,15 +180,72 @@ integrationTestSynStoreDataFrame <- function() {
   if (FALSE) {
     # TODO reenable this once PLFM-2954 is fixed
     dataFrame <- as.data.frame(matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
-      dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
+        dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
   } else {
     # the simple version, without rearranging the columns when uploading
     dataFrame <- as.data.frame(matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
-      dimnames = list(c(1,2), tableColumnNames)))
+        dimnames = list(c(1,2), tableColumnNames)))
   }
   table<-Table(tableSchema=tableSchema, values=dataFrame)
   retrievedDataFrame<-synStore(table, retrieveData=TRUE, verbose=FALSE)
   checkEquals(dataFrame, retrievedDataFrame)
+}
+
+integrationTestSynStoreDataFrameNORetrieveData <- function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  tableColumns<-createColumns()
+  tableColumnNames<-list()
+  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
+  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
+  
+  id<-propertyValue(tableSchema, "id")
+  # note we permute the column order in the data frame values and headers, then
+  # test that it comes out right
+  if (FALSE) {
+    # TODO reenable this once PLFM-2954 is fixed
+    dataFrame <- as.data.frame(matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
+        dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
+  } else {
+    # the simple version, without rearranging the columns when uploading
+    dataFrame <- as.data.frame(matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
+        dimnames = list(c(1,2), tableColumnNames)))
+  }
+  table<-Table(tableSchema=tableSchema, values=dataFrame)
+  rowReferenceSet<-synStore(table, verbose=FALSE)
+  checkEquals(length(rowReferenceSet@rows), 2)
+}
+
+integrationTestSynStoreNumericDataFrame<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  tc1 <- TableColumn(name="sweet", columnType="STRING")
+  tc1 <- synStore(tc1)
+  tc2 <- TableColumn(name="sweet2", columnType="INTEGER")
+  tc2 <- synStore(tc2)
+  
+  pid<-propertyValue(project, "id")
+  tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2))
+  tschema <- synStore(tschema)
+  
+  myTable <- Table(tschema, values=data.frame(sweet=sample(c("one", "two", "three"), size = 30, replace = T), sweet2=sample.int(30, replace = T)))
+  myTable <- synStore(myTable)  
+  # in SYNR-694 an error occurred here
+}
+
+integrationTestLargeTable<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  
+  tc1 <- TableColumn(name="sweet", columnType="STRING")
+  tc1 <- synStore(tc1)
+  tc3 <- TableColumn(name="sweet3", columnType="STRING")
+  tc3 <- synStore(tc3)
+  ts <- TableSchema(name="testLargeTable", parent=pid, columns = c(tc1, tc3))
+  ts <- synStore(ts)
+  mt <- Table(ts, values=data.frame(sweet=sample(c("one", "two", "three"), size=10000, replace=T), sweet3=sample(c("four", "five"), size=10000, replace=T)))
+  mt <- synStore(mt)
+  # Request exceed the maximum number of bytes per request.  Maximum : 2097152 bytes
 }
 
 integrationTestSynStoreCSVFile <- function() {

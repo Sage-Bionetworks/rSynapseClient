@@ -47,7 +47,7 @@ schemaTypeFromProperty<-function(property) {
 getEffectivePropertySchemas<-function(schemaName, schemaPath) {
   schema<-readSchema(schemaName, schemaPath)
   properties<-schema$properties
-  implements <- getAllInterfaces(schema)
+  implements <- getAllInterfaces(schema, schemaPath)
   if (length(implements)>0) {
     for (i in length(implements):1) {
       thisProp <- readSchema(implements[i], schemaPath)$properties

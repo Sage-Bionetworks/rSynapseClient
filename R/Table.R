@@ -7,33 +7,12 @@
 
 setMethod(
   f = "Table",
-  signature = signature("TableSchema", "RowList"),
-  definition = function(tableSchema, values) {
-    result<-new("TableRowList")
-    result@schema<-tableSchema
-    result@values<-values
-    result
-  }
-)
-
-setMethod(
-  f = "Table",
-  signature = signature("TableSchema", "matrix"),
-  definition = function(tableSchema, values) {
-    result<-new("TableMatrix")
-    result@schema<-tableSchema
-    result@values<-values
-    result
-  }
-)
-
-setMethod(
-  f = "Table",
   signature = signature("TableSchema", "data.frame"),
-  definition = function(tableSchema, values) {
+  definition = function(tableSchema, values, updateEtag=character(0)) {
     result<-new("TableDataFrame")
     result@schema<-tableSchema
     result@values<-values
+    result@updateEtag<-updateEtag
     result
   }
 )
@@ -59,91 +38,6 @@ setMethod(
   }
 )
 
-
-# Given a schemaId, return the max number of rows that 
-# can be uploaded or downloaded at a time (assuming that
-# each row includes all the fields in the schema
-maxRowTransferForSchema<-function(schemaId) {
-  if (!is(schemaId, "character") || length(schemaId)>1) stop("Illegal value for schemaid")
-  # mask to retrieve max rows is x1000 or 4096 (decimal)
-  bundle<-synRestGET(sprintf("/entity/%s/bundle?mask=4096",schemaId))
-  tableDataList<-bundle$tableBundle
-  tableData<-createS4ObjectFromList(tableDataList, "TableBundle")
-  tableData$maxRowsPerPage
-}
-
-# Given a schema and a list of columns, return the max number of rows that 
-# can be uploaded or downloaded at a time
-maxRowTransferForSchemaAndColumnNames<-function(schemaId, columnNames) {
-  # to get the maxRowsPerPage use mask=8
-  queryString<-sprintf("select %s from %s", paste(columnNames, collapse=","), schemaId)
-  query<-Query(sql=queryString)
-  bundleAsList<-synRestPOST("/table/query/bundle?partsMask=8", createListFromS4Object(query))
-  bundle<-createS4ObjectFromList(bundleAsList, "QueryResultBundle")
-  bundle@maxRowsPerPage
-}
-
-setMethod(
-  f = "synStore",
-  signature = signature("TableRowSet"),
-  definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
-    
-    id<-entity@tableId # character
-    columnIds<-entity@headers # CharacterList
-    etag<-entity@etag # character 
-    rows<-entity@rows # RowList
-    # validate input
-    headerCount<-length(columnIds)
-    r<-length(rows)
-    if (r<1) stop("Missing rows.")
-    for (i in 1:r) {
-      rowValueCount<-length(rows[[i]]$values)
-      if (rowValueCount!=headerCount) {
-        stop(sprintf("Expected %d values for row %d but found %d", headerCount, i, rowValueCount))
-      }
-    }
-    # store the values
-    # TODO it would be nice to do the following for just the columns being uploaded,
-    # but doing so requires retrieving all the column names.  For expediency we just
-    # get the max rows when uploading _all_ columns.
-    maxRowsPerRequest<-maxRowTransferForSchema(id)
-    currentRow <- 1
-    rowReferenceSet<-RowReferenceSet(rows=RowReferenceList())
-    tableRowSet<-TableRowSet(rows=RowList())
-    while (currentRow<=r) {
-      rowLimit<-min(r, currentRow+maxRowsPerRequest)
-      chunk<-RowList()
-      chunk@content<-rows@content[currentRow:rowLimit]
-      tableRowSetChunk<-TableRowSet(headers=columnIds, etag=etag, tableId=id, rows=chunk)
-      if (verbose) cat(sprintf("Sending rows %d through %d of %d for TableSchema %s.\n", currentRow, rowLimit, r, id))
-      rowReferenceSetChunkAsList<-synRestPOST(sprintf("/entity/%s/table", id), createListFromS4Object(tableRowSetChunk))
-      rowReferenceSetChunk<-createS4ObjectFromList(rowReferenceSetChunkAsList, "RowReferenceSet")
-      etag<-rowReferenceSetChunk@etag # this etag will go in the next uploaded batch (if any)
-      
-      if (retrieveData) {
-        # retrieve the data into a TableRowSet
-        tableRowSetChunkAsList<-synRestPOST(sprintf("/entity/%s/table/getRows", id), rowReferenceSetChunkAsList)
-        tableRowSetChunk<-createS4ObjectFromList(tableRowSetChunkAsList, "TableRowSet")
-        tableRowSet@tableId<-tableRowSetChunk@tableId
-        tableRowSet@etag<-etag # each batch will overwrite this, and the final one will be returned
-        tableRowSet@headers<-tableRowSetChunk@headers
-        tableRowSet@rows<-append(tableRowSet@rows, tableRowSetChunk@rows)
-      } else {
-        rowReferenceSet@tableId<-rowReferenceSetChunk@tableId
-        rowReferenceSet@etag<-etag # each batch will overwrite this, and the final one will be returned
-        rowReferenceSet@headers<-rowReferenceSetChunk@headers
-        rowReferenceSet@rows<-append(rowReferenceSet@rows, rowReferenceSetChunk@rows)
-      }
-      currentRow<-rowLimit+1
-    }
-    if (retrieveData) {
-      tableRowSet
-    } else {
-      rowReferenceSet
-    }
-  }
-)
-
 ensureTableSchemaStored<-function(tableSchema) {
   # ensure that the schema is stored
   id<-propertyValue(tableSchema, "id")
@@ -153,83 +47,68 @@ ensureTableSchemaStored<-function(tableSchema) {
   tableSchema
 }
 
-setMethod(
-  f = "synStore",
-  signature = "TableRowList",
-  definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
-    tableSchema<-ensureTableSchemaStored(entity@schema)
-    # create a CharacterList from a character vector
-    headers<-createTypedList(propertyValue(tableSchema, "columnIds"))
-    tableRowSet<-TableRowSet(tableId=propertyValue(tableSchema, "id"), headers=headers, rows=entity@values)
-    synStore(tableRowSet, retrieveData, verbose)
-  }
-)
-
 synGetColumns<-function(id) {
   listResult<-synRestGET(sprintf("/entity/%s/column", id))
   objectResult<-createS4ObjectFromList(listResult, "PaginatedColumnModels")
   objectResult@results
 }
 
-storeMatrix<-function(tableSchema, matrix, retrieveData, verbose) {
-  if (nrow(matrix)<1 | ncol(matrix)<1) stop("Matrix is empty.")
-  if (is.null(colnames(matrix))) stop("Matrix must have column names.")
-  
-  tableSchema<-ensureTableSchemaStored(tableSchema)
-  
-  # map column names to ids
+# uploads a data frame to a table
+# column labels in data frame must match those in table schema
+# if updateEtag is omitted then this is treated as an upload of new rows
+# if updateEtag is included then this is treated as an update of existing
+# rows.  The row labels must be integers and are taken to be the indices of
+# the rows to be updated
+storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEtag=character(0)) {
+  if (nrow(dataframe)<1 | ncol(dataframe)<1) stop("data frame is empty.")
+  # validate column headers
   schemaColumns<-synGetColumns(propertyValue(tableSchema,"id"))
   schemaColumnMap<-list()
   for (column in schemaColumns@content) schemaColumnMap[[column@name]]<-column@id
-  
-  # get the order of the TableColumns
-  headers<-CharacterList()
-  for (matrixColumnName in colnames(matrix)) {
+  for (matrixColumnName in names(dataframe)) {
     schemaColumnId<-schemaColumnMap[[matrixColumnName]]
-    if (is.null(schemaColumnId)) stop(sprintf("Matrix has column %s but schema has no such column.", matrixColumnName))
-    headers<-append(headers, schemaColumnId)
+    if (is.null(schemaColumnId)) stop(sprintf("Data frame has column %s but schema has no such column.", matrixColumnName))
   }
   
-  # now build up the Rows
-  rowList<-RowList()
-  for (i in 1:nrow(matrix)) {
-    rowList<-append(rowList, Row(values=createTypedList(as.character(matrix[i,]))))
-  }
-  tableRowSet<-TableRowSet(tableId=propertyValue(tableSchema, "id"), headers=headers, rows=rowList)
-  result<-synStore(tableRowSet, retrieveData, verbose)
-  if (retrieveData) {
-    cols<-names(schemaColumnMap)[match(result@headers@content, schemaColumnMap)]
-    if (any(is.na(cols))) stop(sprintf("Unrecognized column IDs in %s", paste(result@headers@content, collapse=",")))
-    r<-length(result@rows)
-    if (r<1) {
-      # create an empty matrix
-      resultMatrix<-matrix(nrow=0, ncol=length(cols), dimnames=list(list(), cols))
-    } else {
-      resultMatrix<-matrix(nrow=r, ncol=length(cols), dimnames = list(1:r, cols))
-      for (i in 1:r) {
-        rowData<-result@rows[[i]]@values@content
-        resultMatrix[i,]<-unlist(as(rowData, class(matrix[i,1])))
-      }
-    }
-    resultMatrix
+  filePath<-tempfile()
+  if (length(updateEtag)==0) {
+    dataFrameToWrite<-dataframe
   } else {
-    result
+    # TODO:  use <row>-<version> as the format, not integer
+    
+    # validate the row headers.  If present they must be integral.
+    rownamesAsInteger<-as.integer(rownames(dataframe))
+    if (any(is.na(rownamesAsInteger))) {
+      stop("Row labels should all be integers, but one or more row labels is not numeric.")
+    }
+    if (!all(as.integer(rownames(dataframe))==as.numeric(rownames(dataframe)))) {
+      stop("One or more rows labels is not an integer.")
+    }
+    # Now we append the rows labels
+    row<-rownames(rownamesAsInteger)
+    # Calling the appended vector 'row' causes the column label to be 'row' as well.
+    dataFrameToWrite<-cbind(row, dataframe)
+    # this allows us to control the column label for the row column. 
   }
+  # we would prefer to serialize in memory but R doesn't support connections 
+  # wrapping strings/byte arrays, so instead we serialize to a file
+  write.csv(x=dataFrameToWrite, file=filePath, row.names=FALSE)
+  rowsProcessed<-uploadCSVFileToTable(filePath=filePath,tableId=propertyValue(tableSchema, "id"), updateEtag=updateEtag)
 }
-
-setMethod(
-  f = "synStore",
-  signature = "TableMatrix",
-  definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
-    storeMatrix(entity@schema, entity@values, retrieveData, verbose)
-  }
-)
 
 setMethod(
   f = "synStore",
   signature = "TableDataFrame",
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
-    as.data.frame(storeMatrix(entity@schema, as.matrix(entity@values), retrieveData, verbose))
+    rowsProcessed<-storeDataFrame(entity@schema, entity@values, retrieveData, verbose, entity@updateEtag)
+    if (retrieveData) {
+      sql=sprintf("select * from %s", tableId)
+      downloadResult<-downloadTableToCSVFile(sql)
+      dataframe<-loadCSVasDataFrame(downloadResult$filePath)
+      TableFilePath(entity@schema, dataframe, downloadResult$etag)
+    } else {
+      rowsProcessed
+    }
   }
 )
 
@@ -239,34 +118,87 @@ setMethod(
   definition = function(entity, 
     retrieveData=FALSE, 
     verbose=TRUE) {
-    # TODO update this message once Table Query is implemented
-    if (retrieveData) stop("To retrieve uploaded data please use the Table Query command.")
-    s3FileHandle<-chunkedUploadFile(entity@filePath)
-    request<-AsynchUploadToTableRequestBody(
-      tableId=propertyValue(entity@schema, "id"),
-      concreteType="org.sagebionetworks.repo.model.table.AsynchUploadToTableRequestBody",
-      uploadFileHandleId=s3FileHandle$id,
-      linesToSkip=entity@linesToSkip,
-      quoteCharacter=entity@quoteCharacter,
-      escapeCharacter=entity@escapeCharacter,
-      separator=entity@separator
+    tableId<-propertyValue(entity@schema, "id")
+    uploadCSVFileToTable(
+      entity@filePath, 
+      tableId,
+      verbose,
+      entity@linesToSkip,
+      entity@quoteCharacter,
+      entity@escapeCharacter,
+      entity@separator
     )
-    jobStatusAsList<-synRestPOST("/asynchronous/job", createListFromS4Object(request))
-    jobStatus<-createS4ObjectFromList(jobStatusAsList, "AsynchronousJobStatus")
-    asyncJobState<-jobStatus@jobState # PROCESSING, FAILED, or COMPLETE
-    while (asyncJobState=="PROCESSING") {
-      if (verbose) cat(sprintf("Completed %d of %d.  %s\n", 
-          jobStatus@progressCurrent, jobStatus@progressTotal, jobStatus@progressMessage))
-      jobStatus<-createS4ObjectFromList(
-        synRestGET(sprintf("/asynchronous/job/%s", jobStatus$jobId)), "AsynchronousJobStatus")
-      asyncJobState<-jobStatus@jobState
-      if (asyncJobState=="PROCESSING") Sys.sleep(1);
+    if (retrieveData) {
+      sql=sprintf("select * from %s", tableId)
+      downloadResult<-downloadTableToCSVFile(sql)
+      # TODO is the downloaded file in a form that can later be uploaded?
+      TableFilePath(entity@schema, downloadResult$filePath, downloadResult$etag)
+    } else {
+      rowsProcessed
     }
-    if (asyncJobState=="FAILED") stop(jobStatus@errorMessage)
-    # TODO log jobStatus@errorDetails to the new client logging service
-    rowsProcessed<-jobStatus@responseBody@rowsProcessed
-    if (verbose) cat(sprintf("Complete.  Processed %d rows.\n", rowsProcessed))
-    rowsProcessed
   }
 )
+
+# upload CSV file to the given table ID
+# returns the number of rows processed
+uploadCSVFileToTable<-function(filePath, tableId, 
+  verbose=TRUE, linesToSkip=character(0), quoteCharacter=character(0), 
+  escapeCharacter=character(0), separator=character(0), updateEtag=character(0)) {
+  s3FileHandle<-chunkedUploadFile(filePath)
+  request<-AsynchUploadToTableRequestBody(
+    tableId=tableId,
+    uploadFileHandleId=s3FileHandle$id,
+    linesToSkip=linesToSkip,
+    quoteCharacter=quoteCharacter,
+    escapeCharacter=escapeCharacter,
+    separator=separator,
+    updateEtag=updateEtag
+  )
+  responseBody<-submitJobAndTrackProgress(request, verbose)
+  # returns an AsynchUploadToTableResponseBody
+  rowsProcessed<-responseBody@rowsProcessed
+  if (verbose) cat(sprintf("Complete.  Processed %d rows.\n", rowsProcessed))
+  rowsProcessed
+}
+
+submitJobAndTrackProgress<-function(request, verbose) {
+  jobStatusAsList<-synRestPOST("/asynchronous/job", createListFromS4Object(request))
+  jobStatus<-createS4ObjectFromList(jobStatusAsList, "AsynchronousJobStatus")
+  asyncJobState<-jobStatus@jobState # PROCESSING, FAILED, or COMPLETE
+  while (asyncJobState=="PROCESSING") {
+    if (verbose) cat(sprintf("Completed %d of %d.  %s\n", 
+          jobStatus@progressCurrent, jobStatus@progressTotal, jobStatus@progressMessage))
+    jobStatus<-createS4ObjectFromList(
+      synRestGET(sprintf("/asynchronous/job/%s", jobStatus$jobId)), "AsynchronousJobStatus")
+    asyncJobState<-jobStatus@jobState
+    if (asyncJobState=="PROCESSING") Sys.sleep(1);
+  }
+  if (asyncJobState=="FAILED") stop(jobStatus@errorMessage)
+  # TODO log jobStatus@errorDetails to the new client logging service
+  jobStatus@responseBody
+}
+
+# execute a query and download the results
+# returns the download file path and etag
+downloadTableToCSVFile<-function(sql) {
+  request<-AsyncDownloadFromTableRequestBody(sql=sql)
+  responseBody<-submitJobAndTrackProgress(request, verbose)
+  # returns a AsyncDownloadFromTableResponseBody
+  downloadUri<-sprintf("/fileHandle/%s/url", responseBody@resultsFileHandleId)
+  fileName = sprintf("queryResult_%d.csv", responseBody@resultsFileHandleId)
+  fileHandle<-S3FileHandle(id=responseBody$resultsFileHandleId, fileName=fileName)
+  fileHandleAsList<-createListFromS4Object(fileHandle)
+  downloadResult<-synGetFileAttachment(downloadUri, fileHandleAsList, downloadFile=T, downloadLocation=NULL, ifcollision="overwrite.local", load=F)
+  list(filePath=downloadResult$fileName, etag=responseBody@etag)
+}
+
+loadCSVasDataFrame<-function(filePath) {
+  dataframe<-read.csv(filePath)
+  # the read-in dataframe has row numbers and versions to remove
+  strippedframe<-dataframe[[-1:-2]]
+  # use the two stripped columns as the row names
+  row.names(strippedframe)<-paste(dataframe[[1]], dataframe[[2]], sep="-")
+  strippedframe
+}
+
 

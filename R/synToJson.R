@@ -41,7 +41,7 @@ convertIntegersToCharacters<-function(toEncode) {
       if (length(elem)>1) {
         toEncode[[ii]]<-convertIntegersToCharacters(elem)
       } else {
-        if(all(synapseClient:::checkInteger(elem))) {
+        if(all(checkInteger(elem))) {
           as_char <- as.character(as.integer(elem))
           toEncode[[ii]] <-as_char
         }
