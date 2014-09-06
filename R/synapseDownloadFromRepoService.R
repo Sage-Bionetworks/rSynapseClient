@@ -23,19 +23,20 @@ synapseDownloadFromRepoService<-
   ## Download the file to the cache
   destfile <- .generateCacheDestFile(downloadUri, versionId)
   
-  synapseDownloadFromRepoServiceToDestination(downloadUri=downloadUri, destfile=destfile, curlHandle=curlHandle, opts=opts)
+  synapseDownloadFromRepoServiceToDestination(downloadUri=downloadUri, endpointName="REPO", destfile=destfile, curlHandle=curlHandle, opts=opts)
 }
 
 
-synapseDownloadFromRepoServiceToDestination<-function(downloadUri, destfile=tempfile(), curlHandle = getCurlHandle(), opts = .getCache("curlOpts")) {
+synapseDownloadFromRepoServiceToDestination<-function(downloadUri, endpointName="REPO", destfile=tempfile(), curlHandle = getCurlHandle(), opts = .getCache("curlOpts")) {
   # check own version, stopping if blacklisted
   checkBlackList()
   
   # make sure permanent redirects have been resolved
-  resolvePermanentRedirects(synapseRepoServiceEndpoint())
+  endpoint<-synapseServiceEndpoint(endpointName)
+  resolvePermanentRedirects(endpoint)
   
   # the url for the repo service
-  downloadUrl<-sprintf("%s%s", synapseRepoServiceEndpoint()$endpoint, downloadUri)
+  downloadUrl<-sprintf("%s%s", endpoint$endpoint, downloadUri)
   paramIndex<-regexpr("?", downloadUri, fixed=T)
   if(paramIndex>0) {
     downloadUriWithoutParams<-substr(downloadUri, 1, paramIndex-nchar("?"))
@@ -52,7 +53,7 @@ synapseDownloadFromRepoServiceToDestination<-function(downloadUri, destfile=temp
   }
   
   # we add in the authentication info
-  header <- .stuffHeaderHmac(header, sprintf("%s%s", getEndpointPrefixForService("REPO"), downloadUriWithoutParams))
+  header <- .stuffHeaderHmac(header, sprintf("%s%s", getEndpointPrefixForService(endpointName), downloadUriWithoutParams))
   
   # we start with the common request options, then add the headers
   opts$httpheader <- header

@@ -53,6 +53,30 @@ synGetColumns<-function(id) {
   objectResult@results
 }
 
+parseRowAndVersion<-function(x) {
+  parsed<-strsplit(x, "-", fixed=T)
+  parsedLengths<-sapply(X=parsed, FUN=length)
+  lengthNotTwo<-parsedLengths!=2
+  if (any(lengthNotTwo)) {
+    stop(sprintf("Invalid row labels as position(s) %s", paste(which(lengthNotTwo), collapse=",")))
+  }
+  parsedAsInteger<-sapply(X=parsed, FUN=as.integer)
+  rowHasNa<-apply(X=parsedAsInteger, MARGIN=2, FUN=function(x){any(is.na(x))})
+  if(any(rowHasNa)) {
+    stop(sprintf("Non-numeric row labels as position(s) %s.", paste(which(rowHasNa), collapse=",")))
+  }
+  rowHasNonInt<-sapply(X=parsed, FUN=function(x){any(as.integer(x)!=as.numeric(x))})
+  if (any(rowHasNonInt)) {
+    stop(sprintf("Non integer in row label as position(s) %s.", paste(which(rowHasNonInt), collapse=",")))
+  }
+  parsedAsInteger
+}
+
+# use these test cases
+#parseRowAndVersion(c("1-2", "2-3", "3"))
+#parseRowAndVersion(c("1-2", "2-3", "3-x"))
+#parseRowAndVersion(c("1-2", "2-3", "3-3.5"))
+
 # uploads a data frame to a table
 # column labels in data frame must match those in table schema
 # if updateEtag is omitted then this is treated as an upload of new rows
@@ -74,20 +98,12 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   if (length(updateEtag)==0) {
     dataFrameToWrite<-dataframe
   } else {
-    # TODO:  use <row>-<version> as the format, not integer
-    
-    # validate the row headers.  If present they must be integral.
-    rownamesAsInteger<-as.integer(rownames(dataframe))
-    if (any(is.na(rownamesAsInteger))) {
-      stop("Row labels should all be integers, but one or more row labels is not numeric.")
-    }
-    if (!all(as.integer(rownames(dataframe))==as.numeric(rownames(dataframe)))) {
-      stop("One or more rows labels is not an integer.")
-    }
+    rownamesAsInteger<-parseRowAndVersion(row.names(dataframe))
     # Now we append the rows labels
-    row<-rownames(rownamesAsInteger)
-    # Calling the appended vector 'row' causes the column label to be 'row' as well.
-    dataFrameToWrite<-cbind(row, dataframe)
+    ROW_ID<-rownamesAsInteger[1,]
+    ROW_VERSION<-rownamesAsInteger[2,]
+    # Calling the appended vector 'ROW_ID' causes the column label to be 'ROW_ID' as well.  Ditto for ROW_VERSION.
+    dataFrameToWrite<-cbind(row, version, dataframe)
     # this allows us to control the column label for the row column. 
   }
   # we would prefer to serialize in memory but R doesn't support connections 
@@ -102,10 +118,11 @@ setMethod(
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
     rowsProcessed<-storeDataFrame(entity@schema, entity@values, retrieveData, verbose, entity@updateEtag)
     if (retrieveData) {
-      sql=sprintf("select * from %s", tableId)
-      downloadResult<-downloadTableToCSVFile(sql)
+      tableId<-propertyValue(entity@schema, "id")
+      sql<-sprintf("select * from %s", tableId)
+      downloadResult<-downloadTableToCSVFile(sql, verbose)
       dataframe<-loadCSVasDataFrame(downloadResult$filePath)
-      TableFilePath(entity@schema, dataframe, downloadResult$etag)
+      Table(entity@schema, dataframe, downloadResult$etag)
     } else {
       rowsProcessed
     }
@@ -119,7 +136,7 @@ setMethod(
     retrieveData=FALSE, 
     verbose=TRUE) {
     tableId<-propertyValue(entity@schema, "id")
-    uploadCSVFileToTable(
+    rowsProcessed<-uploadCSVFileToTable(
       entity@filePath, 
       tableId,
       verbose,
@@ -130,9 +147,9 @@ setMethod(
     )
     if (retrieveData) {
       sql=sprintf("select * from %s", tableId)
-      downloadResult<-downloadTableToCSVFile(sql)
+      downloadResult<-downloadTableToCSVFile(sql, verbose)
       # TODO is the downloaded file in a form that can later be uploaded?
-      TableFilePath(entity@schema, downloadResult$filePath, downloadResult$etag)
+      Table(entity@schema, downloadResult$filePath, downloadResult$etag)
     } else {
       rowsProcessed
     }
@@ -142,7 +159,7 @@ setMethod(
 # upload CSV file to the given table ID
 # returns the number of rows processed
 uploadCSVFileToTable<-function(filePath, tableId, 
-  verbose=TRUE, linesToSkip=character(0), quoteCharacter=character(0), 
+  verbose=TRUE, linesToSkip=as.integer(0), quoteCharacter=character(0), 
   escapeCharacter=character(0), separator=character(0), updateEtag=character(0)) {
   s3FileHandle<-chunkedUploadFile(filePath)
   request<-AsynchUploadToTableRequestBody(
@@ -180,22 +197,22 @@ submitJobAndTrackProgress<-function(request, verbose) {
 
 # execute a query and download the results
 # returns the download file path and etag
-downloadTableToCSVFile<-function(sql) {
-  request<-AsyncDownloadFromTableRequestBody(sql=sql)
+downloadTableToCSVFile<-function(sql, verbose) {
+  request<-AsynchDownloadFromTableRequestBody(sql=sql)
   responseBody<-submitJobAndTrackProgress(request, verbose)
-  # returns a AsyncDownloadFromTableResponseBody
+  # returns a AsynchDownloadFromTableResponseBody
   downloadUri<-sprintf("/fileHandle/%s/url", responseBody@resultsFileHandleId)
-  fileName = sprintf("queryResult_%d.csv", responseBody@resultsFileHandleId)
+  fileName<-sprintf("queryResult_%s.csv", responseBody@resultsFileHandleId)
   fileHandle<-S3FileHandle(id=responseBody$resultsFileHandleId, fileName=fileName)
   fileHandleAsList<-createListFromS4Object(fileHandle)
-  downloadResult<-synGetFileAttachment(downloadUri, fileHandleAsList, downloadFile=T, downloadLocation=NULL, ifcollision="overwrite.local", load=F)
-  list(filePath=downloadResult$fileName, etag=responseBody@etag)
+  downloadResult<-synGetFileAttachment(downloadUri, "FILE", fileHandleAsList, downloadFile=T, downloadLocation=NULL, ifcollision="overwrite.local", load=F)
+  list(filePath=downloadResult$filePath, etag=responseBody@etag)
 }
 
 loadCSVasDataFrame<-function(filePath) {
   dataframe<-read.csv(filePath)
   # the read-in dataframe has row numbers and versions to remove
-  strippedframe<-dataframe[[-1:-2]]
+  strippedframe<-dataframe[,-1:-2]
   # use the two stripped columns as the row names
   row.names(strippedframe)<-paste(dataframe[[1]], dataframe[[2]], sep="-")
   strippedframe

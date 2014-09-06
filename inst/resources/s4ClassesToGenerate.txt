@@ -34,4 +34,6 @@ AsynchronousResponseBody	org.sagebionetworks.repo.model.asynch.AsynchronousRespo
 AsynchUploadToTableRequestBody	org.sagebionetworks.repo.model.table.AsynchUploadToTableRequestBody	false
 AsynchronousJobStatus	org.sagebionetworks.repo.model.asynch.AsynchronousJobStatus	false
 AsynchUploadToTableResponseBody	org.sagebionetworks.repo.model.table.AsynchUploadToTableResponseBody	false
+AsynchDownloadFromTableRequestBody	org.sagebionetworks.repo.model.table.AsynchDownloadFromTableRequestBody	false
+AsynchDownloadFromTableResponseBody	org.sagebionetworks.repo.model.table.AsynchDownloadFromTableResponseBody	false
 
