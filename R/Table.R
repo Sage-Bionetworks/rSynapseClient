@@ -99,20 +99,21 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
     ROW_ID<-rownamesAsInteger[1,]
     ROW_VERSION<-rownamesAsInteger[2,]
     # Calling the appended vector 'ROW_ID' causes the column label to be 'ROW_ID' as well.  Ditto for ROW_VERSION.
-    dataFrameToWrite<-cbind(row, version, dataframe)
+    dataFrameToWrite<-cbind(ROW_ID, ROW_VERSION, dataframe)
     # this allows us to control the column label for the row column. 
   }
   # we would prefer to serialize in memory but R doesn't support connections 
   # wrapping strings/byte arrays, so instead we serialize to a file
   filePath<-tempfile()
   write.csv(x=dataFrameToWrite, file=filePath, row.names=FALSE)
-  rowsProcessed<-uploadCSVFileToTable(filePath=filePath,tableId=propertyValue(tableSchema, "id"), updateEtag=updateEtag)
+  rowsProcessed<-uploadCSVFileToTable(filePath=filePath, tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
 }
 
 setMethod(
   f = "synStore",
   signature = "TableDataFrame",
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
+    entity@schema<-ensureTableSchemaStored(entity@schema)
     rowsProcessed<-storeDataFrame(entity@schema, entity@values, retrieveData, verbose, entity@updateEtag)
     if (retrieveData) {
       tableId<-propertyValue(entity@schema, "id")
@@ -132,6 +133,7 @@ setMethod(
   definition = function(entity, 
     retrieveData=FALSE, 
     verbose=TRUE) {
+    entity@schema<-ensureTableSchemaStored(entity@schema)
     tableId<-propertyValue(entity@schema, "id")
     rowsProcessed<-uploadCSVFileToTable(
       entity@filePath, 
@@ -211,7 +213,7 @@ downloadTableToCSVFile<-function(sql, verbose) {
 }
 
 loadCSVasDataFrame<-function(filePath) {
-  dataframe<-read.csv(filePath)
+  dataframe<-read.csv(filePath, encoding="UTF-8")
   # the read-in dataframe has row numbers and versions to remove
   strippedframe<-dataframe[,-1:-2] # could also reference by names "ROW_ID","ROW_VERSION"
   # use the two stripped columns as the row names
