@@ -174,13 +174,18 @@ uploadCSVFileToTable<-function(filePath, tableId,
   rowsProcessed
 }
 
-submitJobAndTrackProgress<-function(request, verbose) {
+submitJobAndTrackProgress<-function(request, verbose=TRUE) {
   jobStatusAsList<-synRestPOST("/asynchronous/job", createListFromS4Object(request))
   jobStatus<-createS4ObjectFromList(jobStatusAsList, "AsynchronousJobStatus")
   asyncJobState<-jobStatus@jobState # PROCESSING, FAILED, or COMPLETE
   while (asyncJobState=="PROCESSING") {
-    if (verbose && jobStatus@progressCurrent>0) cat(sprintf("Completed %d of %d.  %s\n", 
-          jobStatus@progressCurrent, jobStatus@progressTotal, jobStatus@progressMessage))
+    moreThanZeroProgress <- (jobStatus@progressCurrent>0)
+    if (verbose) {
+      cat(sprintf("Completed %d of %d.  %s\n", 
+          jobStatus@progressCurrent, 
+          jobStatus@progressTotal, 
+          jobStatus@progressMessage))
+    }
     jobStatus<-createS4ObjectFromList(
       synRestGET(sprintf("/asynchronous/job/%s", jobStatus$jobId)), "AsynchronousJobStatus")
     asyncJobState<-jobStatus@jobState

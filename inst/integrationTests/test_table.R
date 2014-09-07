@@ -23,7 +23,7 @@ createColumns<-function() {
   for (i in 1:3) {
     tableColumn<-TableColumn(
       # use white space and quotes in the column names
-      name=sprintf("\"R_Client_Integration_Test\" Column_Name_%d", i), 
+      name=sprintf("\"R_Client_IT\" Column_%d", i), 
       columnType="STRING")
     stored<-synStore(tableColumn)
     tableColumns<-append(tableColumns, stored)
@@ -35,7 +35,6 @@ createTableSchema<-function(projectId, tableColumns) {
   name<-sprintf("R_Client_Integration_Test_Create_Schema_%s", sample(999999999, 1))
   
   tableSchema<-TableSchema(name=name, parent=projectId, columns=tableColumns)
-  tableSchema<-synStore(tableSchema) # TODO also check the variation in which we don't save the schema in advance of storing the table
   tableSchema
 }
 
@@ -46,8 +45,6 @@ integrationTestSynStoreDataFrame <- function() {
   tableColumnNames<-list()
   for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
   tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
-  
-  id<-propertyValue(tableSchema, "id")
 
   dataFrame <- as.data.frame(matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
       dimnames = list(c(1,2), tableColumnNames)))
@@ -58,7 +55,7 @@ integrationTestSynStoreDataFrame <- function() {
   table<-Table(tableSchema=tableSchema, values=permutedDataFrame)
   retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE)
   checkTrue(is(retrievedTable, "TableDataFrame"))
-  checkEquals(propertyValue(retrievedTable@schema, "id"), propertyValue(tableSchema, "id"))
+  checkTrue(!is.null(propertyValue(retrievedTable@schema, "id")))
   checkTrue(length(retrievedTable@updateEtag)>0)
   # now check that the data frames are the same
   all(dataFrame==retrievedTable@values)
@@ -87,8 +84,7 @@ integrationTestSynStoreDataFrameNORetrieveData <- function() {
   tableColumnNames<-list()
   for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
   tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
-  
-  id<-propertyValue(tableSchema, "id")
+  tableSchema<-synStore(tableSchema)
   dataFrame <- as.data.frame(matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
       dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
   table<-Table(tableSchema=tableSchema, values=dataFrame)
@@ -181,7 +177,7 @@ integrationTestSynStoreCSVFileNoRetrieve <- function() {
   tableColumnNames<-list()
   for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
   tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
-  
+  tableSchema<-synStore(tableSchema)
   id<-propertyValue(tableSchema, "id")
   table<-Table(tableSchema=tableSchema, values=system.file("resources/test/test.csv", package = "synapseClient"))
   lineCount<-synStore(table)
@@ -196,12 +192,11 @@ integrationTestSynStoreAndRetrieveCSVFile <- function() {
   for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
   tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
   
-  id<-propertyValue(tableSchema, "id")
   csvFilePath<-system.file("resources/test/test.csv", package = "synapseClient")
   table<-Table(tableSchema=tableSchema, values=csvFilePath)
   retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE)
   checkTrue(is(retrievedTable, "TableFilePath"))
-  checkEquals(propertyValue(retrievedTable@schema, "id"), propertyValue(tableSchema, "id"))
+  checkTrue(!is.null(propertyValue(retrievedTable@schema, "id")))
   checkTrue(length(retrievedTable@updateEtag)>0)
   # now check that the data frames are the same
   retrievedDataFrame<-synapseClient:::loadCSVasDataFrame(retrievedTable@filePath)
@@ -211,8 +206,5 @@ integrationTestSynStoreAndRetrieveCSVFile <- function() {
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(retrievedDataFrame))
 }
-
-
-# TODO test updating a table
 
   
