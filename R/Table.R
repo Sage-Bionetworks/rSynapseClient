@@ -102,8 +102,9 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
     dataFrameToWrite<-cbind(ROW_ID, ROW_VERSION, dataframe)
     # this allows us to control the column label for the row column. 
   }
-  # we would prefer to serialize in memory but R doesn't support connections 
-  # wrapping strings/byte arrays, so instead we serialize to a file
+  # documentation for textConnection states:
+  # "they are relatively expensive to use, and it is often better to 
+  # use an anonymous ‘file()’ connection to collect output."
   filePath<-tempfile()
   write.csv(x=dataFrameToWrite, file=filePath, row.names=FALSE)
   rowsProcessed<-uploadCSVFileToTable(filePath=filePath, tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
