@@ -22,7 +22,8 @@ createColumns<-function() {
   tableColumns<-list()
   for (i in 1:3) {
     tableColumn<-TableColumn(
-      name=sprintf("R_Client_Integration_Test_Column_Name_%d", i), 
+      # use white space and quotes in the column names
+      name=sprintf("\"R_Client_Integration_Test\" Column_Name_%d", i), 
       columnType="STRING")
     stored<-synStore(tableColumn)
     tableColumns<-append(tableColumns, stored)
@@ -47,18 +48,14 @@ integrationTestSynStoreDataFrame <- function() {
   tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
   
   id<-propertyValue(tableSchema, "id")
+
+  dataFrame <- as.data.frame(matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
+      dimnames = list(c(1,2), tableColumnNames)))
   # note we permute the column order in the data frame values and headers, then
   # test that it comes out right
-  if (FALSE) {
-    # TODO reenable this once PLFM-2954 is fixed
-    dataFrame <- as.data.frame(matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
-        dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
-  } else {
-    # the simple version, without rearranging the columns when uploading
-    dataFrame <- as.data.frame(matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
-        dimnames = list(c(1,2), tableColumnNames)))
-  }
-  table<-Table(tableSchema=tableSchema, values=dataFrame)
+  permutedDataFrame <- as.data.frame(matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
+      dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
+  table<-Table(tableSchema=tableSchema, values=permutedDataFrame)
   retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE)
   checkTrue(is(retrievedTable, "TableDataFrame"))
   checkEquals(propertyValue(retrievedTable@schema, "id"), propertyValue(tableSchema, "id"))
@@ -68,6 +65,19 @@ integrationTestSynStoreDataFrame <- function() {
   all(names(dataFrame)==names(retrievedTable@values))
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(retrievedTable@values))
+  
+  # modify the retrieved table
+  retrievedTable@values[2,3]<-"zzz"
+  # update in Synapse
+  updatedTable<-synStore(retrievedTable, retrieveData=TRUE, verbose=FALSE)
+  checkTrue(is(updatedTable, "TableDataFrame"))
+  checkEquals(propertyValue(updatedTable@schema, "id"), propertyValue(tableSchema, "id"))
+  checkTrue(length(updatedTable@updateEtag)>0)
+  # now check that the data frames are the same
+  all(retrievedTable@values==updatedTable@values)
+  all(names(dataFrame)==names(updatedTable@values))
+  # make sure the row labels are valid
+  synapseClient:::parseRowAndVersion(row.names(updatedTable@values))
 }
 
 integrationTestSynStoreDataFrameNORetrieveData <- function() {
@@ -79,20 +89,28 @@ integrationTestSynStoreDataFrameNORetrieveData <- function() {
   tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
   
   id<-propertyValue(tableSchema, "id")
-  # note we permute the column order in the data frame values and headers, then
-  # test that it comes out right
-  if (FALSE) {
-    # TODO reenable this once PLFM-2954 is fixed
-    dataFrame <- as.data.frame(matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
-        dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
-  } else {
-    # the simple version, without rearranging the columns when uploading
-    dataFrame <- as.data.frame(matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
-        dimnames = list(c(1,2), tableColumnNames)))
-  }
+  dataFrame <- as.data.frame(matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
+      dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
   table<-Table(tableSchema=tableSchema, values=dataFrame)
   rowCount<-synStore(table, verbose=FALSE)
   checkEquals(rowCount, 2)
+}
+
+integrationTestSynStoreDataFrameWRONGColumns <- function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  tableColumns<-createColumns()
+  tableColumnNames<-list()
+  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
+  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
+  
+  id<-propertyValue(tableSchema, "id")
+  # replace the third column name with "foo"
+  dataFrame <- as.data.frame(matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
+      dimnames = list(c(1,2), c(tableColumnNames[1:2], "foo"))))
+  table<-Table(tableSchema=tableSchema, values=dataFrame)
+  # the erroneous column name should cause an error
+  checkException(synStore(table, verbose=FALSE))
 }
 
 integrationTestSynStoreNumericDataFrame<-function() {
@@ -156,7 +174,7 @@ integrationTestLargeTable<-function() {
   checkEquals(rowCount, nRows)
 }
 
-integrationTestSynStoreCSVFile <- function() {
+integrationTestSynStoreCSVFileNoRetrieve <- function() {
   project<-synapseClient:::.getCache("testProject")
   
   tableColumns<-createColumns()
@@ -169,6 +187,31 @@ integrationTestSynStoreCSVFile <- function() {
   lineCount<-synStore(table)
   checkEquals(2, lineCount)
 }
+
+integrationTestSynStoreAndRetrieveCSVFile <- function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  tableColumns<-createColumns()
+  tableColumnNames<-list()
+  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
+  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
+  
+  id<-propertyValue(tableSchema, "id")
+  csvFilePath<-system.file("resources/test/test.csv", package = "synapseClient")
+  table<-Table(tableSchema=tableSchema, values=csvFilePath)
+  retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE)
+  checkTrue(is(retrievedTable, "TableFilePath"))
+  checkEquals(propertyValue(retrievedTable@schema, "id"), propertyValue(tableSchema, "id"))
+  checkTrue(length(retrievedTable@updateEtag)>0)
+  # now check that the data frames are the same
+  retrievedDataFrame<-synapseClient:::loadCSVasDataFrame(retrievedTable@filePath)
+  dataFrame<-read.csv(csvFilePath, header=FALSE)
+  all(dataFrame==retrievedDataFrame)
+  all(tableColumnNames==names(retrievedDataFrame))
+  # make sure the row labels are valid
+  synapseClient:::parseRowAndVersion(row.names(retrievedDataFrame))
+}
+
 
 # TODO test updating a table
 

@@ -26,7 +26,8 @@ setMethod(
     linesToSkip,
     quoteCharacter,
     escapeCharacter,
-    separator) {
+    separator,
+    updateEtag) {
     result<-new("TableFilePath")
     result@schema<-tableSchema
     result@filePath<-values
@@ -34,6 +35,7 @@ setMethod(
     if (!missing(quoteCharacter)) result@quoteCharacter<-quoteCharacter
     if (!missing(escapeCharacter)) result@escapeCharacter<-escapeCharacter
     if (!missing(separator)) result@separator<-separator
+    if (!missing(updateEtag)) result@updateEtag<-updateEtag
     result
   }
 )
@@ -72,11 +74,6 @@ parseRowAndVersion<-function(x) {
   parsedAsInteger
 }
 
-# use these test cases
-#parseRowAndVersion(c("1-2", "2-3", "3"))
-#parseRowAndVersion(c("1-2", "2-3", "3-x"))
-#parseRowAndVersion(c("1-2", "2-3", "3-3.5"))
-
 # uploads a data frame to a table
 # column labels in data frame must match those in table schema
 # if updateEtag is omitted then this is treated as an upload of new rows
@@ -94,7 +91,6 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
     if (is.null(schemaColumnId)) stop(sprintf("Data frame has column %s but schema has no such column.", matrixColumnName))
   }
   
-  filePath<-tempfile()
   if (length(updateEtag)==0) {
     dataFrameToWrite<-dataframe
   } else {
@@ -108,6 +104,7 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   }
   # we would prefer to serialize in memory but R doesn't support connections 
   # wrapping strings/byte arrays, so instead we serialize to a file
+  filePath<-tempfile()
   write.csv(x=dataFrameToWrite, file=filePath, row.names=FALSE)
   rowsProcessed<-uploadCSVFileToTable(filePath=filePath,tableId=propertyValue(tableSchema, "id"), updateEtag=updateEtag)
 }
@@ -148,8 +145,7 @@ setMethod(
     if (retrieveData) {
       sql=sprintf("select * from %s", tableId)
       downloadResult<-downloadTableToCSVFile(sql, verbose)
-      # TODO is the downloaded file in a form that can later be uploaded?
-      Table(entity@schema, downloadResult$filePath, downloadResult$etag)
+      Table(tableSchema=entity@schema, values=downloadResult$filePath, updateEtag=downloadResult$etag)
     } else {
       rowsProcessed
     }
@@ -183,7 +179,7 @@ submitJobAndTrackProgress<-function(request, verbose) {
   jobStatus<-createS4ObjectFromList(jobStatusAsList, "AsynchronousJobStatus")
   asyncJobState<-jobStatus@jobState # PROCESSING, FAILED, or COMPLETE
   while (asyncJobState=="PROCESSING") {
-    if (verbose) cat(sprintf("Completed %d of %d.  %s\n", 
+    if (verbose && jobStatus@progressCurrent>0) cat(sprintf("Completed %d of %d.  %s\n", 
           jobStatus@progressCurrent, jobStatus@progressTotal, jobStatus@progressMessage))
     jobStatus<-createS4ObjectFromList(
       synRestGET(sprintf("/asynchronous/job/%s", jobStatus$jobId)), "AsynchronousJobStatus")
@@ -212,9 +208,9 @@ downloadTableToCSVFile<-function(sql, verbose) {
 loadCSVasDataFrame<-function(filePath) {
   dataframe<-read.csv(filePath)
   # the read-in dataframe has row numbers and versions to remove
-  strippedframe<-dataframe[,-1:-2]
+  strippedframe<-dataframe[,-1:-2] # could also reference by names "ROW_ID","ROW_VERSION"
   # use the two stripped columns as the row names
-  row.names(strippedframe)<-paste(dataframe[[1]], dataframe[[2]], sep="-")
+  row.names(strippedframe)<-paste(dataframe[[1]], dataframe[[2]], sep="-") # could also reference by names "ROW_ID","ROW_VERSION"
   strippedframe
 }
 

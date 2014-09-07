@@ -524,6 +524,7 @@ setClass(
   representation=representation(
     schema="TableSchema",
     filePath="character",
+    updateEtag="character",
     linesToSkip="integer",
     quoteCharacter="character",
     escapeCharacter="character",
