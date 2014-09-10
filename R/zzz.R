@@ -99,7 +99,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
 
 .userAgent<-function() {
   myOwnVersion<-packageDescription("synapseClient", fields="Version")
-  paste("synapseRClient", myOwnVersion, sep="/")
+  paste("synapseRClient", myOwnVersion, sprintf("Rv%s.%s", version$major, version$minor), sep="/")
 }
 
 
