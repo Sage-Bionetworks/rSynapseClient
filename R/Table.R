@@ -97,10 +97,16 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   # validate column headers
   schemaColumns<-synGetColumns(propertyValue(tableSchema,"id"))
   schemaColumnMap<-list()
-  for (column in schemaColumns@content) schemaColumnMap[[column@name]]<-column@id
-  for (matrixColumnName in names(dataframe)) {
-    schemaColumnId<-schemaColumnMap[[matrixColumnName]]
-    if (is.null(schemaColumnId)) stop(sprintf("Data frame has column %s but schema has no such column.", matrixColumnName))
+  for (column in schemaColumns@content) schemaColumnMap[[column@name]]<-column
+  for (dfColumnName in names(dataframe)) {
+    schemaColumn<-schemaColumnMap[[dfColumnName]]
+    if (is.null(schemaColumn)) stop(sprintf("Data frame has column %s but schema has no such column.", dfColumnName))
+    dfColumnType<-class(dataframe[dfColumnName])
+    expectedTableColumnType<-getTableColumnTypeForDataFrameColumnType(dfColumnType)
+    tableColumnType<-schemaColumn@columnType
+    if (tableColumnType!=expectedTableColumnType) {
+      stop(sprintf("Column % has type %s but %s is expected.", dfColumnName, expectedTableColumnType, tableColumnType))
+    }
   }
   
   if (length(updateEtag)==0) {
@@ -264,7 +270,7 @@ findSynIdInSql<-function(sqlString) {
   } else {
     result<-substring(synString, 1, endIndex-1)
   }
-  if (!isSynapseId(result)) stop(sprintf("Counld not find Synapse ID in %s", sqlString))
+  if (!isSynapseId(result)) stop(sprintf("Could not find Synapse ID in %s", sqlString))
   result
 }
 

@@ -57,7 +57,8 @@ export(
   "synQuery",
   "touOnWeb",
   "sendMessage",
-  "synTableQuery"
+  "synTableQuery",
+  "as.tableColumns"
 )
 
 ## S3 convenience methods

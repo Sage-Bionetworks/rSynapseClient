@@ -111,10 +111,27 @@ integrationTestSynStoreDataFrameWRONGColumns <- function() {
   checkException(synStore(table, verbose=FALSE))
 }
 
-integrationTestSynStoreNumericDataFrame<-function() {
+integrationTestSynStoreDataFrameWrongColumnType <- function() {
   project<-synapseClient:::.getCache("testProject")
   
-  tc1 <- TableColumn(name="sweet", columnType="STRING")
+  tableColumns<-createColumns()
+  tableColumns[3]@columnType<-"INTEGER" # WRONG TYPE FOR DATA!
+  tableColumnNames<-list()
+  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
+  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
+  
+  id<-propertyValue(tableSchema, "id")
+  dataFrame <- as.data.frame(matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
+      dimnames = list(c(1,2), tableColumnNames)))
+  table<-Table(tableSchema=tableSchema, values=dataFrame)
+  # the erroneous column type should cause an error
+  checkException(synStore(table, verbose=FALSE))
+}
+
+integrationTestSynStoreMixedDataFrame<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  tc1 <- TableColumn(name="sweet", columnType="STRING", enumValues=CharacterList("one", "two", "three"))
   tc1 <- synStore(tc1)
   tc2 <- TableColumn(name="sweet2", columnType="INTEGER")
   tc2 <- synStore(tc2)
@@ -172,22 +189,6 @@ integrationTestSynStoreAndRETRIEVENumericDataFrameAndQuery<-function() {
   
   queryResult<-synTableQuery(sprintf("select count(*) from %s", propertyValue(tschema, "id")), verbose=FALSE)
   checkEquals(rowsToUpload, queryResult@values)
-  }
-
-integrationTestLargeTable<-function() {
-  project<-synapseClient:::.getCache("testProject")
-  pid<-propertyValue(project, "id")
-  
-  tc1 <- TableColumn(name="sweet", columnType="STRING")
-  tc1 <- synStore(tc1)
-  tc3 <- TableColumn(name="sweet3", columnType="STRING")
-  tc3 <- synStore(tc3)
-  ts <- TableSchema(name="testLargeTable", parent=pid, columns = c(tc1, tc3))
-  ts <- synStore(ts)
-  nRows<-10000
-  mt <- Table(ts, values=data.frame(sweet=sample(c("one", "two", "three"), size=nRows, replace=T), sweet3=sample(c("four", "five"), size=nRows, replace=T)))
-  rowCount <- synStore(mt)
-  checkEquals(rowCount, nRows)
 }
 
 integrationTestSynStoreCSVFileNoRetrieve <- function() {

@@ -57,10 +57,9 @@ For tables:  If TRUE, shows progress for uploading and retrieving data.
 Stores an object crafted in memory, either creating it in Synapse anew, or updating an existing object.
 }
 \value{
-Returns the persisted copy of the object.  
-For TableRowSet, TableMatrix, and TableDataFrame, if retrieveData=TRUE, returns a RowSet, matrix or data frame, respectively.  
-If retrieveData=FALSE, returns a RowReferenceSet providing the row IDs for the created or updated rows.
-For TableFilePath, returns the number of rows uploaded.
+Returns the persisted copy of the object. 
+For TableDataFrame and TableFilePath, if retrieveData=TRUE returns a Table of the same type.  
+If retrieveData=FALSE, returns the number of rows stored.
 }
 
 \author{
@@ -78,5 +77,5 @@ Bruce Hoff
 \code{\link{TableColumn}}
 \code{\link{TableSchema}}
 \code{\link{synGet}}
-\code{\link{RowReferenceSet}}
+\code{\link{Table}}
 }

@@ -1,5 +1,5 @@
 ##
-## synapseDownloadFromRepoService
+## synapseDownloadFromService
 ##
 ## for a wiki page attachment, downloadUri would be:
 ## /{ownerObjectType}/{ownerObjectId}/wiki/{wikiId}/attachment?fileName={attachmentFileName}
@@ -15,7 +15,7 @@
 ##
 
 ## this is the analog of 'synapseDownloadFile', switching to the Repo-file service
-synapseDownloadFromRepoService<-
+synapseDownloadFromService<-
   function (downloadUri, curlHandle = getCurlHandle(), cacheDir = synapseCacheDir(), opts = .getCache("curlOpts"), versionId = NULL)
 {
   if (is.null(cacheDir)) stop(paste("cacheDir is required. synapseCacheDir() returns ", synapseCacheDir()))
@@ -23,11 +23,11 @@ synapseDownloadFromRepoService<-
   ## Download the file to the cache
   destfile <- .generateCacheDestFile(downloadUri, versionId)
   
-  synapseDownloadFromRepoServiceToDestination(downloadUri=downloadUri, endpointName="REPO", destfile=destfile, curlHandle=curlHandle, opts=opts)
+  synapseDownloadFromServiceToDestination(downloadUri=downloadUri, endpointName="REPO", destfile=destfile, curlHandle=curlHandle, opts=opts)
 }
 
 
-synapseDownloadFromRepoServiceToDestination<-function(downloadUri, endpointName="REPO", destfile=tempfile(), curlHandle = getCurlHandle(), opts = .getCache("curlOpts")) {
+synapseDownloadFromServiceToDestination<-function(downloadUri, endpointName="REPO", destfile=tempfile(), curlHandle = getCurlHandle(), opts = .getCache("curlOpts")) {
   # check own version, stopping if blacklisted
   checkBlackList()
   
@@ -58,6 +58,7 @@ synapseDownloadFromRepoServiceToDestination<-function(downloadUri, endpointName=
   # we start with the common request options, then add the headers
   opts$httpheader <- header
   
+  # TODO implement exponential backoff
   destfile <- .curlWriterDownload(url=downloadUrl, destfile=destfile, curlHandle=curlHandle, opts=opts)
   .checkCurlResponse(curlHandle)
   

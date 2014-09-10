@@ -323,7 +323,7 @@ generateUniqueFileName<-function(folder, filename) {
 downloadFromSynapseOrExternal<-function(downloadLocation, filePath, synapseStore, downloadUri, endpointName, externalURL, fileHandle) {
   dir.create(downloadLocation, recursive=T, showWarnings=F)
   if (synapseStore) {
-    synapseDownloadFromRepoServiceToDestination(downloadUri, endpointName, destfile=filePath)
+    synapseDownloadFromServiceToDestination(downloadUri, endpointName, destfile=filePath)
   } else {
     synapseDownloadFileToDestination(externalURL, filePath)
   }

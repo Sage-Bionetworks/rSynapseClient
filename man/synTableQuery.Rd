@@ -11,7 +11,7 @@ Query a Synapse Table
 \arguments{
 	\item{sqlString}{
 	The query to execute.  For complete syntax description see:
-	\url{rest.synapse.org/POST/table/query/async/start.html}.
+	rest.synapse.org/POST/table/query/async/start.html.
 	}
 	\item{loadResult}{
 	If true then return the query result, else return the path of a csv file containing the result.
