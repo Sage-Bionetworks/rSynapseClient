@@ -23,3 +23,10 @@
     }
   }
 }
+
+# gets the status code for the given CurlHandle,
+getStatusCode<-function(object) {
+  if(class(object) != "CURLHandle") stop("invalid curl handle")
+  info <- .getCurlInfo(object)
+  info$response.code
+}

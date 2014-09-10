@@ -56,7 +56,8 @@ export(
   "synapseQuery",
   "synQuery",
   "touOnWeb",
-  "sendMessage"
+  "sendMessage",
+  "synTableQuery"
 )
 
 ## S3 convenience methods

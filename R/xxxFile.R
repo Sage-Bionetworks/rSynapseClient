@@ -320,10 +320,10 @@ generateUniqueFileName<-function(folder, filename) {
   stop(sprintf("Cannot generate unique file name variation in folder %s for file %s", folder, filename))
 }
 
-downloadFromSynapseOrExternal<-function(downloadLocation, filePath, synapseStore, downloadUri, externalURL, fileHandle) {
+downloadFromSynapseOrExternal<-function(downloadLocation, filePath, synapseStore, downloadUri, endpointName, externalURL, fileHandle) {
   dir.create(downloadLocation, recursive=T, showWarnings=F)
   if (synapseStore) {
-    synapseDownloadFromRepoServiceToDestination(downloadUri, destfile=filePath)
+    synapseDownloadFromRepoServiceToDestination(downloadUri, endpointName, destfile=filePath)
   } else {
     synapseDownloadFileToDestination(externalURL, filePath)
   }
@@ -378,6 +378,7 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   
   result<-synGetFileAttachment(
     downloadUri,
+    "REPO",
     fileHandle,
     downloadFile,
     downloadLocation,
@@ -396,7 +397,7 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   file
 }
 
-synGetFileAttachment<-function(downloadUri, fileHandle, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
+synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
   if (isExternalFileHandle(fileHandle)) {
     synapseStore<-FALSE
     externalURL<-fileHandle$externalURL
@@ -423,7 +424,7 @@ synGetFileAttachment<-function(downloadUri, fileHandle, downloadFile=T, download
           temp<-file.path(downloadLocation, sample(999999999, 1))
           if (!file.rename(filePath, temp)) stop(sprintf("Failed to back up %s before downloading new version.", filePath))
           tryCatch(
-            downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, externalURL, fileHandle),
+            downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, endpointName, externalURL, fileHandle),
             error = function(e) {file.rename(temp, filePath); stop(e)}
           )
           unlink(temp)
@@ -433,13 +434,13 @@ synGetFileAttachment<-function(downloadUri, fileHandle, downloadFile=T, download
           #download file from Synapse to distinct filePath
           uniqueFileName <- generateUniqueFileName(downloadLocation, fileHandle$fileName)
           filePath <- file.path(downloadLocation, uniqueFileName)
-          downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, externalURL, fileHandle) 
+          downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, endpointName, externalURL, fileHandle) 
         } else {
   				stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
         }
       }
     } else { # filePath does not exist
-      downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, externalURL, fileHandle) 
+      downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, endpointName, externalURL, fileHandle) 
     }
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)

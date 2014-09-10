@@ -25,7 +25,8 @@ createS4ObjectFromList<-function(content, className) {
   constructorArgs<-list()   
   slotTypes<-getSlots(className)
   for (slotName in names(content)) {
-    s4SlotType <- slotTypes[[slotName]]
+    s4SlotType <- slotTypes[slotName]
+    if (is.na(s4SlotType)) stop(sprintf("No slot %s in %s", slotName, className))
     
     slotValue <- content[[slotName]]
     

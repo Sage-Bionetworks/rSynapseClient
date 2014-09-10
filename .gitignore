@@ -15,6 +15,11 @@ man/Settings.Rd
 man/TableColumn.Rd
 man/TableRowSet.Rd
 man/TypedList.Rd
+man/AsynchUploadToTableRequestBody.Rd
+man/AsynchUploadToTableResponseBody.Rd
+man/AsynchronousJobStatus.Rd
+man/AsynchronousRequestBody.Rd
+man/AsynchronousResponseBody.Rd
 inst/resources/Register.json
 inst/resources/schema
 

@@ -19,11 +19,10 @@
 }
 
 createColumns<-function() {
-  
   tableColumns<-list()
   for (i in 1:3) {
     tableColumn<-TableColumn(
-      name=sprintf("R_Client_Integration_Test_Column_Name_%d", i), 
+      name=sprintf("R_Integration_Test_Column_%d", i), 
       columnType="STRING")
     stored<-synStore(tableColumn)
     tableColumns<-append(tableColumns, stored)
@@ -35,135 +34,7 @@ createTableSchema<-function(projectId, tableColumns) {
   name<-sprintf("R_Client_Integration_Test_Create_Schema_%s", sample(999999999, 1))
   
   tableSchema<-TableSchema(name=name, parent=projectId, columns=tableColumns)
-  tableSchema<-synStore(tableSchema) # TODO also check the variation in which we don't save the schema in advance of storing the table
   tableSchema
-}
-
-integrationTestSynStore <- function() {
-  project<-synapseClient:::.getCache("testProject")
-  
-  tableColumns<-createColumns()
-  tableColumnNames<-list()
-  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
-  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
-  
-  # test some utilities used by synStore
-  id<-propertyValue(tableSchema, "id")
-  # don't know what the answer is, just test that it works
-  checkTrue(synapseClient:::maxRowTransferForSchema(id)>0)
-  checkTrue(synapseClient:::maxRowTransferForSchemaAndColumnNames(id, tableColumnNames)>0)
-  
-  rowList<-RowList()
-  rowList<-append(rowList, Row(values=CharacterList("a1", "b1", "c1")))
-  rowList<-append(rowList, Row(values=CharacterList("a2", "b2", "c2")))
-  table<-Table(tableSchema, rowList)
-  rowReferenceSet<-synStore(table, retrieveData=FALSE, verbose=FALSE)
-  checkEquals(rowReferenceSet$tableId, propertyValue(tableSchema, "id"))
-  checkTrue(length(rowReferenceSet$etag)>0)
-  checkEquals(as.list(propertyValue(tableSchema, "columnIds")), rowReferenceSet$headers@content)
-  checkEquals(length(rowReferenceSet$rows), 2)
-  
-  # rerun with retrieveData=TRUE
-  rowList<-RowList()
-  rowList<-append(rowList, Row(values=CharacterList("a3", "b3", "c3")))
-  rowList<-append(rowList, Row(values=CharacterList("a4", "b4", "c4")))
-  table<-Table(tableSchema, rowList)
-  tableRowSet<-synStore(table, retrieveData=TRUE, verbose=FALSE)
-  checkEquals(tableRowSet$tableId, propertyValue(tableSchema, "id"))
-  # checkTrue(length(tableRowSet$etag)>0) restore once PLFM-2947 is fixed
-  checkEquals(as.list(propertyValue(tableSchema, "columnIds")), tableRowSet$headers@content)
-  checkEquals(length(tableRowSet$rows), 2)
-  checkEquals(tableRowSet@rows[[1]]@values@content, list("a3", "b3", "c3"))
-  checkEquals(tableRowSet@rows[[2]]@values@content, list("a4", "b4", "c4"))
-  
-  # now can we update and push back?
-  # TODO enable once PLFM-2947 is fixed
-  if (FALSE) {
-    # this also tests calling synStore directly with a TableRowSet
-    tableRowSet@rows[[2]]@values<-CharacterList("A5", "B5", "C5")
-    updated<-synStore(tableRowSet, retrieveData=TRUE, verbose=FALSE)
-    checkEquals(updated$tableId, propertyValue(tableSchema, "id"))
-    checkTrue(length(updated$etag)>0)
-    checkEquals(as.list(propertyValue(tableSchema, "columnIds")), updated$headers@content)
-    checkEquals(length(updated$rows), 2)
-    checkEquals(updated@rows[[1]]@values@content, list("a3", "b3", "c3"))
-    checkEquals(updated@rows[[2]]@values@content, list("A5", "B5", "C5"))
-  }
-}
-
-integrationTestSynStoreTableMatrix <- function() {
-  project<-synapseClient:::.getCache("testProject")
-  
-  tableColumns<-createColumns()
-  tableColumnNames<-list()
-  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
-  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
-  
-  id<-propertyValue(tableSchema, "id")
-  # note we permute the column order in the matrix values and headers, then
-  # test that it comes out right
-  if (FALSE) {
-    # TODO reenable this once PLFM-2954 is fixed
-    matrix <- matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
-      dimnames = list(c(1,2), tableColumnNames[c(2,1,3)]))
-  } else {
-    # the simple version, without rearranging the columns when uploading
-    matrix <- matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
-      dimnames = list(c(1,2), tableColumnNames))
-  }
-  table<-Table(tableSchema=tableSchema, values=matrix)
-  retrievedMatrix<-synStore(table, retrieveData=TRUE, verbose=FALSE)
-  checkEquals(retrievedMatrix, matrix)
-}
-
-integrationTestSynStoreAndRetrieveCharacterTableMatrix <- function() {
-  project<-synapseClient:::.getCache("testProject")
-  
-  tableColumns<-createColumns()
-  tableColumnNames<-list()
-  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
-  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
-  
-  id<-propertyValue(tableSchema, "id")
-  # note we permute the column order in the matrix values and headers, then
-  # test that it comes out right
-  if (FALSE) {
-    # TODO reenable this once PLFM-2954 is fixed
-    matrix <- matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
-      dimnames = list(c(1,2), tableColumnNames[c(2,1,3)]))
-  } else {
-    # the simple version, without rearranging the columns when uploading
-    matrix <- matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
-      dimnames = list(c(1,2), tableColumnNames))
-  }
-  table<-Table(tableSchema=tableSchema, values=matrix)
-  retrievedMatrix<-synStore(table, retrieveData=TRUE, verbose=FALSE)
-  checkEquals(retrievedMatrix, matrix)
-}
-
-integrationTestSynStoreAndRetrieveNumericTableMatrix <- function() {
-  project<-synapseClient:::.getCache("testProject")
-  
-  tableColumns<-createColumns()
-  tableColumnNames<-list()
-  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
-  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
-  
-  id<-propertyValue(tableSchema, "id")
-  # note we permute the column order in the matrix values and headers, then
-  # test that it comes out right
-  if (FALSE) {
-    # TODO reenable this once PLFM-2954 is fixed
-    matrix <- matrix(c(2, 1, 3, 5, 4, 6), nrow = 2, ncol = 3, byrow = TRUE,
-      dimnames = list(c(1,2), tableColumnNames[c(2,1,3)]))
-  } else {
-    # the simple version, without rearranging the columns when uploading
-    matrix <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3, byrow = TRUE,
-      dimnames = list(c(1,2), tableColumnNames))
-  }
-  table<-Table(tableSchema=tableSchema, values=matrix)
-  retrievedMatrix<-synStore(table, retrieveData=TRUE, verbose=FALSE)
-  checkEquals(retrievedMatrix, matrix)
 }
 
 integrationTestSynStoreDataFrame <- function() {
@@ -173,25 +44,57 @@ integrationTestSynStoreDataFrame <- function() {
   tableColumnNames<-list()
   for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
   tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
-  
-  id<-propertyValue(tableSchema, "id")
+
+  dataFrame <- as.data.frame(matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
+      dimnames = list(c(1,2), tableColumnNames)))
   # note we permute the column order in the data frame values and headers, then
   # test that it comes out right
-  if (FALSE) {
-    # TODO reenable this once PLFM-2954 is fixed
-    dataFrame <- as.data.frame(matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
+  permutedDataFrame <- as.data.frame(matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
       dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
-  } else {
-    # the simple version, without rearranging the columns when uploading
-    dataFrame <- as.data.frame(matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
-      dimnames = list(c(1,2), tableColumnNames)))
-  }
-  table<-Table(tableSchema=tableSchema, values=dataFrame)
-  retrievedDataFrame<-synStore(table, retrieveData=TRUE, verbose=FALSE)
-  checkEquals(dataFrame, retrievedDataFrame)
+  table<-Table(tableSchema=tableSchema, values=permutedDataFrame)
+  retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE)
+  checkTrue(is(retrievedTable, "TableDataFrame"))
+  checkTrue(!is.null(propertyValue(retrievedTable@schema, "id")))
+  checkTrue(length(retrievedTable@updateEtag)>0)
+  # now check that the data frames are the same
+  checkTrue(all(dataFrame==retrievedTable@values))
+  checkTrue(all(names(dataFrame)==names(retrievedTable@values)))
+  # make sure the row labels are valid
+  synapseClient:::parseRowAndVersion(row.names(retrievedTable@values))
+  
+  # modify the retrieved table (we exchange the two values)
+  retrievedTable@values[1,3]<-"c2"
+  retrievedTable@values[2,3]<-"c1"
+  # update in Synapse
+  
+  updatedTable<-synStore(retrievedTable, retrieveData=TRUE, verbose=FALSE)
+  checkTrue(is(updatedTable, "TableDataFrame"))
+  checkEquals(propertyValue(updatedTable@schema, "id"), propertyValue(retrievedTable@schema, "id"))
+  checkTrue(length(updatedTable@updateEtag)>0)
+  # now check that the data frames are the same
+  checkTrue(all(retrievedTable@values==updatedTable@values))
+  checkTrue(all(names(retrievedTable@values)==names(updatedTable@values)))
+  # make sure the row labels are valid
+  synapseClient:::parseRowAndVersion(row.names(updatedTable@values))   
+
 }
 
-integrationTestSynStoreCSVFile <- function() {
+integrationTestSynStoreDataFrameNORetrieveData <- function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  tableColumns<-createColumns()
+  tableColumnNames<-list()
+  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
+  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
+  tableSchema<-synStore(tableSchema)
+  dataFrame <- as.data.frame(matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
+      dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
+  table<-Table(tableSchema=tableSchema, values=dataFrame)
+  rowCount<-synStore(table, verbose=FALSE)
+  checkEquals(rowCount, 2)
+}
+
+integrationTestSynStoreDataFrameWRONGColumns <- function() {
   project<-synapseClient:::.getCache("testProject")
   
   tableColumns<-createColumns()
@@ -200,9 +103,128 @@ integrationTestSynStoreCSVFile <- function() {
   tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
   
   id<-propertyValue(tableSchema, "id")
+  # replace the third column name with "foo"
+  dataFrame <- as.data.frame(matrix(c("a1", "b1", "c1", "a2", "b2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
+      dimnames = list(c(1,2), c(tableColumnNames[1:2], "foo"))))
+  table<-Table(tableSchema=tableSchema, values=dataFrame)
+  # the erroneous column name should cause an error
+  checkException(synStore(table, verbose=FALSE))
+}
+
+integrationTestSynStoreNumericDataFrame<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  tc1 <- TableColumn(name="sweet", columnType="STRING")
+  tc1 <- synStore(tc1)
+  tc2 <- TableColumn(name="sweet2", columnType="INTEGER")
+  tc2 <- synStore(tc2)
+  
+  pid<-propertyValue(project, "id")
+  tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2))
+  tschema <- synStore(tschema, createOrUpdate=FALSE)
+  
+  rowsToUpload<-30
+  myTable <- Table(tschema, values=data.frame(sweet=sample(c("one", "two", "three"), size = rowsToUpload, replace = T), sweet2=sample.int(rowsToUpload, replace = T)))
+  rowCount <- synStore(myTable)
+  # returns the number of rows uploaded
+  checkEquals(rowCount, rowsToUpload)
+}
+
+integrationTestSynStoreAndRETRIEVENumericDataFrameAndQuery<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  tc1 <- TableColumn(name="sweet", columnType="STRING")
+  tc1 <- synStore(tc1)
+  tc2 <- TableColumn(name="sweet2", columnType="INTEGER")
+  tc2 <- synStore(tc2)
+  
+  pid<-propertyValue(project, "id")
+  tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2))
+  tschema <- synStore(tschema, createOrUpdate=FALSE)
+  
+  rowsToUpload<-30
+  dataFrame <- data.frame(sweet=sample(c("one", "two", "three"), size = rowsToUpload, replace = T), sweet2=sample.int(rowsToUpload, replace = T))
+  myTable <- Table(tschema, values=dataFrame)
+  myTable <- synStore(myTable, retrieveData=T)
+  checkTrue(is(myTable, "TableDataFrame"))
+  checkEquals(propertyValue(myTable@schema, "id"), propertyValue(tschema, "id"))
+  checkTrue(length(myTable@updateEtag)>0)
+  # now check that the data frames are the same
+  checkTrue(all(dataFrame==myTable@values))
+  checkTrue(all(names(dataFrame)==names(myTable@values)))
+  # make sure the row labels are valid
+  synapseClient:::parseRowAndVersion(row.names(myTable@values))
+  
+  # test synTableQuery
+  queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), verbose=FALSE)
+  checkTrue(is(queryResult, "TableDataFrame"))
+  checkEquals(queryResult@schema, propertyValue(tschema, "id"))
+  checkTrue(all(dataFrame==queryResult@values))
+  checkTrue(all(names(dataFrame)==names(queryResult@values)))
+  checkTrue(length(queryResult@updateEtag)>0)
+  
+  # test no load
+  queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=FALSE, verbose=FALSE)
+  checkTrue(is(queryResult, "TableFilePath"))
+  checkEquals(queryResult@schema, propertyValue(tschema, "id"))
+  checkTrue(file.exists(queryResult@filePath))
+  checkTrue(length(queryResult@updateEtag)>0)
+  
+  queryResult<-synTableQuery(sprintf("select count(*) from %s", propertyValue(tschema, "id")), verbose=FALSE)
+  checkEquals(rowsToUpload, queryResult@values)
+  }
+
+integrationTestLargeTable<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  
+  tc1 <- TableColumn(name="sweet", columnType="STRING")
+  tc1 <- synStore(tc1)
+  tc3 <- TableColumn(name="sweet3", columnType="STRING")
+  tc3 <- synStore(tc3)
+  ts <- TableSchema(name="testLargeTable", parent=pid, columns = c(tc1, tc3))
+  ts <- synStore(ts)
+  nRows<-10000
+  mt <- Table(ts, values=data.frame(sweet=sample(c("one", "two", "three"), size=nRows, replace=T), sweet3=sample(c("four", "five"), size=nRows, replace=T)))
+  rowCount <- synStore(mt)
+  checkEquals(rowCount, nRows)
+}
+
+integrationTestSynStoreCSVFileNoRetrieve <- function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  tableColumns<-createColumns()
+  tableColumnNames<-list()
+  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
+  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
+  tableSchema<-synStore(tableSchema)
+  id<-propertyValue(tableSchema, "id")
   table<-Table(tableSchema=tableSchema, values=system.file("resources/test/test.csv", package = "synapseClient"))
   lineCount<-synStore(table)
   checkEquals(2, lineCount)
+}
+
+integrationTestSynStoreAndRetrieveCSVFile <- function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  tableColumns<-createColumns()
+  tableColumnNames<-list()
+  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
+  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
+  
+  csvFilePath<-system.file("resources/test/test.csv", package = "synapseClient")
+  table<-Table(tableSchema=tableSchema, values=csvFilePath)
+  retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE)
+  checkTrue(is(retrievedTable, "TableFilePath"))
+  checkTrue(!is.null(propertyValue(retrievedTable@schema, "id")))
+  checkTrue(length(retrievedTable@updateEtag)>0)
+  # now check that the data frames are the same
+  retrievedDataFrame<-synapseClient:::loadCSVasDataFrame(retrievedTable@filePath)
+  dataFrame<-read.csv(csvFilePath, header=FALSE)
+  checkTrue(all(dataFrame==retrievedDataFrame))
+  checkTrue(all(tableColumnNames==names(retrievedDataFrame)))
+  # make sure the row labels are valid
+  synapseClient:::parseRowAndVersion(row.names(retrievedDataFrame))
 }
 
   

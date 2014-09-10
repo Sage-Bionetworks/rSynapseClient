@@ -71,7 +71,9 @@ defineS4Classes<-function() {
 }
 
 defineS4ClassForSchema <- function(fullSchemaName) { 
+#  cat(sprintf("defineS4ClassForSchema %s\n", fullSchemaName))
   name<-getS4ClassNameFromSchemaName(fullSchemaName)
+  if (exists(name)) return(name)
   
   schemaDef <- readEntityDef(fullSchemaName, getSchemaPath())
   
@@ -259,8 +261,7 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
       # it's an 'enum' or similar. use the type of the property's schema
       return(TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]])
     }
-    
-    getS4ClassNameFromSchemaName(schemaPropertyType)
+    defineS4ClassForSchema(schemaPropertyType)
   }
 }
 

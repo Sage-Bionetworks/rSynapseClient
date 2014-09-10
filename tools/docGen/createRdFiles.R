@@ -58,11 +58,13 @@ createRdFromSchema<-function(className, schemaName, schemaPath, classToSchemaMap
 }
 
 itemRdEntry<-function(itemName, itemDescription, itemType) {
-  paste("  \\item{", itemName, "}{\n  ", itemDescription, " (", itemType, ")\n  }", sep="")
+  normalizedItemDescription<-gsub("\\", "\\\\", itemDescription, fixed=TRUE)
+  paste("  \\item{", itemName, "}{\n  ", normalizedItemDescription, " (", itemType, ")\n  }", sep="")
 }
 
 slotRdEntry<-function(itemName, itemDescription, itemType) {
-  paste("    \\item{\\code{", itemName, "}}{\n    ", itemDescription, " (", itemType, ")\n    }", sep="")
+  normalizedItemDescription<-gsub("\\", "\\\\", itemDescription, fixed=TRUE)
+  paste("    \\item{\\code{", itemName, "}}{\n    ", normalizedItemDescription, " (", itemType, ")\n    }", sep="")
 }
 
 # given a 'propertySchema' return the R type
@@ -78,7 +80,7 @@ getPropertyType<-function(propertySchema, schemaPath, classToSchemaMap) {
   primitiveRType<-TYPEMAP_FOR_ALL_PRIMITIVES[[schemaPropertyType]]
   if(length(primitiveRType)>0) {
     # No S4 class to define, just return type name
-    list(type=primitiveRType, isTypedList=FALSE)
+    list(type=primitiveRType, enum=propertySchema$enum, isTypedList=FALSE)
   } else if (schemaPropertyType=="array") {
     elemRType <- getPropertyType(getArraySubSchema(propertySchema), schemaPath, classToSchemaMap)
     list(type=listClassName(elemRType$type), enum=elemRType$enum, isTypedList=TRUE)
@@ -113,9 +115,7 @@ createdTypedListRd<-function(referencedTypedLists, srcRootDir) {
   connection<-file(templateFile, open="r")
   template<-paste(readLines(connection), collapse="\n")
   close(connection)
-
   aliasLines<-paste(lapply(X=referencedTypedLists, FUN=function(x){paste("\\alias{",x,"}",sep="")}), collapse="\n")
-  
   content<-gsub("##alias##", aliasLines, template, fixed=TRUE)
   content
 }
@@ -158,7 +158,7 @@ writeContent<-function(content, className, srcRootDir) {
   writeChar(content, connection, eos=NULL)
   writeChar("\n", connection, eos=NULL)
   close(connection)
-  cat(sprintf("Created %s\n", fileName))
+#  cat(sprintf("Created %s\n", fileName))
 }
 
 # now call autoGenerateRdFiles

@@ -65,6 +65,7 @@ synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollisio
 
     result<-synGetFileAttachment(
       downloadUri,
+      "REPO",
       submission@fileHandle,
       downloadFile,
       downloadLocation,
