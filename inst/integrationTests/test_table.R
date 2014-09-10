@@ -22,7 +22,6 @@ createColumns<-function() {
   tableColumns<-list()
   for (i in 1:3) {
     tableColumn<-TableColumn(
-      # use white space and quotes in the column names
       name=sprintf("R_Integration_Test_Column_%d", i), 
       columnType="STRING")
     stored<-synStore(tableColumn)
@@ -168,7 +167,7 @@ integrationTestSynStoreAndRETRIEVENumericDataFrameAndQuery<-function() {
   queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=FALSE, verbose=FALSE)
   checkTrue(is(queryResult, "TableFilePath"))
   checkEquals(queryResult@schema, propertyValue(tschema, "id"))
-  checkTrue(file.exists(queryResults@filePath))
+  checkTrue(file.exists(queryResult@filePath))
   checkTrue(length(queryResult@updateEtag)>0)
   
   queryResult<-synTableQuery(sprintf("select count(*) from %s", propertyValue(tschema, "id")), verbose=FALSE)
