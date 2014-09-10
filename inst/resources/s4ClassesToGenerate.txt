@@ -22,6 +22,8 @@ Row	org.sagebionetworks.repo.model.table.Row	true
 RowReference	org.sagebionetworks.repo.model.table.RowReference	true
 RowReferenceSet	org.sagebionetworks.repo.model.table.RowReferenceSet true
 TableBundle	org.sagebionetworks.repo.model.table.TableBundle	false
+AsynchronousRequestBody	org.sagebionetworks.repo.model.asynch.AsynchronousRequestBody	false
+AsynchronousResponseBody	org.sagebionetworks.repo.model.asynch.AsynchronousResponseBody	false
 Query	org.sagebionetworks.repo.model.table.Query	false
 QueryResultBundle	org.sagebionetworks.repo.model.table.QueryResultBundle	false
 PaginatedColumnModels org.sagebionetworks.repo.model.table.PaginatedColumnModels	false
@@ -29,11 +31,18 @@ FileHandle	org.sagebionetworks.repo.model.file.FileHandle	false
 HasPreviewId	org.sagebionetworks.repo.model.file.HasPreviewId	false
 S3FileHandleInterface	org.sagebionetworks.repo.model.file.S3FileHandleInterface	false
 S3FileHandle	org.sagebionetworks.repo.model.file.S3FileHandle	false
-AsynchronousRequestBody	org.sagebionetworks.repo.model.asynch.AsynchronousRequestBody	false
-AsynchronousResponseBody	org.sagebionetworks.repo.model.asynch.AsynchronousResponseBody	false
-AsynchUploadToTableRequestBody	org.sagebionetworks.repo.model.table.AsynchUploadToTableRequestBody	false
 AsynchronousJobStatus	org.sagebionetworks.repo.model.asynch.AsynchronousJobStatus	false
-AsynchUploadToTableResponseBody	org.sagebionetworks.repo.model.table.AsynchUploadToTableResponseBody	false
-AsynchDownloadFromTableRequestBody	org.sagebionetworks.repo.model.table.AsynchDownloadFromTableRequestBody	false
-AsynchDownloadFromTableResponseBody	org.sagebionetworks.repo.model.table.AsynchDownloadFromTableResponseBody	false
+UploadToTableRequest	org.sagebionetworks.repo.model.table.UploadToTableRequest	false
+DownloadFromTableRequest	org.sagebionetworks.repo.model.table.DownloadFromTableRequest	false
+QueryBundleRequest	org.sagebionetworks.repo.model.table.QueryBundleRequest	false
+QueryNextPageToken	org.sagebionetworks.repo.model.table.QueryNextPageToken	false
+DownloadFromTableResult	org.sagebionetworks.repo.model.table.DownloadFromTableResult	false
+QueryResultBundle	org.sagebionetworks.repo.model.table.QueryResultBundle	false
+UploadToTableResult	org.sagebionetworks.repo.model.table.UploadToTableResult	false
+QueryResult	org.sagebionetworks.repo.model.table.QueryResult	false
+QueryNextPageToken	org.sagebionetworks.repo.model.table.QueryNextPageToken	false
+SortItem	org.sagebionetworks.repo.model.table.SortItem	false
+AsyncJobId	org.sagebionetworks.repo.model.asynch.AsyncJobId	false
+CsvTableDescriptor	org.sagebionetworks.repo.model.table.CsvTableDescriptor	false
+
 

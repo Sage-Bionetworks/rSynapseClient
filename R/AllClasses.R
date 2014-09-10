@@ -507,22 +507,26 @@ setClass(
   )
 )
 
+setClassUnion("TableSchemaOrCharacter", c("TableSchema", "character"))
+
 setClass(
   Class = "Table",
-  representation=representation(schema="TableSchema")
+  # this can either be a TableSchema or the ID of the TableSchema
+  representation=representation(schema="TableSchemaOrCharacter")
 )
+
+setClassUnion("DataFrameOrNumeric", c("data.frame", "numeric"))
 
 setClass(
   Class = "TableDataFrame",
   contains = c("Table"),
-  representation=representation(values="data.frame", updateEtag="character")
+  representation=representation(values="DataFrameOrNumeric", updateEtag="character")
 )
 
 setClass(
   Class = "TableFilePath",
   contains = c("Table"),
   representation=representation(
-    schema="TableSchema",
     filePath="character",
     updateEtag="character",
     linesToSkip="integer",

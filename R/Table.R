@@ -7,7 +7,7 @@
 
 setMethod(
   f = "Table",
-  signature = signature("TableSchema", "data.frame"),
+  signature = signature("TableSchemaOrCharacter", "DataFrameOrNumeric"),
   definition = function(tableSchema, values, updateEtag=character(0)) {
     result<-new("TableDataFrame")
     result@schema<-tableSchema
@@ -19,7 +19,7 @@ setMethod(
 
 setMethod(
   f = "Table",
-  signature = signature("TableSchema", "character"),
+  signature = signature("TableSchemaOrCharacter", "character"),
   definition = function(
     tableSchema, 
     values,
@@ -47,6 +47,18 @@ ensureTableSchemaStored<-function(tableSchema) {
     tableSchema<-synStore(tableSchema)
   }
   tableSchema
+}
+
+ensureTableSchemaIsRetrieved<-function(tableSchemaOrID) {
+  if (is(tableSchemaOrID, "TableSchema")) {
+    tableSchemaOrID
+  } else if (is(tableSchemaOrID, "chracter")) {
+    tableId<-tableSchemaOrID
+    if (!isSynapseId(tableId)) stop(sprintf("%s is not a Synapse ID.", tableId))
+    synGet(tableId)
+  } else {
+    stop("argument is neither TableSchema nor character")
+  }
 }
 
 synGetColumns<-function(id) {
@@ -114,6 +126,8 @@ setMethod(
   f = "synStore",
   signature = "TableDataFrame",
   definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
+    if (!is(entity@values, "data.frame")) stop("data frame required.")
+    entity@schema<-ensureTableSchemaIsRetrieved(entity@schema)
     entity@schema<-ensureTableSchemaStored(entity@schema)
     rowsProcessed<-storeDataFrame(entity@schema, entity@values, retrieveData, verbose, entity@updateEtag)
     if (retrieveData) {
@@ -134,6 +148,7 @@ setMethod(
   definition = function(entity, 
     retrieveData=FALSE, 
     verbose=TRUE) {
+    entity@schema<-ensureTableSchemaIsRetrieved(entity@schema)
     entity@schema<-ensureTableSchemaStored(entity@schema)
     tableId<-propertyValue(entity@schema, "id")
     rowsProcessed<-uploadCSVFileToTable(
@@ -159,52 +174,66 @@ setMethod(
 # returns the number of rows processed
 uploadCSVFileToTable<-function(filePath, tableId, 
   verbose=TRUE, linesToSkip=as.integer(0), quoteCharacter=character(0), 
-  escapeCharacter=character(0), separator=character(0), updateEtag=character(0)) {
+  escapeCharacter=character(0), separator=character(0), lineEnd=character(0), updateEtag=character(0)) {
   s3FileHandle<-chunkedUploadFile(filePath)
-  request<-AsynchUploadToTableRequestBody(
+  
+  request<-UploadToTableRequest(
+    linesToSkip=linesToSkip,
+    csvTableDescriptor=CsvTableDescriptor(
+      quoteCharacter=quoteCharacter,
+      escapeCharacter=escapeCharacter,
+      separator=separator,
+      lineEnd=lineEnd
+      ),
     tableId=tableId,
     uploadFileHandleId=s3FileHandle$id,
-    linesToSkip=linesToSkip,
-    quoteCharacter=quoteCharacter,
-    escapeCharacter=escapeCharacter,
-    separator=separator,
     updateEtag=updateEtag
   )
-  responseBody<-submitJobAndTrackProgress(request, verbose)
-  # returns an AsynchUploadToTableResponseBody
-  rowsProcessed<-responseBody@rowsProcessed
-  if (verbose) cat(sprintf("Complete.  Processed %d rows.\n", rowsProcessed))
-  rowsProcessed
+
+  asyncJobId<-createS4ObjectFromList(synRestPOST("/table/upload/csv/async/start", createListFromS4Object(request)) ,"AsyncJobId")
+  responseBodyAsList<-trackProgress(sprintf("/table/upload/csv/async/get/%s", asyncJobId@token), verbose)
+  responseBody<-createS4ObjectFromList(responseBodyAsList, "UploadToTableResult")
+  if (verbose) cat(sprintf("Complete.  Processed %d rows.\n", responseBody@rowsProcessed))
+  responseBody@rowsProcessed
 }
 
-submitJobAndTrackProgress<-function(request, verbose=TRUE) {
-  jobStatusAsList<-synRestPOST("/asynchronous/job", createListFromS4Object(request))
-  jobStatus<-createS4ObjectFromList(jobStatusAsList, "AsynchronousJobStatus")
-  asyncJobState<-jobStatus@jobState # PROCESSING, FAILED, or COMPLETE
+trackProgress<-function(checkCompleteUri, verbose=TRUE) {
+  asyncJobState<-"PROCESSING"
   while (asyncJobState=="PROCESSING") {
-    moreThanZeroProgress <- (jobStatus@progressCurrent>0)
-    if (verbose) {
-      cat(sprintf("Completed %d of %d.  %s\n", 
-          jobStatus@progressCurrent, 
-          jobStatus@progressTotal, 
-          jobStatus@progressMessage))
+    curlHandle=getCurlHandle()
+    checkResultAsList<-synapseGet(uri=checkCompleteUri, curlHandle=curlHandle, checkHttpStatus=FALSE)
+    statusCode<-getStatusCode(curlHandle)
+    if (statusCode==202) {
+      jobStatus<-createS4ObjectFromList(checkResultAsList, "AsynchronousJobStatus")
+      asyncJobState<-jobStatus@jobState # PROCESSING, FAILED, or COMPLETE
+      if (asyncJobState!="PROCESSING") break
+      moreThanZeroProgress <- (jobStatus@progressCurrent>0)
+      if (verbose) {
+        cat(sprintf("Completed %d of %d.  %s\n", 
+            jobStatus@progressCurrent, 
+            jobStatus@progressTotal, 
+            jobStatus@progressMessage))
+      }
+      Sys.sleep(1);
+    } else {
+      # this handles non-2xx statuses
+      .checkCurlResponse(curlHandle, toJSON(checkResultAsList))
+      # the job is finished
+      return(checkResultAsList)
     }
-    jobStatus<-createS4ObjectFromList(
-      synRestGET(sprintf("/asynchronous/job/%s", jobStatus$jobId)), "AsynchronousJobStatus")
-    asyncJobState<-jobStatus@jobState
-    if (asyncJobState=="PROCESSING") Sys.sleep(1);
   }
-  if (asyncJobState=="FAILED") stop(jobStatus@errorMessage)
+  if (asyncJobState=="FAILED") stop(sprintf("%s\nDetails:\n%s", jobStatus@errorMessage, jobStatus@errorDetails))
   # TODO log jobStatus@errorDetails to the new client logging service
-  jobStatus@responseBody
+  stop(sprintf("Unexcepted status %s for %s", asyncJobState, checkCompleteUri))
 }
 
 # execute a query and download the results
 # returns the download file path and etag
-downloadTableToCSVFile<-function(sql, verbose) {
-  request<-AsynchDownloadFromTableRequestBody(sql=sql)
-  responseBody<-submitJobAndTrackProgress(request, verbose)
-  # returns a AsynchDownloadFromTableResponseBody
+downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE) {
+  request<-DownloadFromTableRequest(sql=sql, includeRowIdAndRowVersion=includeRowIdAndRowVersion)
+  asyncJobId<-createS4ObjectFromList(synRestPOST("/table/download/csv/async/start", createListFromS4Object(request)) ,"AsyncJobId")
+  responseBodyAsList<-trackProgress(sprintf("/table/download/csv/async/get/%s", asyncJobId@token), verbose)
+  responseBody<-createS4ObjectFromList(responseBodyAsList, "DownloadFromTableResult")
   downloadUri<-sprintf("/fileHandle/%s/url", responseBody@resultsFileHandleId)
   fileName<-sprintf("queryResult_%s.csv", responseBody@resultsFileHandleId)
   fileHandle<-S3FileHandle(id=responseBody$resultsFileHandleId, fileName=fileName)
@@ -213,13 +242,55 @@ downloadTableToCSVFile<-function(sql, verbose) {
   list(filePath=downloadResult$filePath, etag=responseBody@etag)
 }
 
-loadCSVasDataFrame<-function(filePath) {
+loadCSVasDataFrame<-function(filePath, includeRowIdAndRowVersion=TRUE) {
   dataframe<-read.csv(filePath, encoding="UTF-8")
   # the read-in dataframe has row numbers and versions to remove
   strippedframe<-dataframe[,-1:-2] # could also reference by names "ROW_ID","ROW_VERSION"
   # use the two stripped columns as the row names
   row.names(strippedframe)<-paste(dataframe[[1]], dataframe[[2]], sep="-") # could also reference by names "ROW_ID","ROW_VERSION"
   strippedframe
+}
+
+findSynIdInSql<-function(sqlString) {
+  lowerSql<-tolower(sqlString)
+  fromIndex<-regexpr("from(\\s)+syn", lowerSql)[1]
+  if (fromIndex<0) stop(sprintf("Not a valid table query: %s", sqlString))
+  fromString<-substring(lowerSql, fromIndex)
+  synIndex<-regexpr("syn", fromString)[1]
+  synString<-substring(fromString, synIndex)
+  endIndex<-regexpr("(\\s)+", synString)
+  if (endIndex<0) {
+    result<-synString
+  } else {
+    result<-substring(synString, 1, endIndex-1)
+  }
+  if (!isSynapseId(result)) stop(sprintf("Counld not find Synapse ID in %s", sqlString))
+  result
+}
+
+# aggregation queries 
+isAggregationQuery<-function(sql) {
+  regexpr("select(\\s)+(count|max|min|avg|sum)(\\s)*\\(", tolower(sql))[1]>=0
+}
+
+# execute a query against a table
+# if loadResult=T, return a TableDataFrame, else return
+# a TableFilePath (i.e. providing the path to the query result)
+synTableQuery<-function(sqlString, loadResult=TRUE, verbose=TRUE) {
+  isAggregationQuery<-isAggregationQuery(sqlString)
+  tableId<-findSynIdInSql(sqlString)
+  downloadResult<-downloadTableToCSVFile(sql=sqlString, verbose=verbose, includeRowIdAndRowVersion=!isAggregationQuery)
+  if (loadResult) {
+    if (isAggregationQuery) {
+      queryResult<-read.csv(downloadResult$filePath, header=FALSE)[1,1]
+      Table(tableSchema=tableId, values=queryResult, updateEtag=downloadResult$etag)
+    } else {
+      dataframe<-loadCSVasDataFrame(downloadResult$filePath)
+      Table(tableSchema=tableId, values=dataframe, updateEtag=downloadResult$etag)
+    }
+  } else {
+    Table(tableSchema=tableId, values=downloadResult$filePath, updateEtag=downloadResult$etag)
+  }
 }
 
 

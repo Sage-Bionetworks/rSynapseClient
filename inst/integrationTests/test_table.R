@@ -63,21 +63,20 @@ integrationTestSynStoreDataFrame <- function() {
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(retrievedTable@values))
   
-  # modify the retrieved table
+  # modify the retrieved table (we exchange the two values)
+  retrievedTable@values[1,3]<-"c2"
   retrievedTable@values[2,3]<-"c1"
   # update in Synapse
-  if (FALSE) {
-    # reenable once PLFM-2979 is fixed
-    updatedTable<-synStore(retrievedTable, retrieveData=TRUE, verbose=FALSE)
-    checkTrue(is(updatedTable, "TableDataFrame"))
-    checkEquals(propertyValue(updatedTable@schema, "id"), propertyValue(tableSchema, "id"))
-    checkTrue(length(updatedTable@updateEtag)>0)
-    # now check that the data frames are the same
-    checkTrue(all(retrievedTable@values==updatedTable@values))
-    checkTrue(all(names(dataFrame)==names(updatedTable@values)))
-    # make sure the row labels are valid
-    synapseClient:::parseRowAndVersion(row.names(updatedTable@values))   
-  }
+  
+  updatedTable<-synStore(retrievedTable, retrieveData=TRUE, verbose=FALSE)
+  checkTrue(is(updatedTable, "TableDataFrame"))
+  checkEquals(propertyValue(updatedTable@schema, "id"), propertyValue(retrievedTable@schema, "id"))
+  checkTrue(length(updatedTable@updateEtag)>0)
+  # now check that the data frames are the same
+  checkTrue(all(retrievedTable@values==updatedTable@values))
+  checkTrue(all(names(retrievedTable@values)==names(updatedTable@values)))
+  # make sure the row labels are valid
+  synapseClient:::parseRowAndVersion(row.names(updatedTable@values))   
 
 }
 
@@ -132,7 +131,7 @@ integrationTestSynStoreNumericDataFrame<-function() {
   checkEquals(rowCount, rowsToUpload)
 }
 
-integrationTestSynStoreAndRETRIEVENumericDataFrame<-function() {
+integrationTestSynStoreAndRETRIEVENumericDataFrameAndQuery<-function() {
   project<-synapseClient:::.getCache("testProject")
   
   tc1 <- TableColumn(name="sweet", columnType="STRING")
@@ -156,7 +155,25 @@ integrationTestSynStoreAndRETRIEVENumericDataFrame<-function() {
   checkTrue(all(names(dataFrame)==names(myTable@values)))
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(myTable@values))
-}
+  
+  # test synTableQuery
+  queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), verbose=FALSE)
+  checkTrue(is(queryResult, "TableDataFrame"))
+  checkEquals(queryResult@schema, propertyValue(tschema, "id"))
+  checkTrue(all(dataFrame==queryResult@values))
+  checkTrue(all(names(dataFrame)==names(queryResult@values)))
+  checkTrue(length(queryResult@updateEtag)>0)
+  
+  # test no load
+  queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=FALSE, verbose=FALSE)
+  checkTrue(is(queryResult, "TableFilePath"))
+  checkEquals(queryResult@schema, propertyValue(tschema, "id"))
+  checkTrue(file.exists(queryResults@filePath))
+  checkTrue(length(queryResult@updateEtag)>0)
+  
+  queryResult<-synTableQuery(sprintf("select count(*) from %s", propertyValue(tschema, "id")), verbose=FALSE)
+  checkEquals(2, queryResult@values)
+  }
 
 integrationTestLargeTable<-function() {
   project<-synapseClient:::.getCache("testProject")

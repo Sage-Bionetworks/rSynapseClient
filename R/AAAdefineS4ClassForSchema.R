@@ -71,6 +71,7 @@ defineS4Classes<-function() {
 }
 
 defineS4ClassForSchema <- function(fullSchemaName) { 
+#  cat(sprintf("defineS4ClassForSchema %s\n", fullSchemaName))
   name<-getS4ClassNameFromSchemaName(fullSchemaName)
   if (exists(name)) return(name)
   
