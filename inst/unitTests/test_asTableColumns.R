@@ -3,7 +3,7 @@
 # Author: brucehoff
 ###############################################################################
 
-test_asTableColumns<-function() {
+unitTest_asTableColumns<-function() {
   tableColumns<-as.tableColumns("withHeaders.csv")
   checkEquals(3, length(tableColumns))
   checkTrue(identical(tableColumns[[1]], TableColumn(name="string", columnType="STRING", enumValues=CharacterList("a1", "a2"))))

@@ -57,8 +57,7 @@ export(
   "synQuery",
   "touOnWeb",
   "sendMessage",
-  "synTableQuery",
-  "as.tableColumns"
+  "synTableQuery"
 )
 
 ## S3 convenience methods
@@ -107,7 +106,8 @@ exportMethods(
 	"set",
 	"getList",
 	"append",
-	"identical"
+	"identical",
+  	"as.tableColumns"
 )
 
 ## entity property/annotation setters and getters

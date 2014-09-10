@@ -236,7 +236,7 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
 # execute a query and download the results
 # returns the download file path and etag
 downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE) {
-  request<-DownloadFromTableRequest(sql=sql, includeRowIdAndRowVersion=includeRowIdAndRowVersion)
+  request<-DownloadFromTableRequest(sql=sql, includeRowIdAndRowVersion=includeRowIdAndRowVersion, writeHeader=TRUE)
   asyncJobId<-createS4ObjectFromList(synRestPOST("/table/download/csv/async/start", createListFromS4Object(request)) ,"AsyncJobId")
   responseBodyAsList<-trackProgress(sprintf("/table/download/csv/async/get/%s", asyncJobId@token), verbose)
   responseBody<-createS4ObjectFromList(responseBodyAsList, "DownloadFromTableResult")

@@ -4,7 +4,7 @@
 ###############################################################################
 
 setMethod(
-  f = "as.TableColumns",
+  f = "as.tableColumns",
   signature = signature("data.frame"),
   definition = function(source) {
     dataframe<-source
@@ -28,10 +28,10 @@ setMethod(
 )
 
 setMethod(
-  f = "as.TableColumns",
+  f = "as.tableColumns",
   signature = signature("character"),
   definition = function(source) {
-    as.TableColumns(read.csv(source))
+    as.tableColumns(read.csv(source))
   }
 )
 
