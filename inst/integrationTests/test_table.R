@@ -171,7 +171,7 @@ integrationTestSynStoreAndRETRIEVENumericDataFrameAndQuery<-function() {
   checkTrue(length(queryResult@updateEtag)>0)
   
   queryResult<-synTableQuery(sprintf("select count(*) from %s", propertyValue(tschema, "id")), verbose=FALSE)
-  checkEquals(2, queryResult@values)
+  checkEquals(rowsToUpload, queryResult@values)
   }
 
 integrationTestLargeTable<-function() {
