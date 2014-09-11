@@ -59,7 +59,7 @@ Stores an object crafted in memory, either creating it in Synapse anew, or updat
 \value{
 Returns the persisted copy of the object. 
 For TableDataFrame and TableFilePath, if retrieveData=TRUE returns a Table of the same type.  
-If retrieveData=FALSE, returns the number of rows stored.
+If retrieveData=FALSE, returns a Table having a slot 'rowCount' which is the number of rows stored.
 }
 
 \author{

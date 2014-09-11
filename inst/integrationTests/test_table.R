@@ -89,9 +89,9 @@ integrationTestSynStoreDataFrameNORetrieveData <- function() {
   tableSchema<-synStore(tableSchema)
   dataFrame <- as.data.frame(matrix(c("b1", "a1", "c1", "b2", "a2", "c2"), nrow = 2, ncol = 3, byrow = TRUE,
       dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
-  table<-Table(tableSchema=tableSchema, values=dataFrame)
-  rowCount<-synStore(table, verbose=FALSE)
-  checkEquals(rowCount, 2)
+  table<-Table(tableSchema=propertyValue(tableSchema, "id"), values=dataFrame)
+  stored<-synStore(table, verbose=FALSE)
+  checkEquals(stored@rowCount, 2)
 }
 
 integrationTestSynStoreDataFrameWRONGColumns <- function() {
@@ -115,7 +115,12 @@ integrationTestSynStoreDataFrameWrongColumnType <- function() {
   project<-synapseClient:::.getCache("testProject")
   
   tableColumns<-createColumns()
-  tableColumns[3]@columnType<-"INTEGER" # WRONG TYPE FOR DATA!
+  tableColumn<-TableColumn(
+    name=sprintf("R_Integration_Test_Column_%d", 3), 
+    columnType="INTEGER") # WRONG TYPE FOR DATA!
+  stored<-synStore(tableColumn)
+  tableColumns[[3]]<-stored@rowCount
+  
   tableColumnNames<-list()
   for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
   tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
@@ -141,10 +146,10 @@ integrationTestSynStoreMixedDataFrame<-function() {
   tschema <- synStore(tschema, createOrUpdate=FALSE)
   
   rowsToUpload<-30
-  myTable <- Table(tschema, values=data.frame(sweet=sample(c("one", "two", "three"), size = rowsToUpload, replace = T), sweet2=sample.int(rowsToUpload, replace = T)))
-  rowCount <- synStore(myTable)
+  myTable <- Table(propertyValue(tschema, "id"), values=data.frame(sweet=sample(c("one", "two", "three"), size = rowsToUpload, replace = T), sweet2=sample.int(rowsToUpload, replace = T)))
+  stored <- synStore(myTable)
   # returns the number of rows uploaded
-  checkEquals(rowCount, rowsToUpload)
+  checkEquals(stored@rowCount, rowsToUpload)
 }
 
 integrationTestSynStoreAndRETRIEVENumericDataFrameAndQuery<-function() {
@@ -187,8 +192,17 @@ integrationTestSynStoreAndRETRIEVENumericDataFrameAndQuery<-function() {
   checkTrue(file.exists(queryResult@filePath))
   checkTrue(length(queryResult@updateEtag)>0)
   
+  # test a simple aggregation query
   queryResult<-synTableQuery(sprintf("select count(*) from %s", propertyValue(tschema, "id")), verbose=FALSE)
-  checkEquals(rowsToUpload, queryResult@values)
+  if (FALSE) { # reenable when PLFM-2987 is fixed
+    checkEquals(rowsToUpload, queryResult@values[1,1])
+  }
+  # test a more complicated aggregation query
+queryResult<-synTableQuery(sprintf("select sweet, count(sweet) from %s", propertyValue(tschema, "id")), verbose=FALSE)
+expected<-data.frame(sweet="three", X=as.integer(rowsToUpload))
+checkTrue(all(expected==queryResult@values))
+checkTrue(all(names(expected)==names(queryResult@values)))
+
 }
 
 integrationTestSynStoreCSVFileNoRetrieve <- function() {
@@ -201,8 +215,8 @@ integrationTestSynStoreCSVFileNoRetrieve <- function() {
   tableSchema<-synStore(tableSchema)
   id<-propertyValue(tableSchema, "id")
   table<-Table(tableSchema=tableSchema, values=system.file("resources/test/test.csv", package = "synapseClient"))
-  lineCount<-synStore(table)
-  checkEquals(2, lineCount)
+  stored<-synStore(table)
+  checkEquals(2, stored@rowCount)
 }
 
 integrationTestSynStoreAndRetrieveCSVFile <- function() {

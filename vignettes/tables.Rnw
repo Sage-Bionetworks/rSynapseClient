@@ -1,0 +1,74 @@
+%
+% \VignetteIndexEntry{A demonstration of the use of Synapse Tables}
+\documentclass[a4paper]{article}
+\usepackage{Sweave}
+
+\title{How to Use Synapse Tables}
+\author{brucehoff}
+
+\begin{document}
+\maketitle
+Synapse allows you to create, modify and query tabular data.  You provide
+data in a data frame or csv file.
+
+Begin with a data frame in your session:
+\begin{verbatim}
+df<-data.frame("n"=c(1.1, 2.2, 3.3), 
+	"c"=c("foo", "bar", "bar"), 
+	"i"=as.integer(c(10,10,20)))
+\end{verbatim}
+This convenience function creates table columns from your data frame:
+\begin{verbatim}
+cols<-as.tableColumns(df)
+\end{verbatim}
+You may adjust the column models before defining the table schema.
+See "?TableColumn" for the available slots.
+\begin{verbatim}
+cols[[2]]@maximumSize<-as.integer(20)
+\end{verbatim}
+Now store the Table schema in Synapse(using your own Project ID in place of
+"syn12345", below):
+\begin{verbatim}
+for (i in 1:length(cols)) cols[[i]]<-synStore(cols[[i]])
+projectId<-"syn12345"
+schema<-TableSchema(name="aschema", parent=projectId, columns=cols)
+table<-Table(schema, df)
+table<-synStore(table, retrieveData=TRUE)
+\end{verbatim}
+Query the table:
+\begin{verbatim}
+schemaId<-propertyValue(table@schema, "id")
+queryResult<-synTableQuery(sprintf("select * from %s where c='bar'", schemaId))
+\end{verbatim}
+The query result is a Table having a data frame in the 'values' slot. Now update
+the table and store it:
+\begin{verbatim}
+queryResult@values[2,"n"]<-pi
+table<-synStore(queryResult, retrieveData=TRUE)
+table@values
+\end{verbatim}
+Table creation and retrieval can be done with files on disk.  No need to load
+the data into memory first.
+First we create a csv file to use:
+\begin{verbatim}
+df<-data.frame("n"=c(1.1, 2.2, 3.3), 
+	"c"=c("foo", "bar", "bar"), 
+	"i"=as.integer(c(10,10,20)))
+file<-tempfile()
+write.csv(df, file, row.names=FALSE)
+rm(df)
+\end{verbatim}
+Now we proceed using the created file only:
+\begin{verbatim}
+cols<-as.tableColumns(file)
+for (i in 1:length(cols)) cols[[i]]<-synStore(cols[[i]])
+schema<-TableSchema(name="aschema", parent=projectId, columns=cols)
+table<-Table(schema, file)
+table<-synStore(table, retrieveData=FALSE)
+schemaId<-propertyValue(table@schema, "id")
+queryResult<-synTableQuery(sprintf("select * from %s where c='bar'", schemaId), 
+loadResult=FALSE)
+queryResult@filePath
+\end{verbatim}
+\end{document}
+The returned file path contains the query results.

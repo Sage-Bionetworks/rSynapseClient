@@ -1,18 +1,18 @@
-\name{as.TableColumns}
-\alias{as.TableColumns}
+\name{as.tableColumns}
+\alias{as.tableColumns}
 \docType{methods}
 \title{
-as.TableColumns
+as.tableColumns
 }
 \description{
 Create Table Columns based on a data frame
 }
 \usage{
-as.TableColumns(datafame)
-as.TableColumns(filePath)
+as.tableColumns(dataframe)
+as.tableColumns(filePath)
 }
 \arguments{
-	\item{datafame}{
+	\item{dataframe}{
 	The data frame of interest.
 	}
 	\item{filePath}{

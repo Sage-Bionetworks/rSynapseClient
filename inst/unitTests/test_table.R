@@ -26,4 +26,5 @@ unitTest_isAggregationQuery<-function() {
   checkTrue(synapseClient:::isAggregationQuery("select min(*) from syn123"))
   checkTrue(synapseClient:::isAggregationQuery("select MAX(distinct foo) from syn123"))
   checkTrue(!synapseClient:::isAggregationQuery("select * from syn123 where count in (1,2,3)"))
+  checkTrue(synapseClient:::isAggregationQuery("select foo, count(foo) from syn123"))
 }

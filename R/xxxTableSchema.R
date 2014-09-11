@@ -46,6 +46,7 @@ TableSchema<-function(name, parent, columns, ...) {
   columnIds<-list()
   for (column in columns) {
     if (is(column, "TableColumn")) {
+      if (length(column$id)==0) stop("TableColumns must be stored in Synapse before using them in a schema.")
       columnIds<-append(columnIds, column$id)
     } else {
       columnIds<-append(columnIds, column)

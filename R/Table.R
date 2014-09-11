@@ -7,7 +7,7 @@
 
 setMethod(
   f = "Table",
-  signature = signature("TableSchemaOrCharacter", "DataFrameOrNumeric"),
+  signature = signature("TableSchemaOrCharacter", "data.frame"),
   definition = function(tableSchema, values, updateEtag=character(0)) {
     result<-new("TableDataFrame")
     result@schema<-tableSchema
@@ -40,6 +40,17 @@ setMethod(
   }
 )
 
+setMethod(
+  f = "Table",
+  signature = signature("TableSchemaOrCharacter", "integer"),
+  definition = function(tableSchema, values) {
+    result<-new("TableRowCount")
+    result@schema<-tableSchema
+    result@rowCount<-values
+    result
+  }
+)
+
 ensureTableSchemaStored<-function(tableSchema) {
   # ensure that the schema is stored
   id<-propertyValue(tableSchema, "id")
@@ -52,7 +63,7 @@ ensureTableSchemaStored<-function(tableSchema) {
 ensureTableSchemaIsRetrieved<-function(tableSchemaOrID) {
   if (is(tableSchemaOrID, "TableSchema")) {
     tableSchemaOrID
-  } else if (is(tableSchemaOrID, "chracter")) {
+  } else if (is(tableSchemaOrID, "character")) {
     tableId<-tableSchemaOrID
     if (!isSynapseId(tableId)) stop(sprintf("%s is not a Synapse ID.", tableId))
     synGet(tableId)
@@ -101,11 +112,11 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   for (dfColumnName in names(dataframe)) {
     schemaColumn<-schemaColumnMap[[dfColumnName]]
     if (is.null(schemaColumn)) stop(sprintf("Data frame has column %s but schema has no such column.", dfColumnName))
-    dfColumnType<-class(dataframe[dfColumnName])
+    dfColumnType<-class(dataframe[[dfColumnName]])
     expectedTableColumnType<-getTableColumnTypeForDataFrameColumnType(dfColumnType)
     tableColumnType<-schemaColumn@columnType
     if (tableColumnType!=expectedTableColumnType) {
-      stop(sprintf("Column % has type %s but %s is expected.", dfColumnName, expectedTableColumnType, tableColumnType))
+      stop(sprintf("Column %s has type %s but %s is expected.", dfColumnName, expectedTableColumnType, tableColumnType))
     }
   }
   
@@ -143,7 +154,7 @@ setMethod(
       dataframe<-loadCSVasDataFrame(downloadResult$filePath)
       Table(entity@schema, dataframe, downloadResult$etag)
     } else {
-      rowsProcessed
+      Table(entity@schema, rowsProcessed)
     }
   }
 )
@@ -171,7 +182,7 @@ setMethod(
       downloadResult<-downloadTableToCSVFile(sql, verbose)
       Table(tableSchema=entity@schema, values=downloadResult$filePath, updateEtag=downloadResult$etag)
     } else {
-      rowsProcessed
+      Table(entity@schema, rowsProcessed)
     }
   }
 )
@@ -205,6 +216,8 @@ uploadCSVFileToTable<-function(filePath, tableId,
 
 trackProgress<-function(checkCompleteUri, verbose=TRUE) {
   asyncJobState<-"PROCESSING"
+  startTime<-Sys.time()
+  maxWaitSeconds<-60
   while (asyncJobState=="PROCESSING") {
     curlHandle=getCurlHandle()
     checkResultAsList<-synapseGet(uri=checkCompleteUri, curlHandle=curlHandle, checkHttpStatus=FALSE)
@@ -213,6 +226,7 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
       jobStatus<-createS4ObjectFromList(checkResultAsList, "AsynchronousJobStatus")
       asyncJobState<-jobStatus@jobState # PROCESSING, FAILED, or COMPLETE
       if (asyncJobState!="PROCESSING") break
+      if (Sys.time()-startTime>maxWaitSeconds) stop(sprintf("Failed to obtain result after %s seconds.", maxWaitSeconds))
       moreThanZeroProgress <- (jobStatus@progressCurrent>0)
       if (verbose) {
         cat(sprintf("Completed %d of %d.  %s\n", 
@@ -250,11 +264,19 @@ downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE) {
 
 loadCSVasDataFrame<-function(filePath, includeRowIdAndRowVersion=TRUE) {
   dataframe<-read.csv(filePath, encoding="UTF-8")
-  # the read-in dataframe has row numbers and versions to remove
-  strippedframe<-dataframe[,-1:-2] # could also reference by names "ROW_ID","ROW_VERSION"
-  # use the two stripped columns as the row names
-  row.names(strippedframe)<-paste(dataframe[[1]], dataframe[[2]], sep="-") # could also reference by names "ROW_ID","ROW_VERSION"
-  strippedframe
+  if (includeRowIdAndRowVersion) {
+    # the read-in dataframe has row numbers and versions to remove
+    rowIdIndex<-match("ROW_ID", names(dataframe))
+    if (is.na(rowIdIndex)) stop("Could not find ROW_ID column in data frame.")
+    rowVersionIndex<-match("ROW_VERSION", names(dataframe))
+    if (is.na(rowVersionIndex)) stop("Could not find ROW_VERSION column in data frame.")
+    strippedframe<-dataframe[,-c(rowIdIndex, rowVersionIndex)]
+    # use the two stripped columns as the row names
+    row.names(strippedframe)<-paste(dataframe[[rowIdIndex]], dataframe[[rowVersionIndex]], sep="-")
+    strippedframe
+  } else {
+    dataframe
+  }
 }
 
 findSynIdInSql<-function(sqlString) {
@@ -276,7 +298,16 @@ findSynIdInSql<-function(sqlString) {
 
 # aggregation queries 
 isAggregationQuery<-function(sql) {
-  regexpr("select(\\s)+(count|max|min|avg|sum)(\\s)*\\(", tolower(sql))[1]>=0
+  lowerSql<-tolower(sql)
+  selectIndex<-regexpr("select", lowerSql)[1]
+  if (selectIndex<0) stop(sprintf("Not a valid table query: %s", sql))
+  selectString<-substring(lowerSql, selectIndex+nchar("select"))
+  
+  fromIndex<-regexpr("from", selectString)[1]
+  if (fromIndex<0) stop(sprintf("Not a valid table query: %s", sql))
+  fromString<-substring(selectString, 1, fromIndex-1)
+  
+  regexpr("(count|max|min|avg|sum)(\\s)*\\(", tolower(fromString))[1]>=0
 }
 
 # execute a query against a table
@@ -287,13 +318,9 @@ synTableQuery<-function(sqlString, loadResult=TRUE, verbose=TRUE) {
   tableId<-findSynIdInSql(sqlString)
   downloadResult<-downloadTableToCSVFile(sql=sqlString, verbose=verbose, includeRowIdAndRowVersion=!isAggregationQuery)
   if (loadResult) {
-    if (isAggregationQuery) {
-      queryResult<-read.csv(downloadResult$filePath, header=FALSE)[1,1]
-      Table(tableSchema=tableId, values=queryResult, updateEtag=downloadResult$etag)
-    } else {
-      dataframe<-loadCSVasDataFrame(downloadResult$filePath)
-      Table(tableSchema=tableId, values=dataframe, updateEtag=downloadResult$etag)
-    }
+    # if it's an aggregation query there are no row labels
+    dataframe<-loadCSVasDataFrame(downloadResult$filePath, !isAggregationQuery)
+    Table(tableSchema=tableId, values=dataframe, updateEtag=downloadResult$etag)
   } else {
     Table(tableSchema=tableId, values=downloadResult$filePath, updateEtag=downloadResult$etag)
   }
