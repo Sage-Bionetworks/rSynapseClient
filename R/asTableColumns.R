@@ -17,7 +17,7 @@ setMethod(
       columnName<-names(dataframe[i])
       if (dfColumnType=="factor") {
         levels<-levels(dataframe[[i]])
-        tableColumn<-TableColumn(name=columnName, columnType=columnType, enumValues=CharacterList(levels))
+        tableColumn<-TableColumn(name=columnName, columnType=columnType, enumValues=do.call("CharacterList", as.list(levels)))
       } else {
         tableColumn<-TableColumn(name=columnName, columnType=columnType)
       }
@@ -39,6 +39,7 @@ getTableColumnTypeForDataFrameColumnType<-function(dfColumnType) {
   map<-c(integer="INTEGER", factor="STRING", character="STRING", numeric="DOUBLE", logical="BOOLEAN")
   result<-map[dfColumnType]
   if (is.na(result)) stop(sprintf("No column type for %s", dfColumnType))
+  names(result)<-NULL # otherwise the dfColumnType labels the result
   result
 }
 
