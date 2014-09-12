@@ -24,8 +24,7 @@ createColumns<-function() {
     tableColumn<-TableColumn(
       name=sprintf("R_Integration_Test_Column_%d", i), 
       columnType="STRING")
-    stored<-synStore(tableColumn)
-    tableColumns<-append(tableColumns, stored)
+    tableColumns<-append(tableColumns, tableColumn)
   }
   tableColumns
 }
@@ -163,10 +162,12 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2))
   tschema <- synStore(tschema, createOrUpdate=FALSE)
   
-  rowsToUpload<-30
-  dataFrame <- data.frame(sweet=sample(c("one", "two", "three"), 
-      size = rowsToUpload, replace = T), 
-    sweet2=sample.int(rowsToUpload, replace = T))
+  rowsPerCategory<-10
+  rowsToUpload<-rowsPerCategory*3
+  sweet=c(sample("one", rowsPerCategory, replace=T), 
+      sample("two", rowsPerCategory, replace=T), 
+      sample("three", rowsPerCategory, replace=T))
+  dataFrame <- data.frame(sweet=sweet, sweet2=sample.int(rowsToUpload, replace = T))
   myTable <- Table(tschema, values=dataFrame)
   myTable <- synStore(myTable, retrieveData=T)
   checkTrue(is(myTable, "TableDataFrame"))
@@ -206,7 +207,7 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   
   # test a more complicated aggregation query
   queryResult<-synTableQuery(sprintf("select sweet, count(sweet) from %s", propertyValue(tschema, "id")), verbose=FALSE)
-  expected<-data.frame(sweet="one", X=as.integer(rowsToUpload))
+  expected<-data.frame(sweet="one", X=as.integer(rowsPerCategory))
   checkTrue(all(expected==queryResult@values))
   checkTrue(all(names(expected)==names(queryResult@values)))
   

@@ -122,5 +122,10 @@ unitTestVector<-function() {
   checkEquals("UploadToTableRequest", as.character(class(obj)))
 }
 
+unitTestIntegerAssignment<-function() {
+  # constructor converts numeric to integer
+  TableColumn(maximumSize=10)
+}
+
 
 
