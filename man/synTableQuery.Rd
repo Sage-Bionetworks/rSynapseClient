@@ -7,7 +7,7 @@ synTableQuery
 \description{
 Query a Synapse Table
 }
-\usage{synTableQuery(sqlString, loadResult=TRUE, verbose=TRUE)}
+\usage{synTableQuery(sqlString, loadResult=TRUE, verbose=TRUE, downloadLocation=TRUE)}
 \arguments{
 	\item{sqlString}{
 	The query to execute.  For complete syntax description see:
@@ -19,17 +19,16 @@ Query a Synapse Table
 	\item{verbose}{
 	If TRUE then print progress information while results are retrieved.
 	}
-	\item{filePath}{
+	\item{downloadLocation}{
 	Location to which the csv file version of the query is stored.  If omitted the result will be written in the 
 	default file cache location.
 	}
 }
 \value{
-If loadResult is TRUE and if the query is not an aggregation query, then the result is a Table object
-with a 'values' slot holding the query results in a data frame.
-If loadResult is TRUE and if the query is an aggregation query, then the result is a Table object
-with a 'values' slot holding the numeric query result.
-If loadResult is FALSE then the result is a Table object with a 'filePath' slot holding the path to
+If loadResult is TRUE then the result is a Table object
+with a 'values' slot holding the query results as a data frame.
+If loadResult is FALSE then the result is a Table object with 
+a 'filePath' slot holding the path to
 a csv-formatted file of results.
 }
 \seealso{
