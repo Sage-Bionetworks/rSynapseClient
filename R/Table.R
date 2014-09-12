@@ -43,10 +43,11 @@ setMethod(
 setMethod(
   f = "Table",
   signature = signature("TableSchemaOrCharacter", "integer"),
-  definition = function(tableSchema, values) {
+  definition = function(tableSchema, values, updateEtag) {
     result<-new("TableRowCount")
     result@schema<-tableSchema
     result@rowCount<-values
+    if (!missing(updateEtag)) result@updateEtag<-updateEtag
     result
   }
 )
@@ -142,7 +143,7 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
 setMethod(
   f = "synStore",
   signature = "TableDataFrame",
-  definition = function(entity, retrieveData=FALSE, verbose=TRUE) {
+  definition = function(entity, retrieveData=FALSE, verbose=TRUE, downloadLocation=NULL) {
     if (!is(entity@values, "data.frame")) stop("data frame required.")
     entity@schema<-ensureTableSchemaIsRetrieved(entity@schema)
     entity@schema<-ensureTableSchemaStored(entity@schema)
@@ -150,7 +151,7 @@ setMethod(
     if (retrieveData) {
       tableId<-propertyValue(entity@schema, "id")
       sql<-sprintf("select * from %s", tableId)
-      downloadResult<-downloadTableToCSVFile(sql, verbose)
+      downloadResult<-downloadTableToCSVFile(sql, verbose, downloadLocation=downloadLocation)
       dataframe<-loadCSVasDataFrame(downloadResult$filePath)
       Table(entity@schema, dataframe, downloadResult$etag)
     } else {
@@ -164,7 +165,8 @@ setMethod(
   signature = "TableFilePath",
   definition = function(entity, 
     retrieveData=FALSE, 
-    verbose=TRUE) {
+    verbose=TRUE,
+    downloadLocation=NULL) {
     entity@schema<-ensureTableSchemaIsRetrieved(entity@schema)
     entity@schema<-ensureTableSchemaStored(entity@schema)
     tableId<-propertyValue(entity@schema, "id")
@@ -179,7 +181,7 @@ setMethod(
     )
     if (retrieveData) {
       sql=sprintf("select * from %s", tableId)
-      downloadResult<-downloadTableToCSVFile(sql, verbose)
+      downloadResult<-downloadTableToCSVFile(sql, verbose, downloadLocation=downloadLocation)
       Table(tableSchema=entity@schema, values=downloadResult$filePath, updateEtag=downloadResult$etag)
     } else {
       Table(entity@schema, rowsProcessed)
@@ -249,7 +251,7 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
 
 # execute a query and download the results
 # returns the download file path and etag
-downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE) {
+downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, downloadLocation=NULL) {
   request<-DownloadFromTableRequest(sql=sql, includeRowIdAndRowVersion=includeRowIdAndRowVersion, writeHeader=TRUE)
   asyncJobId<-createS4ObjectFromList(synRestPOST("/table/download/csv/async/start", createListFromS4Object(request)) ,"AsyncJobId")
   responseBodyAsList<-trackProgress(sprintf("/table/download/csv/async/get/%s", asyncJobId@token), verbose)
@@ -258,7 +260,7 @@ downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE) {
   fileName<-sprintf("queryResult_%s.csv", responseBody@resultsFileHandleId)
   fileHandle<-S3FileHandle(id=responseBody$resultsFileHandleId, fileName=fileName)
   fileHandleAsList<-createListFromS4Object(fileHandle)
-  downloadResult<-synGetFileAttachment(downloadUri, "FILE", fileHandleAsList, downloadFile=T, downloadLocation=NULL, ifcollision="overwrite.local", load=F)
+  downloadResult<-synGetFileAttachment(downloadUri, "FILE", fileHandleAsList, downloadFile=T, downloadLocation=downloadLocation, ifcollision="overwrite.local", load=F)
   list(filePath=downloadResult$filePath, etag=responseBody@etag)
 }
 
@@ -313,10 +315,10 @@ isAggregationQuery<-function(sql) {
 # execute a query against a table
 # if loadResult=T, return a TableDataFrame, else return
 # a TableFilePath (i.e. providing the path to the query result)
-synTableQuery<-function(sqlString, loadResult=TRUE, verbose=TRUE) {
+synTableQuery<-function(sqlString, loadResult=TRUE, verbose=TRUE, downloadLocation=NULL) {
   isAggregationQuery<-isAggregationQuery(sqlString)
   tableId<-findSynIdInSql(sqlString)
-  downloadResult<-downloadTableToCSVFile(sql=sqlString, verbose=verbose, includeRowIdAndRowVersion=!isAggregationQuery)
+  downloadResult<-downloadTableToCSVFile(sql=sqlString, verbose=verbose, includeRowIdAndRowVersion=!isAggregationQuery, downloadLocation=downloadLocation)
   if (loadResult) {
     # if it's an aggregation query there are no row labels
     dataframe<-loadCSVasDataFrame(downloadResult$filePath, !isAggregationQuery)
@@ -324,6 +326,19 @@ synTableQuery<-function(sqlString, loadResult=TRUE, verbose=TRUE) {
   } else {
     Table(tableSchema=tableId, values=downloadResult$filePath, updateEtag=downloadResult$etag)
   }
+}
+
+synDeleteRows<-function(tableDataFrame) {
+  schema<-tableDataFrame@schema
+  if (is(schema, "TableSchema")) {
+    tableId<-propertyValue(schema, "id")
+  } else if (is (schema, "character")) {
+    tableId<-schema
+  }
+  request<-RowSelection(tableId=tableId, etag=tableDataFrame@updateEtag, rowIds=parseRowAndVersion(tableDataFram@values)$ROW_ID)
+  responseBodyAsList<-synRestPOST(sprintf("/entity/%s/table/deleteRows", tableId), createListFromS4Object(request))
+  response<-createS4ObjectFromList(responseBodyAsList)
+  Table(tableDataFrame@schema, length(response@rows), response@etag)
 }
 
 

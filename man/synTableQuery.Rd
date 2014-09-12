@@ -19,6 +19,10 @@ Query a Synapse Table
 	\item{verbose}{
 	If TRUE then print progress information while results are retrieved.
 	}
+	\item{filePath}{
+	Location to which the csv file version of the query is stored.  If omitted the result will be written in the 
+	default file cache location.
+	}
 }
 \value{
 If loadResult is TRUE and if the query is not an aggregation query, then the result is a Table object

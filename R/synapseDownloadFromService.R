@@ -27,7 +27,13 @@ synapseDownloadFromService<-
 }
 
 
-synapseDownloadFromServiceToDestination<-function(downloadUri, endpointName="REPO", destfile=tempfile(), curlHandle = getCurlHandle(), opts = .getCache("curlOpts")) {
+synapseDownloadFromServiceToDestination<-function(
+  downloadUri, 
+  endpointName="REPO", 
+  destfile=tempfile(), 
+  curlHandle = getCurlHandle(), 
+  opts = .getCache("curlOpts"),
+  extraRetryStatusCodes=NULL) {
   # check own version, stopping if blacklisted
   checkBlackList()
   
@@ -58,8 +64,17 @@ synapseDownloadFromServiceToDestination<-function(downloadUri, endpointName="REP
   # we start with the common request options, then add the headers
   opts$httpheader <- header
   
-  # TODO implement exponential backoff
-  destfile <- .curlWriterDownload(url=downloadUrl, destfile=destfile, curlHandle=curlHandle, opts=opts)
+  
+ webRequestResult<-webRequestWithRetries(
+    fcn=function(curlHandle) {
+      .curlWriterDownload(url=downloadUrl, destfile=destfile, curlHandle=curlHandle, opts=opts)
+    },
+    curlHandle=curlHandle,
+    extraRetryStatusCodes=extraRetryStatusCodes
+  )
+  
+  destfile <- webRequestResult$result
+  
   .checkCurlResponse(curlHandle)
   
   destfile

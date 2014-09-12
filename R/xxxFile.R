@@ -320,15 +320,22 @@ generateUniqueFileName<-function(folder, filename) {
   stop(sprintf("Cannot generate unique file name variation in folder %s for file %s", folder, filename))
 }
 
-downloadFromSynapseOrExternal<-function(downloadLocation, filePath, synapseStore, downloadUri, endpointName, externalURL, fileHandle) {
+downloadFromSynapseOrExternal<-function(
+  downloadLocation, 
+  filePath, 
+  synapseStore, 
+  downloadUri, 
+  endpointName, 
+  externalURL, 
+  fileHandle,
+  extraRetryStatusCodes) {
   dir.create(downloadLocation, recursive=T, showWarnings=F)
   if (synapseStore) {
-    synapseDownloadFromServiceToDestination(downloadUri, endpointName, destfile=filePath)
+    synapseDownloadFromServiceToDestination(downloadUri, endpointName, destfile=filePath, extraRetryStatusCodes=404)
   } else {
     synapseDownloadFileToDestination(externalURL, filePath)
   }
   addToCacheMap(fileHandle$id, filePath)
-  
 }
 
 getFileHandle<-function(entity) {

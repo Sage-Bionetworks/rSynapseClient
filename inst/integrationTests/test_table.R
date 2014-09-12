@@ -118,8 +118,7 @@ integrationTestSynStoreDataFrameWrongColumnType <- function() {
   tableColumn<-TableColumn(
     name=sprintf("R_Integration_Test_Column_%d", 3), 
     columnType="INTEGER") # WRONG TYPE FOR DATA!
-  stored<-synStore(tableColumn)
-  tableColumns[[3]]<-stored@rowCount
+  tableColumns[[3]]<-synStore(tableColumn)
   
   tableColumnNames<-list()
   for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
@@ -152,7 +151,7 @@ integrationTestSynStoreMixedDataFrame<-function() {
   checkEquals(stored@rowCount, rowsToUpload)
 }
 
-integrationTestSynStoreAndRETRIEVENumericDataFrameAndQuery<-function() {
+integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   project<-synapseClient:::.getCache("testProject")
   
   tc1 <- TableColumn(name="sweet", columnType="STRING")
@@ -165,7 +164,9 @@ integrationTestSynStoreAndRETRIEVENumericDataFrameAndQuery<-function() {
   tschema <- synStore(tschema, createOrUpdate=FALSE)
   
   rowsToUpload<-30
-  dataFrame <- data.frame(sweet=sample(c("one", "two", "three"), size = rowsToUpload, replace = T), sweet2=sample.int(rowsToUpload, replace = T))
+  dataFrame <- data.frame(sweet=sample(c("one", "two", "three"), 
+      size = rowsToUpload, replace = T), 
+    sweet2=sample.int(rowsToUpload, replace = T))
   myTable <- Table(tschema, values=dataFrame)
   myTable <- synStore(myTable, retrieveData=T)
   checkTrue(is(myTable, "TableDataFrame"))
@@ -192,17 +193,47 @@ integrationTestSynStoreAndRETRIEVENumericDataFrameAndQuery<-function() {
   checkTrue(file.exists(queryResult@filePath))
   checkTrue(length(queryResult@updateEtag)>0)
   
+  downloadLocation<-tempdir()
+  queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=FALSE, verbose=FALSE, downloadLocation=downloadLocation)
+  checkTrue(file.exists(queryResult@filePath))
+  checkEquals(downloadLocation, substring(queryResult@filePath, 1, nchar(downloadLocation)))
+  
   # test a simple aggregation query
   queryResult<-synTableQuery(sprintf("select count(*) from %s", propertyValue(tschema, "id")), verbose=FALSE)
   if (FALSE) { # reenable when PLFM-2987 is fixed
     checkEquals(rowsToUpload, queryResult@values[1,1])
   }
+  
   # test a more complicated aggregation query
-queryResult<-synTableQuery(sprintf("select sweet, count(sweet) from %s", propertyValue(tschema, "id")), verbose=FALSE)
-expected<-data.frame(sweet="three", X=as.integer(rowsToUpload))
-checkTrue(all(expected==queryResult@values))
-checkTrue(all(names(expected)==names(queryResult@values)))
+  queryResult<-synTableQuery(sprintf("select sweet, count(sweet) from %s", propertyValue(tschema, "id")), verbose=FALSE)
+  expected<-data.frame(sweet="one", X=as.integer(rowsToUpload))
+  checkTrue(all(expected==queryResult@values))
+  checkTrue(all(names(expected)==names(queryResult@values)))
+  
+  # finally, check row deletion
+  queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=TRUE, verbose=FALSE)
+  deletionResult<-synDeleteRows(queryResult)
+  checkEquals(deletionResult@rowCount, rowsToUpload)
+}
 
+integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  tc1 <- TableColumn(name="sweet", columnType="DOUBLE")
+  tc1 <- synStore(tc1)
+  tc2 <- TableColumn(name="sweet2", columnType="DOUBLE")
+  tc2 <- synStore(tc2)
+  
+  pid<-propertyValue(project, "id")
+  tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2))
+  tschema <- synStore(tschema, createOrUpdate=FALSE)
+  
+  dataFrame <- data.frame(sweet=c(1:5, 1.234e-10, 5.678e+10), sweet2=c(6:10, 1.234567, 9.876543))
+  myTable <- Table(tschema, values=dataFrame)
+  myTable <- synStore(myTable, retrieveData=T)
+  # now check that the data frames are the same
+  checkTrue(all(dataFrame==myTable@values))
+  checkTrue(all(names(dataFrame)==names(myTable@values)))
 }
 
 integrationTestSynStoreCSVFileNoRetrieve <- function() {
@@ -229,11 +260,13 @@ integrationTestSynStoreAndRetrieveCSVFile <- function() {
   
   csvFilePath<-system.file("resources/test/test.csv", package = "synapseClient")
   table<-Table(tableSchema=tableSchema, values=csvFilePath)
-  retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE)
+  downloadLocation<-tempdir()
+  retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE, downloadLocation=downloadLocation)
   checkTrue(is(retrievedTable, "TableFilePath"))
   checkTrue(!is.null(propertyValue(retrievedTable@schema, "id")))
   checkTrue(length(retrievedTable@updateEtag)>0)
   # now check that the data frames are the same
+  checkEquals(downloadLocation, substring(retrievedTable@filePath, 1, nchar(downloadLocation)))
   retrievedDataFrame<-synapseClient:::loadCSVasDataFrame(retrievedTable@filePath)
   dataFrame<-read.csv(csvFilePath, header=FALSE)
   checkTrue(all(dataFrame==retrievedDataFrame))
