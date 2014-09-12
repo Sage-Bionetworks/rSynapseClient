@@ -9,7 +9,7 @@ Store an object in Synapse
 \usage{
 synStore(entity, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)
 synStore(entity, activity=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)
-synStore(table, retrieveData=F, verbose=T)
+synStore(table, retrieveData=F, verbose=T, downloadLocation=NULL)
 }
 \arguments{
  \item{entity}{
@@ -52,15 +52,18 @@ the row IDs for the uploaded rows.
 \item{verbose}{
 For tables:  If TRUE, shows progress for uploading and retrieving data.
 }
+\item{downloadLocation}{
+For tables:  If retrieveData=T then this is the directory to which the retrieved result will be saves as a .csv file.
+If omitted, will be downloaded to the default file cache location.
+}
 }
 \details{
 Stores an object crafted in memory, either creating it in Synapse anew, or updating an existing object.
 }
 \value{
-Returns the persisted copy of the object.  
-For TableRowSet, TableMatrix, and TableDataFrame, if retrieveData=TRUE, returns a RowSet, matrix or data frame, respectively.  
-If retrieveData=FALSE, returns a RowReferenceSet providing the row IDs for the created or updated rows.
-For TableFilePath, returns the number of rows uploaded.
+Returns the persisted copy of the object. 
+For TableDataFrame and TableFilePath, if retrieveData=TRUE returns a Table of the same type.  
+If retrieveData=FALSE, returns a Table having a slot 'rowCount' which is the number of rows stored.
 }
 
 \author{
@@ -78,5 +81,5 @@ Bruce Hoff
 \code{\link{TableColumn}}
 \code{\link{TableSchema}}
 \code{\link{synGet}}
-\code{\link{RowReferenceSet}}
+\code{\link{Table}}
 }

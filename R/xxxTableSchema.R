@@ -46,6 +46,7 @@ TableSchema<-function(name, parent, columns, ...) {
   columnIds<-list()
   for (column in columns) {
     if (is(column, "TableColumn")) {
+      if (length(column$id)==0) column<-synStore(column)
       columnIds<-append(columnIds, column$id)
     } else {
       columnIds<-append(columnIds, column)

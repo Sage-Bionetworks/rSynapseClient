@@ -61,7 +61,7 @@ integrationTestWikiService <-
     # /{ownerObjectType}/{ownerObjectId}/wiki/{wikiId}/attachment?fileName={attachmentFileName}
     downloadUri<-sprintf("%s/attachment?fileName=%s", wikiUri, fileName)
     # download into a temp file
-    downloadedFile<-synapseClient:::synapseDownloadFromRepoServiceToDestination(downloadUri)
+    downloadedFile<-synapseClient:::synapseDownloadFromServiceToDestination(downloadUri)
     origChecksum<- as.character(tools::md5sum(filePath))
     downloadedChecksum <- as.character(tools::md5sum(downloadedFile))
     checkEquals(origChecksum, downloadedChecksum)

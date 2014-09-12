@@ -44,5 +44,5 @@ QueryNextPageToken	org.sagebionetworks.repo.model.table.QueryNextPageToken	false
 SortItem	org.sagebionetworks.repo.model.table.SortItem	false
 AsyncJobId	org.sagebionetworks.repo.model.asynch.AsyncJobId	false
 CsvTableDescriptor	org.sagebionetworks.repo.model.table.CsvTableDescriptor	false
-
+RowSelection	org.sagebionetworks.repo.model.table.RowSelection	false
 

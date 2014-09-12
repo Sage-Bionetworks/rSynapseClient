@@ -4,7 +4,7 @@
 ###############################################################################
 
 
-test_tableSchema<-function() {
+unitTest_tableSchema<-function() {
   tableColumns<-list()
   for (i in 1:3) {
     tableColumn<-TableColumn(id=sprintf("%s", i),
@@ -25,8 +25,8 @@ test_tableSchema<-function() {
   
 }
 
-test_createTableSchemaFromProperties<-function() {
+unitTest_createTableSchemaFromProperties<-function() {
   id<-"syn101"
-  ts<-createTableSchemaFromProperties(list(id=id))
+  ts<-synapseClient:::createTableSchemaFromProperties(list(id=id))
   checkEquals(id, ts$properties$id)
 }

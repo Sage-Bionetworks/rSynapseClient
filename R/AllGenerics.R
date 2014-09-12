@@ -954,4 +954,11 @@ setGeneric(
   }
 )
 
+setGeneric(
+  name="as.tableColumns",
+  def = function(source) {
+    standardGeneric("as.tableColumns")
+  }
+)
+
 

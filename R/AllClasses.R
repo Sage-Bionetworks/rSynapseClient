@@ -515,12 +515,10 @@ setClass(
   representation=representation(schema="TableSchemaOrCharacter")
 )
 
-setClassUnion("DataFrameOrNumeric", c("data.frame", "numeric"))
-
 setClass(
   Class = "TableDataFrame",
   contains = c("Table"),
-  representation=representation(values="DataFrameOrNumeric", updateEtag="character")
+  representation=representation(values="data.frame", updateEtag="character")
 )
 
 setClass(
@@ -535,6 +533,14 @@ setClass(
     separator="character"
     )
 )
+
+setClass(
+  Class = "TableRowCount",
+  contains = c("Table"),
+  representation=representation(rowCount="integer", updateEtag="character")
+)
+
+
 
 # This is an abstract class for a typed list
 # Concrete extensions should fill the 'type' slot
