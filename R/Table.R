@@ -335,7 +335,7 @@ synDeleteRows<-function(tableDataFrame) {
   } else if (is (schema, "character")) {
     tableId<-schema
   }
-  request<-RowSelection(tableId=tableId, etag=tableDataFrame@updateEtag, rowIds=parseRowAndVersion(tableDataFram@values)$ROW_ID)
+  request<-RowSelection(tableId=tableId, etag=tableDataFrame@updateEtag, rowIds=parseRowAndVersion(tableDataFrame@values)$ROW_ID)
   responseBodyAsList<-synRestPOST(sprintf("/entity/%s/table/deleteRows", tableId), createListFromS4Object(request))
   response<-createS4ObjectFromList(responseBodyAsList)
   Table(tableDataFrame@schema, length(response@rows), response@etag)
