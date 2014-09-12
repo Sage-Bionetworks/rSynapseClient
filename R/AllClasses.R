@@ -537,7 +537,7 @@ setClass(
 setClass(
   Class = "TableRowCount",
   contains = c("Table"),
-  representation=representation(rowCount="integer")
+  representation=representation(rowCount="integer", updateEtag="character")
 )
 
 

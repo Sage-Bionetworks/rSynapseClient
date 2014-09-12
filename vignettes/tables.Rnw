@@ -24,7 +24,7 @@ cols<-as.tableColumns(df)
 You may adjust the column models before defining the table schema.
 See "?TableColumn" for the available slots.
 \begin{verbatim}
-cols[[2]]@maximumSize<-20
+cols[[2]]@maximumSize<-as.integer(20)
 \end{verbatim}
 Now store the Table schema in Synapse(using your own Project ID in place of
 "syn12345", below):

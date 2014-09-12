@@ -125,6 +125,8 @@ unitTestVector<-function() {
 unitTestIntegerAssignment<-function() {
   # constructor converts numeric to integer
   TableColumn(maximumSize=10)
+  # an edge case...
+  TableColumn(maximumSize=numeric(0))
 }
 
 

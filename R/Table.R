@@ -335,9 +335,11 @@ synDeleteRows<-function(tableDataFrame) {
   } else if (is (schema, "character")) {
     tableId<-schema
   }
-  request<-RowSelection(tableId=tableId, etag=tableDataFrame@updateEtag, rowIds=parseRowAndVersion(tableDataFrame@values)$ROW_ID)
+  rowIds<-IntegerList()
+  rowIds@content<-as.list(parseRowAndVersion(row.names(tableDataFrame@values))[1,])
+  request<-RowSelection(tableId=tableId, etag=tableDataFrame@updateEtag, rowIds=rowIds)
   responseBodyAsList<-synRestPOST(sprintf("/entity/%s/table/deleteRows", tableId), createListFromS4Object(request))
-  response<-createS4ObjectFromList(responseBodyAsList)
+  response<-createS4ObjectFromList(responseBodyAsList, "RowReferenceSet")
   Table(tableDataFrame@schema, length(response@rows), response@etag)
 }
 
