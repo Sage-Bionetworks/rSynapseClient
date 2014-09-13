@@ -143,7 +143,7 @@ defineS4ConstructorAndAccessors<-function(name) {
         argument<-args[[slotName]]
         # convenience for converting a numeric value to an integer
         if (identical(class(slot(obj, slotName)),"integer") && is(argument, "numeric")) {
-          if (length(argument)==0 || all(as.integer(argument)==argument)) {
+          if (!is.na(argument) && (length(argument)==0 || all(as.integer(argument)==argument))) {
             argument<-as.integer(argument)
           }
         }
