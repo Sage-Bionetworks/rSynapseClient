@@ -239,10 +239,7 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
       if (Sys.time()-startTime>maxWaitSeconds) stop(sprintf("Failed to obtain result after %s seconds.", maxWaitSeconds))
       moreThanZeroProgress <- (jobStatus@progressCurrent>0)
       if (verbose) {
-        cat(sprintf("Completed %d of %d.  %s\n", 
-            jobStatus@progressCurrent, 
-            jobStatus@progressTotal, 
-            jobStatus@progressMessage))
+        cat(sprintf("Completed %.1f%%.\n", as.numeric(jobStatus@progressCurrent)/as.numeric(jobStatus@progressTotal)*100))
       }
       Sys.sleep(1);
     } else {
