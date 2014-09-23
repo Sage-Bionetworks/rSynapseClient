@@ -247,7 +247,7 @@ integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
   myTable <- Table(tschema, values=dataFrame)
   myTable <- synStore(myTable, retrieveData=T)
   # now check that the data frames are the same
-  checkTrue(dataFramesAreSame(dataFrame,readBackIn))
+  checkTrue(dataFramesAreSame(dataFrame,myTable@values))
 }
 
 integrationTestSynStoreCSVFileNoRetrieve <- function() {

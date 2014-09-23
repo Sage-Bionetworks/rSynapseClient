@@ -236,6 +236,8 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
     if (statusCode==202) {
       if (is.null(checkResultAsList$progressCurrent)) {
         cat("Warning progressCurrent field is null\n")
+        message(sprintf("GET %s returned status code %s and response body:", checkCompleteUri, statusCode))
+        message(toJSON(checkResultAsList))
         checkResultAsList$progressCurrent<-as.integer(0)
       }
       jobStatus<-createS4ObjectFromList(checkResultAsList, "AsynchronousJobStatus")
