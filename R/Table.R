@@ -136,8 +136,16 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   # "they are relatively expensive to use, and it is often better to 
   # use an anonymous ‘file()’ connection to collect output."
   filePath<-tempfile()
-  write.csv(x=dataFrameToWrite, file=filePath, row.names=FALSE)
+  writeDataFrameToCSV(dataFrameToWrite, filePath)
   rowsProcessed<-uploadCSVFileToTable(filePath=filePath, tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
+}
+
+writeDataFrameToCSV<-function(dataFrame, filePath) {
+  write.csv(x=dataFrame, file=filePath, row.names=FALSE, na="")
+}
+
+readDataFrameFromCSV<-function(filePath) {
+  read.csv(filePath, encoding="UTF-8")
 }
 
 setMethod(
@@ -265,7 +273,7 @@ downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, d
 }
 
 loadCSVasDataFrame<-function(filePath, includeRowIdAndRowVersion=TRUE) {
-  dataframe<-read.csv(filePath, encoding="UTF-8")
+  dataframe<-readDataFrameFromCSV(filePath)
   if (includeRowIdAndRowVersion) {
     # the read-in dataframe has row numbers and versions to remove
     rowIdIndex<-match("ROW_ID", names(dataframe))

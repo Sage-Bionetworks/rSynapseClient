@@ -217,6 +217,20 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   checkEquals(deletionResult@rowCount, rowsToUpload)
 }
 
+# checks values and column labels, but not row labels
+# we have to use this to compare data frames that have NAs
+dataFramesAreSame<-function(df1, df2) {
+  if (nrow(df1)!=nrow(df2) || ncol(df1)!=ncol(df2)) return(FALSE)
+  if (any(names(df1)!=names(df2))) return(FALSE)
+  if (nrow(df1)==0 || ncol(df1)==0) return(TRUE)
+  for (r in 1:nrow(df1)) {
+    for (c in 1:ncol(df1)) {
+      if (!identical(df1[r,c], df2[r,c])) return(FALSE)
+    }
+  }
+  TRUE
+}
+
 integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
   project<-synapseClient:::.getCache("testProject")
   
@@ -229,12 +243,11 @@ integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
   tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2))
   tschema <- synStore(tschema, createOrUpdate=FALSE)
   
-  dataFrame <- data.frame(sweet=c(1:5, 1.234e-10, 5.678e+10), sweet2=c(6:10, 1.234567, 9.876543))
+  dataFrame <- data.frame(sweet=c(1:5, 1.234e-10, 5.678e+10, NA), sweet2=c(NA, 6:10, 1.234567, 9.876543))
   myTable <- Table(tschema, values=dataFrame)
   myTable <- synStore(myTable, retrieveData=T)
   # now check that the data frames are the same
-  checkTrue(all(dataFrame==myTable@values))
-  checkTrue(all(names(dataFrame)==names(myTable@values)))
+  checkTrue(dataFramesAreSame(dataFrame,readBackIn))
 }
 
 integrationTestSynStoreCSVFileNoRetrieve <- function() {

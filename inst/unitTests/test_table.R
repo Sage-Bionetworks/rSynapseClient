@@ -28,3 +28,25 @@ unitTest_isAggregationQuery<-function() {
   checkTrue(!synapseClient:::isAggregationQuery("select * from syn123 where count in (1,2,3)"))
   checkTrue(synapseClient:::isAggregationQuery("select foo, count(foo) from syn123"))
 }
+
+# checks values and column labels, but not row labels
+# we have to use this to compare data frames that have NAs
+dataFramesAreSame<-function(df1, df2) {
+  if (nrow(df1)!=nrow(df2) || ncol(df1)!=ncol(df2)) return(FALSE)
+  if (any(names(df1)!=names(df2))) return(FALSE)
+  if (nrow(df1)==0 || ncol(df1)==0) return(TRUE)
+  for (r in 1:nrow(df1)) {
+    for (c in 1:ncol(df1)) {
+      if (!identical(df1[r,c], df2[r,c])) return(FALSE)
+    }
+  }
+  TRUE
+}
+
+unitTest_csvRoundTrip<-function() {
+  dataFrame <- data.frame(sweet=c(1:5, 1.234e-10, 5.678e+10, NA), sweet2=c(NA, 6:10, 1.234567, 9.876543))
+  filePath<-tempfile()
+  synapseClient:::writeDataFrameToCSV(dataFrame, filePath)
+  readBackIn<-synapseClient:::readDataFrameFromCSV(filePath)
+  checkTrue(dataFramesAreSame(dataFrame,readBackIn))
+}
