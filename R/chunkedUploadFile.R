@@ -79,7 +79,7 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
         percentUploaded <- totalUploadedBytes*100/fileSizeBytes
         # print progress, but only if there's more than one chunk
         if (chunkNumber>1 | percentUploaded<100) {
-          cat(sprintf("Uploaded %.1f%%", percentUploaded))
+          cat(sprintf("Uploaded %.1f%%\n", percentUploaded))
         }
         
         chunkResults[[length(chunkResults)+1]]<-chunkNumber

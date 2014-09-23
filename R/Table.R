@@ -228,27 +228,38 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
   asyncJobState<-"PROCESSING"
   startTime<-Sys.time()
   maxWaitSeconds<-60
+  lastProgressCurrent<-as.integer(-1)
   while (asyncJobState=="PROCESSING") {
     curlHandle=getCurlHandle()
     checkResultAsList<-synapseGet(uri=checkCompleteUri, curlHandle=curlHandle, checkHttpStatus=FALSE)
     statusCode<-getStatusCode(curlHandle)
     if (statusCode==202) {
+      if (is.null(checkResultAsList$progressCurrent)) {
+        cat("Warning progressCurrent field is null\n")
+        checkResultAsList$progressCurrent<-as.integer(0)
+      }
       jobStatus<-createS4ObjectFromList(checkResultAsList, "AsynchronousJobStatus")
       asyncJobState<-jobStatus@jobState # PROCESSING, FAILED, or COMPLETE
       if (asyncJobState!="PROCESSING") break
       if (Sys.time()-startTime>maxWaitSeconds) stop(sprintf("Failed to obtain result after %s seconds.", maxWaitSeconds))
-      moreThanZeroProgress <- (jobStatus@progressCurrent>0)
       if (verbose) {
-        cat(sprintf("Completed %.1f%%.\n", as.numeric(jobStatus@progressCurrent)/as.numeric(jobStatus@progressTotal)*100))
+        if (jobStatus@progressCurrent>lastProgressCurrent) {
+          cat(sprintf("\nCompleted %.1f%%.", as.numeric(jobStatus@progressCurrent)/as.numeric(jobStatus@progressTotal)*100))
+        } else {
+          cat(".")
+        }
       }
+      lastProgressCurrent<-jobStatus@progressCurrent
       Sys.sleep(1);
     } else {
       # this handles non-2xx statuses
       .checkCurlResponse(curlHandle, toJSON(checkResultAsList))
       # the job is finished
+      if (verbose) cat("\n")
       return(checkResultAsList)
     }
   }
+  if (verbose) cat("\n")
   if (asyncJobState=="FAILED") stop(sprintf("%s\nDetails:\n%s", jobStatus@errorMessage, jobStatus@errorDetails))
   # TODO log jobStatus@errorDetails to the new client logging service
   stop(sprintf("Unexcepted status %s for %s", asyncJobState, checkCompleteUri))
