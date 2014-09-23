@@ -52,38 +52,42 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   # with_retry = RetryRequest(retry_status_codes=[502,503], retries=4, wait=1, back_off=2, verbose=verbose)
   chunkResults<-list()
   connection<-file(filepath, open="rb")
-  fileSizeBytes<-file.info(filepath)$size
-  totalUploadedBytes<-0
-  repeat {
-    chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
-    if (length(chunk)==0) break
-    # get the ith chunk from the file
-    if (debug) message(sprintf('\nChunk %d. size %d\n', chunkNumber, length(chunk)))
-    
-    ## get the signed S3 URL
-    chunkRequest <- list(chunkNumber=chunkNumber, chunkedFileToken=token)
-    chunkUploadUrl <- createChunkedFileUploadChunkURL(chunkRequest)
-    if (debug) message(sprintf('url= %s\n', chunkUploadUrl))
-    
-    ## PUT the chunk to S3
-    response <- getURLWithRetries(chunkUploadUrl,
-      postfields = chunk, # the request body
-      customrequest="PUT", # the request method
-      httpheader=headers, # the headers
-      opts=.getCache("curlOpts")
-    )
-    
-    totalUploadedBytes <- totalUploadedBytes + length(chunk)
-    percentUploaded <- totalUploadedBytes*100/fileSizeBytes
-    # print progress, but only if there's more than one chunk
-    if (chunkNumber>1 | percentUploaded<100) {
-      cat(sprintf("Uploaded %d%%", percentUploaded))
-    }
-    
-    chunkResults[[length(chunkResults)+1]]<-chunkNumber
-    chunkNumber <- chunkNumber + 1
-  }
-  close(connection)
+  tryCatch(
+    {
+      fileSizeBytes<-file.info(filepath)$size
+      totalUploadedBytes<-0
+      repeat {
+        chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
+        if (length(chunk)==0) break
+        # get the ith chunk from the file
+        if (debug) message(sprintf('\nChunk %d. size %d\n', chunkNumber, length(chunk)))
+        
+        ## get the signed S3 URL
+        chunkRequest <- list(chunkNumber=chunkNumber, chunkedFileToken=token)
+        chunkUploadUrl <- createChunkedFileUploadChunkURL(chunkRequest)
+        if (debug) message(sprintf('url= %s\n', chunkUploadUrl))
+        
+        ## PUT the chunk to S3
+        response <- getURLWithRetries(chunkUploadUrl,
+          postfields = chunk, # the request body
+          customrequest="PUT", # the request method
+          httpheader=headers, # the headers
+          opts=.getCache("curlOpts")
+        )
+        
+        totalUploadedBytes <- totalUploadedBytes + length(chunk)
+        percentUploaded <- totalUploadedBytes*100/fileSizeBytes
+        # print progress, but only if there's more than one chunk
+        if (chunkNumber>1 | percentUploaded<100) {
+          cat(sprintf("Uploaded %.1f%%\n", percentUploaded))
+        }
+        
+        chunkResults[[length(chunkResults)+1]]<-chunkNumber
+        chunkNumber <- chunkNumber + 1
+      }
+    },
+    finally=close(connection)
+  )
   ## finalize the upload and return a fileHandle
   completeChunkFileUpload(token, chunkResults)
 }
