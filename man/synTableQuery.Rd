@@ -7,7 +7,7 @@ synTableQuery
 \description{
 Query a Synapse Table
 }
-\usage{synTableQuery(sqlString, loadResult=TRUE, verbose=TRUE, downloadLocation=TRUE)}
+\usage{synTableQuery(sqlString, loadResult=TRUE, verbose=TRUE, filePath=NULL)}
 \arguments{
 	\item{sqlString}{
 	The query to execute.  For complete syntax description see:
@@ -19,8 +19,8 @@ Query a Synapse Table
 	\item{verbose}{
 	If TRUE then print progress information while results are retrieved.
 	}
-	\item{downloadLocation}{
-	Location to which the csv file version of the query is stored.  If omitted the result will be written in the 
+	\item{filePath}{
+	File path to which the csv file version of the query is stored.  If omitted the result will be written in the 
 	default file cache location.
 	}
 }

@@ -151,7 +151,7 @@ readDataFrameFromCSV<-function(filePath) {
 setMethod(
   f = "synStore",
   signature = "TableDataFrame",
-  definition = function(entity, retrieveData=FALSE, verbose=TRUE, downloadLocation=NULL) {
+  definition = function(entity, retrieveData=FALSE, verbose=TRUE, filePath=NULL) {
     if (!is(entity@values, "data.frame")) stop("data frame required.")
     entity@schema<-ensureTableSchemaIsRetrieved(entity@schema)
     entity@schema<-ensureTableSchemaStored(entity@schema)
@@ -159,7 +159,7 @@ setMethod(
     if (retrieveData) {
       tableId<-propertyValue(entity@schema, "id")
       sql<-sprintf("select * from %s", tableId)
-      downloadResult<-downloadTableToCSVFile(sql, verbose, downloadLocation=downloadLocation)
+      downloadResult<-downloadTableToCSVFile(sql, verbose, filePath=filePath)
       dataframe<-loadCSVasDataFrame(downloadResult$filePath)
       Table(entity@schema, dataframe, downloadResult$etag)
     } else {
@@ -174,7 +174,7 @@ setMethod(
   definition = function(entity, 
     retrieveData=FALSE, 
     verbose=TRUE,
-    downloadLocation=NULL) {
+    filePath=NULL) {
     entity@schema<-ensureTableSchemaIsRetrieved(entity@schema)
     entity@schema<-ensureTableSchemaStored(entity@schema)
     tableId<-propertyValue(entity@schema, "id")
@@ -189,7 +189,7 @@ setMethod(
     )
     if (retrieveData) {
       sql=sprintf("select * from %s", tableId)
-      downloadResult<-downloadTableToCSVFile(sql, verbose, downloadLocation=downloadLocation)
+      downloadResult<-downloadTableToCSVFile(sql, verbose, filePath=filePath)
       Table(tableSchema=entity@schema, values=downloadResult$filePath, updateEtag=downloadResult$etag)
     } else {
       Table(entity@schema, rowsProcessed)
@@ -267,13 +267,19 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
 
 # execute a query and download the results
 # returns the download file path and etag
-downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, downloadLocation=NULL) {
+downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, filePath=NULL) {
   request<-DownloadFromTableRequest(sql=sql, includeRowIdAndRowVersion=includeRowIdAndRowVersion, writeHeader=TRUE)
   asyncJobId<-createS4ObjectFromList(synRestPOST("/table/download/csv/async/start", createListFromS4Object(request)) ,"AsyncJobId")
   responseBodyAsList<-trackProgress(sprintf("/table/download/csv/async/get/%s", asyncJobId@token), verbose)
   responseBody<-createS4ObjectFromList(responseBodyAsList, "DownloadFromTableResult")
   downloadUri<-sprintf("/fileHandle/%s/url", responseBody@resultsFileHandleId)
-  fileName<-sprintf("queryResult_%s.csv", responseBody@resultsFileHandleId)
+  if (is.null(filePath)) {
+    fileName<-sprintf("queryResult_%s.csv", responseBody@resultsFileHandleId)
+    downloadLocation<- NULL # TODO extract folder from file path
+  } else {
+    fileName <- basename(filePath)
+    downloadLocation <- dirname(filePath)
+  }
   fileHandle<-S3FileHandle(id=responseBody$resultsFileHandleId, fileName=fileName)
   fileHandleAsList<-createListFromS4Object(fileHandle)
   downloadResult<-synGetFileAttachment(downloadUri, "FILE", fileHandleAsList, downloadFile=T, downloadLocation=downloadLocation, ifcollision="overwrite.local", load=F)
@@ -331,10 +337,10 @@ isAggregationQuery<-function(sql) {
 # execute a query against a table
 # if loadResult=T, return a TableDataFrame, else return
 # a TableFilePath (i.e. providing the path to the query result)
-synTableQuery<-function(sqlString, loadResult=TRUE, verbose=TRUE, downloadLocation=NULL) {
+synTableQuery<-function(sqlString, loadResult=TRUE, verbose=TRUE, filePath=NULL) {
   isAggregationQuery<-isAggregationQuery(sqlString)
   tableId<-findSynIdInSql(sqlString)
-  downloadResult<-downloadTableToCSVFile(sql=sqlString, verbose=verbose, includeRowIdAndRowVersion=!isAggregationQuery, downloadLocation=downloadLocation)
+  downloadResult<-downloadTableToCSVFile(sql=sqlString, verbose=verbose, includeRowIdAndRowVersion=!isAggregationQuery, filePath=filePath)
   if (loadResult) {
     # if it's an aggregation query there are no row labels
     dataframe<-loadCSVasDataFrame(downloadResult$filePath, !isAggregationQuery)

@@ -194,10 +194,10 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   checkTrue(file.exists(queryResult@filePath))
   checkTrue(length(queryResult@updateEtag)>0)
   
-  downloadLocation<-tempdir()
-  queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=FALSE, verbose=FALSE, downloadLocation=downloadLocation)
+  filePath<-tempfile()
+  queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=FALSE, verbose=FALSE, filePath=filePath)
   checkTrue(file.exists(queryResult@filePath))
-  checkEquals(downloadLocation, substring(queryResult@filePath, 1, nchar(downloadLocation)))
+  checkEquals(filePath, queryResult@filePath)
   
   # test a simple aggregation query
   queryResult<-synTableQuery(sprintf("select count(*) from %s", propertyValue(tschema, "id")), verbose=FALSE)
@@ -274,13 +274,13 @@ integrationTestSynStoreAndRetrieveCSVFile <- function() {
   
   csvFilePath<-system.file("resources/test/test.csv", package = "synapseClient")
   table<-Table(tableSchema=tableSchema, values=csvFilePath)
-  downloadLocation<-tempdir()
-  retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE, downloadLocation=downloadLocation)
+  filePath<-tempfile()
+  retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE, filePath=filePath)
   checkTrue(is(retrievedTable, "TableFilePath"))
   checkTrue(!is.null(propertyValue(retrievedTable@schema, "id")))
   checkTrue(length(retrievedTable@updateEtag)>0)
   # now check that the data frames are the same
-  checkEquals(downloadLocation, substring(retrievedTable@filePath, 1, nchar(downloadLocation)))
+  checkEquals(filePath, retrievedTable@filePath)
   retrievedDataFrame<-synapseClient:::loadCSVasDataFrame(retrievedTable@filePath)
   dataFrame<-read.csv(csvFilePath, header=FALSE)
   checkTrue(all(dataFrame==retrievedDataFrame))
