@@ -17,6 +17,46 @@ setMethod(
   }
 )
 
+showSchemaOrEntityId<-function(schema) {
+  if (is(schema, "Entity")) {
+    cat("Table Schema Name: ", properties(schema)$name, "\n", sep="")
+    cat("Table Schema Id: ", properties(schema)$id, "\n", sep="")
+  } else {
+    cat("Table Schema Id: ", schema, "\n", sep="")
+  }
+}
+
+setMethod(
+  f = "show",
+  signature = signature("TableDataFrame"),
+  definition = function(object){
+    cat('An object of class "', class(object), '"\n', sep="")
+    showSchemaOrEntityId(object@schema)
+    cat(sprintf("data frame columns:\n%s", paste(names(object@values), collapse="\n")))
+  }
+)
+
+setMethod(
+  f = "show",
+  signature = signature("TableFilePath"),
+  definition = function(object){
+    cat('An object of class "', class(object), '"\n', sep="")
+    showSchemaOrEntityId(object@schema)
+    cat(sprintf("filePath:\n%s", object@filePath))
+  }
+)
+
+setMethod(
+  f = "show",
+  signature = signature("TableRowCount"),
+  definition = function(object){
+    cat('An object of class "', class(object), '"\n', sep="")
+    showSchemaOrEntityId(object@schema)
+    cat(sprintf("row count:\n%s", object@rowCount))
+  }
+)
+
+
 setMethod(
   f = "Table",
   signature = signature("TableSchemaOrCharacter", "character"),
@@ -113,11 +153,12 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   for (dfColumnName in names(dataframe)) {
     schemaColumn<-schemaColumnMap[[dfColumnName]]
     if (is.null(schemaColumn)) stop(sprintf("Data frame has column %s but schema has no such column.", dfColumnName))
-    dfColumnType<-class(dataframe[[dfColumnName]])
-    expectedTableColumnType<-getTableColumnTypeForDataFrameColumnType(dfColumnType)
+    dfColumnType<-class(dataframe[[dfColumnName]])[1]
+    expectedTableColumnTypes<-getTableColumnTypeForDataFrameColumnType(dfColumnType)
     tableColumnType<-schemaColumn@columnType
-    if (tableColumnType!=expectedTableColumnType) {
-      stop(sprintf("Column %s has type %s but %s is expected.", dfColumnName, expectedTableColumnType, tableColumnType))
+    if (!any(tableColumnType==expectedTableColumnTypes)) {
+      stop(sprintf("Column %s has type %s but %s is expected.", dfColumnName, tableColumnType, 
+          paste(expectedTableColumnTypes, collapse=" or ")))
     }
   }
   
@@ -161,12 +202,29 @@ setMethod(
       sql<-sprintf("select * from %s", tableId)
       downloadResult<-downloadTableToCSVFile(sql, verbose, filePath=filePath)
       dataframe<-loadCSVasDataFrame(downloadResult$filePath)
+      dataframe<-convertDataFrameTypeToSchemaType(dataframe, tableId)
       Table(entity@schema, dataframe, downloadResult$etag)
     } else {
       Table(entity@schema, rowsProcessed)
     }
   }
 )
+
+convertDataFrameTypeToSchemaType<-function(dataframe, tableId) {
+  columns<-synGetColumns(tableId)
+  for (columnModel in columns@content) {
+    columnIndex<-match(columnModel@name, names(dataframe))
+    if (!is.na(columnIndex)) { # make sure the the column is in the data frame
+      if (columnModel@columnType=="BOOLEAN") {
+        # Synapse returns values "true", "false", which have to be converted to TRUE, FALSE
+        dataframe[[columnIndex]]<-(dataframe[[columnIndex]]=="true")
+      } else if (columnModel@columnType=="DATE") {
+        dataframe[[columnIndex]]<-as.Date(dataframe[[columnIndex]]/(24*3600*1000), "1970-01-01")
+      }
+    }
+  }
+  dataframe
+}
 
 setMethod(
   f = "synStore",
@@ -235,9 +293,7 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
     statusCode<-getStatusCode(curlHandle)
     if (statusCode==202) {
       if (is.null(checkResultAsList$progressCurrent)) {
-        cat("Warning progressCurrent field is null\n")
-        message(sprintf("GET %s returned status code %s and response body:", checkCompleteUri, statusCode))
-        message(toJSON(checkResultAsList))
+        # remove when PLFM-3008 is fixed
         checkResultAsList$progressCurrent<-as.integer(0)
       }
       jobStatus<-createS4ObjectFromList(checkResultAsList, "AsynchronousJobStatus")
@@ -277,7 +333,7 @@ downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, f
   downloadUri<-sprintf("/fileHandle/%s/url", responseBody@resultsFileHandleId)
   if (is.null(filePath)) {
     fileName<-sprintf("queryResult_%s.csv", responseBody@resultsFileHandleId)
-    downloadLocation<- NULL # TODO extract folder from file path
+    downloadLocation<- NULL
   } else {
     fileName <- basename(filePath)
     downloadLocation <- dirname(filePath)
@@ -346,6 +402,7 @@ synTableQuery<-function(sqlString, loadResult=TRUE, verbose=TRUE, filePath=NULL)
   if (loadResult) {
     # if it's an aggregation query there are no row labels
     dataframe<-loadCSVasDataFrame(downloadResult$filePath, !isAggregationQuery)
+    dataframe<-convertDataFrameTypeToSchemaType(dataframe, tableId)
     Table(tableSchema=tableId, values=dataframe, updateEtag=downloadResult$etag)
   } else {
     Table(tableSchema=tableId, values=downloadResult$filePath, updateEtag=downloadResult$etag)
