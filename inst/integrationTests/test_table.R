@@ -136,7 +136,7 @@ integrationTestSynStoreDataFrameWrongColumnType <- function() {
 integrationTestSynStoreMixedDataFrame<-function() {
   project<-synapseClient:::.getCache("testProject")
   
-  tc1 <- TableColumn(name="sweet", columnType="STRING")
+  tc1 <- TableColumn(name="sweet", columnType="STRING", enumValues=CharacterList("one", "two", "three"))
   tc1 <- synStore(tc1)
   tc2 <- TableColumn(name="sweet2", columnType="INTEGER")
   tc2 <- synStore(tc2)
