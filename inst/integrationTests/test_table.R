@@ -52,6 +52,7 @@ integrationTestSynStoreDataFrame <- function() {
       dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
   table<-Table(tableSchema=tableSchema, values=permutedDataFrame)
   retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE)
+  show(retrievedTable) # make sure 'show' works
   checkTrue(is(retrievedTable, "TableDataFrame"))
   checkTrue(!is.null(propertyValue(retrievedTable@schema, "id")))
   checkTrue(length(retrievedTable@updateEtag)>0)
@@ -90,6 +91,7 @@ integrationTestSynStoreDataFrameNORetrieveData <- function() {
       dimnames = list(c(1,2), tableColumnNames[c(2,1,3)])))
   table<-Table(tableSchema=propertyValue(tableSchema, "id"), values=dataFrame)
   stored<-synStore(table, verbose=FALSE)
+  show(stored) # make sure 'show' works
   checkEquals(stored@rowCount, 2)
 }
 
@@ -144,7 +146,11 @@ integrationTestSynStoreMixedDataFrame<-function() {
   tschema <- synStore(tschema, createOrUpdate=FALSE)
   
   rowsToUpload<-30
-  myTable <- Table(propertyValue(tschema, "id"), values=data.frame(sweet=sample(c("one", "two", "three"), size = rowsToUpload, replace = T), sweet2=sample.int(rowsToUpload, replace = T)))
+  myTable <- Table(propertyValue(tschema, "id"), values=
+      data.frame(
+        sweet=sample(c("one", "two", "three"), size = rowsToUpload, replace = T), 
+        sweet2=sample.int(rowsToUpload, replace = T)
+  ))
   stored <- synStore(myTable)
   # returns the number of rows uploaded
   checkEquals(stored@rowCount, rowsToUpload)
@@ -167,7 +173,9 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   sweet=c(sample("one", rowsPerCategory, replace=T), 
       sample("two", rowsPerCategory, replace=T), 
       sample("three", rowsPerCategory, replace=T))
-  dataFrame <- data.frame(sweet=sweet, sweet2=sample.int(rowsToUpload, replace = T))
+  dataFrame <- data.frame(
+    sweet=sweet, 
+    sweet2=sample.int(rowsToUpload, replace = T))
   myTable <- Table(tschema, values=dataFrame)
   myTable <- synStore(myTable, retrieveData=T)
   checkTrue(is(myTable, "TableDataFrame"))
@@ -197,7 +205,6 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   filePath<-tempfile()
   queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=FALSE, verbose=FALSE, filePath=filePath)
   checkTrue(file.exists(queryResult@filePath))
-  checkEquals(filePath, queryResult@filePath)
   
   # test a simple aggregation query
   queryResult<-synTableQuery(sprintf("select count(*) from %s", propertyValue(tschema, "id")), verbose=FALSE)
@@ -215,6 +222,56 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=TRUE, verbose=FALSE)
   deletionResult<-synDeleteRows(queryResult)
   checkEquals(deletionResult@rowCount, rowsToUpload)
+}
+
+integrationTestSynStoreAndRetrieveAllTypes<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  # String, Integer, Double, Boolean, Date, Filehandleid, Entityid
+  tc1 <- TableColumn(name="stringType", columnType="STRING", enumValues=CharacterList("one", "two", "three"))
+  tc1 <- synStore(tc1)
+  tc2 <- TableColumn(name="intType", columnType="INTEGER")
+  tc2 <- synStore(tc2)
+  tc3 <- TableColumn(name="doubleType", columnType="DOUBLE")
+  tc3 <- synStore(tc3)
+  tc4 <- TableColumn(name="booleanType", columnType="BOOLEAN")
+  tc4 <- synStore(tc4)
+  tc5 <- TableColumn(name="dateType", columnType="DATE")
+  tc5 <- synStore(tc5)
+  tc6 <- TableColumn(name="fileHandleIdType1", columnType="FILEHANDLEID")
+  tc6 <- synStore(tc6)
+  tc7 <- TableColumn(name="fileHandleIdType2", columnType="FILEHANDLEID")
+  tc7 <- synStore(tc7)
+  tc8 <- TableColumn(name="entityIdType", columnType="ENTITYID")
+  tc8 <- synStore(tc8)
+  
+  pid<-propertyValue(project, "id")
+  tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2, tc3, tc4, tc5, tc6, tc7, tc8))
+  tschema <- synStore(tschema, createOrUpdate=FALSE)
+  
+  rowsToUpload<-30
+  dataFrame<-data.frame(
+    stringType=sample(c("one", "two", "three"), size = rowsToUpload, replace = T), 
+    intType=sample.int(rowsToUpload, replace = T),
+    doubleType=as.numeric(sample.int(rowsToUpload, replace = T)),
+    booleanType=sample(c(TRUE, FALSE), size = rowsToUpload, replace = T),
+    dateType=sample(Sys.Date()+c(1,2,3), size = rowsToUpload, replace = T),
+    fileHandleIdType1=sample(c("111", "222", "333"), size = rowsToUpload, replace = T),
+    fileHandleIdType2=sample(c(444, 555, 666), size = rowsToUpload, replace = T),
+    entityIdType=sample(c("syn123", "syn456", "syn789"), size = rowsToUpload, replace = T)
+    )
+  
+  
+  myTable <- Table(tschema, values=dataFrame)
+  myTable <- synStore(myTable, retrieveData=T)
+  checkTrue(is(myTable, "TableDataFrame"))
+  checkEquals(propertyValue(myTable@schema, "id"), propertyValue(tschema, "id"))
+  checkTrue(length(myTable@updateEtag)>0)
+  # now check that the data frames are the same
+  checkTrue(all(dataFrame==myTable@values))
+  checkTrue(all(names(dataFrame)==names(myTable@values)))
+  # make sure the row labels are valid
+  synapseClient:::parseRowAndVersion(row.names(myTable@values))
 }
 
 # checks values and column labels, but not row labels
@@ -278,9 +335,9 @@ integrationTestSynStoreAndRetrieveCSVFile <- function() {
   retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE, filePath=filePath)
   checkTrue(is(retrievedTable, "TableFilePath"))
   checkTrue(!is.null(propertyValue(retrievedTable@schema, "id")))
+  show(retrievedTable) # make sure 'show' works
   checkTrue(length(retrievedTable@updateEtag)>0)
   # now check that the data frames are the same
-  checkEquals(filePath, retrievedTable@filePath)
   retrievedDataFrame<-synapseClient:::loadCSVasDataFrame(retrievedTable@filePath)
   dataFrame<-read.csv(csvFilePath, header=FALSE)
   checkTrue(all(dataFrame==retrievedDataFrame))

@@ -12,8 +12,8 @@ setMethod(
     result<-list()
     if (n<1) return(result)
     for (i in 1:length(dataframe)) {
-      dfColumnType<-class(dataframe[[i]])
-      columnType<-getTableColumnTypeForDataFrameColumnType(dfColumnType)
+      dfColumnType<-class(dataframe[[i]])[1]
+      columnType<-getTableColumnTypeForDataFrameColumnType(dfColumnType)[1]
       columnName<-names(dataframe[i])
       if (dfColumnType=="factor") {
         levels<-levels(dataframe[[i]])
@@ -35,11 +35,17 @@ setMethod(
   }
 )
 
+# returns the Synapse types which can hold the given R type, with the first one being the preferred
 getTableColumnTypeForDataFrameColumnType<-function(dfColumnType) {
-  map<-c(integer="INTEGER", factor="STRING", character="STRING", numeric="DOUBLE", logical="BOOLEAN")
-  result<-map[dfColumnType]
-  if (is.na(result)) stop(sprintf("No column type for %s", dfColumnType))
-  names(result)<-NULL # otherwise the dfColumnType labels the result
+  map<-list(integer=c("INTEGER","DOUBLE","FILEHANDLEID"), 
+      factor=c("STRING","FILEHANDLEID","ENTITYID"), 
+      character=c("STRING","FILEHANDLEID","ENTITYID"), 
+      numeric=c("DOUBLE","INTEGER","FILEHANDLEID"), 
+      logical=c("BOOLEAN","STRING"),
+      Date=c("DATE","STRING"),
+      POSIXct=c("DATE","STRING"))
+  result<-map[[dfColumnType]]
+  if (is.null(result)) stop(sprintf("No column type for %s", dfColumnType))
   result
 }
 
