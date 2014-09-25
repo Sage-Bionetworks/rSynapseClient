@@ -2,10 +2,12 @@
 # 
 # Author: brucehoff
 ###############################################################################
+library(RCurl)
 
 # note, I want slightly different set-ups for different tests, so I invoke it myself 
 # (instead of letting the framework do it), passing a parameter
 # example, mySetUp(503, "HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/json\r\n\r\n")
+
 mySetUp <- function(httpErrorStatusCode, errorMessage)
 {
   synapseClient:::.setCache("httpRequestCount", 0)
@@ -57,10 +59,19 @@ mySetUp <- function(httpErrorStatusCode, errorMessage)
 {
   synapseClient:::.setCache("permanent.redirects.resolved.REPO", NULL)
   synapseClient:::.setCache("permanent.redirects.resolved.FILE", NULL)
-  assignInNamespace(".getURLIntern", attr(synapseClient:::.getURLIntern, "origDef"), "synapseClient")
-  assignInNamespace(".getCurlInfo", attr(synapseClient:::.getCurlInfo, "origDef"), "synapseClient")
-  assignInNamespace("checkBlackList", attr(synapseClient:::checkBlackList, "origDef"), "synapseClient")
-  assignInNamespace("checkLatestVersion", attr(synapseClient:::checkLatestVersion, "origDef"), "synapseClient")
+  
+  origDef<-attr(synapseClient:::.getURLIntern, "origDef")
+  if (!is.null(origDef)) assignInNamespace(".getURLIntern", origDef, "synapseClient")
+  
+  origDef<-attr(synapseClient:::.getCurlInfo, "origDef")
+  if (!is.null(origDef)) assignInNamespace(".getCurlInfo", origDef, "synapseClient")
+  
+  origDef<-attr(synapseClient:::checkBlackList, "origDef")
+  if (!is.null(origDef)) assignInNamespace("checkBlackList", origDef, "synapseClient")
+  
+  origDef<-attr(synapseClient:::checkLatestVersion, "origDef")
+  if (!is.null(origDef)) assignInNamespace("checkLatestVersion", origDef, "synapseClient")
+  
   unloadNamespace('synapseClient')
   library(synapseClient)
 }
@@ -127,6 +138,33 @@ unitTestExponentialBackoffFor502ShouldComplete <-
   result<-synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", anonymous=T, opts=opts)
   checkEquals(list(foo="bar"), result)
   checkEquals(200, synapseClient:::.getCurlInfo()$response.code)
+}
+
+unitTestExponentialBackoffFor404ShouldComplete <- function()
+{
+  synapseClient:::.setCache("httpRequestCount", 0)
+  myGetCurlInfo<-function(curlHandle=NULL) {
+    httpRequestCount <-synapseClient:::.getCache("httpRequestCount")
+    synapseClient:::.setCache("httpRequestCount", httpRequestCount+1)
+    if (httpRequestCount<2) { # first two times it fails
+      synapseClient:::.setCache("httpStatus", 404)
+    } else {
+      synapseClient:::.setCache("httpStatus", 200)
+    }
+    list(response.code=synapseClient:::.getCache("httpStatus"))
+  }
+  attr(myGetCurlInfo, "origDef") <- synapseClient:::.getCurlInfo
+  assignInNamespace(".getCurlInfo", myGetCurlInfo, "synapseClient")
+  
+  curlHandle <- getCurlHandle() 
+  synapseClient:::webRequestWithRetries(
+    fcn=function(curlHandle) {
+      "this is the response body"
+    },
+    curlHandle,
+    extraRetryStatusCodes=404
+  )  
+
 }
 
 

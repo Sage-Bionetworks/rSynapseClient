@@ -115,7 +115,7 @@ createdTypedListRd<-function(referencedTypedLists, srcRootDir) {
   connection<-file(templateFile, open="r")
   template<-paste(readLines(connection), collapse="\n")
   close(connection)
-  aliasLines<-paste(lapply(X=referencedTypedLists, FUN=function(x){paste("\\alias{",x,"}",sep="")}), collapse="\n")
+  aliasLines<-paste(lapply(X=referencedTypedLists, FUN=function(x){paste("\\alias{",x,"}\n\\alias{as.",x,"}",sep="")}), collapse="\n")
   content<-gsub("##alias##", aliasLines, template, fixed=TRUE)
   content
 }
@@ -144,7 +144,7 @@ autoGenerateRdFiles<-function(srcRootDir) {
     className<-s4ClassesToAutoGenerate[i,"className"]
     if (s4ClassesToAutoGenerate[i,"genDoc"]) {
       rdResult<-createRdFromSchema(className, schemaName, schemaPath, classToSchemaMap)
-      referencedTypedLists<-append(referencedTypedLists, rdResult$referencedTypedLists)
+      referencedTypedLists<-unique(append(referencedTypedLists, rdResult$referencedTypedLists))
       writeContent(rdResult$content, className, srcRootDir)
     }
   }

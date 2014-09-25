@@ -29,5 +29,7 @@ append() works as it does for lists, but requires that the values being appended
 set() replaces all the values with those passed in, first checking that the type of the values is correct.
 
 getList() returns the underlying list.
+
+as.<type>List(x) returns a typed list for a generic list or vector, e.g. untyped<-c("a", "b", "c"); typed<-as.CharacterList(untyped)
 }
 

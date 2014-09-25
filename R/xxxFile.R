@@ -327,8 +327,7 @@ downloadFromSynapseOrExternal<-function(
   downloadUri, 
   endpointName, 
   externalURL, 
-  fileHandle,
-  extraRetryStatusCodes) {
+  fileHandle) {
   dir.create(downloadLocation, recursive=T, showWarnings=F)
   if (synapseStore) {
     synapseDownloadFromServiceToDestination(downloadUri, endpointName, destfile=filePath, extraRetryStatusCodes=404)
