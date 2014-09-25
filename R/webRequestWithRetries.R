@@ -40,6 +40,7 @@ webRequestWithRetries<-function(fcn,
         backoff <- backoff * BACKOFF_MULTIPLIER
       } else {
         # ... otherwise it's some other error
+        .logErrorToSynapse("", rawResponse[[1]])
         stop(rawResponse[[1]])
       }
     } else {
@@ -55,9 +56,15 @@ webRequestWithRetries<-function(fcn,
   }
   if (class(rawResponse)=="try-error") {
     # then we gave up on the exponential retry
+    .logErrorToSynapse("", rawResponse[[1]])
     stop(rawResponse[[1]])
   }
   
   # note, if we continue to get 502s or 503s after max exponential retries, then we just return the 502 or 503 result
   list(result=rawResponse, httpStatus=httpStatus)
+}
+
+# this is added for unit testing purposes, providing a function to override
+.logErrorToSynapse<-function(label, message) {
+  logErrorToSynapse(label, message)
 }

@@ -319,7 +319,6 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
   }
   if (verbose) cat("\n")
   if (asyncJobState=="FAILED") stop(sprintf("%s\nDetails:\n%s", jobStatus@errorMessage, jobStatus@errorDetails))
-  # TODO log jobStatus@errorDetails to the new client logging service
   stop(sprintf("Unexcepted status %s for %s", asyncJobState, checkCompleteUri))
 }
 
