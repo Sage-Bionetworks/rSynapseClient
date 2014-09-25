@@ -52,6 +52,10 @@ mySetUp <- function(httpErrorStatusCode, errorMessage)
   assignInNamespace("checkBlackList", myCheckBlackList, "synapseClient")
   attr(myCheckLatestVersion, "origDef") <- synapseClient:::checkLatestVersion
   assignInNamespace("checkLatestVersion", myCheckLatestVersion, "synapseClient")
+  
+  myLogErrorToSynapse<-function(label, message) {NULL}
+  attr(myLogErrorToSynapse, "origDef") <- synapseClient:::.logErrorToSynapse
+  assignInNamespace(".logErrorToSynapse", myLogErrorToSynapse, "synapseClient")
 }
 
 .tearDown <-
@@ -71,6 +75,9 @@ mySetUp <- function(httpErrorStatusCode, errorMessage)
   
   origDef<-attr(synapseClient:::checkLatestVersion, "origDef")
   if (!is.null(origDef)) assignInNamespace("checkLatestVersion", origDef, "synapseClient")
+  
+  origDef<-attr(synapseClient:::.logErrorToSynapse, "origDef")
+  if (!is.null(origDef)) assignInNamespace(".logErrorToSynapse", origDef, "synapseClient")
   
   unloadNamespace('synapseClient')
   library(synapseClient)
@@ -155,6 +162,10 @@ unitTestExponentialBackoffFor404ShouldComplete <- function()
   }
   attr(myGetCurlInfo, "origDef") <- synapseClient:::.getCurlInfo
   assignInNamespace(".getCurlInfo", myGetCurlInfo, "synapseClient")
+  
+  myLogErrorToSynapse<-function(label, message) {NULL}
+  attr(myLogErrorToSynapse, "origDef") <- synapseClient:::.logErrorToSynapse
+  assignInNamespace(".logErrorToSynapse", myLogErrorToSynapse, "synapseClient")
   
   curlHandle <- getCurlHandle() 
   synapseClient:::webRequestWithRetries(
