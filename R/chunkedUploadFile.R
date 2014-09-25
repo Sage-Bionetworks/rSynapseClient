@@ -67,13 +67,16 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
         chunkUploadUrl <- createChunkedFileUploadChunkURL(chunkRequest)
         if (debug) message(sprintf('url= %s\n', chunkUploadUrl))
         
+        curlHandle<-getCurlHandle()
         ## PUT the chunk to S3
         response <- getURLWithRetries(chunkUploadUrl,
           postfields = chunk, # the request body
           customrequest="PUT", # the request method
           httpheader=headers, # the headers
+          curl=curlHandle,
           opts=.getCache("curlOpts")
         )
+        .checkCurlResponse(curlHandle, response$response)
         
         totalUploadedBytes <- totalUploadedBytes + length(chunk)
         percentUploaded <- totalUploadedBytes*100/fileSizeBytes
