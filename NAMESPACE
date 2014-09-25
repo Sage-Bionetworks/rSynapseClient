@@ -77,8 +77,6 @@ export(
 	"TableColumn",
 	"UserProfile",
 	"ResourceAccess",
-	"AccessControlList",
-	"ResourceAccessList",
 	"TableSchema",
 	"TableRowSet",
 	"TableColumn",
@@ -86,10 +84,16 @@ export(
 	"Row",
 	"RowReference",
 	"RowReferenceSet",
+	"AccessControlList",
+	"ResourceAccessList",
 	"CharacterList",
-	"UserPreferenceBoolean",
 	"UserPreferenceList",
 	"RowList",
+	"as.ResourceAccessList",
+	"as.CharacterList",
+	"as.UserPreferenceList",
+	"as.RowList",
+	"UserPreferenceBoolean",
 	"Settings"
 )
 

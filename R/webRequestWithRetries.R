@@ -46,7 +46,6 @@ webRequestWithRetries<-function(fcn,
       httpStatus<-.getCurlInfo(curlHandle)$response.code
       if (any(httpStatus==retryStatusCodes)) {
         # then we retry
-        message(sprintf("Backing off for %d seconds due to %s status code", backoff, httpStatus))
         Sys.sleep(backoff)
         backoff <- backoff * BACKOFF_MULTIPLIER
       } else {

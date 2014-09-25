@@ -49,3 +49,8 @@ unitTestAppendTwoLists<-function() {
   checkEquals(length(t), length(r)+length(s))
 }
 
+unitTestAsTypedList<-function() {
+  checkEquals(CharacterList("a", "b", "c"), as.CharacterList(list("a", "b", "c")))
+  checkEquals(CharacterList("a", "b", "c"), as.CharacterList(c("a", "b", "c")))
+}
+

@@ -259,6 +259,21 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
         }
       )
       
+      # as.<type>List method
+      asTypedListFunctionName<-sprintf("as.%s", typeListClassName)
+      setGeneric(
+        name=asTypedListFunctionName,
+        def = function(x) {
+          do.call(typeListClassName, as.list(x))
+        }
+      )
+      setMethod(
+        f = asTypedListFunctionName,
+        signature = signature("ANY"),
+        definition = function(x) {
+          do.call(typeListClassName, as.list(x))
+        }
+      )
       
     }
     typeListClassName

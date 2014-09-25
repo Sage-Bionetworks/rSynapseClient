@@ -110,13 +110,26 @@ propertyTypeToString<-function(propertyType) {
 }
 
 # use a template here and just insert the names of the typed lists where appropriate (e.g. as aliases)
-createdTypedListRd<-function(referencedTypedLists, srcRootDir) {
+createTypedListRd<-function(referencedTypedLists, srcRootDir) {
   templateFile<-sprintf("%s/tools/docGen/typedListTemplate.Rd", srcRootDir)
   connection<-file(templateFile, open="r")
   template<-paste(readLines(connection), collapse="\n")
   close(connection)
   aliasLines<-paste(lapply(X=referencedTypedLists, FUN=function(x){paste("\\alias{",x,"}",sep="")}), collapse="\n")
   content<-gsub("##alias##", aliasLines, template, fixed=TRUE)
+  content
+}
+
+# use a template here and just insert the names of the typed lists where appropriate (e.g. as aliases)
+createAsTypedListRd<-function(referencedTypedLists, srcRootDir) {
+  templateFile<-sprintf("%s/tools/docGen/asTypedListTemplate.Rd", srcRootDir)
+  connection<-file(templateFile, open="r")
+  template<-paste(readLines(connection), collapse="\n")
+  close(connection)
+  aliasLines<-paste(lapply(X=referencedTypedLists, FUN=function(x){paste("\\alias{as.",x,"}",sep="")}), collapse="\n")
+  content<-gsub("##alias##", aliasLines, template, fixed=TRUE)
+  usageLines<-paste(lapply(X=referencedTypedLists, FUN=function(x){paste("as.",x,"(x)\n",sep="")}), collapse="\n")
+  content<-gsub("##usage##", usageLines, content, fixed=TRUE)
   content
 }
 
@@ -144,12 +157,14 @@ autoGenerateRdFiles<-function(srcRootDir) {
     className<-s4ClassesToAutoGenerate[i,"className"]
     if (s4ClassesToAutoGenerate[i,"genDoc"]) {
       rdResult<-createRdFromSchema(className, schemaName, schemaPath, classToSchemaMap)
-      referencedTypedLists<-append(referencedTypedLists, rdResult$referencedTypedLists)
+      referencedTypedLists<-unique(append(referencedTypedLists, rdResult$referencedTypedLists))
       writeContent(rdResult$content, className, srcRootDir)
     }
   }
-  rdContent<-createdTypedListRd(referencedTypedLists, srcRootDir)
+  rdContent<-createTypedListRd(referencedTypedLists, srcRootDir)
   writeContent(rdContent, "TypedList", srcRootDir)
+  rdContent<-createAsTypedListRd(referencedTypedLists, srcRootDir)
+  writeContent(rdContent, "asTypedList", srcRootDir)
 }
 
 writeContent<-function(content, className, srcRootDir) {
