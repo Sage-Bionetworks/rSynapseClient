@@ -339,7 +339,7 @@ integrationTestSynStoreAndRetrieveCSVFile <- function() {
   checkTrue(length(retrievedTable@updateEtag)>0)
   # now check that the data frames are the same
   retrievedDataFrame<-synapseClient:::loadCSVasDataFrame(retrievedTable@filePath)
-  dataFrame<-read.csv(csvFilePath, header=FALSE)
+  dataFrame<-read.csv(csvFilePath, header=TRUE)
   checkTrue(all(dataFrame==retrievedDataFrame))
   checkTrue(all(tableColumnNames==names(retrievedDataFrame)))
   # make sure the row labels are valid
