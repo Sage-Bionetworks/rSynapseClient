@@ -529,6 +529,7 @@ setClass(
     updateEtag="character",
     linesToSkip="integer",
     quoteCharacter="character",
+    isFirstLineHeader="logical",
     escapeCharacter="character",
     separator="character"
     )

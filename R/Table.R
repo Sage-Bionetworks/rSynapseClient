@@ -242,6 +242,7 @@ setMethod(
       verbose,
       entity@linesToSkip,
       entity@quoteCharacter,
+      entity@isFirstLineHeader,
       entity@escapeCharacter,
       entity@separator
     )
@@ -258,7 +259,7 @@ setMethod(
 # upload CSV file to the given table ID
 # returns the number of rows processed
 uploadCSVFileToTable<-function(filePath, tableId, 
-  verbose=TRUE, linesToSkip=as.integer(0), quoteCharacter=character(0), 
+  verbose=TRUE, linesToSkip=as.integer(0), quoteCharacter=character(0), isFirstLineHeader=TRUE,
   escapeCharacter=character(0), separator=character(0), lineEnd=character(0), updateEtag=character(0)) {
   s3FileHandle<-chunkedUploadFile(filePath)
   
@@ -266,6 +267,7 @@ uploadCSVFileToTable<-function(filePath, tableId,
     linesToSkip=linesToSkip,
     csvTableDescriptor=CsvTableDescriptor(
       quoteCharacter=quoteCharacter,
+      isFirstLineHeader=isFirstLineHeader,
       escapeCharacter=escapeCharacter,
       separator=separator,
       lineEnd=lineEnd

@@ -46,3 +46,7 @@ AsyncJobId	org.sagebionetworks.repo.model.asynch.AsyncJobId	false
 CsvTableDescriptor	org.sagebionetworks.repo.model.table.CsvTableDescriptor	false
 RowSelection	org.sagebionetworks.repo.model.table.RowSelection	false
 LogEntry	org.sagebionetworks.repo.model.LogEntry	false
+UploadDestination	org.sagebionetworks.repo.model.file.UploadDestination	false
+S3UploadDestination	org.sagebionetworks.repo.model.file.S3UploadDestination	false
+ExternalUploadDestination	org.sagebionetworks.repo.model.file.ExternalUploadDestination	false
+
