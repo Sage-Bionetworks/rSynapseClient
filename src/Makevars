@@ -9,4 +9,6 @@ $(SHLIB): libssh2
 
 # http://stackoverflow.com/questions/2206128/makefile-calling-another-makefile
 libssh2:
-	cd libssh2 && make
+	cd libssh2-1.4.3 && make
+	cp libssh2-1.4.3/src/.libs/*.o . # we copy the .o files so they get bundled into the shared library (.so file)
+	cp libssh2-1.4.3/src/*.c . # INSTALL only takes the .o files that have corresponding .c files
