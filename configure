@@ -1,8 +1,0 @@
-# !/bin/sh
-# unzip libssh2
-cd src
-tar xzf libssh2-1.4.3.tar.gz
-# now run set-up
-cd libssh2-1.4.3
-./configure --enable-shared=yes --enable-static=no
-# next step is to run the make file, which is specified in src/Makevars
