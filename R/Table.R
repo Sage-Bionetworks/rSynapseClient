@@ -343,14 +343,12 @@ downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, f
   list(filePath=downloadResult$filePath, etag=responseBody@etag)
 }
 
-loadCSVasDataFrame<-function(filePath, includeRowIdAndRowVersion=TRUE) {
+loadCSVasDataFrame<-function(filePath) {
   dataframe<-readDataFrameFromCSV(filePath)
-  if (includeRowIdAndRowVersion) {
+  rowIdIndex<-match("ROW_ID", names(dataframe))
+  rowVersionIndex<-match("ROW_VERSION", names(dataframe))
+  if (!is.na(rowIdIndex) && !is.na(rowVersionIndex)) {
     # the read-in dataframe has row numbers and versions to remove
-    rowIdIndex<-match("ROW_ID", names(dataframe))
-    if (is.na(rowIdIndex)) stop("Could not find ROW_ID column in data frame.")
-    rowVersionIndex<-match("ROW_VERSION", names(dataframe))
-    if (is.na(rowVersionIndex)) stop("Could not find ROW_VERSION column in data frame.")
     strippedframe<-dataframe[,-c(rowIdIndex, rowVersionIndex)]
     # use the two stripped columns as the row names
     row.names(strippedframe)<-paste(dataframe[[rowIdIndex]], dataframe[[rowVersionIndex]], sep="-")
@@ -377,30 +375,15 @@ findSynIdInSql<-function(sqlString) {
   result
 }
 
-# aggregation queries 
-isAggregationQuery<-function(sql) {
-  lowerSql<-tolower(sql)
-  selectIndex<-regexpr("select", lowerSql)[1]
-  if (selectIndex<0) stop(sprintf("Not a valid table query: %s", sql))
-  selectString<-substring(lowerSql, selectIndex+nchar("select"))
-  
-  fromIndex<-regexpr("from", selectString)[1]
-  if (fromIndex<0) stop(sprintf("Not a valid table query: %s", sql))
-  fromString<-substring(selectString, 1, fromIndex-1)
-  
-  regexpr("(count|max|min|avg|sum)(\\s)*\\(", tolower(fromString))[1]>=0
-}
-
 # execute a query against a table
 # if loadResult=T, return a TableDataFrame, else return
 # a TableFilePath (i.e. providing the path to the query result)
 synTableQuery<-function(sqlString, loadResult=TRUE, verbose=TRUE, filePath=NULL) {
-  isAggregationQuery<-isAggregationQuery(sqlString)
   tableId<-findSynIdInSql(sqlString)
-  downloadResult<-downloadTableToCSVFile(sql=sqlString, verbose=verbose, includeRowIdAndRowVersion=!isAggregationQuery, filePath=filePath)
+  downloadResult<-downloadTableToCSVFile(sql=sqlString, verbose=verbose, includeRowIdAndRowVersion=TRUE, filePath=filePath)
   if (loadResult) {
     # if it's an aggregation query there are no row labels
-    dataframe<-loadCSVasDataFrame(downloadResult$filePath, !isAggregationQuery)
+    dataframe<-loadCSVasDataFrame(downloadResult$filePath)
     dataframe<-convertDataFrameTypeToSchemaType(dataframe, tableId)
     Table(tableSchema=tableId, values=dataframe, updateEtag=downloadResult$etag)
   } else {
