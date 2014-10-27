@@ -17,18 +17,6 @@ unitTest_findSynIdInSql<-function() {
   checkEquals("syn123", synapseClient:::findSynIdInSql("select * from\tsyn123\twhere foo=bar"))
 }
 
-unitTest_isAggregationQuery<-function() {
-  checkTrue(!synapseClient:::isAggregationQuery("select * from syn123"))
-  checkTrue(synapseClient:::isAggregationQuery("select count(*) from syn123"))
-  checkTrue(synapseClient:::isAggregationQuery("select\t\tcount(*) from syn123"))
-  checkTrue(synapseClient:::isAggregationQuery("select\nsum(*) from syn123"))
-  checkTrue(synapseClient:::isAggregationQuery("select\nAVG (*) from syn123"))
-  checkTrue(synapseClient:::isAggregationQuery("select min(*) from syn123"))
-  checkTrue(synapseClient:::isAggregationQuery("select MAX(distinct foo) from syn123"))
-  checkTrue(!synapseClient:::isAggregationQuery("select * from syn123 where count in (1,2,3)"))
-  checkTrue(synapseClient:::isAggregationQuery("select foo, count(foo) from syn123"))
-}
-
 # checks values and column labels, but not row labels
 # we have to use this to compare data frames that have NAs
 dataFramesAreSame<-function(df1, df2) {

@@ -208,13 +208,11 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   
   # test a simple aggregation query
   queryResult<-synTableQuery(sprintf("select count(*) from %s", propertyValue(tschema, "id")), verbose=FALSE)
-  if (FALSE) { # reenable when PLFM-2987 is fixed
-    checkEquals(rowsToUpload, queryResult@values[1,1])
-  }
+  checkEquals(rowsToUpload, queryResult@values[1,1])
   
   # test a more complicated aggregation query
   queryResult<-synTableQuery(sprintf("select sweet, count(sweet) from %s where sweet='one'", propertyValue(tschema, "id")), verbose=FALSE)
-  expected<-data.frame(sweet="one", X=as.integer(rowsPerCategory))
+  expected<-data.frame(sweet="one", "COUNT.sweet."=as.integer(rowsPerCategory))
   checkTrue(all(expected==queryResult@values))
   checkTrue(all(names(expected)==names(queryResult@values)))
   
