@@ -3,7 +3,7 @@ Type: Package
 Title: Synapse R Client from Sage Bionetworks
 Version: 1.4-5
 ReleaseNotes: This list of issues was resolved: https://sagebionetworks.jira.com/secure/ReleaseNote.jspa?projectId=10238&version=14453
-Date: 2014-10-17
+Date: 2014-11-3
 Author@R: c(
 	person("Bruce", "Hoff", email="bruce.hoff@sagebase.org", role="aut"),
 	person("Chris", "Bare", email="chris.bare@sagebase.org", role="aut"),
@@ -14,8 +14,8 @@ Author: Matthew Furia <matt.furia@sagebase.org>
 Maintainer: Bruce Hoff <bruce.hoff@sagebase.org>
 Depends: methods, R (>= 2.15)
 Imports: RJSONIO (>= 1.0-1),RCurl (> 1.95-3),tools,digest,utils
-Suggests: RUnit, rGithubClient, Rssh2
-Additional_repositories: https://github.com/Sage-Bionetworks/rGithubClient, https://github.com/Sage-Bionetworks/Rssh2
+Suggests: RUnit, rGithubClient, Rssh
+Additional_repositories: https://github.com/Sage-Bionetworks/rGithubClient
 SystemRequirements: zip
 Description: Contains a set of functions for interacting with the Synapse REST services.
 URL: http://www.sagebase.org

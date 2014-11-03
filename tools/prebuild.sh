@@ -26,16 +26,3 @@ rm temp.jar
 Rscript tools/docGen/createRdFiles.R .
 
 
-# we retrieve the source code for libssh2
-cd src
-export libssh2zip=http://www.libssh2.org/download/libssh2-1.4.3.tar.gz
-wget -O libssh2.tar.gz $libssh2zip
-if [ "$?" -ne "0" ]; then
-	curl -o libssh2.tar.gz $libssh2zip
-fi
-if [ "$?" -ne "0" ]; then
-  echo "Failed to download $libssh2zip"
-  exit 1
-fi
-
-
