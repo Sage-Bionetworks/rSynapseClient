@@ -216,8 +216,16 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     elemRType <- defineRTypeFromPropertySchema(getArraySubSchema(propertySchema))
     defineTypedList(elemRType)
   } else {
+    if ("org.sagebionetworks.repo.model.file.UploadType"==schemaPropertyType) {
+      return("character")
+    }
     # check for an enum
-    propertySchema <- readEntityDef(schemaPropertyType, getSchemaPath())
+    # this is getting subtle: The 'propertySchema' can be a reference, in which case we have to 
+    # follow the reference and read it in from another file.  Alternatively the schema can
+    # be defined in line, in which case we already have the schema and need not read it in.
+    if (!is.null(propertySchema[["$ref"]])) {
+      propertySchema <- readEntityDef(schemaPropertyType, getSchemaPath())
+    }
     if (isEnum(propertySchema)) {
       # it's an 'enum' or similar. use the type of the property's schema
       return(TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]])

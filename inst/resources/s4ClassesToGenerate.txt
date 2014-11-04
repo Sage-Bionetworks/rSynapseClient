@@ -49,10 +49,11 @@ LogEntry	org.sagebionetworks.repo.model.LogEntry	false
 UploadDestination	org.sagebionetworks.repo.model.file.UploadDestination	false
 S3UploadDestination	org.sagebionetworks.repo.model.file.S3UploadDestination	false
 ExternalUploadDestination	org.sagebionetworks.repo.model.file.ExternalUploadDestination	false
+UploadDestinationSetting	org.sagebionetworks.repo.model.project.UploadDestinationSetting	false
 ExternalUploadDestinationSetting	org.sagebionetworks.repo.model.project.ExternalUploadDestinationSetting	false
 ProjectSetting	org.sagebionetworks.repo.model.project.ProjectSetting	false
 S3UploadDestinationSetting	org.sagebionetworks.repo.model.project.S3UploadDestinationSetting	false
-UploadDestinationListSetting		org.sagebionetworks.repo.model.project.UploadDestinationListSetting	false
-UploadDestinationSetting		org.sagebionetworks.repo.model.project.UploadDestinationSetting	false
+UploadDestinationListSetting	org.sagebionetworks.repo.model.project.UploadDestinationListSetting	false
+
 
 	
