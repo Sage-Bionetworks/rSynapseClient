@@ -132,15 +132,15 @@ unitTestFileUtilities<-function() {
 unitTestValidateFile<-function() {
   file<-new("File")
   
-  synapseClient:::validdateFile(file)
+  synapseClient:::validateFile(file)
   file@synapseStore<-FALSE
-  result<-try(synapseClient:::validdateFile(file), silent=T)
+  result<-try(synapseClient:::validateFile(file), silent=T)
   checkEquals("try-error", class(result))
   
   file@fileHandle<-list(concreteType="org.sagebionetworks.repo.model.file.ExternalFileHandle")
   file@synapseStore<-TRUE
-  result<-try(synapseClient:::validdateFile(file), silent=T)
-  checkEquals("try-error", class(result))
+  result<-try(synapseClient:::validateFile(file), silent=T)
+  checkTrue("try-error"!=class(result))
 }
 
 unitTestAddObject <-

@@ -289,6 +289,7 @@ integrationTestMetadataRoundTrip_S3File <- function() {
 
 metadataRoundTrip <- function(storedFile, expectedFileLocation=character(0)) {  
   metadataOnly<-synGet(propertyValue(storedFile, "id"),downloadFile=F)
+  metadataOnly@synapseStore<-FALSE
   
   # Change some metadata
   metadataOnly<-synapseClient:::synAnnotSetMethod(metadataOnly, "annot", "value")
@@ -1042,7 +1043,10 @@ integrationTestExternalLink<-function() {
   
   checkEquals(id, propertyValue(downloadedFile, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))
-  checkEquals(synapseStore, downloadedFile@synapseStore)
+  # Note:  We can't tell whether an 'external file' is 'uploadable' by the client, 
+  # so we say that it is (synapseStore=TRUE) and leave it to the user to say whether to
+  # try uploading
+  checkEquals(TRUE, downloadedFile@synapseStore)
   # we get external URL when retrieving only metadata
   checkEquals(filePath, getFileLocation(metadataOnly))
   checkEquals(filePath, downloadedFile@fileHandle$externalURL)

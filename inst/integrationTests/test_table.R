@@ -156,7 +156,11 @@ integrationTestSynStoreMixedDataFrame<-function() {
   checkEquals(stored@rowCount, rowsToUpload)
 }
 
+
 integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
+  return # reenable when PLFM-3088 is fixed
+  
+  
   project<-synapseClient:::.getCache("testProject")
   
   tc1 <- TableColumn(name="sweet", columnType="STRING")
@@ -208,9 +212,7 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   
   # test a simple aggregation query
   queryResult<-synTableQuery(sprintf("select count(*) from %s", propertyValue(tschema, "id")), verbose=FALSE)
-  if (FALSE) { # reenable when PLFM-2987 is fixed
-    checkEquals(rowsToUpload, queryResult@values[1,1])
-  }
+  checkEquals(rowsToUpload, queryResult@values[1,1])
   
   # test a more complicated aggregation query
   queryResult<-synTableQuery(sprintf("select sweet, count(sweet) from %s where sweet='one'", propertyValue(tschema, "id")), verbose=FALSE)

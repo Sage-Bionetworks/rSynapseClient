@@ -59,7 +59,7 @@ synapseDownloadFileToDestination  <-
 {
   parsedUrl<-.ParsedUrl(url)
   protocol<-tolower(parsedUrl@protocol)
-  if (protocol=="http" || protocol=="https") {
+  if (protocol=="http" || protocol=="https" || protocol=="file") {
     synapseDownloadHttpFileToDestination(url, destfile, checksum, curlHandle, opts)
   } else if (protocol=="sftp") {
     synapseDownloadSftpFileToDestination(url, destfile)
