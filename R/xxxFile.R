@@ -212,7 +212,7 @@ uploadToSynapseStorageAndAddToCacheMap<-function(filePath, contentType=NULL) {
 
 uploadAndAddToCacheMap<-function(filePath, containerEntityId, uploadDestination, contentType=NULL) {
   lastModified<-lastModifiedTimestamp(filePath)
-  fileHandle<-uploadFileToEntity(filepath=filePath, containerEntityId=containerEntityId, uploadDestination=uploadDestination, curlHandle=getCurlHandle(), contentType=contentType)
+  fileHandle<-uploadFileToEntity(filePath=filePath, containerEntityId=containerEntityId, uploadDestination=uploadDestination, curlHandle=getCurlHandle(), contentType=contentType)
   if (lastModified!=lastModifiedTimestamp(filePath)) stop(sprintf("During upload, %s was modified by another process.", filePath))
   addToCacheMap(fileHandle$id, filePath, lastModified)
   fileHandle
@@ -412,11 +412,11 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
 
 synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
   if (isExternalFileHandle(fileHandle)) {
-    isExternalURL<-FALSE
+    isExternalURL<-TRUE
     externalURL<-fileHandle$externalURL
     if (is.null(externalURL)) stop(sprintf("URL missing from External File Handle for %s", fileHandle$fileName))
   } else {
-    isExternalURL<-TRUE
+    isExternalURL<-FALSE
     externalURL<-NULL
   }
   
