@@ -7,7 +7,7 @@ Store an object in Synapse
 Store an object in Synapse
 }
 \usage{
-synStore(entity, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)
+synStore(entity, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL, uploadDestination=NULL)
 synStore(entity, activity=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)
 synStore(table, retrieveData=F, verbose=T, filePath=NULL)
 }
@@ -44,6 +44,11 @@ For File entities only:  If TRUE then Download access by others is prevented and
 }
 \item{contentType}{
 The (optional) contentType, stored when the File is uploaded. If omitted, it is the MIME type inferred from the file's suffix.
+}
+\item{uploadDestination}{
+Optional: This is the URL specifying where to upload the file, .e.g "sftp://hostname.com/path/to/directory".  
+If null then the file will be uploaded a default upload destination.  For private data stores, credentials should be
+placed in the user's '.synapseConfig' file.
 }
 \item{retrieveData}{
 For tables:  If TRUE, returns a copy of the uploaded table.  Otherwise returns a RowReferenceSet, which supplies

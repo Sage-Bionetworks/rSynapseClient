@@ -28,13 +28,13 @@ unitTestSimpleConstructor<-function() {
   
   # now check that S4 is not confused by annotation parameters
   file<-File("/path/to/file", parentId="syn1234", annotName=FALSE)
-  checkTrue(file@synapseStore) # this is the default and S4 should mistake 'annotName' for 'synapseStore'
+  checkTrue(file@synapseStore) # this is the default and S4 should not mistake 'annotName' for 'synapseStore'
   checkEquals("FALSE", annotValue(file, "annotName")) # the extra param should become an annotation on the file
   checkEquals("/path/to/file", getFileLocation(file))
   
   # now check that S4 is not confused by annotation parameters WHEN FILE PATH IS OMITTED
   file<-File(parentId="syn1234", annotName=FALSE)
-  checkTrue(file@synapseStore) # this is the default and S4 should mistake 'annotName' for 'synapseStore'
+  checkTrue(file@synapseStore) # this is the default and S4 should not mistake 'annotName' for 'synapseStore'
   checkEquals("FALSE", annotValue(file, "annotName")) # the extra param should become an annotation on the file
   checkEquals(character(0), getFileLocation(file))
 }

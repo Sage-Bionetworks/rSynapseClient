@@ -2,8 +2,8 @@
 # Everything that needs to be done before building the package goes here:
 
 # download jar file from artifactory
-# note, this gets version 62.0.  To change versions requires changing the following line in two places
-export srcjar=http://sagebionetworks.artifactoryonline.com/sagebionetworks/libs-releases-local/org/sagebionetworks/lib-auto-generated/62.0/lib-auto-generated-62.0.jar
+# note, this gets version 65.0.  To change versions requires changing the following line in two places
+export srcjar=http://sagebionetworks.artifactoryonline.com/sagebionetworks/libs-releases-local/org/sagebionetworks/lib-auto-generated/65.0/lib-auto-generated-65.0.jar
 wget -O temp.jar $srcjar
 if [ "$?" -ne "0" ]; then
 	curl -o temp.jar $srcjar

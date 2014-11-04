@@ -4,47 +4,32 @@
 # Author: brucehoff
 ###############################################################################
 
-getCredentialsForHost<-function(hostNameWithProtocol) {
-  username<-NULL
-  password<-NULL
-  config <- try(ConfigParser())
-  if (class(config) != "try-error") {
-    usernameKey<-sprintf("%s:username", hostNameWithProtocol)
-    if (all(Config.hasOption(config, "authentication", usernameKey))) {
-      username <- Config.getOption(config, "authentication", usernameKey)
-    }
-    passwordKey<-sprintf("%s:password", hostNameWithProtocol)
-    if (all(Config.hasOption(config, "authentication", passwordKey))) {
-      password <- Config.getOption(config, "authentication", passwordKey)
-    }
-  }
-  # TODO if not in config file, prompt user
-  return(list(username=username, password=password))
-}
-
-uploadFileToEntity<-function(filepath, containerEntityId, uploadDestination, curlHandle=getCurlHandle(), contentType=NULL) {
+uploadFileToEntity<-function(filePath, containerEntityId, uploadDestination, curlHandle=getCurlHandle(), contentType=NULL) {
   # get the uploadDestinations for the containerEntity
-  uploadDestinationResponse<-synRestGET(sprintf("/uploadDestinations/%s", containerEntityId))
-  uploadDestintations<-createTypedListFromList(uploadDestinationResponse, UploadDestinationList) # TODO auto-generate UploadDestinationList
+  uploadDestinationResponse<-synRestGET(sprintf("/uploadDestinations/%s", containerEntityId), endpoint=synapseFileServiceEndpoint())
+  uploadDestintations<-createTypedListFromList(uploadDestinationResponse, "UploadDestinationList")
   if (length(uploadDestintations)==0) stop(sprintf("Entity %s has no upload destinations to choose from.", containerEntityId))
   if (missing(uploadDestination)) {
     uploadDestination<-uploadDestinations[[1]]
+  } else {
+    # TODO validate the chosen upload destination against the list of choices
   }
   if (!is.null(uploadDestination@banner)) message(uploadDestination@banner)
-  if (is(uploadDestination, S3UploadDestination)) {
-    chunkedFileUpload(filepath, curlHandle, contentType)
-  } else if (is(uploadDestination, ExternalUploadDestination)) {
+  if (is(uploadDestination, "S3UploadDestination")) {
+    chunkedUploadFile(filePath, curlHandle, contentType)
+  } else if (is(uploadDestination, "ExternalUploadDestination")) {
     if (uploadDestination@uploadType=="S3") {
       stop("Upload to specified S3 destination is not yet supported.")
     } else if (uploadDestination@uploadType=="SFTP") {
       if (!(RsshPackageIsAvailable() && require("Rssh"))) 
         stop("Upload target is SFTP but Rssh package not installed/available.  Please install Rssh and try again.")
-      parsed<-.ParsedUrl(uploadDestination@url)
-      credentials<-getCredentialsForHost()
-      fileName<-basename(filepath)
-      createMissingDirectories(parsedUrl@host, credentials$username, credentials$password, parserUrl@path)
-      remotePathAndFile<-file.path(parserUrl@path, fileName)
-      sftpUpload(parsedUrl@host, credentials$username, credentials$password, remotePathAndFile, filepath)
+      parsedUrl<-.ParsedUrl(uploadDestination@url)
+      credentials<-getCredentialsForHost(parsedUrl@host)
+      fileName<-basename(filePath)
+      createMissingDirectories(parsedUrl@host, credentials$username, credentials$password, parsedUrl@path)
+      remotePathAndFile<-file.path(parsedUrl@path, fileName)
+      success<-sftpUpload(parsedUrl@host, credentials$username, credentials$password, remotePathAndFile, filePath)
+      if (!success) stop(sprintf("Failed to upload %s to %s", filePath, parsedUrl@host))
     } else if (uploadDestination@uploadType=="HTTPS") {
       stop("Upload to specified HTTPS destination is not yet supported.")
     }
@@ -57,18 +42,52 @@ RsshPackageIsAvailable<-function() {
   any(.packages(all.available=T)=="Rssh")
 }
 
-createMissingDirectories<-function(host, username, password) {
-  directories<-strsplit(path,"/")[[1]]
-  if (length(directories)==0) {
-    return
-  }
-  cumulativeDirectory<-""
-  for (dir in directories) {
-    cumulativeDirectory<-paste(cumulativeDirectory, dir, sep="/") # TODO Not quite right
-    if (length(cumulativeDirectory)>0) {
-      if (!sftpDirectoryExists(host, username, password, cumulativeDirectory)) {
-        sftpMakeDirectory(host, username, password, cumulativeDirectory)
-      } 
+getCredentialsForHost<-function(hostNameWithProtocol) {
+  username<-NULL
+  password<-NULL
+  config <- try(ConfigParser())
+  if (class(config) != "try-error") {
+    if (all(Config.hasOption(config, hostNameWithProtocol, "username"))) {
+      username <- Config.getOption(config, hostNameWithProtocol, "username")
+    }
+    if (all(Config.hasOption(config, hostNameWithProtocol, "password"))) {
+      password <- Config.getOption(config, hostNameWithProtocol, "password")
     }
   }
+  if (is.null(username)) {
+    # TODO prompt user
+    stop("You must add the user name for %s to your .synapseConfig file", hostNameWithProtocol)
+    
+  }
+  if (is.null(password)) {
+    # TODO prompt user
+    stop("You must add the password for %s to your .synapseConfig file", hostNameWithProtocol)
+    
+  }
+  return(list(username=username, password=password))
+}
+
+createMissingDirectories<-function(host, username, password, path) {
+  for (dir in getDirectorySequence(path)) {
+    if (!sftpDirectoryExists(host, username, password, dir)) {
+        success<-sftpMakeDirectory(host, username, password, dir)
+        if (!success) stop(sprintf("Failed to create %s on %s", dir, host))
+    } 
+  }
+}
+
+# e.g. for "foo/bar", returns c("foo", "foo/bar")
+getDirectorySequence<-function(path) {
+  if (length(path)==0 || nchar(path)==0) return("")
+  if (path=="/") return("/")
+  directories<-strsplit(path,"/")[[1]]
+  result<-c()
+  for (dir in directories) {
+      if (length(result)==0) {
+        result<-dir
+      } else {
+        result<-append(result, paste(result[length(result)], dir, sep="/"))
+      }
+  }
+  result[which(nchar(result)>0)]
 }

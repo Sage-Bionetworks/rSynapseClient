@@ -63,7 +63,7 @@ synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollisio
   if (!is.null(submission@fileHandle$id)) { # otherwise it's not a File
     downloadUri<-sprintf("/evaluation/submission/%s/file/%s", submission$id, submission@fileHandle$id)
 
-    result<-synGetFileAttachment(
+    filePath<-synGetFileAttachment(
       downloadUri,
       "REPO",
       submission@fileHandle,
@@ -74,7 +74,7 @@ synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollisio
     )
   
     # now construct Submission from 'result', which has filePath
-    if (!is.null(result$filePath)) submission@filePath<-result$filePath
+    if (!is.null(filePath)) submission@filePath<-filePath
     if (load) {
       if (is.null(submission@objects)) submission@objects<-new.env(parent=emptyenv())
         # Note: the following only works if 'path' is a file system path, not a URL

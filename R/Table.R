@@ -341,8 +341,8 @@ downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, f
   }
   fileHandle<-S3FileHandle(id=responseBody$resultsFileHandleId, fileName=fileName)
   fileHandleAsList<-createListFromS4Object(fileHandle)
-  downloadResult<-synGetFileAttachment(downloadUri, "FILE", fileHandleAsList, downloadFile=T, downloadLocation=downloadLocation, ifcollision="overwrite.local", load=F)
-  list(filePath=downloadResult$filePath, etag=responseBody@etag)
+  filePath<-synGetFileAttachment(downloadUri, "FILE", fileHandleAsList, downloadFile=T, downloadLocation=downloadLocation, ifcollision="overwrite.local", load=F)
+  list(filePath=filePath, etag=responseBody@etag)
 }
 
 loadCSVasDataFrame<-function(filePath, includeRowIdAndRowVersion=TRUE) {
