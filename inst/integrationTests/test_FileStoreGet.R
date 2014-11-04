@@ -266,7 +266,7 @@ integrationTestMetadataRoundTrip_URL <- function() {
   
   # now store it
   storedFile<-synStore(file)
-  metadataRoundTrip(storedFile, expectedFileLocation=filePath)
+  metadataRoundTrip(storedFile, synapseStore, expectedFileLocation=filePath)
 }
 
 integrationTestMetadataRoundTrip_S3File <- function() {
@@ -284,12 +284,12 @@ integrationTestMetadataRoundTrip_S3File <- function() {
   # now store it
   storedFile<-synStore(file)
   scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
-  metadataRoundTrip(storedFile)
+  metadataRoundTrip(storedFile, synapseStore)
 }
 
-metadataRoundTrip <- function(storedFile, expectedFileLocation=character(0)) {  
+metadataRoundTrip <- function(storedFile, synapseStore, expectedFileLocation=character(0)) {  
   metadataOnly<-synGet(propertyValue(storedFile, "id"),downloadFile=F)
-  metadataOnly@synapseStore<-FALSE
+  metadataOnly@synapseStore<-synapseStore
   
   # Change some metadata
   metadataOnly<-synapseClient:::synAnnotSetMethod(metadataOnly, "annot", "value")
