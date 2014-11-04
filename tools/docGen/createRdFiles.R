@@ -92,7 +92,7 @@ getPropertyType<-function(propertySchema, schemaPath, classToSchemaMap) {
     # follow the reference and read it in from another file.  Alternatively the schema can
     # be defined in line, in which case we already have the schema and need not read it in.
     if (!is.null(propertySchema[["$ref"]])) {
-      propertySchema <- readEntityDef(schemaPropertyType, schemaPath)
+      propertySchema <- readSchema(schemaPropertyType, schemaPath)
     }
     if (isEnum(propertySchema)) {
       # it's an 'enum' or similar
