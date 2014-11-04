@@ -158,7 +158,7 @@ integrationTestSynStoreMixedDataFrame<-function() {
 
 
 integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
-  return # reenable when PLFM-3088 is fixed
+  return(0) # reenable when PLFM-3088 is fixed
   
   
   project<-synapseClient:::.getCache("testProject")
