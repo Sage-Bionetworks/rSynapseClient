@@ -216,6 +216,7 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     elemRType <- defineRTypeFromPropertySchema(getArraySubSchema(propertySchema))
     defineTypedList(elemRType)
   } else {
+    # remove the following when PLFM-3091 is done
     if ("org.sagebionetworks.repo.model.file.UploadType"==schemaPropertyType) {
       return("character")
     }

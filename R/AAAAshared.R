@@ -64,9 +64,9 @@ getAllInterfaces <- function(schema, schemaPath) {
   implements <- NULL
   while(!is.null(schema$implements)){
     implements <- c(implements, schema$implements[[1]][[1]])
-    try({
+    tryCatch({
         schema <- readSchema(schema$implements[[1]][[1]], schemaPath)
-      }, silent = TRUE) # TODO should have 'catch' which calls break
+      }, error = function(e) {schema<-list(implements=NULL)}, silent = TRUE)
   }
   implements
 }

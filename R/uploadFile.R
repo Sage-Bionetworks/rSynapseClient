@@ -61,14 +61,10 @@ getCredentialsForHost<-function(parsedUrl) {
     }
   }
   if (is.null(username)) {
-    # TODO prompt user
-    stop(sprintf("You must add the user name for %s to your .synapseConfig file", hostNameWithProtocol))
-    
+    username <- .getUsername(sprintf("Username for %s: ", parsedUrl@host))
   }
   if (is.null(password)) {
-    # TODO prompt user
-    stop(sprintf("You must add the password for %s to your .synapseConfig file", hostNameWithProtocol))
-    
+    password <- .getPassword(sprintf("Password for %s:  ", parsedUrl@host))
   }
   return(list(username=username, password=password))
 }

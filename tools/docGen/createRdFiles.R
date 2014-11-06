@@ -85,6 +85,7 @@ getPropertyType<-function(propertySchema, schemaPath, classToSchemaMap) {
     elemRType <- getPropertyType(getArraySubSchema(propertySchema), schemaPath, classToSchemaMap)
     list(type=listClassName(elemRType$type), enum=elemRType$enum, isTypedList=TRUE)
   } else {
+    # remove the following when PLFM-3091 is done
     if ("org.sagebionetworks.repo.model.file.UploadType"==schemaPropertyType) {
       return("character")
     }    # check for an enum

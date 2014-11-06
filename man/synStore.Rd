@@ -48,7 +48,7 @@ The (optional) contentType, stored when the File is uploaded. If omitted, it is 
 \item{uploadDestination}{
 Optional: This is the URL specifying where to upload the file, .e.g "sftp://hostname.com/path/to/directory".  
 If null then the file will be uploaded a default upload destination.  For private data stores, credentials should be
-placed in the user's '.synapseConfig' file.
+placed in the user's '.synapseConfig' file.  (See 'details', below.)
 }
 \item{retrieveData}{
 For tables:  If TRUE, returns a copy of the uploaded table.  Otherwise returns a RowReferenceSet, which supplies
@@ -64,7 +64,19 @@ If omitted, will be downloaded to the default file cache location.
 }
 \details{
 Stores an object crafted in memory, either creating it in Synapse anew, or updating an existing object.
+For private data stores, credentials to access the store should be placed in the user's '.synapseConfig' file: 
+The .synapseConfig file goes in your home directory and is in the ".ini" format.  Create a new section 
+in the file for the server to be accessed.  The section title is the protocol and host.  Below, put lines for
+ username and password, e.g.:
+ 
+[sftp://remote.host.com]
+
+username=myUserName
+
+password=secret
+
 }
+
 \value{
 Returns the persisted copy of the object. 
 For TableDataFrame and TableFilePath, if retrieveData=TRUE returns a Table of the same type.  
