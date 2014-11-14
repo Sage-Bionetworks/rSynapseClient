@@ -95,6 +95,7 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   
   # we need a TypedList of UploadDestination, for which there is no schema
   defineTypedList("UploadDestination")
+  setClassUnion(nullableType("UploadDestination"), c("NullS4Object", "UploadDestination"))
   
   # This is done during class generation but seems to be lost at package load time.  So we do it again.
   populateSchemaToClassMap()

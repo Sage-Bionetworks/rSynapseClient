@@ -49,11 +49,15 @@ integrationTestSFTPRoundTrip <- function() {
   checkEquals("org.sagebionetworks.repo.model.file.ExternalFileHandle", file@fileHandle$concreteType)
   externalURL<-file@fileHandle$externalURL
   # TODO check that the URL in the external file handle starts with euds@url
+  # TODO check that the URL is URL encoded (i.e. that the " " is now "%20")
   
   fileEntityId<-propertyValue(file, "id")
   
   retreived<-synGet(fileEntityIddownloadLocation=tempdir())
   checkEquals(tools::md5sum(retrieved@filePath), originalMD5)
+  
+  # TODO change the retrieved file and 'synstore' it 
+  # TODO check that there's a new version and a new URL
   
   #udsResponse<-synRestGET(sprintf("/entity/%s/uploadDestinations", projectId), endpoint=synapseFileServiceEndpoint())
   #uploadDestinations<-synapseClient:::createTypedListFromList(udsResponse$list, "UploadDestinationList")
@@ -72,4 +76,11 @@ integrationTestSFTPRoundTrip <- function() {
   # but it does check that deletion works on the the project settings
   synRestDELETE(sprintf("/projectSettings/%s", uds@id))
   
+}
+
+# TODO
+integrationTestChangeContainer<-function() {
+  # create a regular Synapse file
+  # now move it into a folder having a non-S3 upload destination
+  # call synStore
 }

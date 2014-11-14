@@ -4,16 +4,7 @@
 # Author: brucehoff
 ###############################################################################
 
-uploadFileToEntity<-function(filePath, containerEntityId, uploadDestination, curlHandle=getCurlHandle(), contentType=NULL) {
-  # get the uploadDestinations for the containerEntity
-  uploadDestinationResponse<-synRestGET(sprintf("/entity/%s/uploadDestinations", containerEntityId), endpoint=synapseFileServiceEndpoint())
-  uploadDestinations<-createTypedListFromList(uploadDestinationResponse$list, "UploadDestinationList")
-  if (length(uploadDestinations)==0) stop(sprintf("Entity %s has no upload destinations to choose from.", containerEntityId))
-  if (missing(uploadDestination) || is.null(uploadDestination)) {
-    uploadDestination<-uploadDestinations[[1]]
-  } else {
-    # TODO validate the chosen upload destination against the list of choices
-  }
+uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHandle(), contentType=NULL) {
   if (!is.null(uploadDestination@banner)) message(uploadDestination@banner)
   if (is(uploadDestination, "S3UploadDestination")) {
     chunkedUploadFile(filepath=filePath, curlHandle=curlHandle, contentType=contentType)
@@ -23,7 +14,8 @@ uploadFileToEntity<-function(filePath, containerEntityId, uploadDestination, cur
     } else if (uploadDestination@uploadType=="SFTP") {
       if (!(RsshPackageIsAvailable() && require("Rssh"))) 
         stop("Upload target is SFTP but Rssh package not installed/available.  Please install Rssh and try again.")
-      parsedUrl<-.ParsedUrl(uploadDestination@url)
+      urlDecodedDestination<-URLdecode(uploadDestination@url)
+      parsedUrl<-.ParsedUrl(urlDecodedDestination)
       credentials<-getCredentialsForHost(parsedUrl)
       fileName<-basename(filePath)
       destinationPath<-parsedUrl@path
@@ -34,7 +26,7 @@ uploadFileToEntity<-function(filePath, containerEntityId, uploadDestination, cur
       success<-sftpUpload(parsedUrl@host, credentials$username, credentials$password, remotePathAndFile, filePath)
       if (!success) stop(sprintf("Failed to upload %s to %s", filePath, parsedUrl@host))
       # TODO make sure the following URL is URL-encoded
-      synapseLinkExternalFile(paste(uploadDestination@url, fileName, sep="/"), fileName, contentType)
+      synapseLinkExternalFile(URLencode(paste(urlDecodedDestination, fileName, sep="/")), fileName, contentType)
     } else if (uploadDestination@uploadType=="HTTPS") {
       stop("Upload to specified HTTPS destination is not yet supported.")
     }

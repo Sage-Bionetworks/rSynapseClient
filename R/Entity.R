@@ -51,7 +51,7 @@ setMethod("identical",
 setMethod(
   f = "synStore",
   signature = "Entity",
-  definition = function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL, uploadDestination=NULL) {
+  definition = function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL) {
     if (is(entity, "Locationable")) {
       stop("For 'Locationable' entities you must use createEntity, storeEntity, or updateEntity.")
     }
@@ -76,7 +76,7 @@ setMethod(
     }
     
     if (class(entity)=="File") {
-      entity<-synStoreFile(file=entity, createOrUpdate=createOrUpdate, forceVersion=forceVersion, contentType=contentType, uploadDestination=uploadDestination)
+      entity<-synStoreFile(file=entity, createOrUpdate=createOrUpdate, forceVersion=forceVersion, contentType=contentType)
     }
     # Now save the metadata
     generatingActivity<-NULL
