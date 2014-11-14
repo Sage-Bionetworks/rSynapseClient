@@ -38,8 +38,8 @@ setMethod(
 # returns the Synapse types which can hold the given R type, with the first one being the preferred
 getTableColumnTypeForDataFrameColumnType<-function(dfColumnType) {
   map<-list(integer=c("INTEGER","DOUBLE","FILEHANDLEID"), 
-      factor=c("STRING","FILEHANDLEID","ENTITYID"), 
-      character=c("STRING","FILEHANDLEID","ENTITYID"), 
+      factor=c("STRING","FILEHANDLEID","ENTITYID","LINK"), 
+      character=c("STRING","FILEHANDLEID","ENTITYID","LINK"), 
       numeric=c("DOUBLE","INTEGER","FILEHANDLEID"), 
       logical=c("BOOLEAN","STRING"),
       Date=c("DATE","STRING"),

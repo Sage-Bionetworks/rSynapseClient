@@ -39,7 +39,7 @@ setClass(
     synapseEntityKind = "File",
     properties = initializeProperties("org.sagebionetworks.repo.model.FileEntity", TRUE),
     synapseStore = TRUE,
-    uploadDestination=NULL,
+    uploadDestination=new("NullS4Object"),
     objects = NULL
   )
 )
@@ -80,7 +80,7 @@ setMethod(
 )
 
 ## File contructor: path="/path/to/file", synapseStore=T, name="foo", ...
-File<-function(path, synapseStore=T, uploadDestination=NULL, ...) {
+File<-function(path, synapseStore=T, uploadDestination=new("NullS4Object"), ...) {
     file <- new("File")
     if (is.null(list(...)$parentId)) {
         stop("parentId is required.")
@@ -302,7 +302,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
 # (1) the uploadDestinations for the container entity;
 # (2) the uploadDestination selected for the file (if any)
 selectUploadDestination<-function(userSelection, containerDestinations) {
-  if (is.null(userSelection)) {
+  if (is(userSelection, "NullS4Object")) {
     return(containerDestinations[[1]])
   } else {
     for (dest in containerDestinations@content) {
@@ -318,6 +318,7 @@ selectUploadDestination<-function(userSelection, containerDestinations) {
       }
     }
   }
+  NULL
 }
 
 # match protocol, host, port, and all but the last part of the path
