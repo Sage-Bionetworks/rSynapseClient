@@ -23,8 +23,10 @@ uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHand
       if (substring(destinationPath,1,1)=="/") destinationPath<-substring(destinationPath, 2)
       createMissingDirectories(parsedUrl@host, credentials$username, credentials$password, destinationPath)
       remotePathAndFile<-file.path(destinationPath, fileName)
+      cat(sprintf("Uploading %s to %s ...\n", filePath, remotePathAndFile))
       success<-sftpUpload(parsedUrl@host, credentials$username, credentials$password, remotePathAndFile, filePath)
       if (!success) stop(sprintf("Failed to upload %s to %s", filePath, parsedUrl@host))
+      cat("... Upload complete.\n")
       # TODO make sure the following URL is URL-encoded
       synapseLinkExternalFile(URLencode(paste(urlDecodedDestination, fileName, sep="/")), fileName, contentType)
     } else if (uploadDestination@uploadType=="HTTPS") {
@@ -37,6 +39,17 @@ uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHand
 
 RsshPackageIsAvailable<-function() {
   any(.packages(all.available=T)=="Rssh")
+}
+
+readCredentialsFromSessionCache<-function(hostNameWithProtocol) {
+  json <- .readSessionCache()
+  json[[hostNameWithProtocol]]
+}
+
+writeCredentialsToSessionCache<-function(hostNameWithProtocol, username, password) {
+  json <- .readSessionCache()
+  json[[hostNameWithProtocol]]<-list(username=username, password=password)
+  .writeSessionCache(json)
 }
 
 getCredentialsForHost<-function(parsedUrl) {
@@ -52,12 +65,19 @@ getCredentialsForHost<-function(parsedUrl) {
       password <- Config.getOption(config, hostNameWithProtocol, "password")
     }
   }
-  if (is.null(username)) {
-    username <- .getUsername(sprintf("Username for %s: ", parsedUrl@host))
+  if (is.null(username) || is.null(password)) {
+    creds<-readCredentialsFromSessionCache(hostNameWithProtocol)
+    if (!is.null(creds)) {
+      username<-creds$username
+      password<-creds$password
+    }
+    if (is.null(username) || is.null(password)) {
+      username <- .getUsername(sprintf("Username for %s: ", parsedUrl@host))
+      password <- .getPassword(sprintf("Password for %s:  ", parsedUrl@host))
+      writeCredentialsToSessionCache(hostNameWithProtocol, username, password)
+    }
   }
-  if (is.null(password)) {
-    password <- .getPassword(sprintf("Password for %s:  ", parsedUrl@host))
-  }
+  
   return(list(username=username, password=password))
 }
 

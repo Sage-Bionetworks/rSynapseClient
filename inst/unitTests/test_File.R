@@ -194,3 +194,10 @@ unitTestIsLoadable <- function() {
   checkTrue(!synapseClient:::isLoadable(filePath))
   checkEquals(origWarn, options()$warn) # make sure options("warn") is restored
 }
+
+unitTestSelectUploadDestination<-function() {
+  userSelection<-S3UploadDestination()
+  uploadDestinations<-synapseClient:::UploadDestinationList(S3UploadDestination())
+  synapseClient:::selectUploadDestination(userSelection, uploadDestinations)
+  checkEquals(S3UploadDestination(), synapseClient:::selectUploadDestination(userSelection, uploadDestinations))
+}

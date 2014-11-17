@@ -7,7 +7,7 @@ Synapse File Constructor
 Constructor for File
 }
 \usage{
-File(path, parentId, synapseStore=TRUE, ...)
+File(path, parentId, synapseStore=TRUE, uploadHost=NULL, ...)
 }
 \arguments{
     \item{path}{
@@ -19,9 +19,27 @@ File(path, parentId, synapseStore=TRUE, ...)
     \item{synapseStore}{
     If 'synapseStore' is TRUE then the file specified by \code{path} will be uploaded to S3 when the constructed File object is passed to \code{\link{synStore}}(), else only the file location is saved, along with other metadata
     }
+	\item{uploadHost}{
+	Optional: This is the URL specifying where to upload the file, giving the protocol and host, .e.g "sftp://hostname.com".  
+	If null then the file will be uploaded a default upload destination.  For private data stores, credentials should be
+	placed in the user's '.synapseConfig' file.  (See 'details', below.)
+	}
     \item{...}{
     Additional named parameters are interpreted as properties or annotations on the File
     }
+}
+\details{
+If an "uploadHost" is specified, or if the parent Project has an associated data store, 
+credentials to access the store should be placed in the user's '.synapseConfig' file: 
+The .synapseConfig file goes in your home directory and is in the ".ini" format.  Create a new section 
+in the file for the server to be accessed.  The section title is the protocol and host.  Below, put lines for
+ username and password, e.g.:
+ 
+[sftp://remote.host.com]
+
+username=myUserName
+
+password=secret
 }
 
 \value{

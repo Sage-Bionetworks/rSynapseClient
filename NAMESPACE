@@ -94,7 +94,9 @@ export(
 	"as.UserPreferenceList",
 	"as.RowList",
 	"UserPreferenceBoolean",
-	"Settings"
+	"Settings",
+	"S3UploadDestination",
+	"ExternalUploadDestination"
 )
 
 ## entity S4 methods

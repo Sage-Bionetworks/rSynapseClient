@@ -27,8 +27,8 @@ setClass(
     filePath = "character",
     # synapseStore: logical T if file is stored in Synapse, F if only the url is stored
     synapseStore = "logical",
-    # uploadDestination: character(0) to use default value for parent container
-    uploadDestination = nullableType("UploadDestination"),
+    # uploadHost: character(0) to use default value for parent container
+    uploadHost = "character",
     # fileHandle (generated from JSON schema, empty before entity is created)
     fileHandle = "list",
     # objects to be serialized/deserialized
@@ -39,7 +39,7 @@ setClass(
     synapseEntityKind = "File",
     properties = initializeProperties("org.sagebionetworks.repo.model.FileEntity", TRUE),
     synapseStore = TRUE,
-    uploadDestination=new("NullS4Object"),
+    uploadHost=character(0),
     objects = NULL
   )
 )
@@ -80,7 +80,7 @@ setMethod(
 )
 
 ## File contructor: path="/path/to/file", synapseStore=T, name="foo", ...
-File<-function(path, synapseStore=T, uploadDestination=new("NullS4Object"), ...) {
+File<-function(path, synapseStore=T, uploadHost=NULL, ...) {
     file <- new("File")
     if (is.null(list(...)$parentId)) {
         stop("parentId is required.")
@@ -95,7 +95,11 @@ File<-function(path, synapseStore=T, uploadDestination=new("NullS4Object"), ...)
             stop(sprintf("'synapseStore' may not be true when %s does not exist.", file@filePath))
         }
     }
-    file@uploadDestination<-uploadDestination
+    if (is.null(uploadHost)) {
+      file@uploadHost<-character(0)
+    } else {
+      file@uploadHost<-uploadHost
+    }
     for (key in names(entityParams)) file<-synAnnotSetMethod(file, key, entityParams[[key]])
     file@synapseStore <- synapseStore
     file
@@ -258,8 +262,8 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
     } else { # ... we are storing a new file
       if (file@synapseStore) { # ... we are storing a new file which we are also uploading
         # determine upload destination
-        uploadDestination<-selectUploadDestination(file@uploadDestination, getUploadDestinations(propertyValue(file, "parentId")))
-        if (is.null(uploadDestination)) stop("Selected upload destination is not allowed for the file's parent container.");
+        uploadDestination<-selectUploadDestination(file@uploadHost, getUploadDestinations(propertyValue(file, "parentId")))
+        if (is.null(uploadDestination)) stop("Selected upload host is not allowed for the file's parent container.");
         fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, uploadDestination=uploadDestination, contentType=contentType)
       } else { # ... we are storing a new file which we are linking, but not uploading
         # link external URL in Synapse, get back fileHandle	
@@ -296,24 +300,21 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
   file
 }
 
-# TODO change .Rd for File, synStore to change where uploadDestination is defined
-
 # choose the upload destination, taking into account:
 # (1) the uploadDestinations for the container entity;
-# (2) the uploadDestination selected for the file (if any)
-selectUploadDestination<-function(userSelection, containerDestinations) {
-  if (is(userSelection, "NullS4Object")) {
+# (2) the uploadHost for the file (if any)
+selectUploadDestination<-function(uploadHost, containerDestinations) {
+  if (length(uploadHost)==0) {
     return(containerDestinations[[1]])
   } else {
     for (dest in containerDestinations@content) {
-      if (is(userSelection, "S3UploadDestination") && is(dest, "S3UploadDestination")) {
-        return(userSelection)
-      }
-      if (is(userSelection, "ExternalUploadDestination") && is(dest, "ExternalUploadDestination")) {
-        userUrl<-userSelection@url
-        containerUrl<-dest@url
-        if (matchDestinations(userUrl, containerUrl)) {
-          return (userSelection)
+      if (uploadHost=="S3") {
+        if (is(dest, "S3UploadDestination")) {
+          return(dest)
+        }
+      } else if (is(dest, "ExternalUploadDestination")) {
+        if (matchHostToURL(uploadHost, dest@url)) {
+          return (dest)
         }
       }
     }
@@ -321,20 +322,17 @@ selectUploadDestination<-function(userSelection, containerDestinations) {
   NULL
 }
 
-# match protocol, host, port, and all but the last part of the path
-# (we assume the last part is the UUID)
-matchDestinations<-function(userUrl, containerUrl) {
-  parsedUserUrl<-.ParsedUrl(userUrl)
-  parsedContainerUrl<-.ParsedUrl(userUrl)
-  parsedUserUrl@protocol==parsedContainerUrl@protocol &&
-    parsedUserUrl@host==parsedContainerUrl@host &&
-    parsedUserUrl@port==parsedContainerUrl@port &&
-    parsedUserUrl@pathPrefix==parsedContainerUrl@pathPrefix
+# match protocol, host and port
+matchHostToURL<-function(userHost, containerUrl) {
+  parsedUserHost<-.ParsedUrl(userHost)
+  parsedContainerUrl<-.ParsedUrl(containerUrl)
+  parsedUserHost@protocol==parsedContainerUrl@protocol &&
+    parsedUserHost@host==parsedContainerUrl@host
 }
 
-fileLocationMatchesUploadDestination<-function(fileHandle, containerEntityId) {
+uploadHostMatchesUploadDestination<-function(uploadHost, containerEntityId) {
   uploadDestinations<-getUploadDestinations(containerEntityId)
-  !is.null(matchingUploadDestinationForFileHandle(fileHandle, uploadDestinations))
+  !is.null(selectUploadDestination(uploadHost, uploadDestinations))
 }
 
 getUploadDestinations<-function(containerEntityId) {
@@ -344,25 +342,15 @@ getUploadDestinations<-function(containerEntityId) {
   uploadDestinations
 }
 
-matchingUploadDestinationForFileHandle<-function(fileHandle, uploadDestinations) {
-  for (uploadDestination in uploadDestinations@content) {
-    if (is(uploadDestination,"S3UploadDestination")) {
-      if (fileHandle$concreteType=="org.sagebionetworks.repo.file.S3FileHandle") {
-        return(uploadDestination)
-      }
-    } else if (is(uploadDestination,"ExternalUploadDestination")) {
-      if (fileHandle$concreteType=="org.sagebionetworks.repo.file.ExternalFileHandle") {
-        externalUrl<-fileHandle$externalUrl
-        fileUploadDestination<-dirname(externalUrl)
-        if (matchDestinations(fileUploadDestination, uploadDestination@url)) {
-          return(uploadDestination)
-        }
-      }
-    } else {
-      stop(sprintf("Unexpected UploadDestination type %s ", class(uploadDestination)))
-    }
+getUploadHostForFileHandle<-function(fileHandle) {
+  if (fileHandle$concreteType=="org.sagebionetworks.repo.file.S3FileHandle") {
+    return("S3")
+  } else if (fileHandle$concreteType=="org.sagebionetworks.repo.file.ExternalFileHandle") {
+    parsedExtUrl<-.ParsedUrl(fileHandle$externalUrl)
+    return(sprintf("%s://%s", parsedExtUrl$protocol, parsedExtUrl$host))
+  } else {
+    stop(sprintf("Unexpected file handle type %s", fileHandle$concreteType))
   }
-  NULL
 }
 
 # we define these functions to allow mocking during testing
@@ -473,7 +461,8 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   if (!is.null(filePath)) file@filePath<-filePath
   # if the file location matches one of the upload destinations for the container then we can store it
   # back to that location later
-  file@synapseStore<-fileLocationMatchesUploadDestination(fileHandle, propertyValue(file, "parentId"))
+  file@uploadHost<-getUploadHostForFileHandle(fileHandle)
+  file@synapseStore<-uploadHostMatchesUploadDestination(file@uploadHost, propertyValue(file, "parentId"))
   if (load) {
     if (is.null(file@objects)) file@objects<-new.env(parent=emptyenv())
     # Note: the following only works if 'path' is a file system path, not a URL

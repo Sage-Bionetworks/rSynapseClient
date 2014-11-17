@@ -1043,9 +1043,6 @@ integrationTestExternalLink<-function() {
   
   checkEquals(id, propertyValue(downloadedFile, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))
-  # Note:  We can't tell whether an 'external file' is 'uploadable' by the client, 
-  # so we say that it is (synapseStore=TRUE) and leave it to the user to say whether to
-  # try uploading
   checkEquals(TRUE, downloadedFile@synapseStore)
   # we get external URL when retrieving only metadata
   checkEquals(filePath, getFileLocation(metadataOnly))
