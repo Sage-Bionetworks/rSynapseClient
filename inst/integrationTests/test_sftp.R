@@ -15,9 +15,21 @@ library(Rssh)
   deleteEntity(synapseClient:::.getCache("testProject"))
 }
 
-
+createFile<-function(content, filePath) {
+  if (missing(content)) content<-"this is a test"
+  if (missing(filePath)) filePath<- tempfile()
+  connection<-file(filePath)
+  writeChar(content, connection, eos=NULL)
+  close(connection)  
+  filePath
+}
 
 integrationTestSFTPRoundTrip <- function() {
+  # NOTE:  The following values must be set up external to the test suite
+  host<-synapseClient:::.getCache("test_sftp_host")
+  username<-synapseClient:::.getCache("test_sftp_username")
+  password<-synapseClient:::.getCache("test_sftp_password")
+  
   project<-synapseClient:::.getCache("testProject")
   projectId<-propertyValue(project, "id")
   
@@ -48,12 +60,13 @@ integrationTestSFTPRoundTrip <- function() {
   
   checkEquals("org.sagebionetworks.repo.model.file.ExternalFileHandle", file@fileHandle$concreteType)
   externalURL<-file@fileHandle$externalURL
+  # TODO why does externalURL end with the actual file name rather than the one we gave it four lines above?
   # TODO check that the URL in the external file handle starts with euds@url
   # TODO check that the URL is URL encoded (i.e. that the " " is now "%20")
   
   fileEntityId<-propertyValue(file, "id")
   
-  retreived<-synGet(fileEntityIddownloadLocation=tempdir())
+  retrieved<-synGet(fileEntityId, downloadLocation=tempdir())
   checkEquals(tools::md5sum(retrieved@filePath), originalMD5)
   
   # TODO change the retrieved file and 'synstore' it 
@@ -64,7 +77,8 @@ integrationTestSFTPRoundTrip <- function() {
   
   # TODO complete the next line to delete the remote file using the Rssh package
   # TODO a better approach is to clean it up in 'tearDown'
-  sftpDeleteFile(host, username, password, remotepath)
+  remotepath<-synapseClient:::.ParsedUrl(externalURL)@path
+  checkTrue(sftpDeleteFile(host, username, password, remotepath))
   
   # TODO test saving a revision of the file
   # testing that you can retrieve either revision

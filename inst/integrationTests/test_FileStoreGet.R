@@ -1043,7 +1043,7 @@ integrationTestExternalLink<-function() {
   
   checkEquals(id, propertyValue(downloadedFile, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))
-  checkEquals(TRUE, downloadedFile@synapseStore)
+  checkEquals(FALSE, downloadedFile@synapseStore)
   # we get external URL when retrieving only metadata
   checkEquals(filePath, getFileLocation(metadataOnly))
   checkEquals(filePath, downloadedFile@fileHandle$externalURL)

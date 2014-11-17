@@ -285,7 +285,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
       if (!fileHasFilePath(file) || localFileUnchanged(file@fileHandle$id, file@filePath)) {
         # since local file matches Synapse file (or was not actually retrieved) nothing to store
       } else {
-        uploadDestination<-matchingUploadDestinationForFileHandle(file@fileHandle, getUploadDestinations(propertyValue(file, "parentId")))
+        uploadDestination<-selectUploadDestination(getUploadHostForFileHandle(file@fileHandle), getUploadDestinations(propertyValue(file, "parentId")))
         # TODO test this case
         if (is.null(uploadDestination)) stop("None of the container's upload destinations matches that of the existing file.")
         #	load file into Synapse, get back fileHandle (save in slot, put id in properties)       
@@ -343,11 +343,11 @@ getUploadDestinations<-function(containerEntityId) {
 }
 
 getUploadHostForFileHandle<-function(fileHandle) {
-  if (fileHandle$concreteType=="org.sagebionetworks.repo.file.S3FileHandle") {
+  if (fileHandle$concreteType=="org.sagebionetworks.repo.model.file.S3FileHandle") {
     return("S3")
-  } else if (fileHandle$concreteType=="org.sagebionetworks.repo.file.ExternalFileHandle") {
-    parsedExtUrl<-.ParsedUrl(fileHandle$externalUrl)
-    return(sprintf("%s://%s", parsedExtUrl$protocol, parsedExtUrl$host))
+  } else if (fileHandle$concreteType=="org.sagebionetworks.repo.model.file.ExternalFileHandle") {
+    parsedExtUrl<-.ParsedUrl(fileHandle$externalURL)
+    return(sprintf("%s://%s", parsedExtUrl@protocol, parsedExtUrl@host))
   } else {
     stop(sprintf("Unexpected file handle type %s", fileHandle$concreteType))
   }

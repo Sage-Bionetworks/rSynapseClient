@@ -196,8 +196,6 @@ unitTestIsLoadable <- function() {
 }
 
 unitTestSelectUploadDestination<-function() {
-  userSelection<-S3UploadDestination()
   uploadDestinations<-synapseClient:::UploadDestinationList(S3UploadDestination())
-  synapseClient:::selectUploadDestination(userSelection, uploadDestinations)
-  checkEquals(S3UploadDestination(), synapseClient:::selectUploadDestination(userSelection, uploadDestinations))
+  checkEquals(S3UploadDestination(), synapseClient:::selectUploadDestination("S3", uploadDestinations))
 }

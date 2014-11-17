@@ -216,7 +216,7 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   
   # test a more complicated aggregation query
   queryResult<-synTableQuery(sprintf("select sweet, count(sweet) from %s where sweet='one'", propertyValue(tschema, "id")), verbose=FALSE)
-  expected<-data.frame(sweet="one", X=as.integer(rowsPerCategory))
+  expected<-data.frame(sweet="one", "COUNT.sweet."=as.integer(rowsPerCategory))
   checkTrue(all(expected==queryResult@values))
   checkTrue(all(names(expected)==names(queryResult@values)))
   
