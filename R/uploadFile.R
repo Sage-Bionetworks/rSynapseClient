@@ -68,8 +68,8 @@ getCredentialsForHost<-function(parsedUrl) {
   if (is.null(username) || is.null(password)) {
     creds<-readCredentialsFromSessionCache(hostNameWithProtocol)
     if (!is.null(creds)) {
-      username<-creds$username
-      password<-creds$password
+      username<-creds["username"]
+      password<-creds["password"]
     }
     if (is.null(username) || is.null(password)) {
       username <- .getUsername(sprintf("Username for %s: ", parsedUrl@host))
