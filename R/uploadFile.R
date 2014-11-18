@@ -41,17 +41,6 @@ RsshPackageIsAvailable<-function() {
   any(.packages(all.available=T)=="Rssh")
 }
 
-readCredentialsFromSessionCache<-function(hostNameWithProtocol) {
-  json <- .readSessionCache()
-  json[[hostNameWithProtocol]]
-}
-
-writeCredentialsToSessionCache<-function(hostNameWithProtocol, username, password) {
-  json <- .readSessionCache()
-  json[[hostNameWithProtocol]]<-list(username=username, password=password)
-  .writeSessionCache(json)
-}
-
 getCredentialsForHost<-function(parsedUrl) {
   hostNameWithProtocol<-sprintf("%s://%s", parsedUrl@protocol, parsedUrl@host)
   username<-NULL
@@ -66,15 +55,16 @@ getCredentialsForHost<-function(parsedUrl) {
     }
   }
   if (is.null(username) || is.null(password)) {
-    creds<-readCredentialsFromSessionCache(hostNameWithProtocol)
+    credentialsCacheKey<-sprintf("%s_credentials", hostNameWithProtocol)
+    creds<-.getCache(credentialsCacheKey)
     if (!is.null(creds)) {
-      username<-creds["username"]
-      password<-creds["password"]
+      username<-creds$username
+      password<-creds$password
     }
     if (is.null(username) || is.null(password)) {
       username <- .getUsername(sprintf("Username for %s: ", parsedUrl@host))
       password <- .getPassword(sprintf("Password for %s:  ", parsedUrl@host))
-      writeCredentialsToSessionCache(hostNameWithProtocol, username, password)
+      .setCache(credentialsCacheKey, list(username=username, password=password))
     }
   }
   

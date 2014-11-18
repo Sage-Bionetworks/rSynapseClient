@@ -18,3 +18,12 @@ unitTestGetDirectorySequence <- function() {
   checkEquals(synapseClient:::getDirectorySequence("foo/bar/bas"), c("foo", "foo/bar", "foo/bar/bas"))
   checkEquals(synapseClient:::getDirectorySequence("foo/bar/bas/"), c("foo", "foo/bar", "foo/bar/bas"))
 }
+
+unitTestCacheCredentials<-function() {
+  testuser<-sprintf("testuser_%s", sample(1000, 1))
+  testpassword<-sprintf("testpassword_%s", sample(1000, 1))
+  synapseClient:::.setCache("sftp://testhost.com_credentials", list(username=testuser, password=testpassword))
+  creds<-synapseClient:::getCredentialsForHost(synapseClient:::.ParsedUrl("sftp://testhost.com/foo/bar"))
+  checkEquals(testuser, creds$username)
+  checkEquals(testpassword, creds$password)
+}

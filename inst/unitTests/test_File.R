@@ -196,6 +196,19 @@ unitTestIsLoadable <- function() {
 }
 
 unitTestSelectUploadDestination<-function() {
-  uploadDestinations<-synapseClient:::UploadDestinationList(S3UploadDestination())
-  checkEquals(S3UploadDestination(), synapseClient:::selectUploadDestination("S3", uploadDestinations))
+  uploadDestinations<-synapseClient:::UploadDestinationList(synapseClient:::S3UploadDestination())
+  checkEquals(synapseClient:::S3UploadDestination(), synapseClient:::selectUploadDestination("S3", uploadDestinations))
+  checkEquals(NULL, synapseClient:::selectUploadDestination("sftp://host.com/foo/bar", uploadDestinations))
+  checkEquals(synapseClient:::S3UploadDestination(), synapseClient:::selectUploadDestination(character(0), uploadDestinations))
+  
+  url<-"sftp://host.com"
+  eud<-synapseClient:::ExternalUploadDestination(url=url)
+  uploadDestinations<-synapseClient:::UploadDestinationList(synapseClient:::S3UploadDestination(), eud)
+  checkEquals(eud, synapseClient:::selectUploadDestination(url, uploadDestinations))
+}
+
+unitTestMatchUrlHosts<-function() {
+  checkTrue(synapseClient:::matchURLHosts("sftp://host.com/foo", "sftp://host.com/folder/uuid"))
+  checkTrue(!synapseClient:::matchURLHosts("sftp://host.com/foo", "http://host.com/folder/uuid"))
+  checkTrue(!synapseClient:::matchURLHosts("sftp://host.com/foo", "sftp://someotherhost.com/folder/uuid"))
 }
