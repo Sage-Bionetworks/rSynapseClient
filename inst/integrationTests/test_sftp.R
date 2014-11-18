@@ -23,10 +23,15 @@ library(Rssh)
     password<-credentials$password
     for (path in sftpFilesToDelete) {
       success<-sftpDeleteFile(host, username, password, path)
-      # TODO delete directories too
-      if (!success) message(sprintf("Unable to delete %s", path))
+      # delete directories too
+      if (!success) message(sprintf("test_sftp.tearDown: Unable to delete %s", path))
+      dirsToDelete<-synapseClient:::getDirectorySequence(dirname(path))
+      for (dir in dirsToDelete[length(dirsToDelete):1]) {
+        sftpRemoveDirectory(host, username, password, dir)
+      }
     }
   }
+  synapseClient:::.setCache("sftpFilesToDelete", NULL)
 }
 
 createFile<-function(content, filePath) {
@@ -86,7 +91,7 @@ integrationTestSFTPRoundTrip <- function() {
   projectId<-propertyValue(project, "id")
   
   # create the upload destination setting
-  createSFTPUploadSettings(projectId)
+  uds<-createSFTPUploadSettings(projectId)
   
   testFile<-createFile()
   originalMD5<-tools::md5sum(testFile)
@@ -125,6 +130,8 @@ integrationTestSFTPRoundTrip <- function() {
   scheduleExternalURLForDeletion(updated@fileHandle$externalURL)
   # check that there's a new version and a new URL
   checkTrue(updated@fileHandle$id!=retrieved@fileHandle$id)
+  message(sprintf("integrationTestSFTPRoundTrip: retrieved@fileHandle$externalURL; %s", retrieved@fileHandle$externalURL))
+  message(sprintf("integrationTestSFTPRoundTrip: updated@fileHandle$externalURL; %s", updated@fileHandle$externalURL))
   checkTrue(updated@fileHandle$externalURL!=retrieved@fileHandle$externalURL)
   checkEquals(2, propertyValue(updated, "versionNumber"))
   
