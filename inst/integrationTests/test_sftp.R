@@ -126,31 +126,13 @@ integrationTestSFTPRoundTrip <- function() {
   # check that there's a new version and a new URL
   checkTrue(updated@fileHandle$id!=retrieved@fileHandle$id)
   checkTrue(updated@fileHandle$externalURL!=retrieved@fileHandle$externalURL)
-  checkEquals("2", propertyValue(updated, "versionNumber"))
+  checkEquals(2, propertyValue(updated, "versionNumber"))
   
   # This is not strictly necessary since we delete the whole project in tearDown
   # but it does check that deletion works on the the project settings
   synRestDELETE(sprintf("/projectSettings/%s", uds@id))
 }
 
-integrationTestMoveS3FileToSFTPContainer<-function() {
-  project<-synapseClient:::.getCache("testProject")
-  projectId<-propertyValue(project, "id")
-  
-  # create a regular Synapse file
-  testFile<-createFile()
-  file<-File(testFile, name="testfile.txt", parentId=projectId)
-  file<-synStore(file)
-  
-  # now give the project a non-S3 upload destination
-  createSFTPUploadSettings(projectId)
-  
-  # change the file and 'synStore' it 
-  createFile("some modified content", file@filePath)
-  updated<-synStore(file)
-  # make sure its saved in S3
-  checkEquals(updated@fileHandle$concreteType, "org.sagebionetworks.repo.model.file.S3FileHandle")
-}
 
 integrationTestMoveSFTPFileToS3Container<-function() {
   project<-synapseClient:::.getCache("testProject")
@@ -169,6 +151,8 @@ integrationTestMoveSFTPFileToS3Container<-function() {
   synRestDELETE(sprintf("/projectSettings/%s", uds@id))  
   
   # check that exception occurs when synStore is called
+  # change the file and 'synStore' it 
+  createFile("some modified content", file@filePath)
   result<-try(synStore(file), silent=TRUE)
   checkEquals(class(result), "try-error")
 }
