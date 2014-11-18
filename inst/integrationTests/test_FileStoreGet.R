@@ -228,7 +228,7 @@ integrationTestCacheMapRoundTrip <- function() {
   filePath<- createFile()
   filePath2<- createFile()
   
- 
+  unlink(synapseClient:::defaultDownloadLocation(fileHandleId), recursive=TRUE)
   synapseClient:::addToCacheMap(fileHandleId, filePath)
   synapseClient:::addToCacheMap(fileHandleId, filePath2)
   content<-synapseClient:::getCacheMapFileContent(fileHandleId)

@@ -62,29 +62,32 @@ integrationTestSFTPRoundTrip <- function() {
   
   testFile<-createFile()
   originalMD5<-tools::md5sum(testFile)
-  # Note, we purposely put some non-URL-safe text in the file name
-  file<-File(testFile, name="test file.txt", parentId=projectId)
+  file<-File(testFile, name="testfile.txt", parentId=projectId)
   
   file<-synStore(file)
   
   checkEquals("org.sagebionetworks.repo.model.file.ExternalFileHandle", file@fileHandle$concreteType)
   externalURL<-file@fileHandle$externalURL
-  # TODO why does externalURL end with the actual file name rather than the one we gave it four lines above?
-  # TODO check that the URL in the external file handle starts with euds@url
-  # TODO check that the URL is URL encoded (i.e. that the " " is now "%20")
+  # check that the URL is URL encoded (i.e. that the " " is now "%20")
+  checkTrue(grepl("test_sftp%20", externalURL))
   
+  urlDecoded<-URLdecode(externalURL)
+  # check that it starts with our sftp server
+  checkTrue(grepl(sprintf("^%s", URLdecode(euds@url)), urlDecoded))
+  # check that it ends with our file name
+  checkTrue(grepl(sprintf("%s$", basename(testFile)), urlDecoded))
+
   fileEntityId<-propertyValue(file, "id")
   
   retrieved<-synGet(fileEntityId, downloadLocation=tempdir())
   checkEquals(tools::md5sum(retrieved@filePath), originalMD5)
   
-  # TODO change the retrieved file and 'synstore' it 
+  # TODO change the retrieved file and 'synStore' it 
   # TODO check that there's a new version and a new URL
   
   udsResponse<-synRestGET(sprintf("/entity/%s/uploadDestinations", projectId), endpoint=synapseFileServiceEndpoint())
   uploadDestinations<-synapseClient:::createTypedListFromList(udsResponse$list, "UploadDestinationList")
   
-  # TODO complete the next line to delete the remote file using the Rssh package
   # TODO a better approach is to clean it up in 'tearDown'
   remotepath<-URLdecode(synapseClient:::.ParsedUrl(externalURL)@path)
   checkTrue(sftpDeleteFile(host, username, password, remotepath))
