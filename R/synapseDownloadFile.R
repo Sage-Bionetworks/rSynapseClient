@@ -125,7 +125,8 @@ synapseDownloadSftpFileToDestination  <-
     stop("File is hosted on SFTP server but Rssh package not installed/available.  Please install Rssh and try again.")
   parsedUrl<-.ParsedUrl(url)
   credentials<-getCredentialsForHost(parsedUrl)
-  success<-sftpDownload(parsedUrl@host, credentials$username, credentials$password, parsedUrl@path, destfile)
-  if (!success) stop(sprintf("Failed to download %s from %s", parsedUrl@path, parsedUrl@host))
+  urlDecodedPath<-URLdecode(parsedUrl@path)
+  success<-sftpDownload(parsedUrl@host, credentials$username, credentials$password, urlDecodedPath, destfile)
+  if (!success) stop(sprintf("Failed to download %s from %s", urlDecodedPath, parsedUrl@host))
 }
 

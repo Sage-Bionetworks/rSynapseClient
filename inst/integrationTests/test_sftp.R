@@ -62,9 +62,12 @@ integrationTestSFTPRoundTrip <- function() {
   
   testFile<-createFile()
   originalMD5<-tools::md5sum(testFile)
+  names(originalMD5)<-NULL
   file<-File(testFile, name="testfile.txt", parentId=projectId)
   
   file<-synStore(file)
+  
+  checkTrue(!is.null(file@fileHandle$id))
   
   checkEquals("org.sagebionetworks.repo.model.file.ExternalFileHandle", file@fileHandle$concreteType)
   externalURL<-file@fileHandle$externalURL
@@ -79,8 +82,12 @@ integrationTestSFTPRoundTrip <- function() {
 
   fileEntityId<-propertyValue(file, "id")
   
-  retrieved<-synGet(fileEntityId, downloadLocation=tempdir())
-  checkEquals(tools::md5sum(retrieved@filePath), originalMD5)
+  # delete the file cache record to force re-download
+  unlink(synapseClient:::defaultDownloadLocation(file@fileHandle$id), recursive=TRUE)
+  retrieved<-synGet(fileEntityId)
+  downloadedMD5<-tools::md5sum(retrieved@filePath)
+  names(downloadedMD5)<-NULL
+  checkEquals(downloadedMD5, originalMD5)
   
   # TODO change the retrieved file and 'synStore' it 
   # TODO check that there's a new version and a new URL
