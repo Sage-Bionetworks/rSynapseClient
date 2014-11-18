@@ -126,12 +126,11 @@ integrationTestSFTPRoundTrip <- function() {
   
   # change the retrieved file and 'synStore' it 
   createFile("some modified content", retrieved@filePath)
+  Sys.sleep(1) # I think there's a race condition between writing the file (above) and checking it (below)
   updated<-synStore(retrieved)
   scheduleExternalURLForDeletion(updated@fileHandle$externalURL)
   # check that there's a new version and a new URL
   checkTrue(updated@fileHandle$id!=retrieved@fileHandle$id)
-  message(sprintf("integrationTestSFTPRoundTrip: retrieved@fileHandle$externalURL; %s", retrieved@fileHandle$externalURL))
-  message(sprintf("integrationTestSFTPRoundTrip: updated@fileHandle$externalURL; %s", updated@fileHandle$externalURL))
   checkTrue(updated@fileHandle$externalURL!=retrieved@fileHandle$externalURL)
   checkEquals(2, propertyValue(updated, "versionNumber"))
   
