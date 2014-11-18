@@ -27,7 +27,6 @@ uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHand
       success<-sftpUpload(parsedUrl@host, credentials$username, credentials$password, remotePathAndFile, filePath)
       if (!success) stop(sprintf("Failed to upload %s to %s", filePath, parsedUrl@host))
       cat("... Upload complete.\n")
-      # TODO make sure the following URL is URL-encoded
       synapseLinkExternalFile(URLencode(paste(urlDecodedDestination, fileName, sep="/")), fileName, contentType)
     } else if (uploadDestination@uploadType=="HTTPS") {
       stop("Upload to specified HTTPS destination is not yet supported.")

@@ -276,7 +276,11 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
       if (!fileHasFilePath(file) || localFileUnchanged(file@fileHandle$id, file@filePath)) {
         # since local file matches Synapse file (or was not actually retrieved) nothing to store
       } else {
-        uploadDestination<-getUploadDestinations(propertyValue(file, "parentId"))[[1]]
+        uploadDestinations<-getUploadDestinations(propertyValue(file, "parentId"))
+        uploadDestination<-selectUploadDestination(getUrlForFileHandle(file@fileHandle), uploadDestinations)
+        if(is.null(uploadDestination)) {
+          stop("Container lacks upload destination matching file's current URL.")
+        }
         #	load file into Synapse, get back fileHandle (save in slot, put id in properties)       
         fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, uploadDestination=uploadDestination, contentType=contentType)
         file@fileHandle<-fileHandle

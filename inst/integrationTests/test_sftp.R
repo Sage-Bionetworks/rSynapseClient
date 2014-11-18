@@ -14,6 +14,19 @@ library(Rssh)
 .tearDown <- function() {
   ## delete the test projects
   deleteEntity(synapseClient:::.getCache("testProject"))
+  
+  sftpFilesToDelete<-synapseClient:::.getCache("sftpFilesToDelete")
+  if (!is.null(sftpFilesToDelete) && length(sftpFilesToDelete)>0) {
+    host<-synapseClient:::.getCache("test_sftp_host")
+    credentials<-synapseClient:::.getCache(sprintf("sftp://%s_credentials", host))
+    username<-credentials$username
+    password<-credentials$password
+    for (path in sftpFilesToDelete) {
+      success<-sftpDeleteFile(host, username, password, path)
+      # TODO delete directories too
+      if (!success) message(sprintf("Unable to delete %s", path))
+    }
+  }
 }
 
 createFile<-function(content, filePath) {
@@ -25,17 +38,18 @@ createFile<-function(content, filePath) {
   filePath
 }
 
-integrationTestSFTPRoundTrip <- function() {
-  # NOTE:  The following values must be set up external to the test suite
-  host<-synapseClient:::.getCache("test_sftp_host")
-  credentials<-synapseClient:::.getCache(sprintf("sftp://%s_credentials", host))
-  username<-credentials$username
-  password<-credentials$password
-  
-  project<-synapseClient:::.getCache("testProject")
-  projectId<-propertyValue(project, "id")
-  
-  # create the upload destination setting
+scheduleExternalURLForDeletion<-function(externalURL) {
+  toDelete<-URLdecode(synapseClient:::.ParsedUrl(externalURL)@path)
+  key<-"sftpFilesToDelete"
+  filesToDelete<-synapseClient:::.getCache(key)
+  if (is.null(filesToDelete)) {
+    synapseClient:::.setCache(key,toDelete)
+  } else {
+    synapseClient:::.setCache(key,c(filesToDelete,toDelete))
+  }
+}
+
+createSFTPUploadSettings<-function(projectId) {
   euds<-synapseClient:::ExternalUploadDestinationSetting()
   euds@url<-URLencode("sftp://ec2-54-212-85-156.us-west-2.compute.amazonaws.com/rClientIntegrationTest")
   euds@supportsSubfolders<-TRUE
@@ -59,6 +73,20 @@ integrationTestSFTPRoundTrip <- function() {
   response<-synRestPOST("/projectSettings", synapseClient:::createListFromS4Object(uds))
   
   uds<-synapseClient:::createS4ObjectFromList(response, "UploadDestinationListSetting")
+}
+
+integrationTestSFTPRoundTrip <- function() {
+  # NOTE:  The following values must be set up external to the test suite
+  host<-synapseClient:::.getCache("test_sftp_host")
+  credentials<-synapseClient:::.getCache(sprintf("sftp://%s_credentials", host))
+  username<-credentials$username
+  password<-credentials$password
+  
+  project<-synapseClient:::.getCache("testProject")
+  projectId<-propertyValue(project, "id")
+  
+  # create the upload destination setting
+  createSFTPUploadSettings(projectId)
   
   testFile<-createFile()
   originalMD5<-tools::md5sum(testFile)
@@ -69,6 +97,8 @@ integrationTestSFTPRoundTrip <- function() {
   
   checkTrue(!is.null(file@fileHandle$id))
   
+  scheduleExternalURLForDeletion(file@fileHandle$externalURL)
+  
   checkEquals("org.sagebionetworks.repo.model.file.ExternalFileHandle", file@fileHandle$concreteType)
   externalURL<-file@fileHandle$externalURL
   # check that the URL is URL encoded (i.e. that the " " is now "%20")
@@ -76,7 +106,7 @@ integrationTestSFTPRoundTrip <- function() {
   
   urlDecoded<-URLdecode(externalURL)
   # check that it starts with our sftp server
-  checkTrue(grepl(sprintf("^%s", URLdecode(euds@url)), urlDecoded))
+  checkTrue(grepl(sprintf("^%s", "sftp://ec2-54-212-85-156.us-west-2.compute.amazonaws.com/rClientIntegrationTest"), urlDecoded))
   # check that it ends with our file name
   checkTrue(grepl(sprintf("%s$", basename(testFile)), urlDecoded))
 
@@ -89,36 +119,56 @@ integrationTestSFTPRoundTrip <- function() {
   names(downloadedMD5)<-NULL
   checkEquals(downloadedMD5, originalMD5)
   
-  # TODO change the retrieved file and 'synStore' it 
-  # TODO check that there's a new version and a new URL
-  
-  udsResponse<-synRestGET(sprintf("/entity/%s/uploadDestinations", projectId), endpoint=synapseFileServiceEndpoint())
-  uploadDestinations<-synapseClient:::createTypedListFromList(udsResponse$list, "UploadDestinationList")
-  
-  # TODO a better approach is to clean it up in 'tearDown'
-  remotepath<-URLdecode(synapseClient:::.ParsedUrl(externalURL)@path)
-  checkTrue(sftpDeleteFile(host, username, password, remotepath))
-  
-  # TODO test saving a revision of the file
-  # testing that you can retrieve either revision
-  
-  # TODO test the case in which the upload destination is not the first in the list
-  
+  # change the retrieved file and 'synStore' it 
+  createFile("some modified content", retrieved@filePath)
+  updated<-synStore(retrieved)
+  scheduleExternalURLForDeletion(updated@fileHandle$externalURL)
+  # check that there's a new version and a new URL
+  checkTrue(updated@fileHandle$id!=retrieved@fileHandle$id)
+  checkTrue(updated@fileHandle$externalURL!=retrieved@fileHandle$externalURL)
+  checkEquals("2", propertyValue(updated, "versionNumber"))
   
   # This is not strictly necessary since we delete the whole project in tearDown
   # but it does check that deletion works on the the project settings
   synRestDELETE(sprintf("/projectSettings/%s", uds@id))
-  
 }
 
-# TODO
 integrationTestMoveS3FileToSFTPContainer<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  projectId<-propertyValue(project, "id")
+  
   # create a regular Synapse file
-  # now move it into a folder having a non-S3 upload destination
-  # call synStore
+  testFile<-createFile()
+  file<-File(testFile, name="testfile.txt", parentId=projectId)
+  file<-synStore(file)
+  
+  # now give the project a non-S3 upload destination
+  createSFTPUploadSettings(projectId)
+  
+  # change the file and 'synStore' it 
+  createFile("some modified content", file@filePath)
+  updated<-synStore(file)
   # make sure its saved in S3
+  checkEquals(updated@fileHandle$concreteType, "org.sagebionetworks.repo.model.file.S3FileHandle")
 }
 
 integrationTestMoveSFTPFileToS3Container<-function() {
+  project<-synapseClient:::.getCache("testProject")
+  projectId<-propertyValue(project, "id")
+  
+  # give the project a non-S3 upload destination
+  uds<-createSFTPUploadSettings(projectId)
+  
+  # create an SFTP Synapse file
+  testFile<-createFile()
+  file<-File(testFile, name="testfile.txt", parentId=projectId)
+  file<-synStore(file)
+  scheduleExternalURLForDeletion(file@fileHandle$externalURL)
+  
+  # now remove the project settings, causing the project to revert to using S3
+  synRestDELETE(sprintf("/projectSettings/%s", uds@id))  
+  
   # check that exception occurs when synStore is called
+  result<-try(synStore(file), silent=TRUE)
+  checkEquals(class(result), "try-error")
 }
