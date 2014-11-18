@@ -56,9 +56,7 @@ export(
   "synapseQuery",
   "synQuery",
   "touOnWeb",
-  "sendMessage",
-  "synTableQuery",
-  "synDeleteRows"
+  "sendMessage"
 )
 
 ## S3 convenience methods
@@ -74,25 +72,15 @@ export(
 	"Activity",
 	"Evaluation",
 	"WikiPage",
-	"TableColumn",
 	"UserProfile",
 	"ResourceAccess",
-	"TableSchema",
-	"TableRowSet",
-	"TableColumn",
-	"Table",
-	"Row",
-	"RowReference",
-	"RowReferenceSet",
 	"AccessControlList",
 	"ResourceAccessList",
 	"CharacterList",
 	"UserPreferenceList",
-	"RowList",
 	"as.ResourceAccessList",
 	"as.CharacterList",
 	"as.UserPreferenceList",
-	"as.RowList",
 	"UserPreferenceBoolean",
 	"Settings"
 )
@@ -111,8 +99,7 @@ exportMethods(
 	"set",
 	"getList",
 	"append",
-	"identical",
-  	"as.tableColumns"
+	"identical"
 )
 
 ## entity property/annotation setters and getters
