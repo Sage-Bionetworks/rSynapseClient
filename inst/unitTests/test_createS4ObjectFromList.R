@@ -116,18 +116,6 @@ unitTestRoundTripWithEnumField<-function() {
   checkEquals(s,s2)
 }
 
-unitTestVector<-function() {
-  x<-c(concreteType="org.sagebionetworks.repo.model.table.UploadToTableRequest", tableId="syn12345", uploadFileHandleId="1111")
-  obj<-synapseClient:::createS4ObjectFromList(x, "AsynchronousRequestBody")
-  checkEquals("UploadToTableRequest", as.character(class(obj)))
-}
-
-unitTestIntegerAssignment<-function() {
-  # constructor converts numeric to integer
-  TableColumn(maximumSize=10)
-  # an edge case...
-  TableColumn(maximumSize=numeric(0))
-}
 
 
 
