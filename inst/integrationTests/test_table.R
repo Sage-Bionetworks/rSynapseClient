@@ -158,9 +158,6 @@ integrationTestSynStoreMixedDataFrame<-function() {
 
 
 integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
-  # return(0) # reenable when PLFM-3088 is fixed
-  
-  
   project<-synapseClient:::.getCache("testProject")
   
   tc1 <- TableColumn(name="sweet", columnType="STRING")

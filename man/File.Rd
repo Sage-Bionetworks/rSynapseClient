@@ -7,7 +7,7 @@ Synapse File Constructor
 Constructor for File
 }
 \usage{
-File(path, parentId, synapseStore=TRUE, uploadHost=NULL, ...)
+File(path, parentId, synapseStore=TRUE, ...)
 }
 \arguments{
     \item{path}{
