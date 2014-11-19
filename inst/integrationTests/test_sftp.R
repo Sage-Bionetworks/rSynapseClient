@@ -125,6 +125,8 @@ integrationTestSFTPRoundTrip <- function() {
   checkEquals(downloadedMD5, originalMD5)
   
   # change the retrieved file and 'synStore' it 
+  # Our file time stamps have 1-sec accuracy, so we have to sleep for 1 sec to ensure the mtime changes
+  Sys.sleep(1.1)
   createFile("some modified content", retrieved@filePath)
   checkTrue(!synapseClient:::localFileUnchanged(retrieved@fileHandle$id, retrieved@filePath))
   updated<-synStore(retrieved)
