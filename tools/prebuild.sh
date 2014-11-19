@@ -2,8 +2,8 @@
 # Everything that needs to be done before building the package goes here:
 
 # download jar file from artifactory
-# note, this gets version 58.0.  To change versions requires changing the following line in two places
-export srcjar=http://sagebionetworks.artifactoryonline.com/sagebionetworks/libs-releases-local/org/sagebionetworks/lib-auto-generated/58.0/lib-auto-generated-58.0.jar
+# note, this gets version 67.0.  To change versions requires changing the following line in two places
+export srcjar=http://sagebionetworks.artifactoryonline.com/sagebionetworks/libs-releases-local/org/sagebionetworks/lib-auto-generated/67.0/lib-auto-generated-67.0.jar
 wget -O temp.jar $srcjar
 if [ "$?" -ne "0" ]; then
 	curl -o temp.jar $srcjar
@@ -24,4 +24,5 @@ rm temp.jar
 # build the .Rd files
 # Note:  We want to just call 'tools/docGen/createRdFiles.R .' but it doesn't work on cygwin (Windows)
 Rscript tools/docGen/createRdFiles.R .
+
 

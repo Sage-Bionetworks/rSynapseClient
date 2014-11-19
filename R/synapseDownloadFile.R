@@ -53,10 +53,26 @@ synapseDownloadFile  <-
   synapseDownloadFileToDestination(url=url, checksum=checksum, destfile=destfile, opts=opts)
 }
 
+# download file from source which may involve one of a variety of protocols
 synapseDownloadFileToDestination  <- 
   function (url, destfile, checksum, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"))
 {
-  ## Download the file to a user-specified location
+  parsedUrl<-.ParsedUrl(url)
+  protocol<-tolower(parsedUrl@protocol)
+  if (protocol=="http" || protocol=="https" || protocol=="file" || protocol=="ftp") {
+    synapseDownloadHttpFileToDestination(url, destfile, checksum, curlHandle, opts)
+  } else if (protocol=="sftp") {
+    synapseDownloadSftpFileToDestination(url, destfile)
+  } else {
+    stop(sprintf("Unsupported protocol %s", protocol))
+  }
+}
+
+# download file from source which is HTTP/HTTPS
+synapseDownloadHttpFileToDestination  <- 
+    function (url, destfile, checksum, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"))
+  {
+    ## Download the file to a user-specified location
   ## if checksum is missing, don't check local file before 
   ## download
   if(file.exists(destfile) & !missing(checksum)) {
@@ -101,3 +117,16 @@ synapseDownloadFileToDestination  <-
   file.remove(tmpFile)
   return(destfile)
 }
+
+synapseDownloadSftpFileToDestination  <- 
+  function (url, destfile)
+{
+  if (!(RsshPackageIsAvailable() && require("Rssh"))) 
+    stop("File is hosted on SFTP server but Rssh package not installed/available.  Please install Rssh and try again.")
+  parsedUrl<-.ParsedUrl(url)
+  credentials<-getCredentialsForHost(parsedUrl)
+  urlDecodedPath<-URLdecode(parsedUrl@path)
+  success<-sftpDownload(parsedUrl@host, credentials$username, credentials$password, urlDecodedPath, destfile)
+  if (!success) stop(sprintf("Failed to download %s from %s", urlDecodedPath, parsedUrl@host))
+}
+

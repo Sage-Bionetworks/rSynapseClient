@@ -228,7 +228,7 @@ integrationTestCacheMapRoundTrip <- function() {
   filePath<- createFile()
   filePath2<- createFile()
   
- 
+  unlink(synapseClient:::defaultDownloadLocation(fileHandleId), recursive=TRUE)
   synapseClient:::addToCacheMap(fileHandleId, filePath)
   synapseClient:::addToCacheMap(fileHandleId, filePath2)
   content<-synapseClient:::getCacheMapFileContent(fileHandleId)
@@ -266,7 +266,7 @@ integrationTestMetadataRoundTrip_URL <- function() {
   
   # now store it
   storedFile<-synStore(file)
-  metadataRoundTrip(storedFile, expectedFileLocation=filePath)
+  metadataRoundTrip(storedFile, synapseStore, expectedFileLocation=filePath)
 }
 
 integrationTestMetadataRoundTrip_S3File <- function() {
@@ -284,11 +284,12 @@ integrationTestMetadataRoundTrip_S3File <- function() {
   # now store it
   storedFile<-synStore(file)
   scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
-  metadataRoundTrip(storedFile)
+  metadataRoundTrip(storedFile, synapseStore)
 }
 
-metadataRoundTrip <- function(storedFile, expectedFileLocation=character(0)) {  
+metadataRoundTrip <- function(storedFile, synapseStore, expectedFileLocation=character(0)) {  
   metadataOnly<-synGet(propertyValue(storedFile, "id"),downloadFile=F)
+  metadataOnly@synapseStore<-synapseStore
   
   # Change some metadata
   metadataOnly<-synapseClient:::synAnnotSetMethod(metadataOnly, "annot", "value")
@@ -1042,7 +1043,7 @@ integrationTestExternalLink<-function() {
   
   checkEquals(id, propertyValue(downloadedFile, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))
-  checkEquals(synapseStore, downloadedFile@synapseStore)
+  checkEquals(FALSE, downloadedFile@synapseStore)
   # we get external URL when retrieving only metadata
   checkEquals(filePath, getFileLocation(metadataOnly))
   checkEquals(filePath, downloadedFile@fileHandle$externalURL)

@@ -33,7 +33,6 @@ unitTestNotCompressed <-
   function()
 {
   ## create a jpeg object
-  ## TODO create an acutal jpeg file once X11 is installed on the bamboo AMI (PLFM-498)
   d <- data.frame(diag(2,20,20))
   write.table(d,file=synapseClient:::.getCache("localJpegFile"), sep="\t", quote=F, row.names=F, col.names=F)
   ##	jpeg(synapseClient:::.getCache("localJpegFile"))

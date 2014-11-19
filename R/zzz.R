@@ -93,6 +93,9 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     defineEntityConstructors(ee, package="synapseClient", where=where)
   }
   
+  # we need a TypedList of UploadDestination, for which there is no schema
+  defineTypedList("UploadDestination")
+  
   # This is done during class generation but seems to be lost at package load time.  So we do it again.
   populateSchemaToClassMap()
 }

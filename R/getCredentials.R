@@ -129,17 +129,17 @@
     credentials$username <= ""
   
   if(credentials$username == "")
-    credentials$username <- .getUsername()
-  credentials$password <- .getPassword()
+    credentials$username <- .getUsername("Username: ")
+  credentials$password <- .getPassword("Password: ")
   
   credentials
 }
 
-.getUsername <- function(){
-  readline(prompt="Username: ")
+.getUsername <- function(prompt) {
+  readline(prompt=prompt)
 }
 
-.getPassword <- function(){
+.getPassword <- function(prompt) {
   ## Currently only suppresses output in unix-like terminals
   
   finallyCmd <- NULL
@@ -157,7 +157,7 @@
   }
   
   tryCatch(
-    password <- readline(prompt="Password: "),
+    password <- readline(prompt=prompt),
     finally={
       if(!is.null(finallyCmd)){
         system(finallyCmd) ## turn echo back on only if it was turned off

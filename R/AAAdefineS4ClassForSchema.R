@@ -214,78 +214,92 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     primitiveRType
   } else if (schemaPropertyType=="array") {
     elemRType <- defineRTypeFromPropertySchema(getArraySubSchema(propertySchema))
-    typeListClassName<-listClassName(elemRType)
-    if (!isClassDefined(typeListClassName)) {
-      # define the class
-      setClass(
-        Class=typeListClassName, 
-        contains=list("TypedList"), 
-        prototype=list(type=elemRType),
-        package="synapseClient"
-      )
-      # define the constructor
-      # This generic constructor takes the form:
-      # ClassName(value1, value2, ...)
-      assign(typeListClassName, function(...) {
-          args <-list(...)
-          obj<-new(typeListClassName)    
-          set(obj, args)     
-        })
-      # If we don't define a 'generic' version of the constructor
-      # we get an error when we try to include it as an export in
-      # the NAMESPACE file.
-      setGeneric(
-        name=typeListClassName,
-        def = function(...) {
-          do.call(typeListClassName, list(...))
-        }
-      )
-      
-      setMethod(
-        f = "append",
-        signature = signature(typeListClassName, typeListClassName),
-        definition = function(x, values, after) {
-          x@content<-append(x@content, values@content, after)
-          x
-        }
-      )
-      
-      setMethod(
-        f = "append",
-        signature = signature(typeListClassName, elemRType),
-        definition = function(x, values, after) {
-          x@content[[1+length(x@content)]]<-values
-          x
-        }
-      )
-      
-      # as.<type>List method
-      asTypedListFunctionName<-sprintf("as.%s", typeListClassName)
-      setGeneric(
-        name=asTypedListFunctionName,
-        def = function(x) {
-          do.call(typeListClassName, as.list(x))
-        }
-      )
-      setMethod(
-        f = asTypedListFunctionName,
-        signature = signature("ANY"),
-        definition = function(x) {
-          do.call(typeListClassName, as.list(x))
-        }
-      )
-      
-    }
-    typeListClassName
+    defineTypedList(elemRType)
   } else {
+    # remove the following when PLFM-3091 is done
+    if ("org.sagebionetworks.repo.model.file.UploadType"==schemaPropertyType) {
+      return("character")
+    }
     # check for an enum
-    propertySchema <- readEntityDef(schemaPropertyType, getSchemaPath())
+    # this is getting subtle: The 'propertySchema' can be a reference, in which case we have to 
+    # follow the reference and read it in from another file.  Alternatively the schema can
+    # be defined in line, in which case we already have the schema and need not read it in.
+    if (!is.null(propertySchema[["$ref"]])) {
+      propertySchema <- readEntityDef(schemaPropertyType, getSchemaPath())
+    }
     if (isEnum(propertySchema)) {
       # it's an 'enum' or similar. use the type of the property's schema
       return(TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]])
     }
     defineS4ClassForSchema(schemaPropertyType)
   }
+}
+
+# define a TypedList for the given type of list element
+defineTypedList<-function(elemRType) {
+  typeListClassName<-listClassName(elemRType)
+  if (!isClassDefined(typeListClassName)) {
+    # define the class
+    setClass(
+      Class=typeListClassName, 
+      contains=list("TypedList"), 
+      prototype=list(type=elemRType),
+      package="synapseClient"
+    )
+    # define the constructor
+    # This generic constructor takes the form:
+    # ClassName(value1, value2, ...)
+    assign(typeListClassName, function(...) {
+        args <-list(...)
+        obj<-new(typeListClassName)    
+        set(obj, args)     
+      })
+    # If we don't define a 'generic' version of the constructor
+    # we get an error when we try to include it as an export in
+    # the NAMESPACE file.
+    setGeneric(
+      name=typeListClassName,
+      def = function(...) {
+        do.call(typeListClassName, list(...))
+      }
+    )
+    
+    setMethod(
+      f = "append",
+      signature = signature(typeListClassName, typeListClassName),
+      definition = function(x, values, after) {
+        x@content<-append(x@content, values@content, after)
+        x
+      }
+    )
+    
+    setMethod(
+      f = "append",
+      signature = signature(typeListClassName, elemRType),
+      definition = function(x, values, after) {
+        x@content[[1+length(x@content)]]<-values
+        x
+      }
+    )
+    
+    # as.<type>List method
+    asTypedListFunctionName<-sprintf("as.%s", typeListClassName)
+    setGeneric(
+      name=asTypedListFunctionName,
+      def = function(x) {
+        do.call(typeListClassName, as.list(x))
+      }
+    )
+    setMethod(
+      f = asTypedListFunctionName,
+      signature = signature("ANY"),
+      definition = function(x) {
+        do.call(typeListClassName, as.list(x))
+      }
+    )
+    
+  }
+  typeListClassName
 }
 
 nullableType<-function(type) {

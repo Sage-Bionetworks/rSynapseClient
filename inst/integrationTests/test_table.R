@@ -156,6 +156,7 @@ integrationTestSynStoreMixedDataFrame<-function() {
   checkEquals(stored@rowCount, rowsToUpload)
 }
 
+
 integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   project<-synapseClient:::.getCache("testProject")
   

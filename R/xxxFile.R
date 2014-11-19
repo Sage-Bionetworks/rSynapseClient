@@ -121,12 +121,10 @@ isExternalFileHandle<-function(fileHandle) {length(fileHandle)>0 && fileHandle$c
 fileHasFileHandleId<-function(file) {!is.null(file@fileHandle$id)}
 fileHasFilePath<-function(file) {length(file@filePath)>0 && nchar(file@filePath)>0}
 
-# TODO:  shall we allow 'synapseStore' to be switched in an existing File?
 # ensure that fileHandle info is consistent with synapseUpload field
-validdateFile<-function(file) {
+validateFile<-function(file) {
   if (!fileHasFileHandleId(file)) return
   isExternal <- isExternalFileHandle(file@fileHandle)
-  if (isExternal & file@synapseStore) stop("synapseStore==T but file is external")
   if (isExternal==FALSE & file@synapseStore==FALSE) stop("synapseStore=F but file is not external")
 }
 
@@ -203,9 +201,9 @@ localFileUnchanged<-function(fileHandleId, filePath) {
   !is.null(downloadedTimestamp) && .formatAsISO8601(lastModifiedTimestamp(filePath))==downloadedTimestamp
 }
 
-uploadAndAddToCacheMap<-function(filePath, contentType=NULL) {
+uploadAndAddToCacheMap<-function(filePath, uploadDestination, contentType=NULL) {
   lastModified<-lastModifiedTimestamp(filePath)
-  fileHandle<-chunkedUploadFile(filepath=filePath, contentType=contentType)
+  fileHandle<-uploadFileToEntity(filePath=filePath, uploadDestination=uploadDestination, curlHandle=getCurlHandle(), contentType=contentType)
   if (lastModified!=lastModifiedTimestamp(filePath)) stop(sprintf("During upload, %s was modified by another process.", filePath))
   addToCacheMap(fileHandle$id, filePath, lastModified)
   fileHandle
@@ -255,7 +253,9 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
       # meta data only
     } else { # ... we are storing a new file
       if (file@synapseStore) { # ... we are storing a new file which we are also uploading
-        fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, contentType=contentType)
+        # determine upload destination
+        uploadDestination<-getUploadDestinations(propertyValue(file, "parentId"))[[1]]
+        fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, uploadDestination=uploadDestination, contentType=contentType)
       } else { # ... we are storing a new file which we are linking, but not uploading
         # link external URL in Synapse, get back fileHandle	
         fileName <- basename(file@filePath)
@@ -271,13 +271,18 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
     }
   } else { # fileHandle is not null, i.e. we're updating a Synapse File that's already created
     #	if fileHandle is inconsistent with filePath or synapseStore, raise an exception 
-    validdateFile(file)
+    validateFile(file)
     if (file@synapseStore) {
       if (!fileHasFilePath(file) || localFileUnchanged(file@fileHandle$id, file@filePath)) {
         # since local file matches Synapse file (or was not actually retrieved) nothing to store
       } else {
-        #	load file into Synapse, get back fileHandle (save in slot, put id in properties)
-        fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, contentType=contentType)
+        uploadDestinations<-getUploadDestinations(propertyValue(file, "parentId"))
+        uploadDestination<-selectUploadDestination(getUrlForFileHandle(file@fileHandle), uploadDestinations)
+        if(is.null(uploadDestination)) {
+          stop("Container lacks upload destination matching file's current URL.")
+        }
+        #	load file into Synapse, get back fileHandle (save in slot, put id in properties)       
+        fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, uploadDestination=uploadDestination, contentType=contentType)
         file@fileHandle<-fileHandle
         propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
       }
@@ -286,6 +291,55 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
     }
   }
   file
+}
+
+selectUploadDestination<-function(fileUrl, containerDestinations) {
+  if (length(fileUrl)==0) {
+    return(containerDestinations[[1]])
+  } else {
+    for (dest in containerDestinations@content) {
+      if (fileUrl=="S3") {
+        if (is(dest, "S3UploadDestination")) {
+          return(dest)
+        }
+      } else if (is(dest, "ExternalUploadDestination")) {
+        if (matchURLHosts(fileUrl, dest@url)) {
+          return (dest)
+        }
+      }
+    }
+  }
+  NULL
+}
+
+# match protocol, host and port
+matchURLHosts<-function(url1, url2) {
+  parsedUrl1<-.ParsedUrl(url1)
+  parsedUrl2<-.ParsedUrl(url2)
+  parsedUrl1@protocol==parsedUrl2@protocol &&
+    parsedUrl1@host==parsedUrl2@host
+}
+
+fileHandleMatchesUploadDestination<-function(fileHandleUrl, containerEntityId) {
+  uploadDestinations<-getUploadDestinations(containerEntityId)
+  !is.null(selectUploadDestination(fileHandleUrl, uploadDestinations))
+}
+
+getUploadDestinations<-function(containerEntityId) {
+  uploadDestinationResponse<-synRestGET(sprintf("/entity/%s/uploadDestinations", containerEntityId), endpoint=synapseFileServiceEndpoint())
+  uploadDestinations<-createTypedListFromList(uploadDestinationResponse$list, "UploadDestinationList")
+  if (length(uploadDestinations)==0) stop(sprintf("Entity %s has no upload destinations to choose from.", containerEntityId))
+  uploadDestinations
+}
+
+getUrlForFileHandle<-function(fileHandle) {
+  if (fileHandle$concreteType=="org.sagebionetworks.repo.model.file.S3FileHandle") {
+    "S3"
+  } else if (fileHandle$concreteType=="org.sagebionetworks.repo.model.file.ExternalFileHandle") {
+    fileHandle$externalURL
+  } else {
+    stop(sprintf("Unexpected file handle type %s", fileHandle$concreteType))
+  }
 }
 
 # we define these functions to allow mocking during testing
@@ -323,13 +377,13 @@ generateUniqueFileName<-function(folder, filename) {
 downloadFromSynapseOrExternal<-function(
   downloadLocation, 
   filePath, 
-  synapseStore, 
+  isExternalUrl, 
   downloadUri, 
   endpointName, 
   externalURL, 
   fileHandle) {
   dir.create(downloadLocation, recursive=T, showWarnings=F)
-  if (synapseStore) {
+  if (isExternalUrl==FALSE) {
     synapseDownloadFromServiceToDestination(downloadUri, endpointName, destfile=filePath, extraRetryStatusCodes=404)
   } else {
     synapseDownloadFileToDestination(externalURL, filePath)
@@ -382,7 +436,7 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
     downloadUri<-sprintf("/entity/%s/version/%s/file", id, propertyValue(file, "versionNumber"))
   }
   
-  result<-synGetFileAttachment(
+  filePath<-synGetFileAttachment(
     downloadUri,
     "REPO",
     fileHandle,
@@ -393,8 +447,10 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
     )
     
   # now construct File from 'result', which has filePath, synapseStore 
-  if (!is.null(result$filePath)) file@filePath<-result$filePath
-  file@synapseStore<-result$synapseStore
+  if (!is.null(filePath)) file@filePath<-filePath
+  # if the file location matches one of the upload destinations for the container then we can store it
+  # back to that location later
+  file@synapseStore<-fileHandleMatchesUploadDestination(getUrlForFileHandle(fileHandle), propertyValue(file, "parentId"))
   if (load) {
     if (is.null(file@objects)) file@objects<-new.env(parent=emptyenv())
     # Note: the following only works if 'path' is a file system path, not a URL
@@ -405,11 +461,11 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
 
 synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
   if (isExternalFileHandle(fileHandle)) {
-    synapseStore<-FALSE
+    isExternalURL<-TRUE
     externalURL<-fileHandle$externalURL
     if (is.null(externalURL)) stop(sprintf("URL missing from External File Handle for %s", fileHandle$fileName))
   } else {
-    synapseStore<-TRUE
+    isExternalURL<-FALSE
     externalURL<-NULL
   }
   
@@ -430,7 +486,7 @@ synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFi
           temp<-file.path(downloadLocation, sample(999999999, 1))
           if (!file.rename(filePath, temp)) stop(sprintf("Failed to back up %s before downloading new version.", filePath))
           tryCatch(
-            downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, endpointName, externalURL, fileHandle),
+            downloadFromSynapseOrExternal(downloadLocation, filePath, isExternalURL, downloadUri, endpointName, externalURL, fileHandle),
             error = function(e) {file.rename(temp, filePath); stop(e)}
           )
           unlink(temp)
@@ -440,20 +496,17 @@ synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFi
           #download file from Synapse to distinct filePath
           uniqueFileName <- generateUniqueFileName(downloadLocation, fileHandle$fileName)
           filePath <- file.path(downloadLocation, uniqueFileName)
-          downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, endpointName, externalURL, fileHandle) 
+          downloadFromSynapseOrExternal(downloadLocation, filePath, isExternalURL, downloadUri, endpointName, externalURL, fileHandle) 
         } else {
   				stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
         }
       }
     } else { # filePath does not exist
-      downloadFromSynapseOrExternal(downloadLocation, filePath, synapseStore, downloadUri, endpointName, externalURL, fileHandle) 
+      downloadFromSynapseOrExternal(downloadLocation, filePath, isExternalURL, downloadUri, endpointName, externalURL, fileHandle) 
     }
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }
-  result<-list()
-  if (!is.null(filePath)) result$filePath<-filePath #file@filePath<-filePath
-  result$synapseStore<-synapseStore #file@synapseStore<-synapseStore
   if (load) {
     if(is.null(filePath)) {
       if (!isExternalURL(fileHandle) && !downloadFile) {
@@ -463,7 +516,7 @@ synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFi
       stop(sprintf("Cannot load file %s, there is no local file path.", fileHandle$fileName))
     }
   }
-  result
+  filePath
 }
 
 

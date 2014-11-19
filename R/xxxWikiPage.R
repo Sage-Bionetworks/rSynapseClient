@@ -70,7 +70,7 @@ synCreateWiki<-function(wikiPage) {
   fileHandleIdList<-propertyValue(wikiPage, "attachmentFileHandleIds")
   if (is.null(fileHandleIdList)) fileHandleIdList <- list()
   for (attachment in wikiPage@attachments) {
-    fileHandle<-uploadAndAddToCacheMap(attachment)
+    fileHandle<-uploadAndAddToCacheMap(attachment, S3UploadDestination())
     fileHandleIdList[[length(fileHandleIdList)+1]]<-fileHandle$id
   }
   propertyValue(wikiPage, "attachmentFileHandleIds")<-fileHandleIdList

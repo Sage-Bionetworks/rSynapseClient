@@ -21,6 +21,9 @@ man/AsynchUploadToTableResponseBody.Rd
 man/AsynchronousJobStatus.Rd
 man/AsynchronousRequestBody.Rd
 man/AsynchronousResponseBody.Rd
+man/ExternalUploadDestination.Rd
+man/S3UploadDestination.Rd
+man/UploadDestination.Rd
 inst/resources/Register.json
 inst/resources/schema
 

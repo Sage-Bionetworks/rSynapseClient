@@ -60,6 +60,7 @@ If omitted, will be downloaded to the default file cache location.
 \details{
 Stores an object crafted in memory, either creating it in Synapse anew, or updating an existing object.
 }
+
 \value{
 Returns the persisted copy of the object. 
 For TableDataFrame and TableFilePath, if retrieveData=TRUE returns a Table of the same type.  

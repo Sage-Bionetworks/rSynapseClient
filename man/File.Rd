@@ -23,6 +23,19 @@ File(path, parentId, synapseStore=TRUE, ...)
     Additional named parameters are interpreted as properties or annotations on the File
     }
 }
+\details{
+If the parent Project has an associated data store, 
+credentials to access the store should be placed in your '.synapseConfig' file: 
+The .synapseConfig file goes in your home directory and is in the ".ini" format.  Create a new section 
+in the file for the server to be accessed.  The section title is the protocol and host.  Below, put lines for
+ username and password, e.g.:
+ 
+[sftp://remote.host.com]
+
+username=myUserName
+
+password=secret
+}
 
 \value{
 The created File is returned.  NOTE: This is an in-memory representation.  To persist to Synapse use \code{\link{synStore}()}.
