@@ -940,25 +940,4 @@ setGeneric(
   }
 )
 
-setGeneric(
-  name="createTableSchemaFromProperties",
-  def = function(propertiesList) {
-    standardGeneric("createTableSchemaFromProperties")
-  }
-)
-
-setGeneric(
-  name="Table",
-  def = function(tableSchema, values, ...) {
-    standardGeneric("Table")
-  }
-)
-
-setGeneric(
-  name="as.tableColumns",
-  def = function(source) {
-    standardGeneric("as.tableColumns")
-  }
-)
-
 
