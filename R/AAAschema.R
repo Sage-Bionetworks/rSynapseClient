@@ -202,7 +202,7 @@ getPropertyTypes <- function(entityDef) {
   properties <- lapply(
     X = names(entityDef$properties), 
     FUN = function(prop){
-      theprop <- entityDef$properties[[prop]]
+      theprop <- getPropertyFromSchemaAndName(entityDef, prop)
       schemaTypeFromProperty(theprop)
     }
   )

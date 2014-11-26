@@ -5,15 +5,27 @@
 
 createListFromS4Object<-function(obj) {
   if (is.null(obj) || is(obj, "NullS4Object")) return(NULL)
+  schemaDef <- readEntityDef(getSchemaNameFromS4ClassName(class(obj)), getSchemaPath())
+  createListFromS4ObjectIntern(obj, schemaDef)
+}
+
+createListFromS4ObjectIntern<-function(obj, schemaDef) {
+    if (is.null(obj) || is(obj, "NullS4Object")) return(NULL)
+  
   if (isPrimitiveType(class(obj))) {
     if (length(obj)==0) return(NULL)
-    return(obj)
+    if (schemaTypeFromProperty(schemaDef)=="array") {
+      return(as.list(obj))
+    } else {
+      return(obj)
+    }
   }
   result <-list()
   if (is(obj, "TypedList")) {
+    elemSchema<-readEntityDef(schemaTypeFromProperty(getArraySubSchema(schemaDef)), getSchemaPath())
     if (length(obj)>0) {
       for (i in 1:length(obj)) {
-        result[[1+length(result)]]<-createListFromS4Object(obj[[i]])
+        result[[1+length(result)]]<-createListFromS4ObjectIntern(obj[[i]], elemSchema)
       }
     }
     return(result)
@@ -21,8 +33,10 @@ createListFromS4Object<-function(obj) {
   
   # at this point we know obj is an S4 class
   for (slotName in slotNames(obj)) {
+    property<-getPropertyFromSchemaAndName(schemaDef, slotName)
+    elemSchema<-readEntityDef(schemaTypeFromProperty(property), getSchemaPath())
     value<-slot(obj, slotName)
-    result[[slotName]]<-createListFromS4Object(value)
+    result[[slotName]]<-createListFromS4ObjectIntern(value, elemSchema)
   }
   
   # An object with no field values becomes an empty list.

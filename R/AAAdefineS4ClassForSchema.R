@@ -34,6 +34,21 @@ getS4ClassNameFromSchemaName<-function(schemaName) {
   }
 }
 
+getSchemaNameFromS4ClassName<-function(s4ClassName) {
+  s4MapName <- getS4MapName()
+  s4Map<-.getCache(s4MapName)
+  if (!is.null(s4Map)) {
+    result<-match(s4ClassName, s4Map)
+  } else {
+    result<-NA
+  }
+  if (is.na(result)) {
+    stop(sprintf("No schema name for %s", s4ClassName)) 
+  } else {
+    names(s4Map)[result]
+  }
+}
+
 setS4ClassNameForSchemaName<-function(schemaName, className) {
   s4MapName <- getS4MapName()
   s4Map <- .getCache(s4MapName)
@@ -70,6 +85,10 @@ defineS4Classes<-function() {
   }
 }
 
+getPropertyFromSchemaAndName<-function(schemaDef, propertyName) {
+  schemaDef$properties[[propertyName]]
+}
+
 defineS4ClassForSchema <- function(fullSchemaName) { 
 #  cat(sprintf("defineS4ClassForSchema %s\n", fullSchemaName))
   name<-getS4ClassNameFromSchemaName(fullSchemaName)
@@ -91,8 +110,10 @@ defineS4ClassForSchema <- function(fullSchemaName) {
   slots<-list()
   prototype<-list()
   for (propertyName in names(schemaDef$properties)) {
-    propertySchema<-schemaDef$properties[[propertyName]]
+    propertySchema<-getPropertyFromSchemaAndName(schemaDef, propertyName)
+    print(propertySchema)
     slotType <- defineRTypeFromPropertySchema(propertySchema)
+    message(sprintf("defineS4ClassForSchema: slotType %s", slotType))
     if (isPrimitiveType(slotType)) {
       slots[[propertyName]]<-slotType
     } else {
@@ -214,7 +235,11 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
     primitiveRType
   } else if (schemaPropertyType=="array") {
     elemRType <- defineRTypeFromPropertySchema(getArraySubSchema(propertySchema))
-    defineTypedList(elemRType)
+    if (isPrimitiveType(elemRType)) {
+      primitiveRType # per SYNR-825, when there is an array of primitives we use a vector of same
+    } else {
+      defineTypedList(elemRType)
+    }
   } else {
     # remove the following when PLFM-3091 is done
     if ("org.sagebionetworks.repo.model.file.UploadType"==schemaPropertyType) {
