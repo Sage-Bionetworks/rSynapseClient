@@ -63,7 +63,6 @@ getCredentialsForHost<-function(parsedUrl) {
     if (is.null(username) || is.null(password)) {
       username <- .getUsername(sprintf("Username for %s: ", parsedUrl@host))
       password <- .getPassword(sprintf("Password for %s:  ", parsedUrl@host))
-      .setCache(credentialsCacheKey, list(username=username, password=password))
     }
   }
   

@@ -120,7 +120,7 @@ synGetColumns<-function(id) {
 }
 
 parseRowAndVersion<-function(x) {
-  parsed<-strsplit(x, "-", fixed=T)
+  parsed<-strsplit(x, "_", fixed=T)
   parsedLengths<-sapply(X=parsed, FUN=length)
   lengthNotTwo<-parsedLengths!=2
   if (any(lengthNotTwo)) {
@@ -175,7 +175,7 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   }
   # documentation for textConnection states:
   # "they are relatively expensive to use, and it is often better to 
-  # use an anonymous ‘file()’ connection to collect output."
+  # use an anonymous file() connection to collect output."
   filePath<-tempfile()
   writeDataFrameToCSV(dataFrameToWrite, filePath)
   rowsProcessed<-uploadCSVFileToTable(filePath=filePath, tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
@@ -353,7 +353,7 @@ loadCSVasDataFrame<-function(filePath) {
     # the read-in dataframe has row numbers and versions to remove
     strippedframe<-dataframe[,-c(rowIdIndex, rowVersionIndex)]
     # use the two stripped columns as the row names
-    row.names(strippedframe)<-paste(dataframe[[rowIdIndex]], dataframe[[rowVersionIndex]], sep="-")
+    row.names(strippedframe)<-paste(dataframe[[rowIdIndex]], dataframe[[rowVersionIndex]], sep="_")
     strippedframe
   } else {
     dataframe
