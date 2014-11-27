@@ -2,10 +2,14 @@
 # external scripts that can access the code base but run before
 # the package is built
 # 
-# Author: brucehoff
+# Author: brucehoff		
 #########################################################################
 
 readSchema <- function(name, path) { 
+  # remove the following when PLFM-3091 is done
+  if (name=="org.sagebionetworks.repo.model.file.UploadType") {
+    return(list(type="string", enum=c("S3", "SFTP", "HTTPS")))
+  }
   file <- sprintf("%s.json", gsub("[\\.]", "/", name))
   
   fullPath <- file.path(path,file)
@@ -59,14 +63,12 @@ getEffectivePropertySchemas<-function(schemaName, schemaPath) {
 }
 
 getAllInterfaces <- function(schema, schemaPath) {
-  if(is.null(schema))
-    return(NULL)
+  if(is.null(schema)) return(NULL)
   implements <- NULL
-  while(!is.null(schema$implements)){
-    implements <- c(implements, schema$implements[[1]][[1]])
-    tryCatch({
-        schema <- readSchema(schema$implements[[1]][[1]], schemaPath)
-      }, error = function(e) {schema<-list(implements=NULL)}, silent = TRUE)
+  for (implementsEntry in schema$implements) {
+    implementsName<-implementsEntry[[1]]
+    implementedSchema<-readSchema(implementsName, schemaPath)
+    implements <- c(implements, implementsName, getAllInterfaces(implementedSchema, schemaPath))
   }
   implements
 }

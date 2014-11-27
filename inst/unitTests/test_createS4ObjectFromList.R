@@ -117,5 +117,9 @@ unitTestIntegerAssignment<-function() {
   TableColumn(maximumSize=numeric(0))
 }
 
+unitTestFileHandle<-function() {
+  fileHandle<-synapseClient:::S3FileHandle(id="999", fileName="foo.txt")
+  fileHandleAsList<-synapseClient:::createListFromS4Object(fileHandle)
+}
 
 

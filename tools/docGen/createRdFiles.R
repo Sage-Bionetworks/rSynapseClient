@@ -89,10 +89,7 @@ getPropertyType<-function(propertySchema, schemaPath, classToSchemaMap) {
       list(type=listClassName(elemRType$type), enum=elemRType$enum, isTypedList=TRUE)
     }
   } else {
-    # remove the following when PLFM-3091 is done
-    if ("org.sagebionetworks.repo.model.file.UploadType"==schemaPropertyType) {
-      return("character")
-    }    # check for an enum
+    # check for an enum
     # this is getting subtle: The 'propertySchema' can be a reference, in which case we have to 
     # follow the reference and read it in from another file.  Alternatively the schema can
     # be defined in line, in which case we already have the schema and need not read it in.

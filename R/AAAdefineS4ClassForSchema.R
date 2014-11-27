@@ -239,10 +239,6 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
       defineTypedList(elemRType)
     }
   } else {
-    # remove the following when PLFM-3091 is done
-    if ("org.sagebionetworks.repo.model.file.UploadType"==schemaPropertyType) {
-      return("character")
-    }
     # check for an enum
     # this is getting subtle: The 'propertySchema' can be a reference, in which case we have to 
     # follow the reference and read it in from another file.  Alternatively the schema can
