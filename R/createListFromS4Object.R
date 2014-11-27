@@ -9,6 +9,15 @@ createListFromS4Object<-function(obj) {
   createListFromS4ObjectIntern(obj, schemaDef)
 }
 
+getSchemaForProperty<-function(property) {
+  schemaType<-schemaTypeFromProperty(property)
+  if (isPrimitiveSchema(schemaType)) {
+    property
+  } else {
+    readEntityDef(schemaType, getSchemaPath())
+  }
+}
+
 createListFromS4ObjectIntern<-function(obj, schemaDef) {
     if (is.null(obj) || is(obj, "NullS4Object")) return(NULL)
   
@@ -22,7 +31,7 @@ createListFromS4ObjectIntern<-function(obj, schemaDef) {
   }
   result <-list()
   if (is(obj, "TypedList")) {
-    elemSchema<-readEntityDef(schemaTypeFromProperty(getArraySubSchema(schemaDef)), getSchemaPath())
+    elemSchema<-getSchemaForProperty(getArraySubSchema(schemaDef))
     if (length(obj)>0) {
       for (i in 1:length(obj)) {
         result[[1+length(result)]]<-createListFromS4ObjectIntern(obj[[i]], elemSchema)
@@ -34,7 +43,7 @@ createListFromS4ObjectIntern<-function(obj, schemaDef) {
   # at this point we know obj is an S4 class
   for (slotName in slotNames(obj)) {
     property<-getPropertyFromSchemaAndName(schemaDef, slotName)
-    elemSchema<-readEntityDef(schemaTypeFromProperty(property), getSchemaPath())
+    elemSchema<-getSchemaForProperty(property)
     value<-slot(obj, slotName)
     result[[slotName]]<-createListFromS4ObjectIntern(value, elemSchema)
   }

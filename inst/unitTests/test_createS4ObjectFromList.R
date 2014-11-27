@@ -11,37 +11,28 @@ unitTestCreateS4ObjectFromList<-function() {
   checkEquals("name", e@name)
   checkEquals("description", e@description)
   
-  # list argument has list
-  up<-synapseClient:::createS4ObjectFromList( 
-    list(ownerId="101", 
-      emails=list("foo@bar.com", "bar@bas.com")
-    ),"UserProfile")
-  checkEquals("101", up@ownerId)
-  checkEquals(list("foo@bar.com", "bar@bas.com"), synapseClient:::getList(up@emails))
-  
-  # list argument has vector
   up<-synapseClient:::createS4ObjectFromList( 
     list(ownerId="101", 
       emails=c("foo@bar.com", "bar@bas.com")
     ), "UserProfile")
   checkEquals("101", up@ownerId)
-  checkEquals(list("foo@bar.com", "bar@bas.com"), synapseClient:::getList(up@emails))
+  checkEquals(c("foo@bar.com", "bar@bas.com"), up@emails)
   
   # list argument has content of embedded S4 object
   up<-synapseClient:::createS4ObjectFromList( 
     list(ownerId="101", 
-      emails=list("foo@bar.com", "bar@bas.com"),
+      emails=c("foo@bar.com", "bar@bas.com"),
       notificationSettings=list(sendEmailNotifications=T, markEmailedMessagesAsRead=F)
     ), "UserProfile")
   checkEquals("101", up@ownerId)
-  checkEquals(list("foo@bar.com", "bar@bas.com"), synapseClient:::getList(up@emails))
+  checkEquals(c("foo@bar.com", "bar@bas.com"), up@emails)
   checkEquals(synapseClient:::Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F), up@notificationSettings)
   
   # list has array of embedded S4 objects
   
   up<-synapseClient:::createS4ObjectFromList( 
     list(ownerId="101", 
-      emails=list("foo@bar.com", "bar@bas.com"),
+      emails=c("foo@bar.com", "bar@bas.com"),
       notificationSettings=list(sendEmailNotifications=T, markEmailedMessagesAsRead=F),
       preferences=list(
         list(concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean", name="foo", value=T),
@@ -49,7 +40,7 @@ unitTestCreateS4ObjectFromList<-function() {
       )
     ), "UserProfile")
   checkEquals("101", up@ownerId)
-  checkEquals(list("foo@bar.com", "bar@bas.com"), synapseClient:::getList(up@emails))
+  checkEquals(c("foo@bar.com", "bar@bas.com"), up@emails)
   checkEquals(synapseClient:::Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F), up@notificationSettings)
   prefs<-up@preferences
   checkTrue(!is.null(prefs))
@@ -63,9 +54,7 @@ unitTestS4RoundTrip<-function() {
   e<-Evaluation(name="name", description="description")
   listRep<-synapseClient:::createListFromS4Object(e)
   checkEquals(e, synapseClient:::createS4ObjectFromList(listRep, "Evaluation"))
-   
-  emails<-new("CharacterList")
-  emails@content<-list("foo@bar.com", "bar@bas.com")
+  emails<-c("foo@bar.com", "bar@bas.com")
   preferences<-new("UserPreferenceList")
   preferences@content<-list(
     synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"),
@@ -86,8 +75,7 @@ unitTestS4RoundTrip<-function() {
 
 unitTestMissingS4Field<-function() {
   # note:  there's no 'notificationSettings' field
-  emails<-new("CharacterList")
-  emails@content<-list("foo@bar.com", "bar@bas.com")
+  emails<-c("foo@bar.com", "bar@bas.com")
   preferences<-new("UserPreferenceList")
   preferences@content<-list(
     synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"),

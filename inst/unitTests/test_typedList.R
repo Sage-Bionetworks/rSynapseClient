@@ -5,8 +5,7 @@
 
 
 unitTestEmptyTypedList<-function() {
-  openIds<-new("CharacterList")
-  p<-synapseClient:::UserProfile(openIds=openIds)
+  p<-synapseClient:::UserProfile(openIds=character(0))
   synapseClient:::createListFromS4Object(p)
 }
 

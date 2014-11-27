@@ -111,9 +111,7 @@ defineS4ClassForSchema <- function(fullSchemaName) {
   prototype<-list()
   for (propertyName in names(schemaDef$properties)) {
     propertySchema<-getPropertyFromSchemaAndName(schemaDef, propertyName)
-    print(propertySchema)
     slotType <- defineRTypeFromPropertySchema(propertySchema)
-    message(sprintf("defineS4ClassForSchema: slotType %s", slotType))
     if (isPrimitiveType(slotType)) {
       slots[[propertyName]]<-slotType
     } else {
@@ -236,7 +234,7 @@ defineRTypeFromPropertySchema <- function(propertySchema) {
   } else if (schemaPropertyType=="array") {
     elemRType <- defineRTypeFromPropertySchema(getArraySubSchema(propertySchema))
     if (isPrimitiveType(elemRType)) {
-      primitiveRType # per SYNR-825, when there is an array of primitives we use a vector of same
+      elemRType # per SYNR-825, when there is an array of primitives we use a vector of same
     } else {
       defineTypedList(elemRType)
     }

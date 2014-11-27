@@ -57,10 +57,10 @@ unitTestS4Equals<-function() {
   up2<-UserProfile()
   checkTrue(identical(up1, up2))
   
-  up1<-UserProfile(ownerId="foo", openIds=CharacterList("foo1", "foo2"), 
+  up1<-UserProfile(ownerId="foo", openIds=c("foo1", "foo2"), 
     notificationSettings=Settings(sendEmailNotifications=TRUE, markEmailedMessagesAsRead=FALSE),
     preferences=UserPreferenceList(UserPreferenceBoolean("foo", TRUE)))
-  up2<-UserProfile(ownerId="foo", openIds=CharacterList("foo1", "foo2"), 
+  up2<-UserProfile(ownerId="foo", openIds=c("foo1", "foo2"), 
     notificationSettings=Settings(sendEmailNotifications=TRUE, markEmailedMessagesAsRead=FALSE),
     preferences=UserPreferenceList(UserPreferenceBoolean("foo", TRUE)))
   checkTrue(identical(up1, up2))
