@@ -60,7 +60,7 @@ unitTestS4RoundTrip<-function() {
     synapseClient:::UserPreferenceBoolean(name="foo", value=T, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean"),
     synapseClient:::UserPreferenceBoolean(name="bar", value=F, concreteType="org.sagebionetworks.repo.model.UserPreferenceBoolean")
   )
-  notificationSettings=synapseClient:::Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F)
+  notificationSettings<-synapseClient:::Settings(sendEmailNotifications=T, markEmailedMessagesAsRead=F)
   up<-synapseClient:::UserProfile(
     ownerId="101", 
     emails=emails,

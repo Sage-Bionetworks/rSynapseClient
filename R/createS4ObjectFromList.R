@@ -31,6 +31,9 @@ createS4ObjectFromList<-function(content, className) {
     slotValue <- content[[slotName]]
     
     if (isPrimitiveType(s4SlotType)) {
+      if (is(slotValue, "list")) {
+        slotValue<-unlist(slotValue) 
+      }
       if (s4SlotType=="integer") {
         # a value may come in as 'numeric'
         slotValue<-as.integer(slotValue)

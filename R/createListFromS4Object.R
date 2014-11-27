@@ -11,12 +11,14 @@ createListFromS4Object<-function(obj) {
 
 getSchemaForProperty<-function(property) {
   schemaType<-schemaTypeFromProperty(property)
-  if (isPrimitiveSchema(schemaType)) {
+  isPrimitive<-length(TYPEMAP_FOR_ALL_PRIMITIVES[[schemaType]])>0
+  if (isPrimitive || schemaType=="array") {
     property
   } else {
     readEntityDef(schemaType, getSchemaPath())
   }
 }
+
 
 createListFromS4ObjectIntern<-function(obj, schemaDef) {
     if (is.null(obj) || is(obj, "NullS4Object")) return(NULL)
@@ -41,8 +43,9 @@ createListFromS4ObjectIntern<-function(obj, schemaDef) {
   }
   
   # at this point we know obj is an S4 class
+  effectiveSchemaProperties<-getEffectivePropertySchemas(getSchemaNameFromS4ClassName(class(obj)), getSchemaPath())
   for (slotName in slotNames(obj)) {
-    property<-getPropertyFromSchemaAndName(schemaDef, slotName)
+    property<-effectiveSchemaProperties[[slotName]]
     elemSchema<-getSchemaForProperty(property)
     value<-slot(obj, slotName)
     result[[slotName]]<-createListFromS4ObjectIntern(value, elemSchema)
