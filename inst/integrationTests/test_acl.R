@@ -40,7 +40,7 @@ integrationTestACLRoundtrip <- function() {
   myId<-myProfile@ownerId
   checkTrue(!is.null(myId))
   ra<-ResourceAccess(principalId=as.integer(myId), 
-    accessType=CharacterList("CHANGE_PERMISSIONS", "UPDATE", "CREATE", "READ", "DELETE"))
+    accessType=c("CHANGE_PERMISSIONS", "UPDATE", "CREATE", "READ", "DELETE"))
   acl@resourceAccess<-ResourceAccessList(ra)
   acl<-synCreateEntityACL(acl)
   checkEquals(id, acl@id)
@@ -56,7 +56,7 @@ integrationTestACLRoundtrip <- function() {
   checkEquals(length(retrieved@resourceAccess[[1]]@accessType), length(acl@resourceAccess[[1]]@accessType))
   
   # change the ACL for the file
-  newPermissionList<-CharacterList("CHANGE_PERMISSIONS", "UPDATE", "READ", "DELETE")
+  newPermissionList<-c("CHANGE_PERMISSIONS", "UPDATE", "READ", "DELETE")
   acl@resourceAccess[[1]]@accessType<-newPermissionList
   acl<-synUpdateEntityACL(acl)
   checkTrue(identical(length(newPermissionList), length(acl@resourceAccess[[1]]@accessType)))
