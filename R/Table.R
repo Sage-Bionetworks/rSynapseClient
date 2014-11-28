@@ -175,7 +175,7 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   }
   # documentation for textConnection states:
   # "they are relatively expensive to use, and it is often better to 
-  # use an anonymous ‘file()’ connection to collect output."
+  # use an anonymous ���file()��� connection to collect output."
   filePath<-tempfile()
   writeDataFrameToCSV(dataFrameToWrite, filePath)
   rowsProcessed<-uploadCSVFileToTable(filePath=filePath, tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
@@ -400,8 +400,7 @@ synDeleteRows<-function(tableDataFrame) {
   } else if (is (schema, "character")) {
     tableId<-schema
   }
-  rowIds<-IntegerList()
-  rowIds@content<-as.list(parseRowAndVersion(row.names(tableDataFrame@values))[1,])
+  rowIds<-parseRowAndVersion(row.names(tableDataFrame@values))[1,]
   request<-RowSelection(tableId=tableId, etag=tableDataFrame@updateEtag, rowIds=rowIds)
   responseBodyAsList<-synRestPOST(sprintf("/entity/%s/table/deleteRows", tableId), createListFromS4Object(request))
   response<-createS4ObjectFromList(responseBodyAsList, "RowReferenceSet")

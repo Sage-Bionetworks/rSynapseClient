@@ -99,7 +99,7 @@ defineEntityClass <-
   
   implementsSchemaName <-entityDef$implements[[1]][[1]]
   implementsSchema<-readEntityDef(implementsSchemaName, getSchemaPath())
-  implements <- unique(c(implementsSchemaName, getAllInterfaces(implementsSchema, getSchemaPath())))
+  implements <- unique(c(implementsSchemaName, getAllEntityInterfaces(implementsSchema, getSchemaPath())))
   
   if ("org.sagebionetworks.repo.model.Locationable" %in% implements) {
     contains <- "Locationable"
@@ -193,6 +193,19 @@ mapTypes <- function(types) {
   retval
 }
 
+getAllEntityInterfaces <- function(schema, schemaPath) {
+  if(is.null(schema))
+    return(NULL)
+  implements <- NULL
+  while(!is.null(schema$implements)){
+    implements <- c(implements, schema$implements[[1]][[1]])
+    tryCatch({
+        schema <- readSchema(schema$implements[[1]][[1]], schemaPath)
+      }, error = function(e) {schema<-list(implements=NULL)}, silent = TRUE)
+  }
+  implements
+}
+
 getEffectivePropertyTypes <-function(schemaName) {
   schema<-readEntityDef(schemaName, getSchemaPath())
   mapTypes(getEffectiveSchemaTypes(schema, getSchemaPath()))
@@ -213,7 +226,7 @@ getPropertyTypes <- function(entityDef) {
 getEffectiveSchemaTypes <- function(schema, schemaPath) {
   # start with the properties for the immediate schema
   properties<-getPropertyTypes(schema)
-  implements <- getAllInterfaces(schema, schemaPath)
+  implements <- getAllEntityInterfaces(schema, schemaPath)
   if (length(implements)>0) {
      for (i in length(implements):1) {
       thisProp <- getPropertyTypes(readEntityDef(implements[i], getSchemaPath()))
