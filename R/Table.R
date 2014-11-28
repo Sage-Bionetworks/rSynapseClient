@@ -175,7 +175,7 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   }
   # documentation for textConnection states:
   # "they are relatively expensive to use, and it is often better to 
-  # use an anonymous ���file()��� connection to collect output."
+  # use an anonymous 'file()' connection to collect output."
   filePath<-tempfile()
   writeDataFrameToCSV(dataFrameToWrite, filePath)
   rowsProcessed<-uploadCSVFileToTable(filePath=filePath, tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)

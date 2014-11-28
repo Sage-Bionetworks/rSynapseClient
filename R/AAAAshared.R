@@ -6,7 +6,7 @@
 #########################################################################
 
 readSchema <- function(name, path) { 
-  # remove the following when PLFM-3091 is done
+  # remove the following when SYNR-841 is done
   if (name=="org.sagebionetworks.repo.model.file.UploadType") {
     return(list(type="string", enum=c("S3", "SFTP", "HTTPS")))
   }
