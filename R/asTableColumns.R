@@ -17,7 +17,7 @@ setMethod(
       columnName<-names(dataframe[i])
       if (dfColumnType=="factor") {
         levels<-levels(dataframe[[i]])
-        tableColumn<-TableColumn(name=columnName, columnType=columnType, enumValues=do.call("CharacterList", as.list(levels)))
+        tableColumn<-TableColumn(name=columnName, columnType=columnType, enumValues=levels)
       } else {
         tableColumn<-TableColumn(name=columnName, columnType=columnType)
       }

@@ -31,11 +31,17 @@ createS4ObjectFromList<-function(content, className) {
     slotValue <- content[[slotName]]
     
     if (isPrimitiveType(s4SlotType)) {
+      # not sure why empty lists are mapped to "AsIs" types, but it's the behavior of RJSONIO
+      if (is(slotValue, "list") || is(slotValue, "AsIs")) {
+        slotValue<-unlist(slotValue) 
+      }
       if (s4SlotType=="integer") {
         # a value may come in as 'numeric'
         slotValue<-as.integer(slotValue)
       }
-      constructorArgs[[slotName]]<-slotValue
+      if (!is.null(slotValue)) {
+        constructorArgs[[slotName]]<-slotValue
+      }
     } else {
       if (!isNullableType(s4SlotType)) {
         # something has gone wrong.  Non-primitive slots should extend a nullable type

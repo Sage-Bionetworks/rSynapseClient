@@ -16,8 +16,8 @@ library(Rssh)
   deleteEntity(synapseClient:::.getCache("testProject"))
   
   sftpFilesToDelete<-synapseClient:::.getCache("sftpFilesToDelete")
-  if (!is.null(sftpFilesToDelete) && length(sftpFilesToDelete)>0) {
-    host<-synapseClient:::.getCache("test_sftp_host")
+  host<-synapseClient:::.getCache("test_sftp_host")
+  if (!is.null(sftpFilesToDelete) && length(sftpFilesToDelete)>0 && !is.null(host)) {
     credentials<-synapseClient:::.getCache(sprintf("sftp://%s_credentials", host))
     username<-credentials$username
     password<-credentials$password

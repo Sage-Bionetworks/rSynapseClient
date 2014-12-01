@@ -73,6 +73,7 @@ slotRdEntry<-function(itemName, itemDescription, itemType) {
 # (1) type and 
 # (2) enum: If the type is an enum or a list of enums, this field enumerates the allowed types
 # (3) isTypedList: TRUE iff the type is a TypedList 
+# (4) isArray:  TRUE iff the type is an array
 # Note:  This closely parallels the logic in defineRTypeFromPropertySchema
 getPropertyType<-function(propertySchema, schemaPath, classToSchemaMap) {
   # This is the type 'in the language of the schema'
@@ -80,15 +81,16 @@ getPropertyType<-function(propertySchema, schemaPath, classToSchemaMap) {
   primitiveRType<-TYPEMAP_FOR_ALL_PRIMITIVES[[schemaPropertyType]]
   if(length(primitiveRType)>0) {
     # No S4 class to define, just return type name
-    list(type=primitiveRType, enum=propertySchema$enum, isTypedList=FALSE)
+    list(type=primitiveRType, enum=propertySchema$enum, isTypedList=FALSE, isArray=FALSE)
   } else if (schemaPropertyType=="array") {
     elemRType <- getPropertyType(getArraySubSchema(propertySchema), schemaPath, classToSchemaMap)
-    list(type=listClassName(elemRType$type), enum=elemRType$enum, isTypedList=TRUE)
+    if (isPrimitiveType(elemRType$type)) {
+      list(type=elemRType$type, enum=elemRType$enum, isTypedList=FALSE, isArray=TRUE)
+    } else {
+      list(type=listClassName(elemRType$type), enum=elemRType$enum, isTypedList=TRUE, isArray=TRUE)
+    }
   } else {
-    # remove the following when PLFM-3091 is done
-    if ("org.sagebionetworks.repo.model.file.UploadType"==schemaPropertyType) {
-      return("character")
-    }    # check for an enum
+    # check for an enum
     # this is getting subtle: The 'propertySchema' can be a reference, in which case we have to 
     # follow the reference and read it in from another file.  Alternatively the schema can
     # be defined in line, in which case we already have the schema and need not read it in.
@@ -97,9 +99,9 @@ getPropertyType<-function(propertySchema, schemaPath, classToSchemaMap) {
     }
     if (isEnum(propertySchema)) {
       # it's an 'enum' or similar
-      list(type=TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]], enum=propertySchema$enum, isTypedList=FALSE)
+      list(type=TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]], enum=propertySchema$enum, isTypedList=FALSE, isArray=FALSE)
     } else {
-      list(type=classToSchemaMap[[schemaPropertyType]], isTypedList=FALSE)
+      list(type=classToSchemaMap[[schemaPropertyType]], isTypedList=FALSE, isArray=FALSE)
     }
   }  
 }
@@ -110,7 +112,11 @@ propertyTypeToString<-function(propertyType) {
   } else {
     enumString<-paste(propertyType$enum, collapse=", ")
     if (isPrimitiveType(propertyType$type)) {
-      sprintf("one of %s", enumString)
+      if (propertyType$isArray) {
+        sprintf("one or more of %s", enumString)
+      } else {
+        sprintf("one of %s", enumString)
+      }
     } else {
       sprintf("%s of %s", propertyType$type, enumString)
     }

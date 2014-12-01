@@ -32,7 +32,7 @@ setMethod(
   definition = function(object){
     cat('An object of class "', class(object), '"\n', sep="")
     showSchemaOrEntityId(object@schema)
-    cat(sprintf("data frame columns:\n%s", paste(names(object@values), collapse="\n")))
+    cat(sprintf("data frame columns:\n%s\n", paste(names(object@values), collapse="\n")))
   }
 )
 
@@ -42,7 +42,7 @@ setMethod(
   definition = function(object){
     cat('An object of class "', class(object), '"\n', sep="")
     showSchemaOrEntityId(object@schema)
-    cat(sprintf("filePath:\n%s", object@filePath))
+    cat(sprintf("filePath:\n%s\n", object@filePath))
   }
 )
 
@@ -52,7 +52,7 @@ setMethod(
   definition = function(object){
     cat('An object of class "', class(object), '"\n', sep="")
     showSchemaOrEntityId(object@schema)
-    cat(sprintf("row count:\n%s", object@rowCount))
+    cat(sprintf("row count:\n%s\n", object@rowCount))
   }
 )
 
@@ -175,7 +175,7 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   }
   # documentation for textConnection states:
   # "they are relatively expensive to use, and it is often better to 
-  # use an anonymous file() connection to collect output."
+  # use an anonymous 'file()' connection to collect output."
   filePath<-tempfile()
   writeDataFrameToCSV(dataFrameToWrite, filePath)
   rowsProcessed<-uploadCSVFileToTable(filePath=filePath, tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
@@ -352,6 +352,11 @@ loadCSVasDataFrame<-function(filePath) {
   if (!is.na(rowIdIndex) && !is.na(rowVersionIndex)) {
     # the read-in dataframe has row numbers and versions to remove
     strippedframe<-dataframe[,-c(rowIdIndex, rowVersionIndex)]
+    if (class(strippedframe)!="data.frame") {
+      # SYNR-828: selecting just one row of a data frame creates a vector
+      strippedframe<-as.data.frame(strippedframe)
+      names(strippedframe)<-names(dataframe)[-c(rowIdIndex, rowVersionIndex)]
+    }
     # use the two stripped columns as the row names
     row.names(strippedframe)<-paste(dataframe[[rowIdIndex]], dataframe[[rowVersionIndex]], sep="_")
     strippedframe
@@ -400,8 +405,7 @@ synDeleteRows<-function(tableDataFrame) {
   } else if (is (schema, "character")) {
     tableId<-schema
   }
-  rowIds<-IntegerList()
-  rowIds@content<-as.list(parseRowAndVersion(row.names(tableDataFrame@values))[1,])
+  rowIds<-parseRowAndVersion(row.names(tableDataFrame@values))[1,]
   request<-RowSelection(tableId=tableId, etag=tableDataFrame@updateEtag, rowIds=rowIds)
   responseBodyAsList<-synRestPOST(sprintf("/entity/%s/table/deleteRows", tableId), createListFromS4Object(request))
   response<-createS4ObjectFromList(responseBodyAsList, "RowReferenceSet")
