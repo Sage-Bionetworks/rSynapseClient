@@ -32,7 +32,7 @@ setMethod(
   definition = function(object){
     cat('An object of class "', class(object), '"\n', sep="")
     showSchemaOrEntityId(object@schema)
-    cat(sprintf("data frame columns:\n%s", paste(names(object@values), collapse="\n")))
+    cat(sprintf("data frame columns:\n%s\n", paste(names(object@values), collapse="\n")))
   }
 )
 
@@ -42,7 +42,7 @@ setMethod(
   definition = function(object){
     cat('An object of class "', class(object), '"\n', sep="")
     showSchemaOrEntityId(object@schema)
-    cat(sprintf("filePath:\n%s", object@filePath))
+    cat(sprintf("filePath:\n%s\n", object@filePath))
   }
 )
 
@@ -52,7 +52,7 @@ setMethod(
   definition = function(object){
     cat('An object of class "', class(object), '"\n', sep="")
     showSchemaOrEntityId(object@schema)
-    cat(sprintf("row count:\n%s", object@rowCount))
+    cat(sprintf("row count:\n%s\n", object@rowCount))
   }
 )
 
@@ -120,7 +120,7 @@ synGetColumns<-function(id) {
 }
 
 parseRowAndVersion<-function(x) {
-  parsed<-strsplit(x, "-", fixed=T)
+  parsed<-strsplit(x, "_", fixed=T)
   parsedLengths<-sapply(X=parsed, FUN=length)
   lengthNotTwo<-parsedLengths!=2
   if (any(lengthNotTwo)) {
@@ -352,8 +352,13 @@ loadCSVasDataFrame<-function(filePath) {
   if (!is.na(rowIdIndex) && !is.na(rowVersionIndex)) {
     # the read-in dataframe has row numbers and versions to remove
     strippedframe<-dataframe[,-c(rowIdIndex, rowVersionIndex)]
+    if (class(strippedframe)!="data.frame") {
+      # SYNR-828: selecting just one row of a data frame creates a vector
+      strippedframe<-as.data.frame(strippedframe)
+      names(strippedframe)<-names(dataframe)[-c(rowIdIndex, rowVersionIndex)]
+    }
     # use the two stripped columns as the row names
-    row.names(strippedframe)<-paste(dataframe[[rowIdIndex]], dataframe[[rowVersionIndex]], sep="-")
+    row.names(strippedframe)<-paste(dataframe[[rowIdIndex]], dataframe[[rowVersionIndex]], sep="_")
     strippedframe
   } else {
     dataframe
