@@ -299,7 +299,7 @@ integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
   tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2))
   tschema <- synStore(tschema, createOrUpdate=FALSE)
   
-  dataFrame <- data.frame(sweet=c(1:5, 1.234e-10, 5.678e+10, NA, NaN, Inf, -Inf), sweet2=c(NA, 6:10, 1.234567, 9.876543, Inf, NaN, 1))
+  dataFrame <- data.frame(sweet=c(1:5, 1.234e-10, 5.678e+10, NA), sweet2=c(NA, 6:10, 1.234567, 9.876543))
   myTable <- Table(tschema, values=dataFrame)
   myTable <- synStore(myTable, retrieveData=T)
   # now check that the data frames are the same
