@@ -46,6 +46,17 @@ queryResult@values[2,"n"]<-pi
 table<-synStore(queryResult, retrieveData=TRUE)
 table@values
 \end{verbatim}
+You can delete selected rows from the table:
+\begin{verbatim}
+rowsToDelete<-synTableQuery(sprintf("select * from %s where c='foo'", schemaId))
+synDeleteRows(rowsToDelete)
+\end{verbatim}
+You can also delete the entire table:
+\begin{verbatim}
+synDelete(schemaId)
+\end{verbatim}
+
+
 Table creation and retrieval can be done with files on disk.  No need to load
 the data into memory first.
 First we create a csv file to use:

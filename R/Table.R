@@ -32,7 +32,7 @@ setMethod(
   definition = function(object){
     cat('An object of class "', class(object), '"\n', sep="")
     showSchemaOrEntityId(object@schema)
-    cat(sprintf("data frame columns:\n%s", paste(names(object@values), collapse="\n")))
+    cat(sprintf("data frame columns:\n%s\n", paste(names(object@values), collapse="\n")))
   }
 )
 
@@ -42,7 +42,7 @@ setMethod(
   definition = function(object){
     cat('An object of class "', class(object), '"\n', sep="")
     showSchemaOrEntityId(object@schema)
-    cat(sprintf("filePath:\n%s", object@filePath))
+    cat(sprintf("filePath:\n%s\n", object@filePath))
   }
 )
 
@@ -52,7 +52,7 @@ setMethod(
   definition = function(object){
     cat('An object of class "', class(object), '"\n', sep="")
     showSchemaOrEntityId(object@schema)
-    cat(sprintf("row count:\n%s", object@rowCount))
+    cat(sprintf("row count:\n%s\n", object@rowCount))
   }
 )
 
