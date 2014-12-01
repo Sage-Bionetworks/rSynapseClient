@@ -352,6 +352,11 @@ loadCSVasDataFrame<-function(filePath) {
   if (!is.na(rowIdIndex) && !is.na(rowVersionIndex)) {
     # the read-in dataframe has row numbers and versions to remove
     strippedframe<-dataframe[,-c(rowIdIndex, rowVersionIndex)]
+    if (class(strippedframe)!="data.frame") {
+      # SYNR-828: selecting just one row of a data frame creates a vector
+      strippedframe<-as.data.frame(strippedframe)
+      names(strippedframe)<-names(dataframe)[-c(rowIdIndex, rowVersionIndex)]
+    }
     # use the two stripped columns as the row names
     row.names(strippedframe)<-paste(dataframe[[rowIdIndex]], dataframe[[rowVersionIndex]], sep="_")
     strippedframe
