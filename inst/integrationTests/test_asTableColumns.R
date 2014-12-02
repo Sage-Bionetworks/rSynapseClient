@@ -1,9 +1,9 @@
-# unit tests for supporting functions in Table.R
+# integration tests for as.TableColumns
 # 
 # Author: brucehoff
 ###############################################################################
 
-unitTest_asTableColumns<-function() {
+integrationTest_asTableColumns<-function() {
   tableColumns<-as.tableColumns(system.file("resources/test/withHeaders.csv", package = "synapseClient"))
   checkTrue(!is.null(tableColumns$fileHandleId))
   checkEquals(4, length(tableColumns$tableColumns))
