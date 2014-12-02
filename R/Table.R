@@ -65,7 +65,9 @@ setMethod(
     values,
     linesToSkip,
     quoteCharacter,
+    isFirstLineHeader,
     escapeCharacter,
+    lineEnd,
     separator,
     updateEtag) {
     result<-new("TableFilePath")
@@ -73,7 +75,9 @@ setMethod(
     result@filePath<-values
     if (!missing(linesToSkip)) result@linesToSkip<-linesToSkip
     if (!missing(quoteCharacter)) result@quoteCharacter<-quoteCharacter
+    if (!missing(isFirstLineHeader)) result@isFirstLineHeader<-isFirstLineHeader
     if (!missing(escapeCharacter)) result@escapeCharacter<-escapeCharacter
+    if (!missing(lineEnd)) result@lineEnd<-lineEnd
     if (!missing(separator)) result@separator<-separator
     if (!missing(updateEtag)) result@updateEtag<-updateEtag
     result
@@ -83,10 +87,26 @@ setMethod(
 setMethod(
   f = "Table",
   signature = signature("TableSchemaOrCharacter", "integer"),
-  definition = function(tableSchema, values) {
+  definition = function(
+    tableSchema, 
+    values,
+    linesToSkip,
+    quoteCharacter,
+    isFirstLineHeader,
+    escapeCharacter,
+    lineEnd,
+    separator,
+    updateEtag) {
     result<-new("TableFileHandleId")
     result@schema<-tableSchema
     result@fileHandleId<-values
+    if (!missing(linesToSkip)) result@linesToSkip<-linesToSkip
+    if (!missing(quoteCharacter)) result@quoteCharacter<-quoteCharacter
+    if (!missing(isFirstLineHeader)) result@isFirstLineHeader<-isFirstLineHeader
+    if (!missing(escapeCharacter)) result@escapeCharacter<-escapeCharacter
+    if (!missing(lineEnd)) result@lineEnd<-lineEnd
+    if (!missing(separator)) result@separator<-separator
+    if (!missing(updateEtag)) result@updateEtag<-updateEtag
     result
   }
 )
@@ -177,7 +197,9 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   # use an anonymous 'file()' connection to collect output."
   filePath<-tempfile()
   writeDataFrameToCSV(dataFrameToWrite, filePath)
-  rowsProcessed<-uploadCSVFileToTable(filePath=filePath, tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
+  s3FileHandle<-chunkedUploadFile(filePath)
+  
+  rowsProcessed<-uploadFileHandleIdToTable(as.integer(s3FileHandle$id), tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
 }
 
 # returns the Synapse types which can hold the given R type, with the first one being the preferred
@@ -230,9 +252,10 @@ setMethod(
 
 TableRowCount<-function(schema, rowCount, updateEtag) {
   result<-new("TableRowCount")
-  result@schema<-entity@schema
-  result@rowCount<-rowsProcessed
+  result@schema<-schema
+  result@rowCount<-rowCount
   if (!missing(updateEtag)) result@updateEtag<-updateEtag
+  result
 }
 
 convertDataFrameTypeToSchemaType<-function(dataframe, tableId) {
@@ -259,11 +282,23 @@ setMethod(
     verbose=TRUE,
     filePath=NULL) {
     s3FileHandle<-chunkedUploadFile(entity@filePath)
-    synStore(entity=Table(entity@schema, as.integer(s3FileHandle$id)),
-      retrieveData=retrieveData,
-      verbose=verbose,
-      filePath=filePath)
-  }
+    synStore(entity=
+        Table(
+          tableSchema=entity@schema, 
+          values=as.integer(s3FileHandle$id),
+          linesToSkip=entity@linesToSkip,
+          quoteCharacter=entity@quoteCharacter,
+          isFirstLineHeader=entity@isFirstLineHeader,
+          escapeCharacter=entity@escapeCharacter,
+          lineEnd=entity@lineEnd,
+          separator=entity@separator,
+          updateEtag=entity@updateEtag
+        ),
+        retrieveData=retrieveData,
+        verbose=verbose,
+        filePath=filePath)
+    
+   }
 )
 
 setMethod(
@@ -284,7 +319,8 @@ setMethod(
       entity@quoteCharacter,
       entity@isFirstLineHeader,
       entity@escapeCharacter,
-      entity@separator
+      entity@separator,
+      entity@lineEnd
     )
     if (retrieveData) {
       sql=sprintf("select * from %s", tableId)
@@ -312,7 +348,7 @@ uploadFileHandleIdToTable<-function(fileHandleId, tableId,
       lineEnd=lineEnd
     ),
     tableId=tableId,
-    uploadFileHandleId=fileHandleId,
+    uploadFileHandleId=as.character(fileHandleId),
     updateEtag=updateEtag
   )
   

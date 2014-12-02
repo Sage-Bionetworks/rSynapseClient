@@ -531,6 +531,7 @@ setClass(
     quoteCharacter="character",
     isFirstLineHeader="logical",
     escapeCharacter="character",
+    lineEnd="character",
     separator="character"
     )
 )
@@ -544,7 +545,16 @@ setClass(
 setClass(
   Class = "TableFileHandleId",
   contains = c("Table"),
-  representation=representation(rowCount="fileHandleId", updateEtag="character")
+  representation=representation(
+    fileHandleId="integer",
+    updateEtag="character",
+    linesToSkip="integer",
+    quoteCharacter="character",
+    isFirstLineHeader="logical",
+    escapeCharacter="character",
+    lineEnd="character",
+    separator="character"
+    )
 )
 
 
