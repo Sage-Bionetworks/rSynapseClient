@@ -182,6 +182,9 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
 }
 
 writeDataFrameToCSV<-function(dataFrame, filePath) {
+  for (i in 1:dim(dataFrame)[2]) {
+    dataFrame[[i]][is.nan(dataFrame[[i]])]<-"NaN"
+  }
   write.csv(x=dataFrame, file=filePath, row.names=FALSE, na="")
 }
 
@@ -351,12 +354,8 @@ loadCSVasDataFrame<-function(filePath) {
   rowVersionIndex<-match("ROW_VERSION", names(dataframe))
   if (!is.na(rowIdIndex) && !is.na(rowVersionIndex)) {
     # the read-in dataframe has row numbers and versions to remove
-    strippedframe<-dataframe[,-c(rowIdIndex, rowVersionIndex)]
-    if (class(strippedframe)!="data.frame") {
-      # SYNR-828: selecting just one row of a data frame creates a vector
-      strippedframe<-as.data.frame(strippedframe)
-      names(strippedframe)<-names(dataframe)[-c(rowIdIndex, rowVersionIndex)]
-    }
+    # 'drop=FALSE' is needed to avoid converting a one-column data frame into a vector (SYNR-828)
+    strippedframe<-dataframe[,-c(rowIdIndex, rowVersionIndex), drop=FALSE]
     # use the two stripped columns as the row names
     row.names(strippedframe)<-paste(dataframe[[rowIdIndex]], dataframe[[rowVersionIndex]], sep="_")
     strippedframe
