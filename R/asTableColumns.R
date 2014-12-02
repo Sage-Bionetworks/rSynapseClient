@@ -21,7 +21,7 @@ setMethod(
     s3FileHandle<-chunkedUploadFile(filePath)
     request<-UploadToTablePreviewRequest(uploadFileHandleId=s3FileHandle$id)
     asyncJobId<-createS4ObjectFromList(
-      synRestPOST("/table/upload/csv/preview/async/start", createListForS4Object(request)))
+      synRestPOST("/table/upload/csv/preview/async/start", createListFromS4Object(request)))
     responseBodyAsList<-trackProgress(sprintf("/table/upload/csv/preview/async/get/%s", asyncJobId@token), verbose=FALSE)
     responseBody<-createS4ObjectFromList(responseBodyAsList, "UploadToTablePreviewResult")
     list(fileHandleId=s3FileHandle$id, tableColumns=responseBody$suggestedColumns)

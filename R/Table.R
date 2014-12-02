@@ -259,27 +259,10 @@ setMethod(
     verbose=TRUE,
     filePath=NULL) {
     s3FileHandle<-chunkedUploadFile(entity@filePath)
-    
-    entity@schema<-ensureTableSchemaIsRetrieved(entity@schema)
-    entity@schema<-ensureTableSchemaStored(entity@schema)
-    tableId<-propertyValue(entity@schema, "id")
-    rowsProcessed<-uploadFileHandleIdToTable(
-      s3FileHandle$id, 
-      tableId,
-      verbose,
-      entity@linesToSkip,
-      entity@quoteCharacter,
-      entity@isFirstLineHeader,
-      entity@escapeCharacter,
-      entity@separator
-    )
-    if (retrieveData) {
-      sql=sprintf("select * from %s", tableId)
-      downloadResult<-downloadTableToCSVFile(sql, verbose, filePath=filePath)
-      Table(tableSchema=entity@schema, values=downloadResult$filePath, updateEtag=downloadResult$etag)
-    } else {
-      TableRowCount(entity@schema, rowsProcessed)
-    }
+    synStore(entity=Table(entity@schema, as.integer(s3FileHandle$id)),
+      retrieveData=retrieveData,
+      verbose=verbose,
+      filePath=filePath)
   }
 )
 
