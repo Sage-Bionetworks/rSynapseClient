@@ -30,7 +30,7 @@ showContent<-function(acl) {
     for (ra in acl@resourceAccess@content) {
       result<-paste(result,
       sprintf("\tPrincipal ID %s has access type(s): %s\n", 
-        ra@principalId, paste(ra@accessType@content, collapse=", "))
+        ra@principalId, paste(ra@accessType, collapse=", "))
       , sep="")
     }
   }

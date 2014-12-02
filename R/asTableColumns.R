@@ -31,7 +31,7 @@ setMethod(
   f = "as.tableColumns",
   signature = signature("character"),
   definition = function(source) {
-    as.tableColumns(read.csv(source))
+    as.tableColumns(read.csv(source, check.names=FALSE))
   }
 )
 

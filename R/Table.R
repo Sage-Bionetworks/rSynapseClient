@@ -189,7 +189,7 @@ writeDataFrameToCSV<-function(dataFrame, filePath) {
 }
 
 readDataFrameFromCSV<-function(filePath) {
-  read.csv(filePath, encoding="UTF-8", stringsAsFactors=FALSE)
+  read.csv(filePath, encoding="UTF-8", stringsAsFactors=FALSE, check.names=FALSE)
 }
 
 setMethod(
