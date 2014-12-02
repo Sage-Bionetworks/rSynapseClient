@@ -19,7 +19,13 @@ df<-data.frame("n"=c(1.1, 2.2, 3.3),
 \end{verbatim}
 This convenience function creates table columns from your data frame:
 \begin{verbatim}
-cols<-as.tableColumns(df)
+tcresult<-as.tableColumns(df)
+cols<-tcresult$tableColumns
+\end{verbatim}
+('as.TableColumns' uploads your table in order to do it's job.  It
+returns the ID of the uploaded file for later use.)
+\begin{verbatim}
+fileHandleId<-tcresult$fileHandleId
 \end{verbatim}
 You may adjust the column models before defining the table schema.
 See "?TableColumn" for the available slots.
@@ -31,7 +37,7 @@ Now store the Table schema in Synapse(using your own Project ID in place of
 \begin{verbatim}
 projectId<-"syn12345"
 schema<-TableSchema(name="aschema", parent=projectId, columns=cols)
-table<-Table(schema, df)
+table<-Table(schema, fileHandleId)
 table<-synStore(table, retrieveData=TRUE)
 \end{verbatim}
 Query the table:
@@ -70,9 +76,11 @@ rm(df)
 \end{verbatim}
 Now we proceed using the created file only:
 \begin{verbatim}
-cols<-as.tableColumns(file)
+tcresult<-as.tableColumns(df)
+cols<-tcresult$tableColumns
+fileHandleId<-tcresult$fileHandleId
 schema<-TableSchema(name="aschema", parent=projectId, columns=cols)
-table<-Table(schema, file)
+table<-Table(schema, fileHandleId)
 table<-synStore(table, retrieveData=FALSE)
 schemaId<-propertyValue(table@schema, "id")
 queryResult<-synTableQuery(sprintf("select * from %s where c='bar'", schemaId), 

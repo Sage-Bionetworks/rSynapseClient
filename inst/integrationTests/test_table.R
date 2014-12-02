@@ -213,7 +213,7 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   
   # test a more complicated aggregation query
   queryResult<-synTableQuery(sprintf("select sweet, count(sweet) from %s where sweet='one'", propertyValue(tschema, "id")), verbose=FALSE)
-  expected<-data.frame(sweet="one", "COUNT.sweet."=as.integer(rowsPerCategory))
+  expected<-data.frame(sweet="one", "COUNT(sweet)"=as.integer(rowsPerCategory), check.names=FALSE)
   checkTrue(all(expected==queryResult@values))
   checkTrue(all(names(expected)==names(queryResult@values)))
   
@@ -344,5 +344,32 @@ integrationTestSynStoreAndRetrieveCSVFile <- function() {
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(retrievedDataFrame))
 }
+
+integrationTestCSVFileWithAsTableColumns <- function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  csvFilePath<-system.file("resources/test/test.csv", package = "synapseClient")
+  tcResult<-as.tableColumns(csvFilePath)
+  tableColumns<-tcResult$tableColumns
+  tableColumnNames<-list()
+  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
+  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
+  
+  table<-Table(tableSchema=tableSchema, values=tcResult$fileHandleId)
+  filePath<-tempfile()
+  retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE, filePath=filePath)
+  checkTrue(is(retrievedTable, "TableFilePath"))
+  checkTrue(!is.null(propertyValue(retrievedTable@schema, "id")))
+  show(retrievedTable) # make sure 'show' works
+  checkTrue(length(retrievedTable@updateEtag)>0)
+  # now check that the data frames are the same
+  retrievedDataFrame<-synapseClient:::loadCSVasDataFrame(retrievedTable@filePath)
+  dataFrame<-read.csv(csvFilePath, header=TRUE)
+  checkTrue(all(dataFrame==retrievedDataFrame))
+  checkTrue(all(tableColumnNames==names(retrievedDataFrame)))
+  # make sure the row labels are valid
+  synapseClient:::parseRowAndVersion(row.names(retrievedDataFrame))
+}
+
 
   

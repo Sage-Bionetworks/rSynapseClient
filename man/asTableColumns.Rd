@@ -20,7 +20,11 @@ as.tableColumns(filePath)
 	}
 }
 \value{
-A list of TableColumns matching the columns in the given data frame in terms of name, type and (for 'factor' columns), enumeration of permitted values.
+A list containing two fields, 'tableColumns' and 'fileHandleId'.
+
+tableColumns: A list of TableColumns matching the columns in the given data frame in terms of name, type and (for 'factor' columns), enumeration of permitted values.
+
+fileHandleId: The ID of the uploaded file, suitable for passing to the Table constructor along with a schema. (See 'Table'.)
 }
 \seealso{
 \code{\link{TableColumn}}

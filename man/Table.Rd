@@ -11,7 +11,8 @@ Table Constructor
   the schema for the table, an object of the type TableSchema or its ID
   }
   \item{values}{
-  the values to be stored in the table, either a data frame or the (character) file path to a CSV file
+  the values to be stored in the table, either a data frame, the (character) file path to a CSV file, 
+  or the (integer) ID of an uploaded file (as returned by as.tableColumns).
   }
   \item{linesToSkip}{
 	When 'values' is a file path: The number of lines to skip from the start of the file. The default value of 0 will be used if this is not provided by the caller.  }
@@ -26,5 +27,5 @@ Table Constructor
   }
 }
 \seealso{
-\code{\link{TableSchema},\link{RowList},\link{synStore}}
+\code{\link{TableSchema},\link{RowList},\link{synStore},\link{as.tableColumns}}
 }

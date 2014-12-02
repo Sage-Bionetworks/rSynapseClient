@@ -541,6 +541,12 @@ setClass(
   representation=representation(rowCount="integer", updateEtag="character")
 )
 
+setClass(
+  Class = "TableFileHandleId",
+  contains = c("Table"),
+  representation=representation(rowCount="fileHandleId", updateEtag="character")
+)
+
 
 
 # This is an abstract class for a typed list
