@@ -501,5 +501,6 @@ integrationTestFindExistingEntity <- function(){
   result<-synapseClient:::findExistingEntity(name="testName", parentId=pid)
   checkEquals(propertyValue(folder, "id"), result$id)
   
+  
 }
 

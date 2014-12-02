@@ -14,6 +14,6 @@ WikiHeader(id, title, parentId)
 This constructor is not used directly. Instances are returned by synGetWkiHeaders().
 }
 \seealso{
-\code{\link{synGetWkiHeaders}}
+\code{\link{synGetWikiHeaders}}
 \code{\link{synGetWiki}}
 }

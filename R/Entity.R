@@ -3,7 +3,7 @@
 # Author: furia
 ###############################################################################
 
-
+# Note:  This is defined in "AllClasses" but we have to repeat here in order to define the 'prototype'
 setClass(
   Class = "Entity",
   contains = "SimplePropertyOwner",
@@ -24,6 +24,134 @@ setClass(
 )
 
 defineEntityConstructors("org.sagebionetworks.repo.model.Entity", package="synapseClient")
+
+# we want to be able to check "identical" on two entities, but don't want to be 'tripped up'
+# by the "AttachmentOwner" field which is (1) defunct (only kept for deprecated entity types)
+# and (2) is always different for two objects.
+setMethod("identical",
+  signature=signature("Entity", "Entity"),
+  definition = function(x, y, num.eq=TRUE, single.NA = TRUE, attrib.as.set = TRUE,
+    ignore.bytecode = TRUE) {
+    
+    slotNames<-slotNames(x)
+    if (!identical(slotNames, slotNames(y), single.NA, attrib.as.set, ignore.bytecode)) return(FALSE)
+    for (name in slotNames) {
+      if (is(slot(x,name), "AttachmentOwner")) {
+        # don't compare
+      } else {
+        # all other slot types
+        if(!identical(slot(x, name), slot(y, name), single.NA, 
+            attrib.as.set, ignore.bytecode)) return(FALSE)
+      }
+    }
+    TRUE
+  }
+)
+
+setMethod(
+  f = "synStore",
+  signature = "Entity",
+  definition = function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL) {
+    if (is(entity, "Locationable")) {
+      stop("For 'Locationable' entities you must use createEntity, storeEntity, or updateEntity.")
+    }
+    
+    if (is.null(propertyValue(entity, "id")) && createOrUpdate) {
+      entityAsList<-try(findExistingEntity(propertyValue(entity, "name"), propertyValue(entity, "parentId")), silent=TRUE)
+      if (class(entityAsList)!='try-error') {
+        # Found it!
+        # This copies retrieved properties not overwritten by the given entity
+        mergedProperties<-copyProperties(as.list.SimplePropertyOwner(entity), entityAsList)
+        
+        # This also includes ID, which turns a "create" into an "update"
+        propertyValues(entity)<-mergedProperties
+        if (class(entity)=="File") {
+          entity@fileHandle<-getFileHandle(entity)
+        }
+        
+        # But the create-or-update logic lies in the "create" operation
+        # So the ID must be nullified before proceeding
+        propertyValue(entity, "id") <- NULL
+      }
+    }
+    
+    if (class(entity)=="File") {
+      entity<-synStoreFile(file=entity, createOrUpdate=createOrUpdate, forceVersion=forceVersion, contentType=contentType)
+    }
+    # Now save the metadata
+    generatingActivity<-NULL
+    if (!is.null(activity)) {
+      generatingActivity<-activity
+    } else if (!is.null(used) || !is.null(executed)) {
+      generatingActivity<-Activity(name=activityName, description=activityDescription, used=used, executed=executed)
+    } else if (entity@generatedByChanged) {
+      # this takes care of the case in which generatedBy(entity)<- 
+      # is called rather than specifying the activity in the synStore() parameters
+      generatingActivity<-generatedBy(entity)
+    }
+    if (is.null(propertyValue(entity, "id"))) {
+      storedEntity<-createEntityMethod(entity, generatingActivity, createOrUpdate, forceVersion)
+    } else {
+      storedEntity<-updateEntityMethod(entity, generatingActivity, forceVersion)
+    }
+    if (class(entity)=="File") {
+      # now copy the class-specific fields into the newly created object
+      if (fileHasFilePath(entity)) storedEntity@filePath <- entity@filePath
+      storedEntity@synapseStore <- entity@synapseStore
+      storedEntity@fileHandle <- entity@fileHandle
+      storedEntity@objects <- entity@objects
+      if (class(storedEntity)=="File" && isRestricted) {
+        # check to see if access restriction(s) is/are in place already
+        id<-propertyValue(storedEntity, "id")
+        if (!.hasAccessRequirement(id)) {
+          # nothing in place, so we create the restriction
+          .createLockAccessRequirement(id)
+        }
+      }
+    }
+    storedEntity
+    
+  }
+)
+
+synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
+  if (isSynapseId(id)) {
+    if (is.null(version)) {
+      entity<-getEntity(id)
+    } else {
+      entity<-getEntity(id, version=version)
+    }   
+    if ((class(entity)=="File")) {
+      entity<-synGetFile(entity, downloadFile, downloadLocation, ifcollision, load)
+    } else {
+      if (is (entity, "Locationable") && downloadFile) {
+        if (!is.null(downloadLocation)) {
+          warning("Cannot specify download location for 'Locationable' entities")
+        }
+        if (load) {
+          loadEntity(entity)
+        } else {
+          downloadEntity(entity)
+        }
+      } else {
+        entity
+      }
+    }
+  } else {
+    stop(sprintf("%s is not a Synapse ID.", id))
+  }
+}
+
+
+# we define these functions to allow mocking during testing
+.hasAccessRequirement<-function(entityId) {
+  currentAccessRequirements<-synRestGET(sprintf("/entity/%s/accessRequirement", entityId))
+  currentAccessRequirements$totalNumberOfResults>0
+}
+
+.createLockAccessRequirement<-function(entityId) {
+  synRestPOST(sprintf("/entity/%s/lockAccessRequirement", entityId), list())
+}
 
 setMethod(
   f = "getParentEntity",
@@ -223,54 +351,49 @@ createEntityMethod<-function(entity, generatingActivity, createOrUpdate, forceVe
     createUri <- sprintf("%s?generatedBy=%s", createUri, propertyValue(generatingActivity, "id"))
   }
   
-  entity <- as.list.SimplePropertyOwner(entity)
+  entityAsList <- as.list.SimplePropertyOwner(entity)
 
   if (createOrUpdate) {
     curlHandle=getCurlHandle()
-    entityAsList<-synapsePost(createUri, entity, curlHandle=curlHandle, checkHttpStatus=FALSE)
+    entityAsList<-synapsePost(createUri, entityAsList, curlHandle=curlHandle, checkHttpStatus=FALSE)
     # is it a 409 response?  If so, the entity already exists
     curlInfo <- .getCurlInfo(curlHandle)
     if (curlInfo$response.code==409) {
-      # retrieve the object
-      entityAsList<-findExistingEntity(entity$name, entity$parentId)
-      # apply the properties of the new entity to the discovered one
-      entity<-copyProperties(entity,entityAsList)
-      # now update the existing entity
-      updateUri<-sprintf("/entity/%s", entity$id)
-      if (missing("forceVersion")) forceVersion=FALSE
-      # only do the following for versionable entities
-      if (forceVersion && any("versionNumber"==names(entity))) {
-        updateUri <-sprintf("%s/version", updateUri)
-        # make sure the version label changes!
-        versionLabel<-entity$versionLabel
-        # if the version is the string version of the numeric version field...
-        if (!is.null(versionLabel) && !is.null(entity$versionNumber) && entity$versionNumber==versionLabel) {
-          # ... then increment it
-        entity$versionLabel <- sprintf("%d", 1+as.numeric(versionLabel))
-        }
+      # Retrieve the object
+      entityAsList <- as.list.SimplePropertyOwner(entity)
+      existingEntity<-findExistingEntity(entityAsList$name, entityAsList$parentId)
+      
+      # Apply the properties of the new entity to the discovered one
+      # This copies retrieved properties not overwritten by the given entity, including id
+      mergedProperties<-copyProperties(entityAsList, existingEntity)
+      propertyValues(entity)<-mergedProperties
+      
+      # Apply the annotations of the old entity to the discovered one
+      oldAnnots <- getAnnotations(existingEntity[['id']])
+      for (n in annotationNames(entity)) {
+        annotValue(oldAnnots, n) <- annotValue(entity, n)
       }
-      if (!is.null(generatingActivity)) {
-        updateUri<-sprintf("%s?generatedBy=%s", updateUri, propertyValue(generatingActivity, "id"))
-      }
-      entityAsList<-synapsePut(updateUri, entity)
+      entity@annotations <- oldAnnots
+      
+      # Perform the update
+      entity <- updateEntityMethod(entity, generatingActivity, forceVersion)
+      return(entity)
     } else {
       .checkCurlResponse(curlHandle, toJSON(entityAsList))
     }
   } else {
-    entityAsList<-synapsePost(createUri, entity)
+    entityAsList<-synapsePost(createUri, as.list.SimplePropertyOwner(entity))
   }
-  entity <- getEntityInstance(entityAsList)
   # create the entity in Synapse and get back the id
-  annots <- getAnnotations(entity$properties$id)
+  entity <- getEntityInstance(entityAsList)
   
-  # merge annotations from input variable into 'annots'
+  # Save the annotations
+  annots <- getAnnotations(entity$properties$id)
   for (n in annotationNames(oldAnnots)) {
     annotValue(annots, n) <- annotValue(oldAnnots, n)
   }
-  
   if(length(annotationNames(annots)) > 0L){
     annots <- updateEntity(annots)
-    propertyValue(annots, "id") <- entity$properties$id
   }
   entity$properties$etag <- propertyValue(annots, "etag")
   
@@ -284,7 +407,7 @@ createEntityMethod<-function(entity, generatingActivity, createOrUpdate, forceVe
 setMethod(
   f = "createEntity",
   signature = "Entity",
-  # without the wrapper I get this error in R 2.15: methods can add arguments to the generic ÔcreateEntityÕ only if '...' is an argument to the generic
+  # without the wrapper I get this error in R 2.15: methods can add arguments to the generic 'createEntity' only if '...' is an argument to the generic
   definition = function(entity){createEntityMethod(entity=entity, generatingActivity=generatedBy(entity), createOrUpdate=FALSE, forceVersion=FALSE)}
 )
 
@@ -316,6 +439,26 @@ setMethod(
       entity <- deleteProperty(entity, "etag")
       invisible(entity)
     }
+)
+
+setMethod(
+  f = "synDelete",
+  signature = "Entity",
+  definition = function(entity) {
+    deleteEntity(entity)
+  }
+)
+
+setMethod(
+  f = "synDelete",
+  signature = "character",
+  definition = function(entity) {
+    if (isSynapseId(entity)) {
+      deleteEntity(entity)      
+    } else {
+      stop(sprintf("%s is not a Synapse entity ID.", entity))
+    }
+  }
 )
 
 setMethod(
@@ -352,7 +495,7 @@ updateEntityMethod<-function(entity, newGeneratingActivity, forceVersion)
       stop("entity ID was null so could not update. use createEntity instead.")
     
     annots <- entity@annotations
-    updateUri<-entity$properties$uri
+    updateUri <- sprintf("/entity/%s", entity$properties$id)
     
     if (missing(forceVersion)) forceVersion=FALSE
     # only do the following for versionable entities
@@ -391,7 +534,7 @@ updateEntityMethod<-function(entity, newGeneratingActivity, forceVersion)
       # it's unfortunate to have to make another method call to update 'generatedBy' but
       # eventually 'generatedBy' may be part of the entity schema, obviating the need for the extra method call
       synapseDelete(sprintf("/entity/%s/generatedBy", entity$properties$id))
-      updatedEtagEntity<-synapseGet(entity$properties$uri)
+      updatedEtagEntity<-synapseGet(sprintf("/entity/%s", entity$properties$id))
       propertyValue(ee, "etag")<-updatedEtagEntity$etag
     }
     ee@generatedBy<-newGeneratingActivity

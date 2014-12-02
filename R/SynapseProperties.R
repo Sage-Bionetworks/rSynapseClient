@@ -208,3 +208,20 @@ setMethod(
 		show(properties(object))
 	}
 )
+
+setMethod("identical",
+  signature=signature("SynapseProperties", "SynapseProperties"),
+  definition = function(x, y, num.eq=TRUE, single.NA = TRUE, attrib.as.set = TRUE,
+    ignore.bytecode = TRUE) {
+    
+    slotNames<-slotNames(x)
+    if (!identical(slotNames, slotNames(y), single.NA, attrib.as.set, ignore.bytecode)) return(FALSE)
+    for (name in slotNames) {
+      if(!identical(slot(x, name), slot(y, name), single.NA, 
+          attrib.as.set, ignore.bytecode)) return(FALSE)
+    }
+    TRUE
+  }
+)
+
+

@@ -43,6 +43,7 @@ Nicole Deflaux
 }
 
 \examples{
+\dontrun{
   ## query for the first 1000 Files found, returning results as a data.frame
   df <- synQuery("select id, name, parentId from file limit 1000")
 
@@ -59,6 +60,7 @@ Nicole Deflaux
   df <- qr$collect()
 
   ## accumulate the remaining results.
-  ## df will be a data.frame with 900 accumulated rows
+  ## df will be a data.frame with 1000 accumulated rows
   df <- qr$collectAll()
+}
 }

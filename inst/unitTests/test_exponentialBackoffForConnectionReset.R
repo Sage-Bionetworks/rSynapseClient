@@ -30,11 +30,16 @@
   
   # also spoof checking black list, latest version
   myCheckBlackList<-function() {"ok"}
-  myCheckLatestVersion<-function() {"ok"}
   attr(myCheckBlackList, "origDef") <- synapseClient:::checkBlackList
   assignInNamespace("checkBlackList", myCheckBlackList, "synapseClient")
+  
+  myCheckLatestVersion<-function() {"ok"}
   attr(myCheckLatestVersion, "origDef") <- synapseClient:::checkLatestVersion
   assignInNamespace("checkLatestVersion", myCheckLatestVersion, "synapseClient")
+  
+  myLogErrorToSynapse<-function(label, message) {NULL}
+  attr(myLogErrorToSynapse, "origDef") <- synapseClient:::.logErrorToSynapse
+  assignInNamespace(".logErrorToSynapse", myLogErrorToSynapse, "synapseClient")
 }
 
 .tearDown <-
@@ -45,6 +50,7 @@
   assignInNamespace(".getURLIntern", attr(synapseClient:::.getURLIntern, "origDef"), "synapseClient")
   assignInNamespace("checkBlackList", attr(synapseClient:::checkBlackList, "origDef"), "synapseClient")
   assignInNamespace("checkLatestVersion", attr(synapseClient:::checkLatestVersion, "origDef"), "synapseClient")
+  assignInNamespace(".logErrorToSynapse", attr(synapseClient:::.logErrorToSynapse, "origDef"), "synapseClient")
   unloadNamespace('synapseClient')
   library(synapseClient)
 }

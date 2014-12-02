@@ -216,12 +216,12 @@ createGithubCodeEntity <- function(repoName, sourceFile, codeFolderId, replChar=
   
   # TODO this will change with the new file service
   propertyValue(sourceFileEntity, "locations")<-list(list(type="external", path=githubURL))
-  urlContent<-getURLContent(githubURL, .opts=.getCache("curlOpts")) 
+  urlContent<-getURLContent(githubURL, .opts=.getCache("curlOpts"))
   propertyValue(sourceFileEntity, "md5")<-stringMd5(urlContent)
   
   # delineate code with Synapse 'markdown' code tags. This is done by prefixing each line with a tab
   # TODO this will change when we introduce the wiki object
-  propertyValue(sourceFileEntity, "description") <- indent(urlContent)
+  propertyValue(sourceFileEntity, "description") <- indent(rawToChar(urlContent))
   
   # store the entity and return it
   # NOTE, after setting an external URL you must call 'updateEntity', not 'storeEntity' lest the locations are deleted!!

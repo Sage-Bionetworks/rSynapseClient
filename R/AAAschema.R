@@ -38,33 +38,68 @@ entitiesToLoad <-
   setdiff(paths, "DEFAULT")
 }
 
-readEntityDef <-
-    function(name, path = system.file("resources/schema",package="synapseClient"))
-{
-  file <- sprintf("%s.json", gsub("[\\.]", "/", name))
-  
-  fullPath <- file.path(path,file)
-  
-  if(!file.exists(fullPath))
-    stop(sprintf("Could not find file: %s for entity: %s", fullPath, name))
+getSchemaCacheName<-function() {"schema.cache"}
 
-  schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
-  
+getSchemaFromCache<-function(schemaName) {
+  schemaCacheName <- getSchemaCacheName()
+  schemaCache <- .getCache(schemaCacheName)
+  if (!is.null(schemaCache)) {
+    schemaCache[[schemaName]]
+  } else {
+    NULL
+  }
+}
+
+putSchemaToCache<-function(key, value) {
+  schemaCacheName <- getSchemaCacheName()
+  schemaCache <- .getCache(schemaCacheName)
+  if (is.null(schemaCache)) schemaCache<-list()
+  schemaCache[[key]]<-value
+ .setCache(schemaCacheName, schemaCache)
+}
+
+# Omit the part of the string preceding the last "." (if any)
+getClassNameFromSchemaName<-function(schemaName) {
+  if (is.null(schemaName)) return(NULL)
+  result<-gsub("^.+[\\.]", "", schemaName)
+  names(result)<-names(schemaName)
+  result
+}
+
+getSchemaPath<-function() {
+  system.file("resources/schema",package="synapseClient")
+}
+
+readEntityDef <-
+    function(name, path)
+{ 
+  result<-getSchemaFromCache(name)
+  if (!is.null(result)) {
+    return(result)
+  }
+  schema<-readSchema(name, path)  
+  putSchemaToCache(name, schema)
   schema
 }
 
+# 'which' is the full class name
+# 'name' is the Class name.  If omitted it's the suffix of 'which', e.g. 
+# if 'which' is "org.sagebionetworks.repo.model.Folder" and 'name' is omitted,
+# then the Class name is "Folder".
 defineEntityClass <- 
   function(which, name, where = parent.frame(), package)
 {
-  entityDef <- readEntityDef(which)
+  entityDef <- readEntityDef(which, getSchemaPath())
   
   if(missing(name))
-    name <- gsub("^.+[\\.]", "", which)
+    name <- getClassNameFromSchemaName(which)
   
   if(is.null(name) | name == "")
     stop("name must not be null")
   
-  implements <- unique(c(entityDef$implements[[1]][[1]], synapseClient:::getImplements(entityDef$implements[[1]][[1]])))
+  implementsSchemaName <-entityDef$implements[[1]][[1]]
+  implementsSchema<-readEntityDef(implementsSchemaName, getSchemaPath())
+  implements <- unique(c(implementsSchemaName, getAllEntityInterfaces(implementsSchema, getSchemaPath())))
   
   if ("org.sagebionetworks.repo.model.Locationable" %in% implements) {
     contains <- "Locationable"
@@ -83,44 +118,8 @@ defineEntityClass <-
     ),
     package=package
   )
-  
-  # now add the new class to the list of defined ones
-  addToEntityTypeMap(className=name, jsonSchemaName=which)
 }
 
-# this could be eliminated (just using 'defineEntityClass' instead) if object received from server had a 'uri' field
-defineNONEntityClass <- 
-  function(which, name, where = parent.frame(), package)
-{
-  if(missing(name))
-    name <- gsub("^.+[\\.]", "", which)
-  
-  if(is.null(name) | name == "")
-    stop("name must not be null")
-  
-  setClass(
-    Class = name,
-    contains = "SimplePropertyOwner",
-    representation = representation(
-      updateUri="character"
-    ),
-    prototype = prototype(
-      synapseEntityKind = name,
-      properties = SynapseProperties(getEffectivePropertyTypes(which))
-    ),
-    package=package
-  )
-  
-  # now add the new class to the list of defined ones
-  addToEntityTypeMap(className=name, jsonSchemaName=which)
-}
-
-addToEntityTypeMap<-function(className, jsonSchemaName) {
-  synapseEntityTypeMap<-.getCache("synapseEntityTypeMap")
-  if (is.null(synapseEntityTypeMap)) synapseEntityTypeMap<-list()
-  synapseEntityTypeMap[[jsonSchemaName]]<-className
-  .setCache("synapseEntityTypeMap", synapseEntityTypeMap)
-}
 
 defineEntityConstructors <-
   function(which, name, overrideExiting = FALSE, where = parent.frame(), package)
@@ -179,71 +178,67 @@ defineEntityConstructors <-
   }
 }
 
-getPropertyTypes <- 
-  function(which, entityDef, mapTypes=TRUE)
-{
-  if(!missing(which) && !missing(entityDef))
-    stop("must specifiy either 'which' or 'entityDef', but not both")
-  
-  if(!missing(which))
-    entityDef <- synapseClient:::readEntityDef(which)
-  
-  properties <- lapply(
-    X = names(entityDef$properties), 
-    FUN = function(prop){
-      entityDef$properties[[prop]][["type"]]
-    }
-  )
-  names(properties) <- names(entityDef$properties)
-  if(mapTypes)
-    return(mapTypes(properties))
-  properties
-}
 
-getEffectivePropertyTypes <-
-  function(which, mapTypes = TRUE)
-{
-  implements <- c(which, synapseClient:::getImplements(which))
-  
-  properties <- list()
-  i <- length(implements)
-  while(i > 0){
-    thisProp <- synapseClient:::getPropertyTypes(implements[i], mapTypes = mapTypes)
-    for(n in names(thisProp))
-      properties[[n]] <- thisProp[[n]]
-    i <- i - 1
-  }
-  
-  properties
-}
-
-
-mapTypes <- 
-    function(types)
-{ 
+mapTypes <- function(types) { 
   indx <- match(types, names(TYPEMAP))
   retval <- TYPEMAP[indx]
   
-  mk <- is.na(retval)
-  if(any(mk))
+  mk <- sapply(X=retval, FUN=function(x)is.null(x))
+  
+  if (any(mk)) {
     retval[mk] <- "character"
+  }
   
   names(retval) <- names(types)
   retval
 }
 
-getImplements <- function(which){
-  if(is.null(which))
+getAllEntityInterfaces <- function(schema, schemaPath) {
+  if(is.null(schema))
     return(NULL)
-  thisDef <- synapseClient:::readEntityDef(which)
   implements <- NULL
-  while(!is.null(thisDef$implements)){
-    implements <- c(implements, thisDef$implements[[1]][[1]])
-    
-    try({
-        thisDef <- synapseClient:::readEntityDef(thisDef$implements[[1]][[1]])
-      }, silent = TRUE)
+  while(!is.null(schema$implements)){
+    implements <- c(implements, schema$implements[[1]][[1]])
+    tryCatch({
+        schema <- readSchema(schema$implements[[1]][[1]], schemaPath)
+      }, error = function(e) {schema<-list(implements=NULL)}, silent = TRUE)
   }
   implements
 }
+
+getEffectivePropertyTypes <-function(schemaName) {
+  schema<-readEntityDef(schemaName, getSchemaPath())
+  mapTypes(getEffectiveSchemaTypes(schema, getSchemaPath()))
+}
+
+getPropertyTypes <- function(entityDef) {
+  properties <- lapply(
+    X = names(entityDef$properties), 
+    FUN = function(prop){
+      theprop <- getPropertyFromSchemaAndName(entityDef, prop)
+      schemaTypeFromProperty(theprop)
+    }
+  )
+  names(properties) <- names(entityDef$properties)
+  properties
+}
+
+getEffectiveSchemaTypes <- function(schema, schemaPath) {
+  # start with the properties for the immediate schema
+  properties<-getPropertyTypes(schema)
+  implements <- getAllEntityInterfaces(schema, schemaPath)
+  if (length(implements)>0) {
+     for (i in length(implements):1) {
+      thisProp <- getPropertyTypes(readEntityDef(implements[i], getSchemaPath()))
+      for (n in names(thisProp))
+        properties[[n]] <- thisProp[[n]]
+    }
+  }
+  properties
+}
+
+
+
+
+
 

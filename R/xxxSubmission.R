@@ -8,8 +8,6 @@ setClass(
   contains = "SimplePropertyOwner",
   representation = representation(
     # fields:
-    # uri for update and delete operations
-    updateUri = "character",
     # filePath: full path to local file.
     filePath = "character",
     # fileHandle (generated from JSON schema, empty before entity is created)
@@ -19,7 +17,7 @@ setClass(
   ),
   # This is modeled after defineEntityClass in AAAschema
   prototype = prototype(
-    properties = initializeProperties("org.sagebionetworks.evaluation.model.Submission"),
+    properties = initializeProperties("org.sagebionetworks.evaluation.model.Submission", FALSE),
     objects = NULL
   )
 )
@@ -28,13 +26,12 @@ setClass(
 # taking a list of properties as its argument
 # the logic is based on definedEntityConstructors in AAAschema
 setMethod(
-  f = "SubmissionListConstructor",
+  f = "createSubmissionFromProperties",
   signature = signature("list"),
   definition = function(propertiesList) {
     submission <- new("Submission")
     for (prop in names(propertiesList))
       propertyValue(submission, prop)<-propertiesList[[prop]]
-    if (!is.null(submission$id)) submission@updateUri<-sprintf("/evaluation/submission/%s", submission$id)
     fileHandle<-as.list(getFileHandleFromEntityBundleJSON(submission$entityBundleJSON))
     submission@fileHandle<-fileHandle
     
@@ -61,13 +58,14 @@ getFileHandleFromEntityBundleJSON<-function(entityBundleJSON) {
 }
 
 synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
-  submission<-SubmissionListConstructor(synRestGET(sprintf("/evaluation/submission/%s", id)))
+  submission<-createSubmissionFromProperties(synRestGET(sprintf("/evaluation/submission/%s", id)))
   
   if (!is.null(submission@fileHandle$id)) { # otherwise it's not a File
     downloadUri<-sprintf("/evaluation/submission/%s/file/%s", submission$id, submission@fileHandle$id)
 
-    result<-synGetFileAttachment(
+    filePath<-synGetFileAttachment(
       downloadUri,
+      "REPO",
       submission@fileHandle,
       downloadFile,
       downloadLocation,
@@ -76,7 +74,7 @@ synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollisio
     )
   
     # now construct Submission from 'result', which has filePath
-    if (!is.null(result$filePath)) submission@filePath<-result$filePath
+    if (!is.null(filePath)) submission@filePath<-filePath
     if (load) {
       if (is.null(submission@objects)) submission@objects<-new.env(parent=emptyenv())
         # Note: the following only works if 'path' is a file system path, not a URL
@@ -87,14 +85,38 @@ synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollisio
   submission
 }
 
+setMethod(
+  f = "synStore",
+  signature = "Submission",
+  definition = function(entity) {
+    # note, user can't create a SubmissionStatus, only update one
+    updateS4Object(entity, sprintf("/evaluation/submission/%s",entity$id))   
+  }
+)
+
+setMethod(
+  f = "synStore",
+  signature = "SubmissionStatus",
+  definition = function(entity) {
+    # note, user can't create a SubmissionStatus, only update one
+    updateS4Object(entity, sprintf("/evaluation/submission/%s/status",entity$id))   
+  }
+)
+
+setMethod(
+  f = "synDelete",
+  signature = "Submission",
+  definition = function(entity) {
+    synRestDELETE(sprintf("/evaluation/submission/%s",entity$id))
+  }
+)
+
 synCreateSubmission<-function(submission, entityEtag) {
-  SubmissionListConstructor(synRestPOST(sprintf("/evaluation/submission?etag=%s", entityEtag), submission))
+  createSubmissionFromProperties(synRestPOST(sprintf("/evaluation/submission?etag=%s", entityEtag), submission))
 }
 
 newSubmissionStatus<-function(content) {
-  submissionStatus<-SubmissionStatus(content)
-  submissionStatus@updateUri<-sprintf("/evaluation/submission/%s/status", content$id)
-  submissionStatus
+  createS4ObjectFromList(content, "SubmissionStatus")
 }
 
 synGetSubmissionStatus<-function(submission) {
@@ -111,7 +133,7 @@ newSubmissionPaginatedResults<-function(content) {
   paginatedResults@totalNumberOfResults<-as.integer(content$totalNumberOfResults)
   for (s in content$results) {
     n<-length(paginatedResults@results)
-    paginatedResults@results[[n+1]]<-SubmissionListConstructor(as.list(s))
+    paginatedResults@results[[n+1]]<-createSubmissionFromProperties(as.list(s))
   }
   paginatedResults
 }

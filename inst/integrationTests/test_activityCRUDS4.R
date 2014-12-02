@@ -85,7 +85,7 @@ integrationTestCRUDS4Activity <-
   checkTrue(class(shouldBeError)=="try-error")
 }
 
-integrattionTestSynStore<-function() {
+integrationTestSynStore<-function() {
   name<-"testName"
   description<-"a description of the activity"
   testData <-synapseClient:::.getCache("testData")

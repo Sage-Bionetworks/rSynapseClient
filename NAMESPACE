@@ -1,171 +1,135 @@
 ## imports from other packages
-import(RCurl, Biobase, methods, affy)
+import(RCurl, methods)
 importFrom(RJSONIO, toJSON, fromJSON, emptyNamedList)
 importFrom(tools, md5sum)
 importFrom(digest, digest, hmac)
-importFrom(utils, edit, compareVersion)
+importFrom(utils, edit, compareVersion, packageDescription, install.packages, installed.packages)
 
 ## package has a dynamic library
 useDynLib(synapseClient)
 
-
-
-
-### DEPRECATED FUNCTIONS
-###  These functions have .Rd files, but are deprecated and will ultimately be removed
-###  Removing from export() requires also removing unit and integration tests which use them
+## commands defined in C-4
 export(
-as.environment.EnhancedEnvironment,
-as.environment.GlobalCache, 
-as.environment.ArchiveOwner, 
-as.list.SimplePropertyOwner, 
-as.list.SynapseAnnotations, 
-as.list.TypedPropertyStore, 
-as.list.SynapseProperties,
-length.EnhancedEnvironment, 
-length.QueryResult,
-names.CachingObjectOwner, 
-names.EnhancedEnvironment, 
-names.LocationableWithoutBinaries,
-names.Locationable,
-names.Entity,
-names.QueryResult,
-names.SynapseProperties,
-getPackageName.EnhancedEnvironment, 
-getPackageName.ArchiveOwner,
-getPackageName,
-setPackageName,
-attach,
-detach
+  "synGet",
+  "synStore",
+  "getFileLocation",
+  "submit",
+  "synRestGET",
+  "synRestDELETE",
+  "synRestPOST",
+  "synRestPUT",
+  "synGetWiki",
+  "synGetUserProfile",
+  "synGetSubmission",
+  "synGetSubmissionStatus",
+  "synGetEvaluation",
+  "synGetEvaluationByContentSource", 
+  "synGetSubmissions",
+  "synGetParticipants",
+  "synGetWikiHeaders",
+  "synDelete",
+  "listObjects",
+  "synGetActivity",
+  "synAnnot",
+  "synAnnot<-",
+  "onWeb",
+  "identical",
+  "synCreateEntityACL",
+  "synGetEntityACL",
+  "synUpdateEntityACL",
+  "synDeleteEntityACL"
 )
-
-
-
-
-
-## add'l commands defined in C-4
-export(
-  synGet,
-  synStore,
-  getFileLocation,
-  submit,
-  synRestGET,
-  synRestDELETE,
-  synRestPOST,
-  synRestPUT,
-  synGetWiki,
-  synGetUserProfile,
-  synGetSubmission,
-  synGetSubmissionStatus,
-  synGetEvaluation,
-  synGetSubmissions,
-  synGetParticipants,
-  synGetWikiHeaders,
-  synDelete,
-  listObjects,
-  synGetActivity,
-  synAnnot,
-  "synAnnot<-"
-)
-
-export(onWeb)
-
 
 ## S3 utility methods
 export(
-  synapseResetEndpoints, 
-  synapseAuthServiceEndpoint, 
-  synapseRepoServiceEndpoint,
-  synapseFileServiceEndpoint,
-  synapsePortalEndpoint,
-  synapseLogin, 
-  synapseLogout,  
-  synapseCacheDir,
-  hmacSecretKey,
-  setApiCredentials,
-  synapseQuery,
-  synQuery,
-  touOnWeb
+  "synapseResetEndpoints", 
+  "synapseAuthServiceEndpoint", 
+  "synapseRepoServiceEndpoint",
+  "synapseFileServiceEndpoint",
+  "synapsePortalEndpoint",
+  "synapseLogin", 
+  "synapseLogout",  
+  "synapseCacheDir",
+  "hmacSecretKey",
+  "invalidateAPIKey", 
+  "setApiCredentials",
+  "synapseQuery",
+  "synQuery",
+  "touOnWeb",
+  "sendMessage",
+  "synTableQuery",
+  "synDeleteRows"
 )
 
 ## S3 convenience methods
-export(synapseExecute)
+export(
+  "synapseExecute"
+)
 
-## constructors 
+## Synapse object constructors 
 export(
 	"File",
 	"Folder",
 	"Project",
 	"Activity",
 	"Evaluation",
-	"WikiPage")
-
-# to be deprecated
-export(
-	"Data",
-	"Study",
-	"Code",
-	"Link",
-	"PhenotypeData",
-	"GenotypeData",
-	"ExpressionData",
-	"RObject",
-	"Summary",
-	"GenomicData")
+	"WikiPage",
+	"TableColumn",
+	"UserProfile",
+	"ResourceAccess",
+	"TableSchema",
+	"TableRowSet",
+	"TableColumn",
+	"Table",
+	"Row",
+	"RowReference",
+	"RowReferenceSet",
+	"AccessControlList",
+	"ResourceAccessList",
+	"UserPreferenceList",
+	"RowList",
+	"as.ResourceAccessList",
+	"as.UserPreferenceList",
+	"as.RowList",
+	"UserPreferenceBoolean",
+	"Settings"
+)
 
 ## entity S4 methods
 exportMethods(
-  storeEntity, 
-  getEntity, 
-  deleteEntity, 
-  createEntity, 
-  updateEntity, 
-  downloadEntity, 
-  loadEntity, 
-  getParentEntity,
-	getActivity,
-	generatedBy,
+  "getParentEntity",
+	"getActivity",
+	"generatedBy",
 	"generatedBy<-",
 	"used",
 	"used<-",
 	"executed",
-	"executed<-"
-  )
-
-## methods for managing layer files
-exportMethods(
-  addFile,
-  deleteFile,
-  moveFile
-) 
-
-exportMethods(
-  addObject,
-  deleteObject,
-  getObject,
-  renameObject
+	"executed<-",
+	# methods for TypeList
+	"set",
+	"getList",
+	"append",
+	"identical",
+  	"as.tableColumns"
 )
 
 ## entity property/annotation setters and getters
 exportMethods(
   "annotValue<-",
-  annotValue, 
-  annotations, 
+  "annotValue", 
+  "annotations", 
   "annotations<-",
   "annotationValues<-", 
-  annotationValues,
-  annotationNames
- )
- 	
-exportMethods(
-  deleteProperty, 
-  deleteAnnotation, 
-  propertyValue, 
+  "annotationValues",
+  "annotationNames",
+  "deleteProperty", 
+  "deleteAnnotation", 
+  "propertyValue", 
   "propertyValue<-", 
   "propertyValues<-", 
-  propertyValues, 
-  properties,
-  propertyNames
+  "propertyValues", 
+  "properties",
+  "propertyNames"
 )
 
 exportMethods(
@@ -184,4 +148,68 @@ export(
 	"synGetEndpoints"
 )
 
+
+#####
+## TO BE DEPRECATED
+#####
+
+### DEPRECATED FUNCTIONS
+###  These functions have .Rd files, but are deprecated **and will ultimately be removed**
+###  Removing from export() requires also removing unit and integration tests which use them
+###  B. Bot -- these are functions that are used internally, but do not need to be exported / exposed to users
+export(
+  "as.environment.EnhancedEnvironment",
+  "as.environment.GlobalCache", 
+  "as.environment.ArchiveOwner", 
+  "as.list.SimplePropertyOwner", 
+  "as.list.SynapseAnnotations", 
+  "as.list.TypedPropertyStore", 
+  "as.list.SynapseProperties",
+  "length.EnhancedEnvironment", 
+  "length.QueryResult",
+  "names.CachingObjectOwner", 
+  "names.EnhancedEnvironment", 
+  "names.LocationableWithoutBinaries",
+  "names.Locationable",
+  "names.Entity",
+  "names.QueryResult",
+  "names.SynapseProperties",
+  "getPackageName.EnhancedEnvironment", 
+  "getPackageName.ArchiveOwner",
+  "getPackageName",
+  "setPackageName",
+  "attach",
+  "detach"
+)
+
+# Synapse object constructors to be deprecated (but left in code base for backward compatibility?)
+export(
+  "Data",
+	"Study",
+	"Code",
+	"Link",
+	"PhenotypeData",
+	"GenotypeData",
+	"ExpressionData",
+	"RObject",
+	"Summary",
+	"GenomicData"
+)
+# Methods used on deprecated Synapse objects above (but left in code base for backward compatibility?)
+exportMethods(
+  "addFile",
+  "deleteFile",
+  "moveFile",
+  "addObject",
+  "deleteObject",
+  "getObject",
+  "renameObject",
+  "storeEntity", 
+  "getEntity", 
+  "deleteEntity", 
+  "createEntity", 
+  "updateEntity", 
+  "downloadEntity", 
+  "loadEntity" 
+)
 

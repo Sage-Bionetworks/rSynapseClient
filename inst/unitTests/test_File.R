@@ -28,13 +28,13 @@ unitTestSimpleConstructor<-function() {
   
   # now check that S4 is not confused by annotation parameters
   file<-File("/path/to/file", parentId="syn1234", annotName=FALSE)
-  checkTrue(file@synapseStore) # this is the default and S4 should mistake 'annotName' for 'synapseStore'
+  checkTrue(file@synapseStore) # this is the default and S4 should not mistake 'annotName' for 'synapseStore'
   checkEquals("FALSE", annotValue(file, "annotName")) # the extra param should become an annotation on the file
   checkEquals("/path/to/file", getFileLocation(file))
   
   # now check that S4 is not confused by annotation parameters WHEN FILE PATH IS OMITTED
   file<-File(parentId="syn1234", annotName=FALSE)
-  checkTrue(file@synapseStore) # this is the default and S4 should mistake 'annotName' for 'synapseStore'
+  checkTrue(file@synapseStore) # this is the default and S4 should not mistake 'annotName' for 'synapseStore'
   checkEquals("FALSE", annotValue(file, "annotName")) # the extra param should become an annotation on the file
   checkEquals(character(0), getFileLocation(file))
 }
@@ -98,7 +98,7 @@ unitTestConstructor<-function() {
 unitTestListConstructor<-function() {
   description<-"this describes my File"
   annotValue<-"assigned annotation value"
-  file<-synapseClient:::FileListConstructor(list(description=description, anAnnotation=annotValue))
+  file<-synapseClient:::createFileFromProperties(list(description=description, anAnnotation=annotValue))
   checkEquals(description, propertyValue(file, "description"))
   checkEquals(annotValue, annotValue(file, "anAnnotation"))
 }
@@ -132,15 +132,15 @@ unitTestFileUtilities<-function() {
 unitTestValidateFile<-function() {
   file<-new("File")
   
-  synapseClient:::validdateFile(file)
+  synapseClient:::validateFile(file)
   file@synapseStore<-FALSE
-  result<-try(synapseClient:::validdateFile(file), silent=T)
+  result<-try(synapseClient:::validateFile(file), silent=T)
   checkEquals("try-error", class(result))
   
   file@fileHandle<-list(concreteType="org.sagebionetworks.repo.model.file.ExternalFileHandle")
   file@synapseStore<-TRUE
-  result<-try(synapseClient:::validdateFile(file), silent=T)
-  checkEquals("try-error", class(result))
+  result<-try(synapseClient:::validateFile(file), silent=T)
+  checkTrue("try-error"!=class(result))
 }
 
 unitTestAddObject <-
@@ -193,4 +193,22 @@ unitTestIsLoadable <- function() {
   origWarn<-options()$warn
   checkTrue(!synapseClient:::isLoadable(filePath))
   checkEquals(origWarn, options()$warn) # make sure options("warn") is restored
+}
+
+unitTestSelectUploadDestination<-function() {
+  uploadDestinations<-synapseClient:::UploadDestinationList(synapseClient:::S3UploadDestination())
+  checkEquals(synapseClient:::S3UploadDestination(), synapseClient:::selectUploadDestination("S3", uploadDestinations))
+  checkEquals(NULL, synapseClient:::selectUploadDestination("sftp://host.com/foo/bar", uploadDestinations))
+  checkEquals(synapseClient:::S3UploadDestination(), synapseClient:::selectUploadDestination(character(0), uploadDestinations))
+  
+  url<-"sftp://host.com"
+  eud<-synapseClient:::ExternalUploadDestination(url=url)
+  uploadDestinations<-synapseClient:::UploadDestinationList(synapseClient:::S3UploadDestination(), eud)
+  checkEquals(eud, synapseClient:::selectUploadDestination(url, uploadDestinations))
+}
+
+unitTestMatchUrlHosts<-function() {
+  checkTrue(synapseClient:::matchURLHosts("sftp://host.com/foo", "sftp://host.com/folder/uuid"))
+  checkTrue(!synapseClient:::matchURLHosts("sftp://host.com/foo", "http://host.com/folder/uuid"))
+  checkTrue(!synapseClient:::matchURLHosts("sftp://host.com/foo", "sftp://someotherhost.com/folder/uuid"))
 }

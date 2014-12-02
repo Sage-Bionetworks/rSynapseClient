@@ -10,20 +10,28 @@ synGetUserProfile<-function(id) {
   } else {
     getOrUpdateUri<-sprintf("/userProfile/%s", id)
   }
-  response<-synRestGET(getOrUpdateUri)
-  populateUserProfile(response, getOrUpdateUri)
+  response<-synRestGET(getOrUpdateUri)  
+  objectResult<-createS4ObjectFromList(response, "UserProfile")
+  objectResult
 }
+
+userProfileUpdateAndDeleteUri<-function(obj) {
+  sprintf("/userProfile",obj$ownerId)
+}
+
+setMethod(
+  f = "synStore",
+  signature = "UserProfile",
+  definition = function(entity) {
+    # note, user can't create a UserProfile, only update one
+    updateS4Object(entity, userProfileUpdateAndDeleteUri(entity))
+  }
+)
 
 synUpdateUserProfile<-function(userProfile) {
-  listResult<-synRestPUT(userProfile@updateUri, userProfile)
-  populateUserProfile(listResult, userProfile@updateUri)
+  updateS4Object(userProfile, userProfileUpdateAndDeleteUri(userProfile))
 }
 
-populateUserProfile<-function(listResult, getOrUpdateUri) {
-  if (!is.null(listResult$pic)) listResult$pic<-as.list(listResult$pic)
-  result<-UserProfile(listResult)
-  result@updateUri<-getOrUpdateUri
-  result
-}
+
 
 

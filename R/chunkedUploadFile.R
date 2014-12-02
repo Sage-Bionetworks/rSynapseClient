@@ -14,7 +14,7 @@
 #  Author: brucehoff
 ###############################################################################
 
-chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes=5*1024*1024) {
+chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes=5*1024*1024, contentType=NULL) {
   if (chunksizeBytes < 5*1024*1024)
       stop('Minimum chunksize is 5 MB.')
   
@@ -27,7 +27,9 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   chunkNumber <- 1 # service requires that chunk number be >0
   
   # guess mime-type - important for confirmation of MD5 sum by receiver
-  mimetype<-getMimeTypeForFile(basename(filepath))
+  if (is.null(contentType)) {
+    contentType<-getMimeTypeForFile(basename(filepath))
+  }
   
   ## S3 wants 'content-type' and 'content-length' headers. S3 doesn't like
   ## 'transfer-encoding': 'chunked', which requests will add for you, if it
@@ -38,10 +40,10 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   ## If you give S3 'transfer-encoding' and no 'content-length', you get:
   ## 501 Server Error: Not Implemented
   ## A header you provided implies functionality that is not implemented
-  headers <- list('Content-Type'=mimetype)
+  headers <- list('Content-Type'=contentType)
   
   ## get token
-  token <- createChunkedFileUploadToken(filepath, mimetype)
+  token <- createChunkedFileUploadToken(filepath, contentType)
   if (debug) {
     message(sprintf('\n\ntoken: %s\n', listToString(token)))
   }
@@ -50,42 +52,57 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   # with_retry = RetryRequest(retry_status_codes=[502,503], retries=4, wait=1, back_off=2, verbose=verbose)
   chunkResults<-list()
   connection<-file(filepath, open="rb")
-  repeat {
-    #chunk <- readChar(connection, chunksizeBytes)
-    chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
-    if (length(chunk)==0) break
-    # get the ith chunk from the file
-    if (debug) message(sprintf('\nChunk %d. size %d\n', chunkNumber, length(chunk)))
-    
-    ## get the signed S3 URL
-    chunkRequest <- list(chunkNumber=chunkNumber, chunkedFileToken=token)
-    chunkUploadUrl <- createChunkedFileUploadChunkURL(chunkRequest)
-    if (debug) message(sprintf('url= %s\n', chunkUploadUrl))
-    
-    ## PUT the chunk to S3
-    response <- getURLWithRetries(chunkUploadUrl,
-      postfields = chunk, # the request body
-      customrequest="PUT", # the request method
-      httpheader=headers, # the headers
-      opts=.getCache("curlOpts")
-    )
-    
-    chunkResults[[length(chunkResults)+1]]<-chunkNumber
-    chunkNumber <- chunkNumber + 1
-  }
-  close(connection)
+  tryCatch(
+    {
+      fileSizeBytes<-file.info(filepath)$size
+      totalUploadedBytes<-0
+      repeat {
+        chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
+        if (length(chunk)==0) break
+        # get the ith chunk from the file
+        if (debug) message(sprintf('\nChunk %d. size %d\n', chunkNumber, length(chunk)))
+        
+        ## get the signed S3 URL
+        chunkRequest <- list(chunkNumber=chunkNumber, chunkedFileToken=token)
+        chunkUploadUrl <- createChunkedFileUploadChunkURL(chunkRequest)
+        if (debug) message(sprintf('url= %s\n', chunkUploadUrl))
+        
+        curlHandle<-getCurlHandle()
+        ## PUT the chunk to S3
+        response <- getURLWithRetries(chunkUploadUrl,
+          postfields = chunk, # the request body
+          customrequest="PUT", # the request method
+          httpheader=headers, # the headers
+          curl=curlHandle,
+          opts=.getCache("curlOpts")
+        )
+        .checkCurlResponse(curlHandle, response$response)
+        
+        totalUploadedBytes <- totalUploadedBytes + length(chunk)
+        percentUploaded <- totalUploadedBytes*100/fileSizeBytes
+        # print progress, but only if there's more than one chunk
+        if (chunkNumber>1 | percentUploaded<100) {
+          cat(sprintf("Uploaded %.1f%%\n", percentUploaded))
+        }
+        
+        chunkResults[[length(chunkResults)+1]]<-chunkNumber
+        chunkNumber <- chunkNumber + 1
+      }
+    },
+    finally=close(connection)
+  )
   ## finalize the upload and return a fileHandle
   completeChunkFileUpload(token, chunkResults)
 }
 
-createChunkedFileUploadToken<-function(filepath, mimetype) {
+createChunkedFileUploadToken<-function(filepath, contentType) {
   md5 <- tools::md5sum(path.expand(filepath))
   if (is.na(md5)) stop(sprintf("Unable to compute md5 for %s", filepath))
   names(md5)<-NULL # Needed to make toJSON work right
 
   chunkedFileTokenRequest<-list(
     fileName=basename(filepath),
-    contentType=mimetype,
+    contentType=contentType,
     contentMD5=md5
   )
   

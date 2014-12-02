@@ -70,7 +70,7 @@ synCreateWiki<-function(wikiPage) {
   fileHandleIdList<-propertyValue(wikiPage, "attachmentFileHandleIds")
   if (is.null(fileHandleIdList)) fileHandleIdList <- list()
   for (attachment in wikiPage@attachments) {
-    fileHandle<-uploadAndAddToCacheMap(attachment)
+    fileHandle<-uploadAndAddToCacheMap(attachment, S3UploadDestination())
     fileHandleIdList[[length(fileHandleIdList)+1]]<-fileHandle$id
   }
   propertyValue(wikiPage, "attachmentFileHandleIds")<-fileHandleIdList
@@ -88,6 +88,26 @@ synGetWiki<-function(parent, id) {
   }
   populateWikiPage(createUri, synRestGET(getUri))
 }
+
+setMethod(
+  f = "synStore",
+  signature = "WikiPage",
+  definition = function(entity) {
+    if (is.null(propertyValue(entity, "id"))) {
+      synCreateWiki(entity)
+    } else {
+      synUpdateWiki(entity)
+    }
+  }
+)
+
+setMethod(
+  f = "synDelete",
+  signature = "WikiPage",
+  definition = function(entity) {
+    synRestDELETE(entity@updateUri)
+  }
+)
 
 synUpdateWiki<-function(wikiPage) {
   listResult<-synRestPUT(wikiPage@updateUri, wikiPage)
@@ -108,7 +128,7 @@ synGetWikiHeaders<-function(parent) {
   uri<-wikiHeadersUri(parent)
   result<-list()
   for (entry in synRestGET(uri)$results) {
-    result[[length(result)+1]]<-WikiHeader(as.list(entry))
+    result[[length(result)+1]]<-createS4ObjectFromList(as.list(entry), "WikiHeader")
   }
   result
 }

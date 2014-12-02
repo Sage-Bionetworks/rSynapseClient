@@ -24,9 +24,11 @@ Optional pagination parameter:  The first result to return in the batch.  Defaul
 A PaginatedResults object containing a list of Participant objects.
 }
 \examples{
+\dontrun{
 participants<-synGetParticipants("123456")
 participants@totalNumberOfResults
 participants@results
+}
 }
 \seealso{
 \code{\link{synGetEvaluation}}

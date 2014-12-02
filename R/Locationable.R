@@ -12,7 +12,7 @@ setClass(
     archOwn = "ArchiveOwner"
   ),
   prototype = prototype(
-    properties = synapseClient:::SynapseProperties(synapseClient:::getEffectivePropertyTypes("org.sagebionetworks.repo.model.Locationable"))
+    properties = SynapseProperties(getEffectivePropertyTypes("org.sagebionetworks.repo.model.Locationable"))
   )
 )
 
@@ -196,11 +196,7 @@ setMethod(
     }
 
     entity <- tryCatch(
-      if(.getCache("useJava")){
-        .performMultipartUpload(entity, filePath)
-      }else{
-        .performRUpload(entity, filePath)
-      },
+      .performRUpload(entity, filePath),
       error = function(e){
         warning(sprintf("failed to upload data file, please try again: %s", e))
         return(entity)
@@ -244,14 +240,14 @@ setMethod(
     if(is.null(propertyValue(entity, "id"))){
       entity <- createEntity(entity)
     }else{
-      method <- synapseClient:::getFetchMethod(entity)
+      method <- getFetchMethod(entity)
       # I think this is redundant, as 'updateEntity' will be called below
       # so we fix by suppressing the extra call if it's to come shortly
       if (is.null(getFetchMethod(entity)) || getFetchMethod(entity) != "load"){
         entity <- updateEntity(entity)
       }
       if(!is.null(method))
-        synapseClient:::setFetchMethod(entity, method)
+        setFetchMethod(entity, method)
     }
 
     if(!is.null(getFetchMethod(entity)) && getFetchMethod(entity) == "load"){
@@ -425,7 +421,7 @@ setMethod(
 
     ## passing the md5 sum causes this funciton to only download the file
     ## if the cached copy does not match that md5 sum
-    archiveFile <- synapseClient:::synapseDownloadFile(url, propertyValue(entity, "md5"), versionId=entity$properties$versionNumber)
+    archiveFile <- synapseDownloadFile(url, propertyValue(entity, "md5"), versionId=entity$properties$versionNumber)
 
     archiveFile <- normalizePath(archiveFile)
     if(entity@archOwn@fileCache$archiveFile != basename(destfile)){

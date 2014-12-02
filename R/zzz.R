@@ -29,14 +29,14 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   function(libname, pkgname)
 {  
   ##set the R_OBJECT cache directory. check for a functional zip first
-  packageStartupMessage("Verifying zip installation...")
-
   ff <- tempfile()
   file.create(ff)
   zipfile <- tempfile()
+
   suppressWarnings(
-    ans <- utils::zip(zipfile, ff)
+      ans <- utils::zip(zipfile, ff)
   )
+
   unlink(ff)
   unlink(zipfile, recursive = TRUE)
   if(ans != 0){
@@ -44,43 +44,8 @@ kSupportedDataLocationTypes <- c("external", "awss3")
     .setCache("rObjCacheDir", .Platform$file.sep)
     .setCache("hasZip", FALSE)
   }else{
-    packageStartupMessage("OK")
     .setCache("rObjCacheDir", ".R_OBJECTS/")
     .setCache("hasZip", TRUE)
-  }
-  
-
-  classpath <- c(list.files(file.path(find.package("synapseClient"), "java"), full.names=TRUE, pattern='jar$', recursive=FALSE))
-  packageStartupMessage("\nChecking rJava installation...")
-
-  .setCache("useJava", FALSE)
-
-  if(("rJava" %in% utils::installed.packages())){
-    options(java.parameters="-Xrs")
-    javaInitReturn <- tryCatch(
-      rJava::.jinit(classpath), 
-      error = function(e){
-        print(e)
-        .setCache("useJava", FALSE)
-        -1L
-      }
-    )
-    if(javaInitReturn >= 0L){
-      tryCatch({
-          # use the non-default text-based progress listener for uploads
-          progress <- rJava::.jnew("org/sagebionetworks/client/TextProgressListener")
-          uploader <- rJava::.jnew("org/sagebionetworks/client/DataUploaderMultipartImpl")
-          uploader$setProgressListener(progress)
-
-          .setCache("mpUploader", uploader)
-          .setCache("useJava", TRUE)
-          packageStartupMessage("OK")
-        }, error = function(e) {
-          print(e)
-          .setCache("useJava", FALSE)
-        }
-      )
-    }
   }
 
   .setCache("curlOpts", list(low.speed.time=60, low.speed.limit=1, connecttimeout=300, followlocation=TRUE, ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))
@@ -120,41 +85,24 @@ kSupportedDataLocationTypes <- c("external", "awss3")
   
   synapseDataLocationPreferences(kSupportedDataLocationTypes)
   synapseCacheDir(gsub("[\\/]+", "/", path.expand("~/.synapseCache")))
-  ## check RJSONIO version
-  if(installed.packages()['RJSONIO', 'Version'] == "1.0-0")
-    stop("An unsupported version of RJSONIO is installed on your system. For instructions on how to resolve the issue visit this web page: https://sagebionetworks.jira.com/wiki/display/SYNR/I%27m+unable+to+download+or+upload+entity+data")
 
-
-  entities <- synapseClient:::entitiesToLoad()
-    for(ee in entities){ 
-      synapseClient:::defineEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
-      synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
-    }
-    
-    nonEntities<-list(
-      "org.sagebionetworks.repo.model.UserProfile",
-      "org.sagebionetworks.evaluation.model.Evaluation",
-      "org.sagebionetworks.evaluation.model.SubmissionStatus",
-      "org.sagebionetworks.evaluation.model.SubmissionBundle",
-      "org.sagebionetworks.evaluation.model.Participant",
-      "org.sagebionetworks.repo.model.wiki.WikiHeader"
-    )
-    
-    for(ee in nonEntities){ 
-      synapseClient:::defineNONEntityClass(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
-      synapseClient:::defineEntityConstructors(ee, package="synapseClient", where=.Internal(getRegisteredNamespace(as.name("synapseClient"))))
-    }
-    
-    # we override FileEntity, Submission with our own class constructor.  See also entitiesToLoad() in AAAschema.R
-addToEntityTypeMap(className="FileListConstructor", jsonSchemaName="org.sagebionetworks.repo.model.FileEntity")
-addToEntityTypeMap(className="SubmissionListConstructor", jsonSchemaName="org.sagebionetworks.evaluation.model.Submission")
+  entities <- entitiesToLoad()
+  where<-.Internal(getRegisteredNamespace(as.name("synapseClient")))
+  for(ee in entities){ 
+    defineEntityClass(ee, package="synapseClient", where=where)
+    defineEntityConstructors(ee, package="synapseClient", where=where)
+  }
+  
+  # we need a TypedList of UploadDestination, for which there is no schema
+  defineTypedList("UploadDestination")
+  
+  # This is done during class generation but seems to be lost at package load time.  So we do it again.
+  populateSchemaToClassMap()
 }
-
 
 .userAgent<-function() {
   myOwnVersion<-packageDescription("synapseClient", fields="Version")
-  paste("synapseRClient", myOwnVersion, sep="/")
+  paste("synapseRClient", myOwnVersion, sprintf("Rv%s.%s", version$major, version$minor), sep="/")
 }
-
 
 

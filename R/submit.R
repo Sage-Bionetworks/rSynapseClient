@@ -26,6 +26,7 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
     if (is.null(evaluationId)) stop("The Evaluation provided does not have an ID.")
   } else if (is(evaluation, "character")) {
     evaluationId<-evaluation
+    evaluation <- synGetEvaluation(evaluationId)
   } else {
     stop("You must provide an evaluation or and evaluation ID.")
   }
@@ -41,12 +42,12 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
   }
 
   if (missing(teamName)) {
-    submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
+    submission<-createSubmissionFromProperties(list(evaluationId=evaluationId, 
         entityId=entityId, 
         versionNumber=entityVersion, 
         name=submissionName))
   } else {
-    submission<-SubmissionListConstructor(list(evaluationId=evaluationId, 
+    submission<-createSubmissionFromProperties(list(evaluationId=evaluationId, 
         entityId=entityId, 
         versionNumber=entityVersion, 
         name=submissionName,

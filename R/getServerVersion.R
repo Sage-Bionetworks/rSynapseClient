@@ -8,7 +8,7 @@ getServerVersion<-function() {
   now<-Sys.time()
   cacheTimestamp<-.getCache(cacheTimestampName)
   versionInfo<-.getCache(cacheVersionInfoName)
-  if (is.null(versionInfo) || is.null(cacheTimestamp) || Sys.time()-now>cacheRefreshSeconds) {
+  if (is.null(versionInfo) || is.null(cacheTimestamp) || now-cacheTimestamp>cacheRefreshSeconds) {
     versionInfo<-synapseGet("/version", anonymous=T)$version
     .setCache(cacheTimestampName, now)
     .setCache(cacheVersionInfoName, versionInfo)

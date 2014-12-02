@@ -3,26 +3,33 @@
 # Author: furia
 ###############################################################################
 
+getFactoryForConcreteType<-function(concreteType) {
+  factoryName<-NULL
+  if (concreteType=="org.sagebionetworks.repo.model.FileEntity") factoryName<-"createFileFromProperties"
+  if (concreteType=="org.sagebionetworks.repo.model.table.TableEntity") factoryName<-"createTableSchemaFromProperties"
+  # by default the factory is a class constructor
+  if (is.null(factoryName)) factoryName<-getClassNameFromSchemaName(concreteType)
+  getMethod(factoryName, signature = "list", where="synapseClient")
+}
+
 setMethod(
   f = "getEntityInstance",
   signature = signature("list"),
   definition = function(entity)
   {
-    class <- getClassFromSynapseEntityType(entity$concreteType)
-
-    ## synapseEntity is the default
-    if(is.null(class))
-      class <- "Entity"
-
-    if (class == "Entity"){
-      if(!is.null(entity$locations) && length(entity$locations) > 0)
-        class <- "Locationable"
+    if (is.null(entity$concreteType)) {
+      if (!is.null(entity$locations) && length(entity$locations) > 0) {
+        factory <- getMethod("Locationable", signature = "list", where="synapseClient")
+      } else {
+        stop("Entity metadata is missing 'concreteType'.");
+      }
+    } else {
+      factory <- getFactoryForConcreteType(entity$concreteType)
     }
     
     ## call the appropriate constructor and pass the list
     ## representation of the entity
-    fun <- getMethod(class, signature = "list", where="synapseClient")
-    ee <- fun(entity)
+    ee <- factory(entity)
     ee@synapseWebUrl <- .buildSynapseUrl(propertyValue(ee, "id"))
 
     if(inherits(ee, "Locationable")) {
@@ -46,7 +53,7 @@ setMethod(
 
       cacheRoot <- gsub("[\\/]+", "/", normalizePath(cacheRoot))
 
-      if(cacheRoot %in% synapseClient:::availFileCaches()){
+      if(cacheRoot %in% availFileCaches()){
           ee@archOwn@fileCache <- getFileCache(cacheRoot)
       } else{
           setCacheRoot(ee@archOwn, cacheRoot, clean = FALSE)

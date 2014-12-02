@@ -7,12 +7,16 @@ Store an object in Synapse
 Store an object in Synapse
 }
 \usage{
-synStore(entity, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F)
-synStore(entity, activity=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F)
+synStore(entity, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)
+synStore(entity, activity=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)
+synStore(table, retrieveData=F, verbose=T, filePath=NULL)
 }
 \arguments{
  \item{entity}{
-The object to store.  May be an entity (\code{\link{File}}, \code{\link{Folder}}, \code{\link{Project}}) or another object (\code{\link{Activity}}, \code{\link{Evaluation}}, \code{\link{SubmissionStatus}}, \code{\link{UserProfile}}, \code{\link{WikiPage}})
+The object to store.  May be an entity (\code{\link{File}}, \code{\link{Folder}}, 
+\code{\link{Project}}), (\code{\link{Activity}}, \code{\link{Evaluation}}, 
+\code{\link{SubmissionStatus}}, \code{\link{WikiPage}}, \code{\link{TableColumn}}, 
+\code{\link{Table}}, \code{\link{TableSchema}})
 }
  \item{used}{
 For entities, this is the list of other entities (URLs, objects and/or IDs) 'used' as inputs when generating the entity.  For non-entities, this parameter is ignored
@@ -38,9 +42,29 @@ For versionable entities only:  If TRUE new version of the object is created.  N
  \item{isRestricted}{
 For File entities only:  If TRUE then Download access by others is prevented and the Synapse Access and Compliance Team is contacted to help craft the appropriate Terms of Use.  This argument is employed when uploading sensitive human data.
 }
+\item{contentType}{
+The (optional) contentType, stored when the File is uploaded. If omitted, it is the MIME type inferred from the file's suffix.
+}
+\item{retrieveData}{
+For tables:  If TRUE, returns a copy of the uploaded table.  Otherwise returns a RowReferenceSet, which supplies
+the row IDs for the uploaded rows.
+}
+\item{verbose}{
+For tables:  If TRUE, shows progress for uploading and retrieving data.
+}
+\item{filePath}{
+For tables:  If retrieveData=T then this is the file path to which the retrieved result will be saves as a .csv file.
+If omitted, will be downloaded to the default file cache location.
+}
 }
 \details{
 Stores an object crafted in memory, either creating it in Synapse anew, or updating an existing object.
+}
+
+\value{
+Returns the persisted copy of the object. 
+For TableDataFrame and TableFilePath, if retrieveData=TRUE returns a Table of the same type.  
+If retrieveData=FALSE, returns a Table having a slot 'rowCount' which is the number of rows stored.
 }
 
 \author{
@@ -54,7 +78,9 @@ Bruce Hoff
 \code{\link{Activity}}
 \code{\link{Evaluation}}
 \code{\link{SubmissionStatus}}
-\code{\link{UserProfile}}
 \code{\link{WikiPage}}
+\code{\link{TableColumn}}
+\code{\link{TableSchema}}
 \code{\link{synGet}}
+\code{\link{Table}}
 }

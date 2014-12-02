@@ -13,13 +13,13 @@ unitTestCheckSingleValue <-
   checkTrue(synapseClient:::checkInteger(val))
   
   val <- "5"
-  checkTrue(synapseClient:::checkInteger(val))
+  checkTrue(!synapseClient:::checkInteger(val))
   
   val <- 5.0000000
   checkTrue(synapseClient:::checkInteger(val))
   
   val <- "5L"
-  checkTrue(synapseClient:::checkInteger(val))
+  checkTrue(!synapseClient:::checkInteger(val))
   
   val <- 5 + .Machine$double.eps
   checkTrue(synapseClient:::checkInteger(val))
@@ -117,5 +117,9 @@ unitTestListContainingLists <-
   checkTrue(all(res == synapseClient:::checkInteger(val)))
 }
 
-
+unitTestConvertIntegersToCharacters<-function() {
+  checkEquals(list(list(c(foo="1",bar="2"),c(foo="1",bar="2"))),
+    synapseClient:::convertIntegersToCharacters(list(list(c(foo=1,bar=2),c(foo=1,bar=2))))
+  )
+}
 

@@ -25,10 +25,12 @@ an object of type PaginatedResults.  Note, this function does not download files
 For that please see synGetSubmission.
 }
 \examples{
+\dontrun{
 # get the first 10 submissions in the given evaluation queue that I submitted.
 submissions<-synGetSubmissions(evaluationId, limit=10, offset=0) 
 # get an arbitrary Submission from the list
 submission<-submissions@results[[1]]
+}
 }
 \seealso{
 \code{\link{synGetSubmission}}

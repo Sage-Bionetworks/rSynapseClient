@@ -364,5 +364,16 @@ setMethod(
   }
 )
 
-
-
+setMethod("identical",
+  signature=signature("TypedPropertyStore", "TypedPropertyStore"),
+  definition = function(x, y, num.eq=TRUE, single.NA = TRUE, attrib.as.set = TRUE,
+    ignore.bytecode = TRUE) {
+    names<-propertyNames(x)
+    if (length(names)!=length(propertyNames(y))) return(FALSE)
+    for (name in names) {
+      if (!identical(synapseClient:::getProperty(x, name), synapseClient:::getProperty(y, name), 
+          single.NA, attrib.as.set, ignore.bytecode)) return(FALSE)
+    }
+    TRUE
+  }
+)

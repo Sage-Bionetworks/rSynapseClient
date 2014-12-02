@@ -4,7 +4,6 @@
 	project <- createEntity(Project())
 	synapseClient:::.setCache("testProject", project)
 	synapseClient:::.setCache("oldWarn", options("warn")[[1]])
-	options(warn=2)
 }
 
 .tearDown <-
@@ -19,7 +18,9 @@
 integrationTestVersionedAnnotationsProject <-
 	function()
 {
-	project <- synapseClient:::.getCache("testProject")
+  options(warn=2)
+  
+  project <- synapseClient:::.getCache("testProject")
 	vers <- project$available.versions
 	checkEquals(1L, nrow(vers))
 	checkEquals("data.frame", class(vers))

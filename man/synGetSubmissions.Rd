@@ -14,7 +14,7 @@ synGetSubmissions(evaluationId, status, limit, offset)
 The evaluation queue containing the submissions of interest.
 }
 \item{status}{
-An optional filter on the submissions.  One of "OPEN", "CLOSED", "SCORED", or "INVALID".
+An optional filter on the submissions.  One of "RECEIVED","OPEN","CLOSED","SCORED","INVALID","VALIDATED","EVALUATION_IN_PROGRESS","REJECTED",or "ACCEPTED".
 }
 \item{limit}{
 The optional limit 'paging' parameter, default is 10.
@@ -28,12 +28,14 @@ an object of type PaginatedResults.  Note, this function does not download files
 For that please see synGetSubmission.
 }
 \examples{
-# one of "OPEN", "CLOSED", "SCORED", "INVALID"
+\dontrun{
+# one of "RECEIVED","OPEN","CLOSED","SCORED","INVALID","VALIDATED","EVALUATION_IN_PROGRESS","REJECTED",or "ACCEPTED"
 status<-"SCORED"
 # get the first 100 submissions in the given evaluation queue having the given status
 submissions<-synGetSubmissions(evaluationId, status, limit=100, offset=0) 
 # get an arbitrary Submission from the list
 submission<-submissions@results[[1]]
+}
 }
 \seealso{
 \code{\link{synGetSubmission}}

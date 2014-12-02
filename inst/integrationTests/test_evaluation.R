@@ -66,6 +66,10 @@ integrationTestEvaluationRoundtrip <-
   evaluation2<-synGetEvaluation(eid)
   checkEquals(evaluation2, evaluation)
   
+  # Try getting the evaluation through the content source
+  paginatedEvaluations <- synGetEvaluationByContentSource(projectId)
+  checkEquals(paginatedEvaluations@results[[1]], evaluation)
+  
   propertyValue(evaluation, "status")<-"OPEN"
   evaluation<-synStore(evaluation)
   
@@ -79,7 +83,8 @@ integrationTestEvaluationRoundtrip <-
   
   # Join the Evaluation
   myOwnId<-propertyValue(synGetUserProfile(), "ownerId")
-  synapseClient:::.allowParticipation(eid, "AUTHENTICATED_USERS")
+  AUTHENTICATED_USERS_PRINCIPAL_ID<-273948 # This is defined in org.sagebionetworks.repo.model.AuthorizationConstants
+  synapseClient:::.allowParticipation(eid, AUTHENTICATED_USERS_PRINCIPAL_ID)
   synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
   
   participants<-synGetParticipants(eid)
@@ -94,7 +99,7 @@ integrationTestEvaluationRoundtrip <-
   createdSubmission<-submissionResult$submission
   checkEquals(evaluation$submissionReceiptMessage, submissionResult$submissionReceiptMessage)
     
-  submissions<-synGetSubmissions(eid, "OPEN")
+  submissions<-synGetSubmissions(eid, "RECEIVED")
   
   checkEquals(1, submissions@totalNumberOfResults)
   checkEquals(1, length(submissions@results))
@@ -115,7 +120,7 @@ integrationTestEvaluationRoundtrip <-
   status<-synGetSubmissionStatus(propertyValue(submission, "id")) 
   # check content of status
   checkEquals(propertyValue(submission, "id"), propertyValue(status, "id"))
-  checkEquals("OPEN", propertyValue(status, "status"))
+  checkEquals("RECEIVED", propertyValue(status, "status"))
   
   # should also be able to retrieve by the submission object itself
   status2<-synGetSubmissionStatus(submission)
@@ -139,7 +144,7 @@ integrationTestEvaluationRoundtrip <-
   
   submit(evaluation, submittableEntity2, teamName="some team name", silent=TRUE)
   
-  submissions<-synGetSubmissions(eid, "OPEN")
+  submissions<-synGetSubmissions(eid, "RECEIVED")
   
   # check that filtering on OPEN works
   checkEquals(1, submissions@totalNumberOfResults)

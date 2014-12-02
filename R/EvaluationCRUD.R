@@ -4,24 +4,58 @@
 ###############################################################################
 
 synCreateEvaluation<-function(evaluation) {
-  result<-Evaluation(synRestPOST("/evaluation", evaluation))
-  result@updateUri<-sprintf("/evaluation/%s", propertyValue(result, "id"))
+  evaluationAsList<-createListFromS4Object(evaluation)
+  result<-createS4ObjectFromList(synRestPOST("/evaluation", evaluationAsList), "Evaluation")
   result
 }
 
 synGetEvaluation<-function(id) {
   uri<-sprintf("/evaluation/%s", id)
-  result<-Evaluation(synRestGET(uri))
-  result@updateUri<-uri
+  result<-createS4ObjectFromList(synRestGET(uri), "Evaluation")
   result
 }
+
+synGetEvaluationByContentSource <- function(id) {
+    uri <- sprintf("/entity/%s/evaluation", id)
+    content <- synRestGET(uri)
+    
+    paginatedResults <- new("PaginatedResults")
+    paginatedResults@totalNumberOfResults <- as.integer(content$totalNumberOfResults)
+    for (s in content$results) {
+        result <- createS4ObjectFromList(as.list(s), "Evaluation")
+        
+        n <- length(paginatedResults@results)
+        paginatedResults@results[[n+1]] <- result
+    }
+    return(paginatedResults)
+}
+
+setMethod(
+  f = "synStore",
+  signature = "Evaluation",
+  definition = function(entity) {
+    if (is.null(entity$id) || length(entity$id)==0) {
+      synCreateEvaluation(entity)
+    } else {
+      updateS4Object(entity, sprintf("/evaluation/%s",entity$id))
+    }
+  }
+)
+
+setMethod(
+  f = "synDelete",
+  signature = "Evaluation",
+  definition = function(entity) {
+    synRestDELETE(sprintf("/evaluation/%s",entity$id))
+  }
+)
 
 newParticipantPaginatedResults<-function(content) {
   paginatedResults<-new("PaginatedResults")
   paginatedResults@totalNumberOfResults<-as.integer(content$totalNumberOfResults)
   for (s in content$results) {
     n<-length(paginatedResults@results)
-    paginatedResults@results[[n+1]]<-Participant(as.list(s))
+    paginatedResults@results[[n+1]]<-createS4ObjectFromList(as.list(s), "Participant")
   }
   paginatedResults
 }
@@ -46,19 +80,13 @@ synGetParticipants<-function(evaluationId,limit,offset) {
 }
 
 # Experimental method! liable to change in future without notice
-.allowParticipation <- function(evaluationId, user, 
+.allowParticipation <- function(evaluationId, userPrincipalId, 
         rights=c("READ", "PARTICIPATE", "SUBMIT", "UPDATE_SUBMISSION")) {
     # Treat integers as user IDs and strings as user groups
-    userId <- suppressWarnings(as.integer(user))
+    userId <- suppressWarnings(as.integer(userPrincipalId))
     
-    # Fetch the user ID for a user group
     if (is.na(userId)) {
-        groups <- synRestGET(sprintf('/userGroupHeaders?prefix=%s', user))
-        for (child in groups$children) {
-            if (all(!child$isIndividual && child$displayName == user)) {
-                userId <- as.integer(child$ownerId)
-            }
-        }
+      stop(sprintf("Expected user's principal Id but found %s", userPrincipalId))
     }
     
     # Grab the ACL 

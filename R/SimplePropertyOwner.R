@@ -161,3 +161,22 @@ setReplaceMethod("$",
     }
   }
 )
+
+identicalSimplePropertyOwner<-function(x, y, num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
+  ignore.bytecode = TRUE) {
+  sortedNamesX <- sort(names(properties(x)))
+  sortedNamesY <- sort(names(properties(y)))
+  if (!identical(sortedNamesX, sortedNamesY)) return(FALSE)
+  for (name in sortedNamesX) {
+    if (!identical(propertyValue(x, name), propertyValue(x, name))) return(FALSE)
+  }
+  TRUE
+}
+
+setMethod("identical",
+  signature=signature("SimplePropertyOwner", "SimplePropertyOwner"),
+  definition = function(x, y, num.eq=TRUE, single.NA = TRUE, attrib.as.set = TRUE,
+    ignore.bytecode = TRUE) {
+    identicalSimplePropertyOwner(x, y, num.eq, single.NA, attrib.as.set, ignore.bytecode)
+  }
+)

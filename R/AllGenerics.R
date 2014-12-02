@@ -843,16 +843,30 @@ setGeneric(
 )
 
 setGeneric(
-  name="FileListConstructor",
-  def = function(propertiesList) {
-    standardGeneric("FileListConstructor")
+  name="synStore",
+  def = function(entity, ...) {
+    standardGeneric("synStore")
   }
 )
 
 setGeneric(
-  name="SubmissionListConstructor",
+  name="synDelete",
+  def = function(entity, ...) {
+    standardGeneric("synDelete")
+  }
+)
+
+setGeneric(
+  name="createFileFromProperties",
   def = function(propertiesList) {
-    standardGeneric("SubmissionListConstructor")
+    standardGeneric("createFileFromProperties")
+  }
+)
+
+setGeneric(
+  name="createSubmissionFromProperties",
+  def = function(propertiesList) {
+    standardGeneric("createSubmissionFromProperties")
   }
 )
 
@@ -911,4 +925,40 @@ setGeneric(
     standardGeneric("synSetProperty<-")
   }
 )
+
+setGeneric(
+  name = "set",
+  def = function(x, values) {
+    standardGeneric("set")
+  }
+)
+
+setGeneric(
+  name = "getList",
+  def = function(x) {
+    standardGeneric("getList")
+  }
+)
+
+setGeneric(
+  name="createTableSchemaFromProperties",
+  def = function(propertiesList) {
+    standardGeneric("createTableSchemaFromProperties")
+  }
+)
+
+setGeneric(
+  name="Table",
+  def = function(tableSchema, values, ...) {
+    standardGeneric("Table")
+  }
+)
+
+setGeneric(
+  name="as.tableColumns",
+  def = function(source) {
+    standardGeneric("as.tableColumns")
+  }
+)
+
 

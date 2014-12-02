@@ -44,19 +44,11 @@ integrationTestEntityFileAccess <-
     # /entity/{enityId}/file
     downloadUri<-sprintf("/entity/%s/file", entity$id)
     # download into a temp file
-    downloadedFile<-synapseClient:::synapseDownloadFromRepoServiceToDestination(downloadUri)
+    downloadedFile<-synapseClient:::synapseDownloadFromServiceToDestination(downloadUri)
     origChecksum<- as.character(tools::md5sum(filePath))
     downloadedChecksum <- as.character(tools::md5sum(downloadedFile))
     checkEquals(origChecksum, downloadedChecksum)
     
     # delete the entity
     deleteEntity(entity$id)
-    
-    
-    # delete the file handle
-    # handleUri<-sprintf("/fileHandle/%s", fileHandle$id)
-    # synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
-    # 
-    # handleUri<-sprintf("/fileHandle/%s", fileHandle$id)
-    # synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
 }

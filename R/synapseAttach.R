@@ -9,11 +9,11 @@ synapseAttach <-
 	entity <- getEntity(entity)
 
 	## as repo for a presigned S3 URL
-	token <- synapseClient:::synapsePost(
+	token <- synapsePost(
 		paste("/entity", entity$properties$id, "s3AttachmentToken", sep="/"), token)
 	
 	## upload attachment file to S3
-	synapseClient:::synapseUploadFile(token$presignedUrl, filepath, token$md5, contentType=token$contentType)
+	synapseUploadFile(token$presignedUrl, filepath, token$md5, contentType=token$contentType)
 
 	## append to the entity's list of attachment
 	attachmentData <- list(name=token$fileName, tokenId=token$tokenId, md5=token$md5)

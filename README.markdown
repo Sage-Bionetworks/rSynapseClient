@@ -16,6 +16,8 @@ library(devtools)
 install_github('rSynapseClient', 'Sage-Bionetworks', ref='develop')
 ```
 
+NOTE:  Before building the package from source you must run tools/prebuild.sh.  A single command that runs this and also builds the package is in tools/build.sh
+
 ## Getting Started
 
 The Getting started with the R synapseClient guide is hosted in Synapse itself. See [syn1834618](https://www.synapse.org/#!Synapse:syn1834618).
