@@ -8,7 +8,7 @@ as.tableColumns
 Create Table Columns based on a data frame
 }
 \usage{
-	as.tableColumns(source) where 'source' is a data frame or path to a csv file
+  as.tableColumns(source) where 'source' is a data frame or path to a csv file
 }
 \arguments{
   \item{source}{
@@ -32,7 +32,7 @@ Create Table Columns based on a data frame
 \value{
 A list containing two fields, 'tableColumns' and 'fileHandleId'.
 
-tableColumns: A list of TableColumns matching the columns in the given data frame in terms of name, type and (for 'factor' columns), enumeration of permitted values.
+tableColumns: A list of TableColumns matching the columns in the given file or data frame in terms of name and type.
 
 fileHandleId: The ID of the uploaded file, suitable for passing to the Table constructor along with a schema. (See 'Table'.)
 }
