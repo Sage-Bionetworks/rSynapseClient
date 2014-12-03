@@ -43,6 +43,8 @@ TableQueryResult	org.sagebionetworks.repo.model.table.QueryResult	false
 QueryNextPageToken	org.sagebionetworks.repo.model.table.QueryNextPageToken	false
 SortItem	org.sagebionetworks.repo.model.table.SortItem	false
 AsyncJobId	org.sagebionetworks.repo.model.asynch.AsyncJobId	false
+UploadToTablePreviewRequest	org.sagebionetworks.repo.model.table.UploadToTablePreviewRequest	false
+UploadToTablePreviewResult	org.sagebionetworks.repo.model.table.UploadToTablePreviewResult	false
 CsvTableDescriptor	org.sagebionetworks.repo.model.table.CsvTableDescriptor	false
 RowSelection	org.sagebionetworks.repo.model.table.RowSelection	false
 LogEntry	org.sagebionetworks.repo.model.LogEntry	false

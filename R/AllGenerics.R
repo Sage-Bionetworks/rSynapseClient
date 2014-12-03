@@ -956,7 +956,7 @@ setGeneric(
 
 setGeneric(
   name="as.tableColumns",
-  def = function(source) {
+  def = function(source, ...) {
     standardGeneric("as.tableColumns")
   }
 )
