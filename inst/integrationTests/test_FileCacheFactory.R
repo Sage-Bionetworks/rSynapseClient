@@ -7,7 +7,7 @@
 #  synapseClient:::.setCache("testProject", project)
 #
 #  synapseClient:::.setCache("oldWarn", options("warn")[[1]])
-#  options(warn=2)
+#  
 #
 #}
 #

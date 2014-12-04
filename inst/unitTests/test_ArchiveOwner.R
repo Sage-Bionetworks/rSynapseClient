@@ -22,7 +22,6 @@
 unitTestInitialize <-
   function()
 {
-  options(warn = 2L)
   aa <- new("ArchiveOwner")
   ab <- new("ArchiveOwner")
   checkTrue(synapseClient:::cacheDir(aa) != synapseClient:::cacheDir(ab))
@@ -32,7 +31,6 @@ unitTestInitialize <-
 unitTestAddFile <-
     function()
 {
-  options(warn = 2L)
   own <- new("ArchiveOwner")
   file <- gsub("[\\/]+", "/", tempfile())
   cat("THIS IS A TEST %s", Sys.time(), file = file)
@@ -50,7 +48,7 @@ unitTestAddFile <-
 unitTestDeleteFile <-
     function()
 {
-  options(warn = 2L)
+
   own <- new("ArchiveOwner")
   file <- tempfile()
   cat("THIS IS A TEST %s", Sys.time(), file = file)
@@ -68,7 +66,7 @@ unitTestDeleteFile <-
 unitTestMoveFile <-
     function()
 {
-  options(warn = 2L)
+
   own <- new("ArchiveOwner")
   file <- tempfile()
   cat("THIS IS A TEST %s", Sys.time(), file = file)
@@ -85,7 +83,7 @@ unitTestMoveFile <-
 unitTestLoadObjectsFromFiles <-
     function()
 {
-  options(warn = 2L)
+
   own <- new("ArchiveOwner")
   aMatrix <- diag(10)
   file <- gsub("[\\/]+", "/", tempfile())
@@ -114,7 +112,7 @@ unitTestLoadObjectsFromFiles <-
 unitTestCacheDir <-
     function()
 {
-  options(warn = 2L)
+
   own <- new("ArchiveOwner")
   checkEquals(synapseClient:::cacheDir(own), own@fileCache$getCacheDir())
   options(warn = synapseClient:::.getCache("oldWarn"))
@@ -123,7 +121,7 @@ unitTestCacheDir <-
 unitTestGetPackageName <-
   function()
 {
-  options(warn = 2L)
+
   own <- new("ArchiveOwner")
   checkTrue(grepl("ArchiveOwner", getPackageName(own)))
 
@@ -136,7 +134,7 @@ unitTestGetPackageName <-
 unitTestAttach <-
   function()
 {
-  options(warn = 2L)
+
   own <- new("ArchiveOwner")
 
   own@objects$aNum <- 1L
@@ -151,7 +149,7 @@ unitTestAttach <-
 unitTestDetach <-
   function()
 {
-  options(warn = 2L)
+
   own <- new("ArchiveOwner")
 
   own@objects$aNum <- 1L
@@ -168,7 +166,7 @@ unitTestDetach <-
 unitTestSetCacheRoot <-
   function()
 {
-  options(warn = 2L)
+
   own <- synapseClient:::ArchiveOwner()
   copy <- own
   file <- tempfile()
