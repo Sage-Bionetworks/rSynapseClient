@@ -38,9 +38,7 @@ unitTestReglarFileWithSameNameExists <-
 	options(warn=0)
 	synapseCacheDir(dd)
 
-	## now make sure that an error is generated
-	
-	checkException(synapseCacheDir(dd))
+	synapseCacheDir(dd)
 }
 
 unitTestNewDirReadOnlyParent <-
@@ -62,7 +60,7 @@ unitTestNewDirReadOnlyParent <-
 
 		## make sure that a warning is produced
 		
-		checkException(synapseCacheDir(dd))
+		synapseCacheDir(dd)
 	}
 }
 
