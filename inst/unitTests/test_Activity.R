@@ -5,7 +5,6 @@
   function()
   {
     synapseClient:::.setCache("oldWarn", options("warn")[[1]])
-    options(warn=2L)
   }
 
 .tearDown <-
@@ -20,6 +19,7 @@
   
   
 unitTestUsedAndExecuted<-function() {
+  options(warn=2L)
   # test setting and retrieving 'used' entities on an activity
   a<-Activity()
   checkEquals(list(), used(a))
@@ -140,10 +140,13 @@ unitTestUsedAndExecuted<-function() {
       list(reference=list(targetId="syn654"), wasExecuted=TRUE, 
         concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")), a$executed) 
 
+  options(warn = synapseClient:::.getCache("oldWarn"))
+  
 }
 
 
 unitTestShowActivity <- function(){
+  options(warn=2L)
   
   ## CREATE AN EMPTY ACTIVITY AND MAKE SURE THAT IT RENDERS
   act <- Activity()
@@ -180,5 +183,6 @@ unitTestShowActivity <- function(){
   act <- Activity(name="Sweet", used=list(entity="syn1234"),
       executed=list(url="https://www.synapse.org"))
   act
+  options(warn = synapseClient:::.getCache("oldWarn"))
   
 }
