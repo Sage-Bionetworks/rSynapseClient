@@ -491,9 +491,6 @@ unitTestDeleteObject <-
   checkEquals(length(copy), 1L)
   checkEquals(ee[[1]], "blah")
 
-  ## make sure that there was no warning by converting warnings to
-  ## errors by setting warn = 2
-  options(warn = 2)
   deleteObject(ee, "boo")
   checkEquals(length(ee), 0L)
 
@@ -511,9 +508,6 @@ unitTestDeleteMultipleObjects <-
   ee$boo <- "blah"
   checkEquals(length(synapseClient:::files(ee)), 2L)
 
-  ## make sure that there was no warning by converting warnings to
-  ## errors by setting warn = 2
-  options(warn = 2)
   deleteObject(ee, c("foo", "boo"))
 
   checkEquals(length(ee), 0L)
