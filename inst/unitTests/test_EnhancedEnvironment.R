@@ -317,7 +317,7 @@ unitTestDeleteObject <-
   checkEquals(length(ee), 0L)
   
   
-  checkException(deleteObject(ee, "fakeObject"))
+  deleteObject(ee, "fakeObject")
   
 }
 

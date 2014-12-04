@@ -494,10 +494,7 @@ unitTestDeleteObject <-
   deleteObject(ee, "boo")
   checkEquals(length(ee), 0L)
 
-  ## make sure that a warning was actually generated when trying to delete
-  ## an objects that doesn't exist by setting warn = 2 and checking for
-  ## an exception
-  checkException(deleteObject(ee, "fakeObject"))
+  deleteObject(ee, "fakeObject")
 }
 
 unitTestDeleteMultipleObjects <-

@@ -163,7 +163,7 @@ setMethod(
     
     ## elevate warnings to errors
     oldWarn <- options("warn")[[1]]
-    
+    options(warn=2)
     owner <- tryCatch({
         owner <- deleteObject(owner, which)
         lapply(1:length(which), function(i){
