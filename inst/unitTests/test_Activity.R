@@ -19,7 +19,6 @@
   
   
 unitTestUsedAndExecuted<-function() {
-  options(warn=2L)
   # test setting and retrieving 'used' entities on an activity
   a<-Activity()
   checkEquals(list(), used(a))
@@ -146,8 +145,7 @@ unitTestUsedAndExecuted<-function() {
 
 
 unitTestShowActivity <- function(){
-  options(warn=2L)
-  
+
   ## CREATE AN EMPTY ACTIVITY AND MAKE SURE THAT IT RENDERS
   act <- Activity()
   act

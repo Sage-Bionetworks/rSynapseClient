@@ -217,7 +217,7 @@ hasObjects<-function(file) {!is.null(file@objects)}
 isLoadable<-function(filePath) {
   tempenv<-new.env(parent=emptyenv())
   originalWarnLevel<-options()$warn
-  
+  options(warn=2)
   loadable<-TRUE
   tryCatch(
     load(file=filePath, envir = tempenv),
