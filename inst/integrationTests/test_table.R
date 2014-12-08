@@ -307,7 +307,7 @@ integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
   
   # also check what happens when query result is empty
   queryResult<-synTableQuery(sprintf("select * from %s where sweet=99", propertyValue(tschema, "id")), verbose=FALSE)
-  # TODO verify that the result is empty
+  # verify that the result is empty
   checkTrue(nrow(queryResult@values)==0)
 }
 
