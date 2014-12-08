@@ -223,9 +223,9 @@ isLoadable<-function(filePath) {
     load(file=filePath, envir = tempenv),
     error = function(e) {
       loadable<<-FALSE
-    }
+    },
+    finally = options(warn=originalWarnLevel)
   )
-  options(warn=originalWarnLevel)
   loadable
 }
 
