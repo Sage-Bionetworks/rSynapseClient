@@ -8,7 +8,7 @@
 #  function()
 #{
 #  synapseClient:::.setCache('oldWarn', options('warn')[[1]])
-#  
+#  options(warn=2)
 #
 #  ## create a project
 #  project <- createEntity(Project())

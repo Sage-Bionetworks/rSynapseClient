@@ -38,7 +38,9 @@ unitTestReglarFileWithSameNameExists <-
 	options(warn=0)
 	synapseCacheDir(dd)
 
-	synapseCacheDir(dd)
+	## now make sure that an error is generated
+	options(warn=2)
+	checkException(synapseCacheDir(dd))
 }
 
 unitTestNewDirReadOnlyParent <-
@@ -59,8 +61,8 @@ unitTestNewDirReadOnlyParent <-
 		checkEquals(dd, synapseCacheDir())
 
 		## make sure that a warning is produced
-		
-		synapseCacheDir(dd)
+		options(warn=2)
+		checkException(synapseCacheDir(dd))
 	}
 }
 
@@ -68,7 +70,7 @@ unitTestSetCacheDirNewDirDoesNotExists <-
 	function()
 {
 	##fail if any warnings are generated
-	
+	options(warn=2)
 	dd <- tempfile()
 	checkTrue(!file.exists(dd))
 
@@ -84,7 +86,7 @@ unitTestSetCacheDirUseTilde <-
 	function()
 {
 	##fail if any warnings are generated
-	
+	options(warn=2)
 
 	## make a cache Directory that is a subdir of ~/.synapseCache
 	dd <- tempfile(,tmpdir="~/.synapseCache")

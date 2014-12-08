@@ -18,7 +18,7 @@
 integrationTestVersionedAnnotationsProject <-
 	function()
 {
-  
+  options(warn=2)
   
   project <- synapseClient:::.getCache("testProject")
 	vers <- project$available.versions
