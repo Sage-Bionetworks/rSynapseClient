@@ -6,6 +6,7 @@
     function()
 {
   synapseClient:::.setCache("oldWarn", options("warn")[[1]])
+  options(warn=2L)
 }
 
 .tearDown <-
