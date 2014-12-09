@@ -207,22 +207,20 @@ unitTestAddFileInfoTwiceSameNameDifferentSlashes <-
   s1 <- tempfile()
   s2 <- tempfile()
   
-  path1 <- file.path(fc$cacheDir, "/foo/bar")
-  path2 <- file.path(fc$cacheDir, "///foo\\\bar")
-  synapseClient:::addFileMetaData(fc, s1, path1)
+  path1Suffix<-"/foo/bar"
+  path1 <- file.path(fc$cacheDir, path1Suffix)
+  synapseClient:::addFileMetaData(fc, s1, path1Suffix)
   checkEquals(length(fc$metaData), 1L)
-  synapseClient:::addFileMetaData(fc, s2, path1)
+  synapseClient:::addFileMetaData(fc, s2, path1Suffix)
   checkEquals(length(fc$metaData), 1L)
   
   ## check that it works properly when the directory exists
   fc <- new("FileCache")
-  dir.create(file.path(fc$cacheDir, "foo/bar"), recursive = TRUE)
-  path1 <- file.path(fc$cacheDir, "/foo/bar/")
-  path2 <- file.path(fc$cacheDir, "///foo\\\bar")
-  synapseClient:::addFileMetaData(fc, s1, path1)
+  dir.create(path1, recursive = TRUE)
+  synapseClient:::addFileMetaData(fc, s1, path1Suffix)
   checkEquals(length(fc$metaData), 1L)
-  synapseClient:::addFileMetaData(fc, s2, path1)
-  checkEquals(length(fc$metaData), 2L)
+  synapseClient:::addFileMetaData(fc, s2, path1Suffix)
+  checkEquals(length(fc$metaData), 2L) # <<< this fails
   unlink(file.path(fc$cacheDir, "foo/bar"), recursive=T)
   unlink(file.path(fc$cacheDir, "foo"), recursive=T)
 }

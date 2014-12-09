@@ -181,10 +181,11 @@ setMethod(
     originalWarnLevel<-options()$warn
     options(warn=0)
     tryCatch(
-      lapply(names(info), function(i) info[[i]] <<- as.character(info[[i]])),
+      for (i in names(info)) {
+        info[[i]]<-as.character(info[[i]])
+      },
       finally = options(warn=originalWarnLevel)
     )
-    
     
     object$addFileMetaData(srcPath, destPath, relativePath = relPath, fileInfo = info)
   }

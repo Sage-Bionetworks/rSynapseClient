@@ -7,11 +7,11 @@ unitTestTrailingForwardSlash <-
   function()
 {
   tmp <- tempfile()
-  path <- file.path(tmp, "foo/")
+  path <- paste(file.path(tmp, "foo"), "/", sep="")
   ans <- synapseClient:::.cleanFilePath(path)
   checkTrue(attr(ans, "isDir"))
   
-  checkEquals(as.character(ans),  gsub("[\\/]+", "/", path))
+  checkEquals(as.character(ans),  paste(gsub("[\\/]+", "/", file.path(tmp, "foo")),"/", sep=""))
   
   path <- file.path(tmp, "foo///")
   ans <- synapseClient:::.cleanFilePath(path)

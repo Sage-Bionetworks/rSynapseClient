@@ -5,6 +5,11 @@
 .setUp <-
   function()
 {
+  # For some reason this 'shakes out' a warning that occurs when using
+  # R 3.1 on Windows, said warning being turned into an error by the 
+  # settings below
+  Sys.time()
+  
   synapseClient:::.setCache("oldWarn", options("warn")[[1]])
   options(warn=2L)
 }
