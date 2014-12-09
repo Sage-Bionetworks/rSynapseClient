@@ -421,6 +421,10 @@ downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, f
 }
 
 loadCSVasDataFrame<-function(filePath) {
+  if (file.info(filePath)$size==0) {
+    # this may occur if the table or query result set is empty
+    return(data.frame())
+  }
   dataframe<-readDataFrameFromCSV(filePath)
   rowIdIndex<-match("ROW_ID", names(dataframe))
   rowVersionIndex<-match("ROW_VERSION", names(dataframe))

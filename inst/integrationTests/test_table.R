@@ -304,6 +304,11 @@ integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
   myTable <- synStore(myTable, retrieveData=T)
   # now check that the data frames are the same
   checkTrue(dataFramesAreSame(dataFrame,myTable@values))
+  
+  # also check what happens when query result is empty
+  queryResult<-synTableQuery(sprintf("select * from %s where sweet=99", propertyValue(tschema, "id")), verbose=FALSE)
+  # verify that the result is empty
+  checkTrue(nrow(queryResult@values)==0)
 }
 
 integrationTestSynStoreCSVFileNoRetrieve <- function() {
