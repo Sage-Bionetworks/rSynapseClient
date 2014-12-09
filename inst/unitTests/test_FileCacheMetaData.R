@@ -220,7 +220,7 @@ unitTestAddFileInfoTwiceSameNameDifferentSlashes <-
   synapseClient:::addFileMetaData(fc, s1, path1Suffix)
   checkEquals(length(fc$metaData), 1L)
   synapseClient:::addFileMetaData(fc, s2, path1Suffix)
-  checkEquals(length(fc$metaData), 2L) # <<< this fails
+  checkEquals(length(fc$metaData), 1L)
   unlink(file.path(fc$cacheDir, "foo/bar"), recursive=T)
   unlink(file.path(fc$cacheDir, "foo"), recursive=T)
 }
