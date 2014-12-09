@@ -6,11 +6,6 @@
 .setUp <-
   function()
 {
-  # For some reason this 'shakes out' a warning that occurs when using
-  # R 3.1 on Windows, said warning being turned into an error by the 
-  # settings below
-  Sys.time()
-  
   synapseClient:::.setCache("oldWarn", options("warn")[[1]])
   options(warn=2)
 ##  synapseClient:::resetFactory(new("FileCacheFactory"))
@@ -35,7 +30,7 @@ unitTestChangeRoot <-
   archive <- tempfile(tmpdir=cacheRoot,fileext=".zip")
   archiveFile <- basename(archive)
   file1 <- tempfile()
-  cat(sprintf("THIS IS A TEST: %s", Sys.time()), file = file1)
+  cat(sprintf("THIS IS A TEST: %s", sample(10000,1)), file = file1)
   olddir <- getwd()
   setwd(tempdir())
   suppressWarnings(zip(archive, files = gsub("^.+/", "", file1)))
