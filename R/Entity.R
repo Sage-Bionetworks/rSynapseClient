@@ -379,7 +379,7 @@ createEntityMethod<-function(entity, generatingActivity, createOrUpdate, forceVe
       entity <- updateEntityMethod(entity, generatingActivity, forceVersion)
       return(entity)
     } else {
-      .checkCurlResponse(curlHandle, toJSON(entityAsList))
+      .checkCurlResponse(object=curlHandle, response=toJSON(entityAsList))
     }
   } else {
     entityAsList<-synapsePost(createUri, as.list.SimplePropertyOwner(entity))

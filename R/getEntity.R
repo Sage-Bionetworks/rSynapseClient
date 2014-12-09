@@ -69,7 +69,7 @@ setMethod(
     if(info$response.code == 404) {
       return(NULL) # not found
     }
-    .checkCurlResponse(curlHandle)
+    .checkCurlResponse(object=curlHandle)
       
     Activity(activityList)
   }

@@ -388,7 +388,7 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
       Sys.sleep(1);
     } else {
       # this handles non-2xx statuses
-      .checkCurlResponse(curlHandle, toJSON(checkResultAsList))
+      .checkCurlResponse(object=curlHandle, response=toJSON(checkResultAsList))
       # the job is finished
       if (verbose) cat("\n")
       return(checkResultAsList)
