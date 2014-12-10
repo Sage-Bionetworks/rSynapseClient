@@ -26,8 +26,9 @@ uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHand
       cat(sprintf("Uploading %s to %s ...\n", filePath, remotePathAndFile))
       success<-sftpUpload(parsedUrl@host, credentials$username, credentials$password, remotePathAndFile, filePath)
       if (!success) {
-        logErrorToSynapse(label="sftp put", message=sprintf("Failed to upload to %s", parsedUrl@host))
-        stop(sprintf("Failed to upload %s to %s", filePath, parsedUrl@host))
+        message<-sprintf("Failed to upload %s to %s", filePath, parsedUrl@host)
+        logErrorToSynapse(label=sprintf("sftp put %s", parsedUrl@host), message=message)
+        stop(message)
       }
       cat("... Upload complete.\n")
       synapseLinkExternalFile(URLencode(paste(urlDecodedDestination, fileName, sep="/")), fileName, contentType)
@@ -77,8 +78,9 @@ createMissingDirectories<-function(host, username, password, path) {
     if (!sftpDirectoryExists(host, username, password, dir)) {
         success<-sftpMakeDirectory(host, username, password, dir)
         if (!success) {
-          logErrorToSynapse(label="sftp mkdir", message=sprintf("Failed to create directory on %s", parsedUrl@host))
-          stop(sprintf("Failed to create %s on %s", dir, host))
+          message <- sprintf("Failed to create %s on %s", dir, host)
+          logErrorToSynapse(label=sprintf("sftp mkdir %s", parsedUrl@host), message=message)
+          stop(message)
         }
     } 
   }
