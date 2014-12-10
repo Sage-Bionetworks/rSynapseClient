@@ -43,6 +43,6 @@
   }else{
     curlPerform(URL=url, customrequest=method, readfunction=readFunction,readdata=ext, curl=curlHandle, httpHeader=header, .opts = opts, writefunction=responseWriteFunction$update)
   }
-  .checkCurlResponse(curlHandle, responseWriteFunction$value())
+  .checkCurlResponse(object=curlHandle, response=responseWriteFunction$value(), logErrorToSynapse=TRUE)
   responseWriteFunction$value()
 }

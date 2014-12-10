@@ -32,6 +32,6 @@
   opts$noprogress <- 0L
   curlPerform(URL=url, writefunction=writeFunction,
     writedata=ext, .opts = opts, curl = curlHandle)
-  .checkCurlResponse(curlHandle)
+  .checkCurlResponse(object=curlHandle, logErrorToSynapse=TRUE)
   destfile
 }

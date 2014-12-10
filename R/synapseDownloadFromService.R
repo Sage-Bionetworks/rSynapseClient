@@ -15,18 +15,6 @@
 ##
 
 ## this is the analog of 'synapseDownloadFile', switching to the Repo-file service
-synapseDownloadFromService<-
-  function (downloadUri, curlHandle = getCurlHandle(), cacheDir = synapseCacheDir(), opts = .getCache("curlOpts"), versionId = NULL)
-{
-  if (is.null(cacheDir)) stop(paste("cacheDir is required. synapseCacheDir() returns ", synapseCacheDir()))
-  
-  ## Download the file to the cache
-  destfile <- .generateCacheDestFile(downloadUri, versionId)
-  
-  synapseDownloadFromServiceToDestination(downloadUri=downloadUri, endpointName="REPO", destfile=destfile, curlHandle=curlHandle, opts=opts)
-}
-
-
 synapseDownloadFromServiceToDestination<-function(
   downloadUri, 
   endpointName="REPO", 
@@ -64,8 +52,7 @@ synapseDownloadFromServiceToDestination<-function(
   # we start with the common request options, then add the headers
   opts$httpheader <- header
   
-  
- webRequestResult<-webRequestWithRetries(
+  webRequestResult<-webRequestWithRetries(
     fcn=function(curlHandle) {
       .curlWriterDownload(url=downloadUrl, destfile=destfile, curlHandle=curlHandle, opts=opts)
     },
@@ -75,7 +62,7 @@ synapseDownloadFromServiceToDestination<-function(
   
   destfile <- webRequestResult$result
   
-  .checkCurlResponse(curlHandle)
+  .checkCurlResponse(object=curlHandle)
   
   destfile
 }

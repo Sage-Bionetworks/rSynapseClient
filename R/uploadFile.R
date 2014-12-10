@@ -25,7 +25,10 @@ uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHand
       remotePathAndFile<-file.path(destinationPath, fileName)
       cat(sprintf("Uploading %s to %s ...\n", filePath, remotePathAndFile))
       success<-sftpUpload(parsedUrl@host, credentials$username, credentials$password, remotePathAndFile, filePath)
-      if (!success) stop(sprintf("Failed to upload %s to %s", filePath, parsedUrl@host))
+      if (!success) {
+        logErrorToSynapse(label="sftp put", message=sprintf("Failed to upload to %s", parsedUrl@host))
+        stop(sprintf("Failed to upload %s to %s", filePath, parsedUrl@host))
+      }
       cat("... Upload complete.\n")
       synapseLinkExternalFile(URLencode(paste(urlDecodedDestination, fileName, sep="/")), fileName, contentType)
     } else if (uploadDestination@uploadType=="HTTPS") {
@@ -73,7 +76,10 @@ createMissingDirectories<-function(host, username, password, path) {
   for (dir in getDirectorySequence(path)) {
     if (!sftpDirectoryExists(host, username, password, dir)) {
         success<-sftpMakeDirectory(host, username, password, dir)
-        if (!success) stop(sprintf("Failed to create %s on %s", dir, host))
+        if (!success) {
+          logErrorToSynapse(label="sftp mkdir", message=sprintf("Failed to create directory on %s", parsedUrl@host))
+          stop(sprintf("Failed to create %s on %s", dir, host))
+        }
     } 
   }
 }

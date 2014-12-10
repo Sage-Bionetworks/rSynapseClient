@@ -4,16 +4,23 @@
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
-.checkCurlResponse <- function(object, response, call.=FALSE){
+.checkCurlResponse <- function(object, response, call.=FALSE, logErrorToSynapse=FALSE){
   if(class(object) != "CURLHandle") stop("invalid curl handle")
   info <- .getCurlInfo(object)
-  if(info$response.code != 0 & (info$response.code < 200 || info$response.code >= 300)){
-    message <- paste("HTTP Error:", info$response.code, "for request", info$effective.url)
+  if(info$response.code != 0 & (info$response.code < 200 || info$response.code >= 300)) {
+    url<-info$effective.url
+    host<-""
+    if (!is.null(url) && nchar(url)>0) {
+      parsedUrl<-.ParsedUrl(url)
+      host<-parsedUrl@host
+    }
+    label<-paste(info$response.code, host)
+    message <- paste("HTTP Error:", info$response.code, "for request", url)
     if (!missing(response)) {
-      logErrorToSynapse(info$response.code, paste(message, response, sep = '\n'))
+      if (logErrorToSynapse) logErrorToSynapse(label, paste(message, response, sep = '\n'))
       stop(paste(message, response, sep = '\n'), call.=call.)
     } else {
-      logErrorToSynapse(info$response.code, message=message)
+      if (logErrorToSynapse) logErrorToSynapse(label, message=message)
       stop(message, call.=call.)
     }
   }
