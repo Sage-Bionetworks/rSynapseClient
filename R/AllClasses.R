@@ -311,7 +311,12 @@ setRefClass(
           files <- .generateFileList(attr(files, "rootDir"))
           .self$deleteFileMetaData()
 
-          lapply(files$srcfiles, function(i){
+          # Without the following, on Windows + R 3.1 the 'as.character(info[i])' will generate 
+          # a warning which is translated into an error in a number of tests
+          originalWarnLevel<-options()$warn
+          options(warn=0)
+          tryCatch(
+            lapply(files$srcfiles, function(i){
                 info <- file.info(files$srcfiles[i])
                 for(name in names(info))
                   info[[name]] <- as.character(info[[name]])
@@ -320,6 +325,8 @@ setRefClass(
                 rPath <- gsub("^[\\/]", "", rPath)
                 .self$metaData[[i]] <- list(srcPath=.self$archiveFile, relativePath = rPath, fileInfo=info)
               }
+            ),
+            finally = options(warn=originalWarnLevel)
           )
 
           ## persist the metadata to disk
