@@ -7,31 +7,6 @@ legalFilePath<-function(filePath) {
 	gsub("[()`'<>\"|?*]", "_", filePath)
 }
 
-synapseDownloadToLegalFile<- function(url, destfile, opts = opts, curlHandle = curlHandle) {
-	legalDestFile <- legalFilePath(destfile)
-
-	## download to temp file first so that the existing local file (if there is one) is left in place
-	## if the download fails
-	tmpFile <- tempfile()
-	tryCatch(
-			.curlWriterDownload(url=url, destfile=tmpFile, opts = opts, curlHandle = curlHandle),
-			error = function(ex){
-				file.remove(tmpFile)
-				stop(ex)
-			}
-	)
-	
-	## copy then delete. this avoids a cross-device error encountered
-	## on systems with multiple hard drives when using file.rename
-	if(!file.copy(tmpFile, legalDestFile, overwrite = TRUE)){
-		file.remove(tmpFile)
-		stop("COULD NOT COPY: ", tmpFile, " TO: ", legalDestFile)
-	}
-	file.remove(tmpFile)
-
-	legalDestFile
-}
-
 synapseDownloadFile  <- 
   function (url, checksum, curlHandle = getCurlHandle(), cacheDir = synapseCacheDir(), opts = .getCache("curlOpts"), versionId = NULL)
 {
@@ -127,6 +102,10 @@ synapseDownloadSftpFileToDestination  <-
   credentials<-getCredentialsForHost(parsedUrl)
   urlDecodedPath<-URLdecode(parsedUrl@path)
   success<-sftpDownload(parsedUrl@host, credentials$username, credentials$password, urlDecodedPath, destfile)
-  if (!success) stop(sprintf("Failed to download %s from %s", urlDecodedPath, parsedUrl@host))
+  if (!success) {
+    message<-sprintf("Failed to download %s from %s", urlDecodedPath, parsedUrl@host)
+    logErrorToSynapse(label=sprintf("sftp get %s", parsedUrl@host), message=)
+    stop(message)
+  }
 }
 

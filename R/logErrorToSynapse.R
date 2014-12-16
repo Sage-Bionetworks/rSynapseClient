@@ -6,7 +6,7 @@
 ###############################################################################
 
 logErrorToSynapse<-function(label, message) {
-  logEntry<-LogEntry(label=paste(.userAgent(), label), message=message)
+  logEntry<-LogEntry(label=label, message=message)
   synapsePost("/log",
     createListFromS4Object(logEntry), 
     anonymous = TRUE, 

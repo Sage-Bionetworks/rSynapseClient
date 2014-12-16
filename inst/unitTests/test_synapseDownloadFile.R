@@ -64,15 +64,6 @@ unitTestLegalFileName <-
   checkEquals("__________", synapseClient:::legalFilePath("()`'<>\"|?*"))
 }
 
-unitTestSynapseDownloadToLegalFile <- function() {
-  checkTrue(!is.null(synapseCacheDir()))
-  url <-synapseClient:::.getCache("goodURL")
-  filePath <-paste(tempdir(), "foo'bar|.txt")
-  legalFileName <- synapseClient:::synapseDownloadToLegalFile(url, filePath)
-  checkEquals(paste(tempdir(), "foo_bar_.txt"), legalFileName)
-  
-}
-
 unitTestBadChecksum <-
     function()
 {
