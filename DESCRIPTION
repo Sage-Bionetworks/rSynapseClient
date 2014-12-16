@@ -14,7 +14,7 @@ Author: Matthew Furia <matt.furia@sagebase.org>
 Maintainer: Bruce Hoff <bruce.hoff@sagebase.org>
 Depends: methods, R (>= 2.15)
 Imports: RJSONIO (>= 1.0-1),RCurl (> 1.95-3),tools,digest,utils
-Suggests: RUnit, rGithubClient, RSFTP
+Suggests: RUnit, rGithubClient, Rsftp
 Additional_repositories: https://github.com/Sage-Bionetworks/rGithubClient
 SystemRequirements: zip
 Description: Contains a set of functions for interacting with the Synapse REST services.
