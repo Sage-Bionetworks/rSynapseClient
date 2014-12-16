@@ -242,7 +242,7 @@ setMethod(
       sql<-sprintf("select * from %s", tableId)
       downloadResult<-downloadTableToCSVFile(sql, verbose, filePath=filePath)
       dataframe<-loadCSVasDataFrame(downloadResult$filePath)
-      dataframe<-convertDataFrameTypeToSchemaType(dataframe, tableId)
+      dataframe<-convertDataFrameTypeToSchemaType(dataframe, downloadResult$headers)
       Table(entity@schema, dataframe, downloadResult$etag)
     } else {
       TableRowCount(entity@schema, rowsProcessed)
@@ -258,15 +258,14 @@ TableRowCount<-function(schema, rowCount, updateEtag) {
   result
 }
 
-convertDataFrameTypeToSchemaType<-function(dataframe, tableId) {
-  columns<-synGetColumns(tableId)
-  for (columnModel in columns@content) {
-    columnIndex<-match(columnModel@name, names(dataframe))
-    if (!is.na(columnIndex)) { # make sure the the column is in the data frame
-      if (columnModel@columnType=="BOOLEAN") {
+convertDataFrameTypeToSchemaType<-function(dataframe, headers) {
+  for (header in headers@content) {
+    columnIndex<-match(header@name, names(dataframe))
+    if (length(columnIndex)>0 && !is.na(columnIndex)) { # make sure the the column is in the data frame
+      if (header@columnType=="BOOLEAN") {
         # Synapse returns values "true", "false", which have to be converted to TRUE, FALSE
         dataframe[[columnIndex]]<-(dataframe[[columnIndex]]=="true")
-      } else if (columnModel@columnType=="DATE") {
+      } else if (header@columnType=="DATE") {
         dataframe[[columnIndex]]<-as.Date(dataframe[[columnIndex]]/(24*3600*1000), "1970-01-01")
       }
     }
@@ -414,10 +413,10 @@ downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, f
     fileName <- basename(filePath)
     downloadLocation <- dirname(filePath)
   }
-  fileHandle<-S3FileHandle(id=responseBody$resultsFileHandleId, fileName=fileName)
+  fileHandle<-S3FileHandle(id=responseBody@resultsFileHandleId, fileName=fileName)
   fileHandleAsList<-createListFromS4Object(fileHandle)
   filePath<-synGetFileAttachment(downloadUri, "FILE", fileHandleAsList, downloadFile=T, downloadLocation=downloadLocation, ifcollision="overwrite.local", load=F)
-  list(filePath=filePath, etag=responseBody@etag)
+  list(filePath=filePath, etag=responseBody@etag, headers=responseBody@headers)
 }
 
 loadCSVasDataFrame<-function(filePath) {
@@ -466,7 +465,7 @@ synTableQuery<-function(sqlString, loadResult=TRUE, verbose=TRUE, filePath=NULL)
   if (loadResult) {
     # if it's an aggregation query there are no row labels
     dataframe<-loadCSVasDataFrame(downloadResult$filePath)
-    dataframe<-convertDataFrameTypeToSchemaType(dataframe, tableId)
+    dataframe<-convertDataFrameTypeToSchemaType(dataframe, downloadResult$headers)
     Table(tableSchema=tableId, values=dataframe, updateEtag=downloadResult$etag)
   } else {
     Table(tableSchema=tableId, values=downloadResult$filePath, updateEtag=downloadResult$etag)
