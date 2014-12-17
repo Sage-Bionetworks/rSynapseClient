@@ -56,6 +56,8 @@ ExternalUploadDestinationSetting	org.sagebionetworks.repo.model.project.External
 ProjectSetting	org.sagebionetworks.repo.model.project.ProjectSetting	false
 S3UploadDestinationSetting	org.sagebionetworks.repo.model.project.S3UploadDestinationSetting	false
 UploadDestinationListSetting	org.sagebionetworks.repo.model.project.UploadDestinationListSetting	false
+ColumnType	org.sagebionetworks.repo.model.table.ColumnType	false
+SelectColumn	org.sagebionetworks.repo.model.table.SelectColumn	false
 
 
 	

@@ -96,8 +96,8 @@ synapseDownloadHttpFileToDestination  <-
 synapseDownloadSftpFileToDestination  <- 
   function (url, destfile)
 {
-  if (!(RsshPackageIsAvailable() && require("Rssh"))) 
-    stop("File is hosted on SFTP server but Rssh package not installed/available.  Please install Rssh and try again.")
+  if (!(RsftpPackageIsAvailable() && require("Rsftp"))) 
+    stop("File is hosted on SFTP server but Rsftp package not installed/available.  Please install Rsftp and try again.")
   parsedUrl<-.ParsedUrl(url)
   credentials<-getCredentialsForHost(parsedUrl)
   urlDecodedPath<-URLdecode(parsedUrl@path)

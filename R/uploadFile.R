@@ -12,8 +12,8 @@ uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHand
     if (uploadDestination@uploadType=="S3") {
       stop("Upload to specified S3 destination is not yet supported.")
     } else if (uploadDestination@uploadType=="SFTP") {
-      if (!(RsshPackageIsAvailable() && require("Rssh"))) 
-        stop("Upload target is SFTP but Rssh package not installed/available.  Please install Rssh and try again.")
+      if (!(RsftpPackageIsAvailable() && require("Rsftp"))) 
+        stop("Upload target is SFTP but Rsftp package not installed/available.  Please install Rsftp and try again.")
       urlDecodedDestination<-URLdecode(uploadDestination@url)
       parsedUrl<-.ParsedUrl(urlDecodedDestination)
       credentials<-getCredentialsForHost(parsedUrl)
@@ -40,8 +40,8 @@ uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHand
   }
 }
 
-RsshPackageIsAvailable<-function() {
-  any(.packages(all.available=T)=="Rssh")
+RsftpPackageIsAvailable<-function() {
+  any(.packages(all.available=T)=="Rsftp")
 }
 
 getCredentialsForHost<-function(parsedUrl) {
