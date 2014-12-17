@@ -2,7 +2,7 @@
 # 
 # Author: brucehoff
 ###############################################################################
-library(Rssh)
+library(Rsftp)
 
 .setUp <- function() {
   ## create a project to fill with entities
