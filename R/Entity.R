@@ -60,12 +60,16 @@ setMethod(
       entityAsList<-try(findExistingEntity(propertyValue(entity, "name"), propertyValue(entity, "parentId")), silent=TRUE)
       if (class(entityAsList)!='try-error') {
         # Found it!
+        
+        hasFileHandleId<-!is.null(propertyValue(entity, "dataFileHandleId"))
+        
         # This copies retrieved properties not overwritten by the given entity
         mergedProperties<-copyProperties(as.list.SimplePropertyOwner(entity), entityAsList)
         
         # This also includes ID, which turns a "create" into an "update"
         propertyValues(entity)<-mergedProperties
-        if (class(entity)=="File") {
+        
+        if (class(entity)=="File" && hasFileHandleId) {
           entity@fileHandle<-getFileHandle(entity)
         }
         

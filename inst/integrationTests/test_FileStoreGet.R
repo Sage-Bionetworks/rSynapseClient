@@ -1049,3 +1049,20 @@ integrationTestExternalLink<-function() {
   checkEquals(filePath, downloadedFile@fileHandle$externalURL)
 }
 
+integrationTestUpdateExternalLink<-function() {
+  # in this test we update a File having an external URL, using
+  # the createOrUpdate setting, i.e. we submit a 'new' entity
+  # which becomes an update of an existing one
+  # This case was captured as SYNR-752
+  project <- synapseClient:::.getCache("testProject")
+  pid<-propertyValue(project, "id")
+  
+  originalUrl <- "https://github.com/brian-bot/rGithubClient/blob/d3960fdbb8b1a4ef6990d90283d6ec474e424d5d/R/view.R"
+  f <- synStore(File(path=originalUrl, parentId=pid, synapseStore=FALSE))
+  checkEquals(originalUrl, f@fileHandle$externalURL)
+  
+  newUrl <- "https://github.com/brian-bot/rGithubClient/blob/ca29bba76e8fcae8c9a206d8ba760fe951e442ab/R/view.R"
+  f <- synStore(File(path=newUrl, parentId=pid, synapseStore=FALSE))  
+  checkEquals(newUrl, f@fileHandle$externalURL)
+}
+
