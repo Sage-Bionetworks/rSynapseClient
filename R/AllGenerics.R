@@ -11,13 +11,6 @@ setGeneric(
 )
 
 setGeneric(
-  name = "purgeCache",
-  def = function(entity){
-    standardGeneric("purgeCache")
-  }
-)
-
-setGeneric(
   name = "available.versions",
   def = function(object){
     standardGeneric('available.versions')

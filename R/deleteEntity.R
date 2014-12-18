@@ -16,6 +16,7 @@ setMethod(
     signature = "character",
     definition = function(entity) {
       if (isSynapseId(entity)) {
+        deleteEntitySFTPAttachments(entity)
         synapseDelete(.generateEntityUri(entity))
       } else {
         stop(sprintf("%s is not a Synapse Id.", entity[1]))
