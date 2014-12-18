@@ -31,7 +31,7 @@ uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHand
         stop(message)
       }
       cat("... Upload complete.\n")
-      synapseLinkExternalFile(URLencode(paste(urlDecodedDestination, fileName, sep="/")), fileName, contentType)
+      synapseLinkExternalFile(URLencode(paste(urlDecodedDestination, fileName, sep="/")), contentType)
     } else if (uploadDestination@uploadType=="HTTPS") {
       stop("Upload to specified HTTPS destination is not yet supported.")
     }
