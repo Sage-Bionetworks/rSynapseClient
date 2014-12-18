@@ -410,6 +410,39 @@ setMethod(
   # without the wrapper I get this error in R 2.15: methods can add arguments to the generic 'createEntity' only if '...' is an argument to the generic
   definition = function(entity){createEntityMethod(entity=entity, generatingActivity=generatedBy(entity), createOrUpdate=FALSE, forceVersion=FALSE)}
 )
+  
+deleteEntitySFTPAttachments<-function(entityId) {
+  versions<-available.versions(entityId)
+  if (nrow(versions)<1) stop(sprintf("No version info found for %s", entityId))
+  for (i in 1:nrow(versions)) {
+    versionNumber<-versions[i,"versionNumber"]
+    handlesUri<-sprintf("/entity/%s/version/%s/filehandles",entityId,versionNumber)
+    curlHandle<-getCurlHandle()
+    fileHandlesArray<-synapseGet(handlesUri, curlHandle=curlHandle, checkHttpStatus=FALSE)
+    getFileHandlesStatusCode<-getStatusCode(curlHandle)
+    if (getFileHandlesStatusCode==200) {
+      fileHandles<-fileHandlesArray$list
+      for (fileHandle in fileHandles) {
+        fileHandle<-as.list(fileHandle)
+        if (isExternalFileHandle(fileHandle)) {
+          externalURL<-fileHandle$externalURL
+          parsedUrl<-.ParsedUrl(externalURL)
+          protocol<-tolower(parsedUrl@protocol)
+          if (protocol=="sftp") {
+            credentials<-getCredentialsForHost(parsedUrl)
+            urlDecodedPath<-URLdecode(parsedUrl@path)
+            success<-sftpDeleteFile(parsedUrl@host, credentials$username, credentials$password, urlDecodedPath)
+            if (!success) stop(sprintf("Failed to delete %s", externalUrl))
+          }
+        }
+      }
+    } else if (getFileHandlesStatusCode==404) {
+      # OK, just continue
+    } else {
+      .checkCurlResponse(getFileHandlesStatusCode)
+    }
+  }
+}
 
 setMethod(
     f = "deleteEntity",
@@ -418,13 +451,13 @@ setMethod(
       envir <- parent.frame(2)
       inherits <- FALSE
       name <- deparse(substitute(entity, env=parent.frame()))
+      
+      deleteEntitySFTPAttachments(entity$properties$id)
 
       ## delete the entity in synapse
-      if(!is.null(entity$properties$id))
-        deleteEntity(entity$properties$id)
-
-      ## remove entity from the cache
-      purgeCache(entity)
+      if(!is.null(entity$properties$id)) {
+        synapseDelete(.generateEntityUri(entity$properties$id))
+      }
 
       ## remove the enity from the parent environment
       if(any(grepl(name,ls(envir=envir))))
@@ -903,14 +936,6 @@ setMethod(
     if(is.null(id))
       stop("entity id cannot be null")
     getAnnotations(id)
-  }
-)
-
-setMethod(
-  f = "purgeCache",
-  signature = "Entity",
-  definition = function(entity){
-    ##warning('not implemented')
   }
 )
 
