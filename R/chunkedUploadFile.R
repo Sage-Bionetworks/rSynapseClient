@@ -64,19 +64,32 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
         
         ## get the signed S3 URL
         chunkRequest <- list(chunkNumber=chunkNumber, chunkedFileToken=token)
-        chunkUploadUrl <- createChunkedFileUploadChunkURL(chunkRequest)
-        if (debug) message(sprintf('url= %s\n', chunkUploadUrl))
         
         curlHandle<-getCurlHandle()
-        ## PUT the chunk to S3
-        response <- getURLWithRetries(chunkUploadUrl,
-          postfields = chunk, # the request body
-          customrequest="PUT", # the request method
-          httpheader=headers, # the headers
-          curl=curlHandle,
-          opts=.getCache("curlOpts")
+
+        result<-webRequestWithRetries(
+          fcn=function(curlHandle) {
+            chunkUploadUrl <- createChunkedFileUploadChunkURL(chunkRequest)
+            if (debug) message(sprintf('url= %s\n', chunkUploadUrl))
+            
+            optsWithHeader<-.getCache("curlOpts")
+            optsWithHeader$header<-TRUE
+            httpResponse<-.getURLIntern(chunkUploadUrl, 
+              postfields=chunk, # the request body
+              customrequest="PUT", # the request method
+              httpheader=headers, # the headers
+              curl=curlHandle, 
+              debugfunction=NULL,
+              .opts=optsWithHeader
+            )
+            # return the http response
+            parseHttpResponse(httpResponse)
+          }, 
+          curlHandle,
+          extraRetryStatusCode=NULL
         )
-        .checkCurlResponse(object=curlHandle, response=response$response, logErrorToSynapse=TRUE)
+        httpResponse<-result$result
+        .checkCurlResponse(object=curlHandle, response=httpResponse, logErrorToSynapse=TRUE)
         
         totalUploadedBytes <- totalUploadedBytes + length(chunk)
         percentUploaded <- totalUploadedBytes*100/fileSizeBytes
