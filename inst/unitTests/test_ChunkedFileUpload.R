@@ -39,4 +39,5 @@ unitTestChunkedUpload <- function() {
   close(connection)  
   
   synapseClient:::chunkedUploadFile(filePath)
+  checkEquals(2, synapseClient:::.getCache("chunkUrlCount"))
 }
