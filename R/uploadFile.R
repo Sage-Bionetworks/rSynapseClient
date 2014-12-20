@@ -79,7 +79,7 @@ createMissingDirectories<-function(host, username, password, path) {
         success<-sftpMakeDirectory(host, username, password, dir)
         if (!success) {
           message <- sprintf("Failed to create %s on %s", dir, host)
-          logErrorToSynapse(label=sprintf("sftp mkdir %s", parsedUrl@host), message=message)
+          logErrorToSynapse(label=sprintf("sftp mkdir %s", host), message=message)
           stop(message)
         }
     } 
