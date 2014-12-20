@@ -131,19 +131,6 @@ createChunkedFileUploadChunkURL<-function(chunkRequest) {
     endpoint=synapseServiceEndpoint("FILE"))
 }
 
-addChunkToFile<-function(chunkRequest) {
-  ## We occasionally get an error on addChunkToFile:
-  ## 500 Server Error: Internal Server Error
-  ## {u'reason': u'The specified key does not exist.'}
-  ## This might be because S3 hasn't yet finished propagating the
-  ## addition of the new chunk. So, retry_request will wait and retry.
-
-  # TODO add retry for 500 error, but just for this case, not for all POSTs
-  synapsePost(uri='/addChunkToFile', 
-    entity=chunkRequest, 
-    endpoint=synapseServiceEndpoint("FILE"))
-}
-
 # returns the file handle
 completeChunkFileUpload<-function(chunkedFileToken, chunkResults) {
   # start the final assembly
