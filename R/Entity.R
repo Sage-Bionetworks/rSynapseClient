@@ -383,6 +383,8 @@ createEntityMethod<-function(entity, generatingActivity, createOrUpdate, forceVe
     }
   } else {
     entityAsList<-synapsePost(createUri, as.list.SimplePropertyOwner(entity))
+    if (is.null(entityAsList)) stop(sprintf("unexpected null for createUri %s, entity %s",
+          createUri, toJSON(as.list.SimplePropertyOwner(entity))))
   }
   # create the entity in Synapse and get back the id
   entity <- getEntityInstance(entityAsList)
