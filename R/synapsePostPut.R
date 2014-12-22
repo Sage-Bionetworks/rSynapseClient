@@ -109,7 +109,12 @@ parseResponseBody<-function(response) {
     } else {
       tryCatch(
         as.list(fromJSON(response$body)),
-        error = function(e){NULL}
+        error = function(e) {
+          if (!is.null(.getCache("debug")) && .getCache("debug")) {
+            message(sprintf("parseResponseBody: %s", e))
+          }
+          NULL
+        }
       )
     }
   } else {
