@@ -15,13 +15,13 @@
 )
 {
   
-  if(is.null(uri))
-    stop("uri cannot be null")
+  if(is.null(uri) || length(uri)==0)
+    stop("uri is required")
 
   path<-endpoint$endpointPrefix
   
-  if(is.null(path))
-    stop("path cannot be null")
+  if(is.null(path) || length(path)==0)
+    stop("path is required")
 
   ## constants
   kValidMethods <- c("GET", "DELETE")

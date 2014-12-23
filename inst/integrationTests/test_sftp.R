@@ -13,7 +13,12 @@ library(Rsftp)
 
 .tearDown <- function() {
   ## delete the test projects
-  deleteEntity(synapseClient:::.getCache("testProject"))
+  project<-synapseClient:::.getCache("testProject")
+  if (is.null(project)) {
+    message("test_sftp: .tearDown: testProject not found in global cache")
+  } else {
+    deleteEntity(project)
+  }
   
   sftpFilesToDelete<-synapseClient:::.getCache("sftpFilesToDelete")
   host<-synapseClient:::.getCache("test_sftp_host")
@@ -35,7 +40,7 @@ library(Rsftp)
 }
 
 isFileMissing<-function(host, username, password, path) {
-  success<-try(sftpDownloadFile(host, username, password, path, tempfile()))
+  success<-try(sftpDownload(host, username, password, path, tempfile()))
   class(success)=="try-error" || success==FALSE
 }
 

@@ -413,7 +413,7 @@ setMethod(
   
 deleteEntitySFTPAttachments<-function(entityId) {
   versions<-available.versions(entityId)
-  if (nrow(versions)<1) stop(sprintf("No version info found for %s", entityId))
+  if (nrow(versions)<1) return
   for (i in 1:nrow(versions)) {
     versionNumber<-versions[i,"versionNumber"]
     handlesUri<-sprintf("/entity/%s/version/%s/filehandles",entityId,versionNumber)

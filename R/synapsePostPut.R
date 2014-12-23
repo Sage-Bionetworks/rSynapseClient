@@ -107,10 +107,7 @@ parseResponseBody<-function(response) {
     if (is.null(response$body) || response$body=="") {
       response$body
     } else {
-      tryCatch(
-        as.list(fromJSON(response$body)),
-        error = function(e){NULL}
-      )
+      as.list(fromJSON(response$body))
     }
   } else {
     response$body
