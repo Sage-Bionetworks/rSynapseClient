@@ -90,7 +90,7 @@ createSFTPUploadSettings<-function(projectId) {
   uds<-synapseClient:::createS4ObjectFromList(response, "UploadDestinationListSetting")
 }
 
-DISABLEDSFTPRoundTrip <- function() {
+integrationTestSFTPRoundTrip <- function() {
   # NOTE:  The following values must be set up external to the test suite
   host<-synapseClient:::.getCache("test_sftp_host")
   credentials<-synapseClient:::.getCache(sprintf("sftp://%s_credentials", host))
@@ -162,7 +162,7 @@ DISABLEDSFTPRoundTrip <- function() {
 }
 
 
-DISABLEDMoveSFTPFileToS3Container<-function() {
+integrationTestMoveSFTPFileToS3Container<-function() {
   project<-synapseClient:::.getCache("testProject")
   projectId<-propertyValue(project, "id")
   
