@@ -108,12 +108,6 @@ parseResponseBody<-function(response) {
       response$body
     } else {
       as.list(fromJSON(response$body))
-#      tryCatch(
-#        as.list(fromJSON(response$body)),
-#        error = function(e) {
-#          NULL
-#        }
-#      )
     }
   } else {
     response$body
