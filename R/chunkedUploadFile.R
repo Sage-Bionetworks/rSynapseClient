@@ -76,7 +76,7 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
           curl=curlHandle,
           opts=.getCache("curlOpts")
         )
-        .checkCurlResponse(curlHandle, response$response)
+        .checkCurlResponse(object=curlHandle, response=response$response, logErrorToSynapse=TRUE)
         
         totalUploadedBytes <- totalUploadedBytes + length(chunk)
         percentUploaded <- totalUploadedBytes*100/fileSizeBytes

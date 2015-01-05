@@ -93,7 +93,7 @@
     message("RESPONSE_BODY:: ", response$body)
   }
   
-  if (checkHttpStatus) .checkCurlResponse(curlHandle, response$body)
+  if (checkHttpStatus) .checkCurlResponse(object=curlHandle, response=response$body)
   
   ## Parse response and prepare return value
   parseResponseBody(response)

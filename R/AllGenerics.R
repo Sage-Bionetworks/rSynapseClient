@@ -11,13 +11,6 @@ setGeneric(
 )
 
 setGeneric(
-  name = "purgeCache",
-  def = function(entity){
-    standardGeneric("purgeCache")
-  }
-)
-
-setGeneric(
   name = "available.versions",
   def = function(object){
     standardGeneric('available.versions')
@@ -956,7 +949,7 @@ setGeneric(
 
 setGeneric(
   name="as.tableColumns",
-  def = function(source) {
+  def = function(source, ...) {
     standardGeneric("as.tableColumns")
   }
 )

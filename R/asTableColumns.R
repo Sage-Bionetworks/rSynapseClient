@@ -1,4 +1,4 @@
-# convenience functions for converting data frame into a list of TableColumns
+# convenience functions for converting csv file or data frame into a list of TableColumns
 # 
 # Author: brucehoff
 ###############################################################################
@@ -7,45 +7,36 @@ setMethod(
   f = "as.tableColumns",
   signature = signature("data.frame"),
   definition = function(source) {
-    dataframe<-source
-    n<-length(dataframe)
-    result<-list()
-    if (n<1) return(result)
-    for (i in 1:length(dataframe)) {
-      dfColumnType<-class(dataframe[[i]])[1]
-      columnType<-getTableColumnTypeForDataFrameColumnType(dfColumnType)[1]
-      columnName<-names(dataframe[i])
-      if (dfColumnType=="factor") {
-        levels<-levels(dataframe[[i]])
-        tableColumn<-TableColumn(name=columnName, columnType=columnType, enumValues=levels)
-      } else {
-        tableColumn<-TableColumn(name=columnName, columnType=columnType)
-      }
-      result<-append(result, tableColumn)
-    }
-    result
+    file<-tempfile()
+    writeDataFrameToCSV(dataFrame=source, filePath=file)
+    as.tableColumns(file)
   }
 )
 
 setMethod(
   f = "as.tableColumns",
   signature = signature("character"),
-  definition = function(source) {
-    as.tableColumns(read.csv(source))
+  definition = function(source, linesToSkip=as.integer(0), quoteCharacter=character(0),
+    escapeCharacter=character(0), separator=character(0), lineEnd=character(0)) {
+    filePath<-source
+    s3FileHandle<-chunkedUploadFile(filePath)
+    request<-UploadToTablePreviewRequest(
+      uploadFileHandleId=as.character(s3FileHandle$id),
+      linesToSkip=linesToSkip,
+      csvTableDescriptor=CsvTableDescriptor(
+        quoteCharacter=quoteCharacter,
+        isFirstLineHeader=TRUE,
+        escapeCharacter=escapeCharacter,
+        separator=separator,
+        lineEnd=lineEnd)
+    )
+    asyncJobId<-createS4ObjectFromList(
+      synRestPOST("/table/upload/csv/preview/async/start", createListFromS4Object(request)),
+      "AsyncJobId")
+    responseBodyAsList<-trackProgress(sprintf("/table/upload/csv/preview/async/get/%s", asyncJobId@token), verbose=FALSE)
+    responseBody<-createS4ObjectFromList(responseBodyAsList, "UploadToTablePreviewResult")
+    list(fileHandleId=as.integer(s3FileHandle$id), tableColumns=responseBody$suggestedColumns@content)
   }
 )
 
-# returns the Synapse types which can hold the given R type, with the first one being the preferred
-getTableColumnTypeForDataFrameColumnType<-function(dfColumnType) {
-  map<-list(integer=c("INTEGER","DOUBLE","FILEHANDLEID"), 
-      factor=c("STRING","FILEHANDLEID","ENTITYID","LINK"), 
-      character=c("STRING","FILEHANDLEID","ENTITYID","LINK"), 
-      numeric=c("DOUBLE","INTEGER","FILEHANDLEID"), 
-      logical=c("BOOLEAN","STRING"),
-      Date=c("DATE","STRING"),
-      POSIXct=c("DATE","STRING"))
-  result<-map[[dfColumnType]]
-  if (is.null(result)) stop(sprintf("No column type for %s", dfColumnType))
-  result
-}
 

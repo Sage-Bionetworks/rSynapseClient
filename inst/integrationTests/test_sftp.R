@@ -2,7 +2,7 @@
 # 
 # Author: brucehoff
 ###############################################################################
-library(Rssh)
+library(Rsftp)
 
 .setUp <- function() {
   ## create a project to fill with entities
@@ -32,6 +32,11 @@ library(Rssh)
     }
   }
   synapseClient:::.setCache("sftpFilesToDelete", NULL)
+}
+
+isFileMissing<-function(host, username, password, path) {
+  success<-try(sftpDownloadFile(host, username, password, path, tempfile()))
+  class(success)=="try-error" || success==FALSE
 }
 
 createFile<-function(content, filePath) {
@@ -135,6 +140,16 @@ integrationTestSFTPRoundTrip <- function() {
   checkTrue(updated@fileHandle$id!=retrieved@fileHandle$id)
   checkTrue(updated@fileHandle$externalURL!=retrieved@fileHandle$externalURL)
   checkEquals(2, propertyValue(updated, "versionNumber"))
+  
+  # this should delete the hosted files
+  synDelete(propertyValue(updated, "id"))
+  sftpFilesKey<-"sftpFilesToDelete"
+  sftpFilesToDelete<-synapseClient:::.getCache(sftpFilesKey)
+  for (path in sftpFilesToDelete) {
+    if (!isFileMissing(host, username, password, path)) stop(sprintf("Failed to delete hosted file %s.", path))
+  }
+  # since we have deleted the files we no longer have to schedule any post-test clean up
+  synapseClient:::.setCache(sftpFilesKey, NULL)
   
   # This is not strictly necessary since we delete the whole project in tearDown
   # but it does check that deletion works on the the project settings

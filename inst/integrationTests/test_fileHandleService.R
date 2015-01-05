@@ -24,12 +24,12 @@ integrationTestFileHandle <-
 
 integrationTestExternalFileHandle <- function() {
   externalURL<-"http://google.com"
-  fileName<-"testFile"
   contentType<-"text/html"
-  fileHandle <- synapseClient:::synapseLinkExternalFile(externalURL, fileName, contentType)
+  fileHandle <- synapseClient:::synapseLinkExternalFile(externalURL, contentType)
   checkTrue(!is.null(fileHandle$id))
   checkEquals("org.sagebionetworks.repo.model.file.ExternalFileHandle", fileHandle$concreteType)
   checkEquals(externalURL, fileHandle$externalURL)
+  fileName<-basename(externalURL)
   checkEquals(fileName, fileHandle$fileName)
   checkEquals(contentType, fileHandle$contentType)
 }
