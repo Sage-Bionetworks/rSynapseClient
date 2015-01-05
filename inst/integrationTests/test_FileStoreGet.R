@@ -1064,5 +1064,10 @@ integrationTestUpdateExternalLink<-function() {
   newUrl <- "https://github.com/brian-bot/rGithubClient/blob/ca29bba76e8fcae8c9a206d8ba760fe951e442ab/R/view.R"
   f <- synStore(File(path=newUrl, parentId=pid, synapseStore=FALSE))  
   checkEquals(newUrl, f@fileHandle$externalURL)
+  checkEquals(newUrl, getFileLocation(f))
+  
+  retrieved<-synGet(propertyValue(f, "id"), downloadFile=FALSE)
+  checkEquals(newUrl, retrieved@fileHandle$externalURL)
+  checkEquals(newUrl, getFileLocation(retrieved))
 }
 

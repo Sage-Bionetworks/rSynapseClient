@@ -291,6 +291,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         if (filePath!=externalURL) {
           # update the file handle
           file@fileHandle<-synapseLinkExternalFile(filePath, contentType)
+          propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
         }
       } else {
         # file handle will not be updated
