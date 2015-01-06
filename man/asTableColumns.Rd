@@ -8,20 +8,34 @@ as.tableColumns
 Create Table Columns based on a data frame
 }
 \usage{
-as.tableColumns(dataframe)
-as.tableColumns(filePath)
+  as.tableColumns(source) where 'source' is a data frame or path to a csv file
 }
 \arguments{
-	\item{dataframe}{
-	The data frame of interest.
-	}
-	\item{filePath}{
-	The path to a file containing the data frame of interest.
-	}
+  \item{source}{
+	The data frame or file path of interest.
+  }
+  \item{linesToSkip}{
+	When 'source' is a file path: The number of lines to skip from the start of the file. The default value of 0 will be used if this is not provided by the caller.  }
+  \item{quoteCharacter}{
+  	When 'source' is a file path: The character to used for quoted elements in the provided file. The default character '"' will be used if this is not provided by the caller.
+  }
+ \item{escapeCharacter}{
+  	When 'source' is a file path: The escape character used for escaping a separator or quote. The default character '\\' will be used if this is not provided by the caller.
+  }
+  \item{lineEnd}{
+  	When 'source' is a file path: The line feed terminator to be used for the resulting file. The default value of '\\n' will be used if this is not provided by the caller.
+  }
+  \item{separator}{
+  	When 'source' is a file path: The delimiter to used for separating entries in the provided file. The default character ',' will be used if this is not provided by the caller. For tab-separated values use '\\t'
+  }
 }
 \value{
-A list of TableColumns matching the columns in the given data frame in terms of name, type and (for 'factor' columns), enumeration of permitted values.
+A list containing two fields, 'tableColumns' and 'fileHandleId'.
+
+tableColumns: A list of TableColumns matching the columns in the given file or data frame in terms of name and type.
+
+fileHandleId: The ID of the uploaded file, suitable for passing to the Table constructor along with a schema. (See 'Table'.)
 }
 \seealso{
-\code{\link{TableColumn}}
+\code{\link{TableColumn},\link{Table}}
 }

@@ -1,4 +1,4 @@
-## Delete a synapse entity
+## Send a Delete request to the Repository Services
 ## 
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################

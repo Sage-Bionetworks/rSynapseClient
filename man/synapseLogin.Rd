@@ -21,7 +21,7 @@ invalidateAPIKey()
 \arguments{
   \item{username}{Synapse username, usually an email}
   \item{password}{Password associated with the username}
-  \item{apiKey}{Can be found online by logging in and going to https://www.synapse.org/#!Settings:0}
+  \item{apiKey}{Can be found online by logging in and going to the Settings tab of your profile page at www.synapse.org}
   \item{sessionToken}{Usage not recommended}
   \item{rememberMe}{Boolean indicated whether login should store session information on the local machine.  Defaults to FALSE}
   \item{localOnly}{Boolean controlling whether logout is done locally only, or propagated to Synapse}

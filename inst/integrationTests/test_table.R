@@ -213,7 +213,7 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   
   # test a more complicated aggregation query
   queryResult<-synTableQuery(sprintf("select sweet, count(sweet) from %s where sweet='one'", propertyValue(tschema, "id")), verbose=FALSE)
-  expected<-data.frame(sweet="one", "COUNT.sweet."=as.integer(rowsPerCategory))
+  expected<-data.frame(sweet="one", "COUNT(sweet)"=as.integer(rowsPerCategory), check.names=FALSE)
   checkTrue(all(expected==queryResult@values))
   checkTrue(all(names(expected)==names(queryResult@values)))
   
@@ -299,11 +299,16 @@ integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
   tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2))
   tschema <- synStore(tschema, createOrUpdate=FALSE)
   
-  dataFrame <- data.frame(sweet=c(1:5, 1.234e-10, 5.678e+10, NA), sweet2=c(NA, 6:10, 1.234567, 9.876543))
+  dataFrame <- data.frame(sweet=c(1:5, 1.234e-10, 5.678e+10, NA, NaN, Inf, -Inf), sweet2=c(NA, 6:10, 1.234567, 9.876543, Inf, NaN, 1))
   myTable <- Table(tschema, values=dataFrame)
   myTable <- synStore(myTable, retrieveData=T)
   # now check that the data frames are the same
   checkTrue(dataFramesAreSame(dataFrame,myTable@values))
+  
+  # also check what happens when query result is empty
+  queryResult<-synTableQuery(sprintf("select * from %s where sweet=99", propertyValue(tschema, "id")), verbose=FALSE)
+  # verify that the result is empty
+  checkTrue(nrow(queryResult@values)==0)
 }
 
 integrationTestSynStoreCSVFileNoRetrieve <- function() {
@@ -344,5 +349,32 @@ integrationTestSynStoreAndRetrieveCSVFile <- function() {
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(retrievedDataFrame))
 }
+
+integrationTestCSVFileWithAsTableColumns <- function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  csvFilePath<-system.file("resources/test/test.csv", package = "synapseClient")
+  tcResult<-as.tableColumns(csvFilePath)
+  tableColumns<-tcResult$tableColumns
+  tableColumnNames<-list()
+  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
+  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
+  
+  table<-Table(tableSchema=tableSchema, values=tcResult$fileHandleId)
+  filePath<-tempfile()
+  retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE, filePath=filePath)
+  checkTrue(is(retrievedTable, "TableFilePath"))
+  checkTrue(!is.null(propertyValue(retrievedTable@schema, "id")))
+  show(retrievedTable) # make sure 'show' works
+  checkTrue(length(retrievedTable@updateEtag)>0)
+  # now check that the data frames are the same
+  retrievedDataFrame<-synapseClient:::loadCSVasDataFrame(retrievedTable@filePath)
+  dataFrame<-read.csv(csvFilePath, header=TRUE)
+  checkTrue(all(dataFrame==retrievedDataFrame))
+  checkTrue(all(tableColumnNames==names(retrievedDataFrame)))
+  # make sure the row labels are valid
+  synapseClient:::parseRowAndVersion(row.names(retrievedDataFrame))
+}
+
 
   

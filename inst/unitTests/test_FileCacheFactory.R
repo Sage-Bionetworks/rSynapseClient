@@ -94,7 +94,7 @@ unitTestExistingRootDirNotInFactory <-
 {
   fc <- synapseClient:::getFileCache()
   file <- tempfile()
-  cat(sprintf("Testing...1 %s", Sys.time()), file = file)
+  cat(sprintf("Testing...1 %s", sample(10000,1)), file = file)
   addFile(fc, file)
   fc$archiveFile <- "foo.bar.zip"
   fc$cacheFileMetaData()
@@ -131,7 +131,7 @@ unitTestSingleFileNotInFactory <-
   dir.create(cacheRoot)
   cacheRoot <- gsub("[\\/]+", "/", normalizePath(cacheRoot))
   file <- gsub("[\\/]+", "/", tempfile(tmpdir=cacheRoot))
-  cat(sprintf("Testing...1 %s", Sys.time()), file = file)
+  cat(sprintf("Testing...1 %s", sample(10000,1)), file = file)
 
   fc <- synapseClient:::getFileCache(file)
   checkEquals(fc$cacheDir, file.path(sprintf("%s_unpacked", file)))

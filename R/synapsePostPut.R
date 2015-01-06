@@ -93,7 +93,7 @@
     message("RESPONSE_BODY:: ", response$body)
   }
   
-  if (checkHttpStatus) .checkCurlResponse(curlHandle, response$body)
+  if (checkHttpStatus) .checkCurlResponse(object=curlHandle, response=response$body)
   
   ## Parse response and prepare return value
   parseResponseBody(response)
@@ -107,10 +107,7 @@ parseResponseBody<-function(response) {
     if (is.null(response$body) || response$body=="") {
       response$body
     } else {
-      tryCatch(
-        as.list(fromJSON(response$body)),
-        error = function(e){NULL}
-      )
+      as.list(fromJSON(response$body))
     }
   } else {
     response$body

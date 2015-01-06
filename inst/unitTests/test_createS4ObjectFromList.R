@@ -7,7 +7,7 @@
 unitTestCreateS4ObjectFromList<-function() {
   # simple case: list argument has just primitives
   listRep<-list(name="name", description="description")
-  e<-synapseClient:::createS4ObjectFromList(list(name="name", description="description"), "Evaluation")
+  e<-synapseClient:::createS4ObjectFromList(listRep, "Evaluation")
   checkEquals("name", e@name)
   checkEquals("description", e@description)
   
@@ -120,6 +120,14 @@ unitTestIntegerAssignment<-function() {
 unitTestFileHandle<-function() {
   fileHandle<-synapseClient:::S3FileHandle(id="999", fileName="foo.txt")
   fileHandleAsList<-synapseClient:::createListFromS4Object(fileHandle)
+}
+
+unitTestExtraField<-function() {
+  listRep<-list(name="name", description="description", foo="bar")
+  # should ignore the unexpected field "foo"
+  e<-synapseClient:::createS4ObjectFromList(listRep, "Evaluation")
+  checkEquals("name", e@name)
+  checkEquals("description", e@description)
 }
 
 
