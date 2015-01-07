@@ -7,7 +7,7 @@
 uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHandle(), contentType=NULL) {
   if (!is.null(uploadDestination@banner)) message(uploadDestination@banner)
   if (is(uploadDestination, "S3UploadDestination")) {
-    chunkedUploadFile(filepath=filePath, curlHandle=curlHandle, contentType=contentType)
+    chunkedUploadFile(filepath=filePath, uploadDestination=uploadDestination, curlHandle=curlHandle, contentType=contentType)
   } else if (is(uploadDestination, "ExternalUploadDestination")) {
     if (uploadDestination@uploadType=="S3") {
       stop("Upload to specified S3 destination is not yet supported.")
