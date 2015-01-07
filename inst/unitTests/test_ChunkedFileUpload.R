@@ -4,7 +4,7 @@
 ###############################################################################
 
 .setUp <- function() {
-  synapseClient:::.mock("createChunkedFileUploadToken", function(filepath, contentType) {list()})
+  synapseClient:::.mock("createChunkedFileUploadToken", function(filepath, s3UploadDestination, contentType) {list()})
   synapseClient:::.setCache("chunkUrlCount", 0)
   
   synapseClient:::.mock("createChunkedFileUploadChunkURL", function(chunkRequest) {
