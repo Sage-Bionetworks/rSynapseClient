@@ -14,7 +14,7 @@
 #  Author: brucehoff
 ###############################################################################
 
-chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes=5*1024*1024, contentType=NULL) {
+chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), curlHandle=getCurlHandle(), chunksizeBytes=5*1024*1024, contentType=NULL) {
   if (chunksizeBytes < 5*1024*1024)
       stop('Minimum chunksize is 5 MB.')
   
@@ -43,7 +43,7 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   headers <- list('Content-Type'=contentType)
   
   ## get token
-  token <- createChunkedFileUploadToken(filepath, contentType)
+  token <- createChunkedFileUploadToken(filepath, uploadDestination, contentType)
   if (debug) {
     message(sprintf('\n\ntoken: %s\n', listToString(token)))
   }
@@ -108,7 +108,7 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   completeChunkFileUpload(token, chunkResults)
 }
 
-createChunkedFileUploadToken<-function(filepath, contentType) {
+createChunkedFileUploadToken<-function(filepath, s3UploadDestination, contentType) {
   md5 <- tools::md5sum(path.expand(filepath))
   if (is.na(md5)) stop(sprintf("Unable to compute md5 for %s", filepath))
   names(md5)<-NULL # Needed to make toJSON work right

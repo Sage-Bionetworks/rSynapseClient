@@ -452,8 +452,8 @@ setMethod(
       inherits <- FALSE
       name <- deparse(substitute(entity, env=parent.frame()))
       
-      deleteEntitySFTPAttachments(entity$properties$id)
-
+      # deleteEntitySFTPAttachments(entity$properties$id)  reenable once SYNR-850 is addressed
+    
       ## delete the entity in synapse
       if(!is.null(entity$properties$id)) {
         synapseDelete(.generateEntityUri(entity$properties$id))
