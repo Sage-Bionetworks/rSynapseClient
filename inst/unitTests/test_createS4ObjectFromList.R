@@ -130,5 +130,10 @@ unitTestExtraField<-function() {
   checkEquals("description", e@description)
 }
 
+unitTestEmptyExceptConcreteType<-function() {
+  fileHandle<-c(concreteType="org.sagebionetworks.repo.model.file.S3FileHandle")
+  s4FileHandle<-synapseClient:::createS4ObjectFromList(fileHandle, "FileHandle")
+  checkEquals(s4FileHandle, synapseClient:::S3FileHandle())
+}
 
 

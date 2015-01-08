@@ -6,7 +6,7 @@
 
 createS4ObjectFromList<-function(content, className) {
   if (is.null(content)) return(NULL)
-  if (!is.list(content) && length(content)>1) {
+  if (!is.list(content) && (length(content)>1 || length(names(content))>0)) {
     # it's a vector.  Coerce to a list
     content<-as.list(content)
   }
