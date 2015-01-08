@@ -116,7 +116,6 @@ createChunkedFileUploadToken<-function(filepath, s3UploadDestination, contentTyp
   chunkedFileTokenRequest<-list(
     fileName=basename(filepath),
     contentType=contentType,
-    s3UploadDestination=createListFromS4Object(s3UploadDestination),
     contentMD5=md5
   )
   
