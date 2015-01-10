@@ -5,7 +5,6 @@
 library(Rsftp)
 
 .setUp <- function() {
-  library.dynam(chname="RJSONIO", package="RJSONIO", lib.loc=.libPaths(), verbose=FALSE)
   ## create a project to fill with entities
   # Note:  we add white space to test URL encoding, below
   project <- createEntity(Project(name=sprintf("test_sftp %s", sample(1000,1))))
