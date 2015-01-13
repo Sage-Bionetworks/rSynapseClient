@@ -8,30 +8,37 @@
 
 \begin{document}
 \maketitle
-Synapse allows you to create, modify and query tabular data.  You provide
-data in a data frame or csv file.
+Synapse allows you to create, modify and query tabular data.  You provide data
+in a data frame or csv file.
+
 
 Begin with a data frame in your session:
 \begin{verbatim}
 df<-data.frame("n"=c(1.1, 2.2, 3.3), 
-	"c"=c("foo", "bar", "bar"), 
-	"i"=as.integer(c(10,10,20)))
+		"c"=c("foo", "bar", "bar"), 
+		"i"=as.integer(c(10,10,20)))
 \end{verbatim}
 This convenience function creates table columns from your data frame:
 \begin{verbatim}
-cols<-as.tableColumns(df)
+tcresult<-as.tableColumns(df)
+cols<-tcresult$tableColumns
+\end{verbatim}
+('as.TableColumns' uploads your table in order to do its job.  It
+returns the ID of the uploaded file for later use.)
+\begin{verbatim}
+fileHandleId<-tcresult$fileHandleId
 \end{verbatim}
 You may adjust the column models before defining the table schema.
 See "?TableColumn" for the available slots.
 \begin{verbatim}
 cols[[2]]@maximumSize<-as.integer(20)
 \end{verbatim}
-Now store the Table schema in Synapse(using your own Project ID in place of
+Now store the Table schema in Synapse (using your own Project ID in place of
 "syn12345", below):
 \begin{verbatim}
 projectId<-"syn12345"
 schema<-TableSchema(name="aschema", parent=projectId, columns=cols)
-table<-Table(schema, df)
+table<-Table(schema, fileHandleId)
 table<-synStore(table, retrieveData=TRUE)
 \end{verbatim}
 Query the table:
@@ -70,9 +77,11 @@ rm(df)
 \end{verbatim}
 Now we proceed using the created file only:
 \begin{verbatim}
-cols<-as.tableColumns(file)
+tcresult<-as.tableColumns(df)
+cols<-tcresult$tableColumns
+fileHandleId<-tcresult$fileHandleId
 schema<-TableSchema(name="aschema", parent=projectId, columns=cols)
-table<-Table(schema, file)
+table<-Table(schema, fileHandleId)
 table<-synStore(table, retrieveData=FALSE)
 schemaId<-propertyValue(table@schema, "id")
 queryResult<-synTableQuery(sprintf("select * from %s where c='bar'", schemaId), 

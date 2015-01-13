@@ -25,7 +25,7 @@ setClass(
     # fields:
     # filePath: full path to local file. Before an "external" file is created in Synapse, this is the external URL
     filePath = "character",
-    # synapseStore: logical T if file is stored in Synapse, F if only the url is stored
+    # synapseStore: logical T if file is stored in Synapse or in external storage managed by Synapse, F if only the url is stored
     synapseStore = "logical",
     # fileHandle (generated from JSON schema, empty before entity is created)
     fileHandle = "list",
@@ -223,9 +223,9 @@ isLoadable<-function(filePath) {
     load(file=filePath, envir = tempenv),
     error = function(e) {
       loadable<<-FALSE
-    }
+    },
+    finally = options(warn=originalWarnLevel)
   )
-  options(warn=originalWarnLevel)
   loadable
 }
 
@@ -258,11 +258,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, uploadDestination=uploadDestination, contentType=contentType)
       } else { # ... we are storing a new file which we are linking, but not uploading
         # link external URL in Synapse, get back fileHandle	
-        fileName <- basename(file@filePath)
-        if (is.null(contentType)) {
-          contentType<-getMimeTypeForFile(fileName)
-        }
-        fileHandle<-synapseLinkExternalFile(file@filePath, fileName, contentType)
+        fileHandle<-synapseLinkExternalFile(file@filePath, contentType)
         # note, there's no cache map entry to create
       }
       #	save fileHandle in slot, put id in entity properties
@@ -287,7 +283,19 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
       }
     } else { # file@synapseStore==F
-      # file is considered 'read only' and will not be uploaded
+      # we have an external file handle, NOT an externally managed file
+      externalURL<-file@fileHandle$externalURL
+      if (fileHasFilePath(file)) {
+        filePath<-file@filePath
+        # may need to update the external file handle
+        if (filePath!=externalURL) {
+          # update the file handle
+          file@fileHandle<-synapseLinkExternalFile(filePath, contentType)
+          propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
+        }
+      } else {
+        # file handle will not be updated
+      }
     }
   }
   file

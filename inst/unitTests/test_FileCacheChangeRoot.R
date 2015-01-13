@@ -30,7 +30,7 @@ unitTestChangeRoot <-
   archive <- tempfile(tmpdir=cacheRoot,fileext=".zip")
   archiveFile <- basename(archive)
   file1 <- tempfile()
-  cat(sprintf("THIS IS A TEST: %s", Sys.time()), file = file1)
+  cat(sprintf("THIS IS A TEST: %s", sample(10000,1)), file = file1)
   olddir <- getwd()
   setwd(tempdir())
   suppressWarnings(zip(archive, files = gsub("^.+/", "", file1)))

@@ -28,7 +28,7 @@ unitTestAddFile <-
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
   file <- tempfile()
-  cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
+  cat(sprintf("THIS IS A TEST %s", sample(10000,1)), file = file)
   copy <- addFile(own, file)
   checkEquals(basename(file), own$files)
   checkEquals(basename(file), copy$files)
@@ -39,7 +39,7 @@ unitTestAddFile <-
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
   file <- tempfile()
-  cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
+  cat(sprintf("THIS IS A TEST %s", sample(10000,1)), file = file)
   addFile(own, file)
   checkEquals(basename(file), own$files)
 
@@ -57,7 +57,7 @@ unitTestMoveFile <-
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
   file <- tempfile()
-  cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
+  cat(sprintf("THIS IS A TEST %s", sample(10000,1)), file = file)
   addFile(own, file)
   checkEquals(basename(file), own$files)
 
@@ -84,7 +84,7 @@ uniTestDeleteFile <-
   checkTrue(grepl("_unpacked$", own$cacheDir))
   checkEquals(character(), own$files)
   file <- tempfile()
-  cat(sprintf("THIS IS A TEST %s", Sys.time()), file = file)
+  cat(sprintf("THIS IS A TEST %s", sample(10000,1)), file = file)
   addFile(own, file, "aFile.txt")
   checkEquals("aFile.txt", own$files)
 

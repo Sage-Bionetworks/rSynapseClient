@@ -221,15 +221,14 @@ integrationTestDeleteFileById <-
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
   
-  filePath<-file.path(tempdir(), sample(1000,1)) # create a random file path in the temp' dir
-  file<-File(filePath, synapseStore=TRUE, parentId=propertyValue(createdProject, "id"))
+  file<-File(synapseStore=TRUE, parentId=propertyValue(createdProject, "id"))
   file <- addObject(file, "foo", "bar")
   
   createdFile <- createEntity(file)
   
   cacheDir <- createdFile@filePath
   checkTrue(file.exists(cacheDir))
-  deleteEntity(file)
+  deleteEntity(createdFile)
   
   deleteEntity(createdProject$properties$id)
   checkException(getEntity(createdFile), silent=TRUE)
