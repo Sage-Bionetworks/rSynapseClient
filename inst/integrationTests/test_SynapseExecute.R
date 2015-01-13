@@ -109,7 +109,7 @@ integrationTestCreateFileCodeEntity<-function() {
 
 
 # test createGithubCodeEntity
-integrationTestCreateGithubCodeEntity<-function() {
+NOTintegrationTestCreateGithubCodeEntity<-function() { # integrationTestCreateGithubCodeEntity
   project<-synapseClient:::.getCache("testProject")
 
   repoName<-"/brian-bot/rGithubClient"
