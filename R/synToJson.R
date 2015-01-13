@@ -13,8 +13,10 @@ synToJson<-function(toEncode) {
     stop("all elements must be named")
   }
   
-  if(length(toEncode) == 0)
+  if(length(toEncode) == 0) {
+    emptyNamedList<-structure(list(), names = character()) # copied from RJSONIO
     toEncode <- emptyNamedList
+  }
   
   ## change dates to characters
   toEncode<-convertDatesToCharacters(toEncode)

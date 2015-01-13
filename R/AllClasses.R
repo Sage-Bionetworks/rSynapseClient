@@ -61,6 +61,9 @@ setClass(
 ## used to store typed synapse properties once the JSON schema is integrated
 ## with the R Synapse client
 ##
+
+emptyNamedList<-structure(list(), names = character()) # copied from RJSONIO
+
 setClass(
     Class = "TypedPropertyStore",
     representation = representation(
@@ -196,7 +199,7 @@ setRefClass(
           if(!file.exists(file)){
             .self$metaData <- emptyNamedList
           }else{
-            dd <- fromJSON(file, simplifyWithNames=FALSE)
+            dd <- fromJSON(file=file)
             .self$metaData <- dd$metaData
             .self$archiveFile <- dd$archiveFile
             if(.self$archiveFile=="")

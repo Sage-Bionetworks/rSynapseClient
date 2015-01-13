@@ -2,6 +2,7 @@
 ## 
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
+library(rjson)
 
 .setUp <- 
     function()
@@ -17,7 +18,7 @@
   myGetAnnotations <- 
       function(entity)
   {
-    RJSONIO::fromJSON(synapseClient:::.getCache("datasetAnnotationJSON"))
+    fromJSON(synapseClient:::.getCache("datasetAnnotationJSON"))
   }
   
   suppressWarnings(
@@ -61,7 +62,7 @@ unitTestConstructors <-
 {
   ## these just need to work without throwing an exception. the JSON parsing and mapping to
   ## slots is tested elsewhere
-  suppressWarnings(entity <- synapseClient:::Entity(entity = as.list(RJSONIO::fromJSON(synapseClient:::.getCache("datasetJSON")))))
+  suppressWarnings(entity <- synapseClient:::Entity(entity = as.list(fromJSON(synapseClient:::.getCache("datasetJSON")))))
 }
 
 unitTestProperties <-

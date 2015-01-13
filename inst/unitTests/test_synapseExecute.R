@@ -2,7 +2,7 @@
 # 
 # Author: brucehoff
 ###############################################################################
-library(RJSONIO)
+library(rjson)
 
 
 unitTestIsSynapseId <- function() {

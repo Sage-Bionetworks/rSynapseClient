@@ -1,6 +1,6 @@
 ## imports from other packages
 import(RCurl, methods)
-importFrom(RJSONIO, toJSON, fromJSON, emptyNamedList)
+importFrom(rjson, toJSON, fromJSON)
 importFrom(tools, md5sum)
 importFrom(digest, digest, hmac)
 importFrom(utils, edit, compareVersion, packageDescription, install.packages, installed.packages)

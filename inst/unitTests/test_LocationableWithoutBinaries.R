@@ -99,7 +99,8 @@ unitTestDoubleBracketAccessor <-
   own <- new("LocationableWithoutBinaries")
 
   checkEquals(own[['files']], character())
-  checkEquals(own[['objects']][], RJSONIO::emptyNamedList)
+  emptyNamedList<-structure(list(), names = character()) # copied from RJSONIO
+  checkEquals(own[['objects']][], emptyNamedList)
   checkEquals(own[['cacheDir']], own$cacheDir)
 }
 
