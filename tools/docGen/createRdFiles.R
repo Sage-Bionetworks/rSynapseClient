@@ -8,7 +8,7 @@
 ###############################################################################
 
 if (!require(rjson)) {
-  package.install("rjson", repos="http://cran.us.r-project.org")
+  install.packages("rjson", repos="http://cran.us.r-project.org")
   if (!require(rjson)) stop("Could not install 'rjson'")
 }
 
