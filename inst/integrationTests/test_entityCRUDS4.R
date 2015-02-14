@@ -28,6 +28,16 @@
 	}
 }
 
+createFileInMemory<-function(pId) {
+  filePath<- tempfile()
+  connection<-file(filePath)
+  writeChar("this is a test", connection, eos=NULL)
+  close(connection)  
+  synapseStore<-TRUE
+  file<-File(filePath, synapseStore, parentId=pId)
+  file
+}
+
 integrationTestCreateS4Entities <- 
   function()
 {
@@ -36,22 +46,21 @@ integrationTestCreateS4Entities <-
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
   
-  ## Create Study
-  study <- Study()
-  propertyValue(study, "name") <- "testStudyName"
-  propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
-  createdStudy <- createEntity(study)
-  checkEquals(propertyValue(createdStudy,"name"), propertyValue(study, "name"))
-  checkEquals(propertyValue(createdStudy,"parentId"), propertyValue(createdProject, "id"))
-  study <- createdStudy
+  ## Create Folder
+  folder <- Folder()
+  propertyValue(folder, "name") <- "testFolderName"
+  propertyValue(folder,"parentId") <- propertyValue(createdProject, "id")
+  createdFolder <- createEntity(folder)
+  checkEquals(propertyValue(createdFolder,"name"), propertyValue(folder, "name"))
+  checkEquals(propertyValue(createdFolder,"parentId"), propertyValue(createdProject, "id"))
+  folder <- createdFolder
   
-  ## Create Data
-  data <- Data()
-  propertyValue(data, "name") <- "testPhenoDataName"
-  propertyValue(data, "parentId") <- propertyValue(study,"id")
-  createdData <- createEntity(data)
-  checkEquals(propertyValue(createdData,"name"), propertyValue(data, "name"))
-  checkEquals(propertyValue(createdData,"parentId"), propertyValue(study, "id")) 
+  ## Create File
+  f <- createFileInMemory(propertyValue(createdFolder,"id"))
+  propertyValue(f, "name") <- "testFileName"
+  createdFile <- createEntity(f)
+  checkEquals(propertyValue(createdFile,"name"), propertyValue(f, "name"))
+  checkEquals(propertyValue(createdFile,"parentId"), propertyValue(folder, "id")) 
   
 }
 
@@ -65,16 +74,16 @@ integrationTestCreateEntityWithAnnotations <-
 	synapseClient:::.setCache("testProject", createdProject)
 	checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
 	
-	## Create Study
-	study <- Study()
-	propertyValue(study, "name") <- "testStudyName"
-	propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
-	annotValue(study, "annotKey") <- "annotValue"
-	createdStudy <- createEntity(study)
-	checkEquals(propertyValue(createdStudy,"name"), propertyValue(study, "name"))
-	checkEquals(propertyValue(createdStudy,"parentId"), propertyValue(createdProject, "id"))
-	checkEquals(annotValue(createdStudy,"annotKey"), annotValue(study, "annotKey"))
-	checkEquals(NULL, generatedBy(createdStudy))
+	## Create Folder
+	folder <- Folder()
+	propertyValue(folder, "name") <- "testFolderName"
+	propertyValue(folder,"parentId") <- propertyValue(createdProject, "id")
+	annotValue(folder, "annotKey") <- "annotValue"
+	createdFolder <- createEntity(folder)
+	checkEquals(propertyValue(createdFolder,"name"), propertyValue(folder, "name"))
+	checkEquals(propertyValue(createdFolder,"parentId"), propertyValue(createdProject, "id"))
+	checkEquals(annotValue(createdFolder,"annotKey"), annotValue(folder, "annotKey"))
+	checkEquals(NULL, generatedBy(createdFolder))
 	
 }
 
@@ -88,19 +97,18 @@ integrationTestCreateEntityWithGeneratedBy <-
   synapseClient:::.setCache("testProject", createdProject)
   checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
   
-  ## Create Data
-  data <- Data()
-  propertyValue(data, "name") <- "testDataName"
-  propertyValue(data,"parentId") <- propertyValue(createdProject, "id")
+  ## Create File
+  f <- createFileInMemory(propertyValue(createdProject,"id"))
+  propertyValue(f, "name") <- "testFileName"
   testActivity <-synapseClient:::.getCache("testActivity")
   checkTrue(!is.null(testActivity))
-  generatedBy(data)<-testActivity
-  data <- createEntity(data)
-  createdData<-getEntity(propertyValue(data, "id"))
-  checkEquals(propertyValue(createdData,"name"), propertyValue(data, "name"))
-  checkEquals(propertyValue(createdData,"parentId"), propertyValue(createdProject, "id"))
-  checkTrue(!is.null(generatedBy(createdData)))
-  checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(createdData), "id"))
+  generatedBy(f)<-testActivity
+  file <- createEntity(f)
+  createdFile<-getEntity(propertyValue(file, "id"))
+  checkEquals(propertyValue(createdFile,"name"), propertyValue(f, "name"))
+  checkEquals(propertyValue(createdFile,"parentId"), propertyValue(createdProject, "id"))
+  checkTrue(!is.null(generatedBy(createdFile)))
+  checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(createdFile), "id"))
 }
 
 integrationTestUpdateEntityWithGeneratedBy <- 
@@ -113,20 +121,19 @@ integrationTestUpdateEntityWithGeneratedBy <-
   synapseClient:::.setCache("testProject", createdProject)
   checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
   
-  ## Create Data
-  data <- Data()
-  propertyValue(data, "name") <- "testDataName"
-  propertyValue(data,"parentId") <- propertyValue(createdProject, "id")
-  data <- createEntity(data)
+  ## Create File
+  f <- createFileInMemory(propertyValue(createdProject,"id"))
+  propertyValue(f, "name") <- "testFileName"
+  createdFile <- createEntity(f)
   testActivity <-synapseClient:::.getCache("testActivity")
   checkTrue(!is.null(testActivity))
-  generatedBy(data)<-testActivity
-  data <- updateEntity(data)
-  updatedData<-getEntity(propertyValue(data, "id"))
-  checkEquals(propertyValue(updatedData,"name"), propertyValue(data, "name"))
-  checkEquals(propertyValue(updatedData,"parentId"), propertyValue(createdProject, "id"))
-  checkTrue(!is.null(generatedBy(updatedData)))
-  checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(updatedData), "id"))
+  generatedBy(createdFile)<-testActivity
+  updatedFile <- updateEntity(createdFile)
+  updatedFile<-getEntity(propertyValue(createdFile, "id"))
+  checkEquals(propertyValue(updatedFile,"name"), propertyValue(createdFile, "name"))
+  checkEquals(propertyValue(updatedFile,"parentId"), propertyValue(createdProject, "id"))
+  checkTrue(!is.null(generatedBy(updatedFile)))
+  checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(updatedFile), "id"))
 }
 
 integrationTestStoreEntityWithGeneratedBy <- 
@@ -139,20 +146,19 @@ integrationTestStoreEntityWithGeneratedBy <-
   synapseClient:::.setCache("testProject", createdProject)
   checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
   
-  ## Create Data
-  data <- Data()
-  propertyValue(data, "name") <- "testDataName"
-  propertyValue(data,"parentId") <- propertyValue(createdProject, "id")
-  data <- createEntity(data)
+  ## Create File
+  f <- createFileInMemory(propertyValue(createdProject, "id"))
+  propertyValue(f, "name") <- "testFileName"
+  file <- createEntity(f)
   testActivity <-synapseClient:::.getCache("testActivity")
   checkTrue(!is.null(testActivity))
-  generatedBy(data)<-testActivity
-  data <- storeEntity(data)
-  updatedData<-getEntity(propertyValue(data, "id"))
-  checkEquals(propertyValue(updatedData,"name"), propertyValue(data, "name"))
-  checkEquals(propertyValue(updatedData,"parentId"), propertyValue(createdProject, "id"))
-  checkTrue(!is.null(generatedBy(updatedData)))
-  checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(updatedData), "id"))
+  generatedBy(file)<-testActivity
+  createdFile <- storeEntity(file)
+  updatedFile<-getEntity(propertyValue(createdFile, "id"))
+  checkEquals(propertyValue(updatedFile,"name"), propertyValue(createdFile, "name"))
+  checkEquals(propertyValue(updatedFile,"parentId"), propertyValue(createdProject, "id"))
+  checkTrue(!is.null(generatedBy(updatedFile)))
+  checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(updatedFile), "id"))
 }
 
 integrationTestCreateEntityWithNAAnnotations <- 
@@ -166,25 +172,25 @@ integrationTestCreateEntityWithNAAnnotations <-
   checkEquals(annotValue(createdProject, "annotationKey"), annotValue(project, "annotationKey"))
   
   ## Create Study
-  study <- Study()
-  propertyValue(study, "name") <- "testStudyName"
-  propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
+  folder <- Folder()
+  propertyValue(folder, "name") <- "testFolderName"
+  propertyValue(folder,"parentId") <- propertyValue(createdProject, "id")
   
   annots <- list()
   annots$rawdataavailable <- TRUE 
   annots$number_of_samples <- 33 
   annots$contact <- NA 
   annots$platform <- "HG-U133_Plus_2"
-  annotationValues(study) <- annots
+  annotationValues(folder) <- annots
   
-  createdStudy <- createEntity(study)
+  createdFolder <- createEntity(folder)
   
-  checkEquals(propertyValue(createdStudy,"name"), propertyValue(study, "name"))
-  checkEquals(propertyValue(createdStudy,"parentId"), propertyValue(createdProject, "id"))
-  checkEquals(annotValue(createdStudy,"platform"), "HG-U133_Plus_2")
-  checkEquals(annotValue(createdStudy,"number_of_samples"), 33)
-  checkEquals(annotValue(createdStudy,"rawdataavailable"), "TRUE")
-  checkTrue(is.null(annotValue(createdStudy,"contact")[[1]]))
+  checkEquals(propertyValue(createdFolder,"name"), propertyValue(folder, "name"))
+  checkEquals(propertyValue(createdFolder,"parentId"), propertyValue(createdProject, "id"))
+  checkEquals(annotValue(createdFolder,"platform"), "HG-U133_Plus_2")
+  checkEquals(annotValue(createdFolder,"number_of_samples"), 33)
+  checkEquals(annotValue(createdFolder,"rawdataavailable"), "TRUE")
+  checkTrue(is.null(annotValue(createdFolder,"contact")[[1]]))
 }
 
 integrationTestUpdateS4Entity <-
@@ -201,31 +207,30 @@ integrationTestUpdateS4Entity <-
   checkEquals(propertyValue(updatedProject,"id"), propertyValue(createdProject,"id"))
   checkTrue(propertyValue(updatedProject, "etag") != propertyValue(createdProject, "etag"))
   
-  ## create a study
-  study <- Study()
-  propertyValue(study, "name") <- "testStudyName"
-  propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
-  createdStudy <- createEntity(study)
+  ## create a folder
+  folder <- Folder()
+  propertyValue(folder, "name") <- "testFolderName"
+  propertyValue(folder,"parentId") <- propertyValue(createdProject, "id")
+  createdFolder <- createEntity(folder)
   
-  ## update the study annotations
-  annotValue(createdStudy, "newKey") <- "newValue"
-  updatedStudy <- updateEntity(createdStudy)
-  checkEquals(annotValue(createdStudy, "newKey"), annotValue(updatedStudy, "newKey"))
-  checkTrue(propertyValue(createdStudy, "etag") != propertyValue(updatedStudy, "etag"))
-  checkEquals(propertyValue(createdStudy, "id"), propertyValue(updatedStudy, "id"))
+  ## update the folder annotations
+  annotValue(createdFolder, "newKey") <- "newValue"
+  updatedFolder <- updateEntity(createdFolder)
+  checkEquals(annotValue(createdFolder, "newKey"), annotValue(updatedFolder, "newKey"))
+  checkTrue(propertyValue(createdFolder, "etag") != propertyValue(updatedFolder, "etag"))
+  checkEquals(propertyValue(createdFolder, "id"), propertyValue(updatedFolder, "id"))
   
-  ## create a data
-  data <- Data()
-  propertyValue(data, "name") <- "testPhenoDataName"
-  propertyValue(data, "parentId") <- propertyValue(createdStudy,"id")
-  createdData <- createEntity(data)
-  checkEquals(propertyValue(createdData,"name"), propertyValue(data,"name"))
+  ## create a File
+  f <- createFileInMemory(propertyValue(createdFolder,"id"))
+  propertyValue(f, "name") <- "testFileName"
+  createdFile <- createEntity(f)
+  checkEquals(propertyValue(createdFile,"name"), propertyValue(f, "name"))
+  checkEquals(propertyValue(createdFile,"parentId"), propertyValue(createdFolder, "id")) 
   
-  
-  ## update the description property
-  propertyValue(createdData, "description") <- "This is a description"
-  updatedData <- updateEntity(createdData)
-  checkEquals(propertyValue(createdData, "description"), propertyValue(updatedData, "description"))
+  ## update the description property of the File
+  propertyValue(createdFile, "description") <- "This is a description"
+  updatedFile <- updateEntity(createdFile)
+  checkEquals(propertyValue(createdFile, "description"), propertyValue(updatedFile, "description"))
   
   ## update the description property on a project
   createdProject <- getEntity(createdProject)
@@ -242,23 +247,20 @@ integrationTestDeleteEntityById <-
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
   
-  study <- Study()
-  propertyValue(study, "name") <- "testStudyName"
-  propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
-  createdStudy <- createEntity(study)
-  createdData <- Data(list(name="aData", type="C", parentId=propertyValue(createdStudy, "id")))
-  data <- addObject(createdData, "foo", "bar")
-  createdData <- storeEntity(createdData)
-  
-  cacheDir <- createdData$cacheDir
-  checkTrue(file.exists(cacheDir))
-  synDelete(createdData)
-  checkTrue(!file.exists(cacheDir))
-  
+  folder <- Folder()
+  propertyValue(folder, "name") <- "testFolderName"
+  propertyValue(folder,"parentId") <- propertyValue(createdProject, "id")
+  createdFolder <- createEntity(folder)
+  f <- createFileInMemory(propertyValue(createdFolder, "id"))
+  createdFile <- storeEntity(f)
+  # $cacheDir not defined
+  createdFile <- synGet(propertyValue(createdFile, "id"))
   
   synDelete(createdProject$properties$id)
-  checkException(getEntity(createdStudy))
+  checkException(getEntity(createdFolder))
   checkException(getEntity(createdProject))
+  checkException(getEntity(createdFile))
+  
   synapseClient:::.deleteCache("testProject")
 }
 
@@ -419,19 +421,12 @@ integrationTestDeleteEntity <-
   createdProject <- createEntity(project)
   synapseClient:::.setCache("testProject", createdProject)
   
-  study <- Study()
-  propertyValue(study, "name") <- "testStudyName"
-  propertyValue(study,"parentId") <- propertyValue(createdProject, "id")
-  createdStudy <- createEntity(study)
-  createdData <- Data(list(name="aData", type="C", parentId=propertyValue(createdStudy, "id")))
-  data <- addObject(createdData, "foo", "bar")
-  createdData <- storeEntity(createdData)
-  
-  cacheDir <- createdData$cacheDir
-  checkTrue(file.exists(cacheDir))
-  deleteEntity(createdData)
-  checkTrue(!file.exists(cacheDir))
-  
+  folder <- Folder()
+  propertyValue(folder, "name") <- "testFolderName"
+  propertyValue(folder,"parentId") <- propertyValue(createdProject, "id")
+  createdFolder <- createEntity(folder)
+  file <- createFileInMemory(propertyValue(createdFolder, "id"))
+  createdFile <- storeEntity(file)
   
   deletedProject <- deleteEntity(createdProject)
   checkEquals(propertyValue(deletedProject, "id"), NULL)
@@ -441,7 +436,8 @@ integrationTestDeleteEntity <-
   createdProject <- synapseClient:::.getCache("testProject")
   checkEquals(propertyValue(deletedProject,"id"), NULL)
   
-  checkException(getEntity(createdStudy))
+  checkException(getEntity(createdFile))
+  checkException(getEntity(createdFolder))
   checkException(getEntity(createdProject))
   synapseClient:::.deleteCache("testProject")
 }
