@@ -182,6 +182,19 @@ export(
   "detach"
 )
 
+# Synapse object constructors to be deprecated (but left in code base for backward compatibility?)
+export(
+  "Data",
+	"Study",
+	"Code",
+	"Link",
+	"PhenotypeData",
+	"GenotypeData",
+	"ExpressionData",
+	"RObject",
+	"Summary",
+	"GenomicData"
+)
 # Methods used on deprecated Synapse objects above (but left in code base for backward compatibility?)
 exportMethods(
   "addFile",

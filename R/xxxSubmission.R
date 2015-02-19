@@ -29,7 +29,7 @@ setMethod(
   signature = signature("list"),
   definition = function(propertiesList) {
     submission <- new("Submission")
-    submission@submissionContent<-createS4ClassFromList(propertiesList, "SubmissionContent")
+    submission@submissionContent<-createS4ObjectFromList(propertiesList, "SubmissionContent")
     fileHandle<-as.list(getFileHandleFromEntityBundleJSON(propertiesList$entityBundleJSON))
     submission@fileHandle<-fileHandle
     
