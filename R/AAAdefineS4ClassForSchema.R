@@ -190,7 +190,8 @@ defineS4ConstructorAndAccessors<-function(name) {
     }
   )
   
-  setReplaceMethod("$", 
+  setReplaceMethod(
+  	f = "$", 
     signature = name,
     definition = function(x, name, value) {
       slot(x, name)<-value
