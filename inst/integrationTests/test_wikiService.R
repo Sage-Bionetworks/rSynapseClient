@@ -141,6 +141,7 @@ checkAndCleanUpWikiCRUD <- function(project, wikiPage, expectedAttachmentLength)
   markdown<-wikiPage$markdown
   wikiPage<-synStore(wikiPage)
   # check that non-ascii characters are handled correctly
+  message(sprintf("test_wikiService.checkAndCleanUpWikiCRUD: markdown: <<%s>>, wikiPage$markdown: <<%s>>", markdown, wikiPage$markdown))
   checkEquals(markdown, wikiPage$markdown)
   
   # see if we can get the wiki from its parent
