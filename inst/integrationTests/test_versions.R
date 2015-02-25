@@ -1,7 +1,7 @@
 .setUp <-
 	function()
 {
-	project <- createEntity(Project())
+	project <- synStore(Project())
 	synapseClient:::.setCache("testProject", project)
 	synapseClient:::.setCache("oldWarn", options("warn")[[1]])
 }
@@ -9,7 +9,7 @@
 .tearDown <-
 	function()
 {
-	deleteEntity(synapseClient:::.getCache("testProject"))
+	synDelete(synapseClient:::.getCache("testProject"))
 	options(warn=synapseClient:::.getCache("oldWarn"))
 	synapseClient:::.deleteCache("oldWarn")
 }
@@ -33,12 +33,13 @@ integrationTestVersionedAnnotationsProject <-
 	vers <- project$available.versions
 	checkEquals(1L, nrow(vers))
 
-	project <- getEntity(project$properties$id)
-
+	## project versions do not change
+  project <- getEntity(project$properties$id)
+  checkEquals("value2", project$annotations$aname)
 	project <- getEntity(project$properties$id, 1)
-
-
-}
+  checkEquals("value2", project$annotations$aname)
+  
+	}
 
 
 
