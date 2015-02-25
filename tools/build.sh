@@ -2,4 +2,4 @@
 tools/prebuild.sh
 # Now build the package
 R CMD build .
-R CMD INSTALL synapseClient_1.6-0.tar.gz
+R CMD INSTALL synapseClient_1.6-1.tar.gz

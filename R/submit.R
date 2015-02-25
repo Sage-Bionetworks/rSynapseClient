@@ -33,7 +33,7 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
   if (missing(submissionName)) submissionName<-propertyValue(entity, "name")
   
   # Check for unmet access requirements
-  kService <- sprintf('/evaluation/%s/accessRequirementUnfulfilled', evaluationId)
+  kService <- sprintf('/evaluation/%s/accessRequirementUnfulfilled?accessType=DOWNLOAD', evaluationId)
   response <- synapseGet(uri=kService, anonymous=FALSE)
   if (response[['totalNumberOfResults']] > 0) {
     accessTerms <- lapply(response[['results']], function(x) sprintf("%s - %s", x[['accessType']], x[['termsOfUse']]))
