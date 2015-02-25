@@ -12,15 +12,10 @@
 
 unitTestSubmit_no_submissionReceiptMessage <- function() {
     # Intercept all the calls to other methods
-    accessRequirementUnfulfilled_called <- FALSE
     synGetEvaluation_called <- FALSE
     createSubmissionFromProperties_called <- FALSE
     synCreateSubmission_called <- FALSE
     synapseClient:::.mock("synapseGet", function(uri, ...) {
-        if (!grep("accessRequirementUnfulfilled", uri)) {
-            stop("Mocked an unexpected call")
-        }
-        accessRequirementUnfulfilled_called <<- TRUE
         return(list(totalNumberOfResults=0))
     })
     synapseClient:::.mock("synGetEvaluation", function(id, ...) {
@@ -35,7 +30,7 @@ unitTestSubmit_no_submissionReceiptMessage <- function() {
     evaluation <- "evalId"
     entity <- File(id="fileId", parentId="parentId", etag="etag", name="name")
     submit(evaluation, entity)
-    checkTrue(accessRequirementUnfulfilled_called)
+
     checkTrue(synGetEvaluation_called)
     checkTrue(createSubmissionFromProperties_called)
     checkTrue(synCreateSubmission_called)
