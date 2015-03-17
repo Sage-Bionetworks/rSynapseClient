@@ -25,7 +25,8 @@ webRequestWithRetries<-function(fcn,
     "Failure when receiving data from the peer",
     "Empty reply from server",
     "SSL read: error:00000000",
-    "Unknown SSL protocol error")
+    "Unknown SSL protocol error",
+    "couldn't connect to host")
   
   retryStatusCodes<-append(c(502,503,504), extraRetryStatusCodes)
   
