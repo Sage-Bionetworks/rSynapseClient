@@ -153,7 +153,7 @@ integrationTestStoreFileWithGeneratedBy <-
   checkEquals(propertyValue(testActivity,"id"), propertyValue(generatedBy(updatedFile), "id"))
 }
 
-NOTintegrationTestCreateFileWithNAAnnotations <- # TEMPORARY
+integrationTestCreateFileWithNAAnnotations <- 
   function()
 {
   ## Create Project
