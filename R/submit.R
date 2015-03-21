@@ -32,15 +32,6 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
   }
   if (missing(submissionName)) submissionName<-propertyValue(entity, "name")
   
-  # Check for unmet access requirements
-  kService <- sprintf('/evaluation/%s/accessRequirementUnfulfilled', evaluationId)
-  response <- synapseGet(uri=kService, anonymous=FALSE)
-  if (response[['totalNumberOfResults']] > 0) {
-    accessTerms <- lapply(response[['results']], function(x) sprintf("%s - %s", x[['accessType']], x[['termsOfUse']]))
-    accessTerms <- paste(accessTerms, collapse="\n")
-    stop(sprintf('You have unmet access requirements: \n%s', accessTerms))
-  }
-
   if (missing(teamName)) {
     submission<-createSubmissionFromProperties(list(evaluationId=evaluationId, 
         entityId=entityId, 

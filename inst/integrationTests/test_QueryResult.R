@@ -25,8 +25,8 @@ integrationTestQueryResult_Fetch <- function() {
   project <- synapseClient:::.getCache("testProject")$properties$id
 
   ## add some children
-  data <- Data(parentId=project)
-  lapply(1:10, function(i) createEntity(data))
+  folder <- Folder(parentId=project)
+  lapply(1:10, function(i) createEntity(folder))
 
   qr <- synapseClient:::QueryResult$new(sprintf("select id, name, parentId from entity where parentId=='%s'", project), blockSize=5)
   df <- qr$fetch()
@@ -46,8 +46,8 @@ integrationTestQueryResult_Collect <- function() {
   project <- synapseClient:::.getCache("testProject")$properties$id
 
   ## add some children
-  data <- Data(parentId=project)
-  lapply(1:10, function(i) createEntity(data))
+  folder <- Folder(parentId=project)
+  lapply(1:10, function(i) createEntity(folder))
 
   qr <- synapseClient:::QueryResult$new(sprintf("select id, name, parentId from entity where parentId=='%s'", project), blockSize=3)
   df <- qr$collect()
@@ -69,8 +69,8 @@ integrationTestQueryResult_CollectAll <- function() {
   project <- synapseClient:::.getCache("testProject")$properties$id
 
   ## add some children
-  data <- Data(parentId=project)
-  lapply(1:10, function(i) createEntity(data))
+  folder <- Folder(parentId=project)
+  lapply(1:10, function(i) createEntity(folder))
 
   qr <- synapseClient:::QueryResult$new(sprintf("select id, name, parentId from entity where parentId=='%s' LIMIT 10", project), blockSize=7)
   qr$collect()

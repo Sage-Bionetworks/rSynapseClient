@@ -39,11 +39,16 @@ integrationTestWikiService <-
     fileHandle<-synapseClient:::chunkedUploadFile(filePath)
     
     # create a wiki page
-    wikiContent<-list(title="wiki title", markdown="some stuff", attachmentFileHandleIds=list(fileHandle$id))
+    wikiContent<-list(title="wiki title", markdown="some — stuff, maybe from Zürich", attachmentFileHandleIds=list(fileHandle$id))
     # /{ownertObjectType}/{ownerObjectId}/wiki
     ownerUri<-sprintf("/entity/%s/wiki", propertyValue(project, "id"))
     wiki<-synapseClient:::synapsePost(ownerUri, wikiContent)
     
+    # check that non-ascii characters are handled correctly
+   	if (F) { # See Jira issue SYNR-886
+    	checkEquals(wikiContent$markdown, wiki$markdown)
+ 	}
+ 	 
     # see if we can get the wiki from its ID
     wikiUri<-sprintf("%s/%s", ownerUri, wiki$id)
     wiki2<-synapseClient:::synapseGet(wikiUri)
@@ -91,7 +96,7 @@ integrationTestWikiCRUD <-
   wikiPage<-WikiPage(
     owner=project, 
     title="wiki title", 
-    markdown="some stuff", 
+    markdown="some — stuff, maybe from Zürich", 
     attachments=list(filePath1, filePath2), 
     fileHandles=list(fileHandle$id)
   )
@@ -110,7 +115,7 @@ integrationTestWikiCRUD_NoAttachments <- function() {
   wikiPage<-WikiPage(
     owner=project, 
     title="wiki title", 
-    markdown="some stuff", 
+    markdown="some — stuff, maybe from Zürich", 
     fileHandles=list(fileHandle$id)
   )
   
@@ -127,7 +132,7 @@ integrationTestWikiCRUD_NoFileHandles <- function() {
   wikiPage<-WikiPage(
     owner=project, 
     title="wiki title", 
-    markdown="some stuff", 
+    markdown="some — stuff, maybe from Zürich", 
     attachments=list(filePath1)
   )
   
@@ -135,8 +140,14 @@ integrationTestWikiCRUD_NoFileHandles <- function() {
 }
 
 checkAndCleanUpWikiCRUD <- function(project, wikiPage, expectedAttachmentLength) {
+  markdown<-wikiPage$markdown
   wikiPage<-synStore(wikiPage)
-    
+  if (F) { # See Jira issue SYNR-886
+  	# check that non-ascii characters are handled correctly
+  	message(sprintf("test_wikiService.checkAndCleanUpWikiCRUD: markdown: <<%s>>, wikiPage$markdown: <<%s>>", markdown, wikiPage$markdown))
+  	checkEquals(markdown, wikiPage$markdown)
+  }
+  
   # see if we can get the wiki from its parent
   wikiPage2<-synGetWiki(project)
   

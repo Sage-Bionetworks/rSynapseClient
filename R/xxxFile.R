@@ -418,7 +418,7 @@ getFileHandle<-function(entity) {
 # Note this is 'broken out' from 'synGetFile' to allow mocking 
 # during integration test
 hasUnfulfilledAccessRequirements<-function(id) {
-  unfulfilledAccessRequirements<-synapseGet(sprintf("/entity/%s/accessRequirementUnfulfilled", id))
+  unfulfilledAccessRequirements<-synapseGet(sprintf("/entity/%s/accessRequirementUnfulfilled?accessType=DOWNLOAD", id))
   unfulfilledAccessRequirements$totalNumberOfResults>0
 }
 
