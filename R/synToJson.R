@@ -19,9 +19,30 @@ synToJson<-function(toEncode) {
   }
   
   ## change dates to characters
+  toEncode<-handleNAs(toEncode)
   toEncode<-convertDatesToCharacters(toEncode)
   toEncode<-convertIntegersToCharacters(toEncode)
   toJSON(toEncode)
+}
+
+## Note: the RJSONIO library converted NAs to nulls
+## Switching to rjson, for backwards compatibility we must do the same
+handleNAs<-function(toEncode) {
+  result<-list()
+  if (length(toEncode) > 0) {
+    for (ii in 1:length(toEncode)) {
+      elemName<-names(toEncode)[[ii]]
+      elem<-toEncode[[elemName]]
+      modifiedElem<-elem
+      if (length(elem)>1) {
+        modifiedElem<-handleNAs(elem)
+      } else if (length(elem)==1 && is.na(elem)) {
+          modifiedElem<-NULL
+      }
+      result[[elemName]]<-modifiedElem
+    }
+  }
+  result
 }
 
 # warning:  This is designed specifically for date annotations objects yet is embedded in a low level library
@@ -52,3 +73,5 @@ convertIntegersToCharacters<-function(toEncode) {
   }
   toEncode
 }
+
+
