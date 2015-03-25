@@ -95,7 +95,7 @@ createSFTPUploadSettings<-function(projectId) {
 }
 
 # disabled until SYNR-863 is fixed
-NOTintegrationTestSFTPRoundTrip <- function() {
+integrationTestSFTPRoundTrip <- function() {
   # NOTE:  The following values must be set up external to the test suite
   host<-synapseClient:::.getCache("test_sftp_host")
   credentials<-synapseClient:::.getCache(sprintf("sftp://%s_credentials", host))
@@ -172,7 +172,7 @@ NOTintegrationTestSFTPRoundTrip <- function() {
 }
 
 # disabled until SYNR-863 is fixed
-NOTintegrationTestMoveSFTPFileToS3Container<-function() {
+integrationTestMoveSFTPFileToS3Container<-function() {
   project<-synapseClient:::.getCache("testProject")
   projectId<-propertyValue(project, "id")
   

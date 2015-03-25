@@ -95,10 +95,12 @@ unitTestMultipleValuesMixedTypes <-
 unitTestNamedList <-
   function()
 {
-  checkTrue(!synapseClient:::checkInteger(RJSONIO:::emptyNamedList))
+  emptyNamedList<-structure(list(), names = character()) # copied from RJSONIO
+  checkTrue(!synapseClient:::checkInteger(emptyNamedList))
   
   val <- list()
-  val[[2]] <- RJSONIO::emptyNamedList
+  emptyNamedList<-structure(list(), names = character()) # copied from RJSONIO
+  val[[2]] <- emptyNamedList
   res <- c(FALSE, FALSE)
   checkTrue(all(res == synapseClient:::checkInteger(val)))
   
