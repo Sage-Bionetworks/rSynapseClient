@@ -3,6 +3,8 @@
 # Author: brucehoff
 ###############################################################################
 
+library("rjson")
+
 unitTest_parseRowAndVersion<-function() {
 	orig<-list(foo="bar", baz=NA, bar=list(a="A",b=NA))
 	expected<-list(foo="bar", bar=list(a="A"))
