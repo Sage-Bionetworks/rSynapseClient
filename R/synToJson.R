@@ -31,15 +31,16 @@ handleNAs<-function(toEncode) {
   result<-list()
   if (length(toEncode) > 0) {
     for (ii in 1:length(toEncode)) {
-      elemName<-names(toEncode)[[ii]]
-      elem<-toEncode[[elemName]]
+      elemIndex<-names(toEncode)[[ii]]
+      if (is.null(elemIndex) || nchar(elemIndex)==0) elemIndex<-ii
+      elem<-toEncode[[elemIndex]]
       modifiedElem<-elem
       if (length(elem)>1) {
         modifiedElem<-handleNAs(elem)
       } else if (length(elem)==1 && is.na(elem)) {
           modifiedElem<-NULL
       }
-      result[[elemName]]<-modifiedElem
+      result[[elemIndex]]<-modifiedElem
     }
   }
   result
