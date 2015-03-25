@@ -491,4 +491,40 @@ synDeleteRows<-function(tableDataFrame) {
   TableRowCount(tableDataFrame@schema, length(response@rows), response@etag)
 }
 
+# 'table' can be a table ID, a TableDataFrame, or a TableFilePath
+synDownloadTableFile<-function(table, rowIdAndVersion, columnName, downloadLocation=NULL, ifcollision="keep.both") {
+	if (is(table, "character")) {
+		if (!isSynapseID(table)) stop(sprintf("%s is not a Synapse ID.", table))
+		tableId<-table
+		schema<-ensureTableSchemaIsRetrieved(tableId)
+		# TODO get columnId from columnName
+		# TODO retrieve fileHandleId by running a query
+	} else if (is(table, "Table")) {
+		schema<-ensureTableSchemaIsRetrieved(table@schema)
+		tableId<-propertyValue(schema, "id")
+		# TODO get columnId from columnName
+		# TODO retrieve fileHandleId by selecting from current data or by running a query
+		if (is(table, "TableDataFrame")) {
+		} else if (is(table, "TableFilePath")) {
+		} else {
+			stop(sprintf("Unexpected type %s", class(table)))
+		}
+	} else {
+		stop(sprintf("Unexpected type %s", class(table)))
+	}
+	pair<-parseRowAndVersion(rowIdAndVersion)
+	rowId<-pair[1]
+	versionNumber<-pair[2]
+	uri<-sprintf("/entity/%s/table/column/%s/row/%s/version/%s/file", tableId, columnId, rowId, versionNumber)
+	fileName<-"TODO.txt" # TODO
+	filePath<-synGetFileAttachment(
+			uri,
+			"REPO",
+			fileName,  
+			fileHandleId, 
+			downloadLocation, 
+			ifcollision)
+	filePath
+}
+
 

@@ -382,22 +382,17 @@ generateUniqueFileName<-function(folder, filename) {
   stop(sprintf("Cannot generate unique file name variation in folder %s for file %s", folder, filename))
 }
 
-downloadFromSynapseOrExternal<-function(
-  downloadLocation, 
-  filePath, 
-  isExternalUrl, 
-  downloadUri, 
-  endpointName, 
-  externalURL, 
-  fileHandle) {
-  dir.create(downloadLocation, recursive=T, showWarnings=F)
-  if (isExternalUrl==FALSE) {
-    synapseDownloadFromServiceToDestination(downloadUri, endpointName, destfile=filePath, extraRetryStatusCodes=404)
-  } else {
-    synapseDownloadFileToDestination(externalURL, filePath)
-  }
-  addToCacheMap(fileHandle$id, filePath)
+downloadFromSynapse<-function(
+	downloadLocation, 
+	filePath, 
+	downloadUri, 
+	endpointName,
+	fileHandleId) {
+	dir.create(downloadLocation, recursive=T, showWarnings=F)
+	synapseDownloadFromServiceToDestination(downloadUri, endpointName, destfile=filePath, extraRetryStatusCodes=404)
+	addToCacheMap(fileHandleId, filePath)
 }
+
 
 getFileHandle<-function(entity) {
   fileHandleId<-propertyValue(entity, "dataFileHandleId")
@@ -478,40 +473,7 @@ synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFi
   }
   
   if (downloadFile) {
-    if (is.null(downloadLocation)) {
-      downloadLocation<-defaultDownloadLocation(fileHandle$id)
-    } else {
-      if (file.exists(downloadLocation) && !file.info(downloadLocation)$isdir) stop(sprintf("%s is not a folder", downloadLocation))
-    }
-    filePath<-file.path(downloadLocation, fileHandle$fileName)
-    if (file.exists(filePath)) {
-      if (localFileUnchanged(fileHandle$id, filePath)) {
-        # no need to download, 'filePath' is now the path to the local copy of the file
-      } else {
-  			if (ifcollision=="overwrite.local") {
-  				# download file from Synapse to downloadLocation
-          # we first capture the existing file.  If the download fails, we'll move it back
-          temp<-file.path(downloadLocation, sample(999999999, 1))
-          if (!file.rename(filePath, temp)) stop(sprintf("Failed to back up %s before downloading new version.", filePath))
-          tryCatch(
-            downloadFromSynapseOrExternal(downloadLocation, filePath, isExternalURL, downloadUri, endpointName, externalURL, fileHandle),
-            error = function(e) {file.rename(temp, filePath); stop(e)}
-          )
-          unlink(temp)
-        } else if (ifcollision=="keep.local") {
-  				# nothing to do
-        } else if (ifcollision=="keep.both") {
-          #download file from Synapse to distinct filePath
-          uniqueFileName <- generateUniqueFileName(downloadLocation, fileHandle$fileName)
-          filePath <- file.path(downloadLocation, uniqueFileName)
-          downloadFromSynapseOrExternal(downloadLocation, filePath, isExternalURL, downloadUri, endpointName, externalURL, fileHandle) 
-        } else {
-  				stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
-        }
-      }
-    } else { # filePath does not exist
-      downloadFromSynapseOrExternal(downloadLocation, filePath, isExternalURL, downloadUri, endpointName, externalURL, fileHandle) 
-    }
+	  filePath<-synDownloadFileAttachment(downloadUri, endpointName, fileHandle$fileName,  fileHandle$fileHandleId, downloadLocation, ifcollision)
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }
@@ -525,6 +487,44 @@ synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFi
     }
   }
   filePath
+}
+
+synDownloadFileAttachment<-function(downloadUri, endpointName, fileName, fileHandleId, downloadLocation=NULL, ifcollision="keep.both") {
+	if (is.null(downloadLocation)) {
+		downloadLocation<-defaultDownloadLocation(fileHandleId)
+	} else {
+		if (file.exists(downloadLocation) && !file.info(downloadLocation)$isdir) stop(sprintf("%s is not a folder", downloadLocation))
+	}
+	filePath<-file.path(downloadLocation, fileName)
+	if (file.exists(filePath)) {
+		if (localFileUnchanged(fileHandleId, filePath)) {
+			# no need to download, 'filePath' is now the path to the local copy of the file
+		} else {
+			if (ifcollision=="overwrite.local") {
+				# download file from Synapse to downloadLocation
+				# we first capture the existing file.  If the download fails, we'll move it back
+				temp<-file.path(downloadLocation, sample(999999999, 1))
+				if (!file.rename(filePath, temp)) stop(sprintf("Failed to back up %s before downloading new version.", filePath))
+				tryCatch(
+						downloadFromSynapse(downloadLocation, filePath, downloadUri, endpointName, fileHandleId),
+						error = function(e) {file.rename(temp, filePath); stop(e)}
+				)
+				unlink(temp)
+			} else if (ifcollision=="keep.local") {
+				# nothing to do
+			} else if (ifcollision=="keep.both") {
+				#download file from Synapse to distinct filePath
+				uniqueFileName <- generateUniqueFileName(downloadLocation, fileName)
+				filePath <- file.path(downloadLocation, uniqueFileName)
+				downloadFromSynapse(downloadLocation, filePath, downloadUri, endpointName, fileHandleId) 
+			} else {
+				stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
+			}
+		}
+	} else { # filePath does not exist
+		downloadFromSynapse(downloadLocation, filePath, downloadUri, endpointName, fileHandleId)
+	}
+	filePath
 }
 
 
