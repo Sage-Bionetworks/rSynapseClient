@@ -83,9 +83,9 @@
       debugfunction=d$update,
       .opts=opts
       )
-
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
+	message("RESPONSE_HEADERS:: ", response$headers)
     message("RESPONSE_BODY: ", response$body)
   }
   

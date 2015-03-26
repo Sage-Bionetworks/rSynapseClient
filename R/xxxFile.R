@@ -473,7 +473,7 @@ synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFi
   }
   
   if (downloadFile) {
-	  filePath<-synDownloadFileAttachment(downloadUri, endpointName, fileHandle$fileName,  fileHandle$fileHandleId, downloadLocation, ifcollision)
+	  filePath<-synDownloadFileAttachment(downloadUri, endpointName, fileHandle$fileName,  fileHandle$id, downloadLocation, ifcollision)
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }

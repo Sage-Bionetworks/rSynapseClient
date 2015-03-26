@@ -90,7 +90,8 @@
   )
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
-    message("RESPONSE_BODY:: ", response$body)
+	  message("RESPONSE_HEADERS:: ", response$headers)
+	  message("RESPONSE_BODY:: ", response$body)
   }
   
   if (checkHttpStatus) .checkCurlResponse(object=curlHandle, response=response$body)

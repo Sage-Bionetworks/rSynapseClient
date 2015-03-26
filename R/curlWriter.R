@@ -27,11 +27,25 @@
 .curlWriterDownload <-
   function(url, destfile=tempfile(), curlHandle = getCurlHandle(), writeFunction=.getCache('curlWriter'), opts = .getCache("curlOpts"))
 {
+	if(!is.null(.getCache("debug")) && .getCache("debug")) {
+		message("DOWNLOADING FROM: ", url);
+	}
   ext <- .curlWriterOpen(destfile)
   on.exit(.curlWriterClose(ext))
   opts$noprogress <- 0L
+  
+  opts$header<-FALSE # capture the response header
+  
+  headerHandler<-dynCurlReader(curl=curlHandle)
+  
   curlPerform(URL=url, writefunction=writeFunction,
-    writedata=ext, .opts = opts, curl = curlHandle)
+		  writedata=ext, .opts = opts, curl = curlHandle)
+#  curlPerform(URL=url, writefunction=writeFunction,
+#		  writedata=ext, .opts = opts, curl = curlHandle, headerfunction = headerHandler$update)
+  
+  if (!is.null(.getCache("debug")) && .getCache("debug")) {
+	message("curlWriterDownload response headers:\n", headerHandler$header())
+  }
   .checkCurlResponse(object=curlHandle, logErrorToSynapse=TRUE)
   destfile
 }
