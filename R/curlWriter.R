@@ -34,14 +34,15 @@
   on.exit(.curlWriterClose(ext))
   opts$noprogress <- 0L
   
-  opts$header<-FALSE # capture the response header
+  opts$header<-TRUE # capture the response header
   
   headerHandler<-dynCurlReader(curl=curlHandle)
+  headerHandler$update<-function(str) {message("response header: ", str)}
   
-  curlPerform(URL=url, writefunction=writeFunction,
-		  writedata=ext, .opts = opts, curl = curlHandle)
 #  curlPerform(URL=url, writefunction=writeFunction,
-#		  writedata=ext, .opts = opts, curl = curlHandle, headerfunction = headerHandler$update)
+#		  writedata=ext, .opts = opts, curl = curlHandle)
+  curlPerform(URL=url, writefunction=writeFunction,
+		  writedata=ext, .opts = opts, curl = curlHandle, headerfunction = headerHandler$update)
   
   if (!is.null(.getCache("debug")) && .getCache("debug")) {
 	message("curlWriterDownload response headers:\n", headerHandler$header())
