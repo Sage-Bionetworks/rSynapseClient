@@ -31,7 +31,8 @@ synapseDownloadFromServiceToDestination<-function(
   
   webRequestResult<-webRequestWithRetries(
     fcn=function(curlHandle) {
-		synapseDownloadHttpFileToDestination(url=redirectUrl, destfile=destfile, curlHandle=curlHandle, opts=list())
+		synapseDownloadHttpFileToDestination(
+				url=redirectUrl, destfile=destfile, curlHandle=curlHandle, opts=.getCache("curlOpts"))
     },
     curlHandle=curlHandle,
     extraRetryStatusCodes=extraRetryStatusCodes
