@@ -30,23 +30,27 @@
 	if(!is.null(.getCache("debug")) && .getCache("debug")) {
 		message("DOWNLOADING FROM: ", url);
 	}
-  ext <- .curlWriterOpen(destfile)
-  on.exit(.curlWriterClose(ext))
+  writeBody <- .curlWriterOpen(destfile)
+  on.exit(.curlWriterClose(writeBody))
+  
+#  headerfile<-tempfile() TODO
+#  writeHeader<-.curlWriterOpen(headerfile)
+ # on.exit(.curlWriterClose(writeHeader))
+  
   opts$noprogress <- 0L
+  opts$followlocation<-FALSE # don't follow redirects
+#  opts$header<-TRUE # capture the response header TODO
   
-  opts$header<-TRUE # capture the response header
+  curlPerform(URL=url, 
+		  writefunction=writeFunction, writedata=writeBody, 
+#		  headerdata=writeHeader, TODO
+		  .opts = opts, curl = curlHandle)
+
+#  message("curlWriterDownload header content in file: ", headerfile) TODO
   
-  headerHandler<-dynCurlReader(curl=curlHandle)
-  headerHandler$update<-function(str) {message("response header: ", str)}
-  
-#  curlPerform(URL=url, writefunction=writeFunction,
-#		  writedata=ext, .opts = opts, curl = curlHandle)
-  curlPerform(URL=url, writefunction=writeFunction,
-		  writedata=ext, .opts = opts, curl = curlHandle, headerfunction = headerHandler$update)
-  
-  if (!is.null(.getCache("debug")) && .getCache("debug")) {
-	message("curlWriterDownload response headers:\n", headerHandler$header())
-  }
+#  if (!is.null(.getCache("debug")) && .getCache("debug")) {
+#	message("curlWriterDownload response headers:\n", curlReader$header())
+#  }
   .checkCurlResponse(object=curlHandle, logErrorToSynapse=TRUE)
   destfile
 }

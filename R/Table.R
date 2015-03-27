@@ -410,7 +410,7 @@ downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, f
   asyncJobId<-createS4ObjectFromList(synRestPOST(sprintf("/entity/%s/table/download/csv/async/start", tableId), createListFromS4Object(request)) ,"AsyncJobId")
   responseBodyAsList<-trackProgress(sprintf("/entity/%s/table/download/csv/async/get/%s", tableId, asyncJobId@token), verbose)
   responseBody<-createS4ObjectFromList(responseBodyAsList, "DownloadFromTableResult")
-  downloadUri<-sprintf("/fileHandle/%s/url", responseBody@resultsFileHandleId)
+  downloadUri<-sprintf("/fileHandle/%s/url?redirect=FALSE", responseBody@resultsFileHandleId)
   if (is.null(filePath)) {
     fileName<-sprintf("queryResult_%s.csv", responseBody@resultsFileHandleId)
     downloadLocation<- NULL
@@ -515,7 +515,7 @@ synDownloadTableFile<-function(table, rowIdAndVersion, columnName, downloadLocat
 	pair<-parseRowAndVersion(rowIdAndVersion)
 	rowId<-pair[1]
 	versionNumber<-pair[2]
-	uri<-sprintf("/entity/%s/table/column/%s/row/%s/version/%s/file", tableId, columnId, rowId, versionNumber)
+	uri<-sprintf("/entity/%s/table/column/%s/row/%s/version/%s/file?redirect=FALSE", tableId, columnId, rowId, versionNumber)
 	fileName<-"TODO.txt" # TODO
 	filePath<-synGetFileAttachment(
 			uri,

@@ -434,9 +434,9 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   file@fileHandle<-fileHandle
   
   if (is.null(propertyValue(file, "versionNumber"))) {
-    downloadUri<-sprintf("/entity/%s/file", id)
+    downloadUri<-sprintf("/entity/%s/file?redirect=FALSE", id)
   } else {
-    downloadUri<-sprintf("/entity/%s/version/%s/file", id, propertyValue(file, "versionNumber"))
+    downloadUri<-sprintf("/entity/%s/version/%s/file?redirect=FALSE", id, propertyValue(file, "versionNumber"))
   }
   
   filePath<-synGetFileAttachment(

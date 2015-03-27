@@ -25,17 +25,17 @@ synapseDownloadFile  <-
       destfile <- paste(destfile, ".tar", sep="")
   }
   
-  synapseDownloadFileToDestination(url=url, checksum=checksum, destfile=destfile, opts=opts)
+  synapseDownloadFileToDestination(url=url, destfile=destfile, opts=opts)
 }
 
 # download file from source which may involve one of a variety of protocols
 synapseDownloadFileToDestination  <- 
-  function (url, destfile, checksum, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"))
+  function (url, destfile, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"))
 {
   parsedUrl<-.ParsedUrl(url)
   protocol<-tolower(parsedUrl@protocol)
   if (protocol=="http" || protocol=="https" || protocol=="file" || protocol=="ftp") {
-    synapseDownloadHttpFileToDestination(url, destfile, checksum, curlHandle, opts)
+    synapseDownloadHttpFileToDestination(url, destfile, curlHandle, opts)
   } else if (protocol=="sftp") {
     synapseDownloadSftpFileToDestination(url, destfile)
   } else {
@@ -45,19 +45,9 @@ synapseDownloadFileToDestination  <-
 
 # download file from source which is HTTP/HTTPS
 synapseDownloadHttpFileToDestination  <- 
-    function (url, destfile, checksum, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"))
+    function (url, destfile, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"))
   {
-    ## Download the file to a user-specified location
-  ## if checksum is missing, don't check local file before 
-  ## download
-  if(file.exists(destfile) & !missing(checksum)) {
-    localFileChecksum <- as.character(tools::md5sum(destfile))
-    if(checksum == localFileChecksum) {
-      # No need to download
-      return(destfile)
-    }
-  }
-  
+    ## Download the file to a specified location
   splits <- strsplit(destfile, .Platform$file.sep)
   downloadDir <- path.expand(paste(splits[[1]][-length(splits[[1]])], collapse=.Platform$file.sep))
   downloadFileName <- splits[[1]][length(splits[[1]])]
@@ -75,13 +65,6 @@ synapseDownloadHttpFileToDestination  <-
       stop(ex)
     }
   )
-  
-  ## check the md5sum of the tmpFile to see if it matches the one passed to the function
-  if (file.exists(tmpFile) & !missing(checksum)){
-    if (as.character(tools::md5sum(tmpFile)) != as.character(checksum)){
-      stop(paste("The md5 ", as.character(tools::md5sum(tmpFile)), " of ", downloadFileName, " does not match the md5 ", as.character(checksum), " recorded in Synapse", sep=""))
-    }
-  }
   
   ## copy then delete. this avoids a cross-device error encountered
   ## on systems with multiple hard drives when using file.rename

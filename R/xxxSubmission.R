@@ -97,7 +97,7 @@ synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollisio
   submission<-createSubmissionFromProperties(synRestGET(sprintf("/evaluation/submission/%s", id)))
   
   if (!is.null(submission@fileHandle$id)) { # otherwise it's not a File
-    downloadUri<-sprintf("/evaluation/submission/%s/file/%s", submission$id, submission@fileHandle$id)
+    downloadUri<-sprintf("/evaluation/submission/%s/file/%s?redirect=FALSE", submission$id, submission@fileHandle$id)
 
     filePath<-synGetFileAttachment(
       downloadUri,
