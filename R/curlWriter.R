@@ -27,39 +27,30 @@
 .curlWriterDownload <-
   function(url, destfile=tempfile(), curlHandle = getCurlHandle(), writeFunction=.getCache('curlWriter'), opts = .getCache("curlOpts"))
 {
-	if(!is.null(.getCache("debug")) && .getCache("debug")) {
-		message("DOWNLOADING FROM: ", url);
-	}
-	
-  writeBody <- .curlWriterOpen(destfile)
-  on.exit(.curlWriterClose(writeBody))
+  ext <- .curlWriterOpen(destfile)
+  on.exit(.curlWriterClose(ext))
   
   opts$noprogress <- 0L
-  opts$followlocation<-FALSE # don't follow redirects
   
-  # capture header information
-  captureHeaderInfo<-FALSE
-  if (captureHeaderInfo) {
-  	opts$header<-TRUE # capture the response header
-	headerfile<-tempfile()
-	writeHeader <- .curlWriterOpen(headerfile)
-	on.exit(.curlWriterClose(writeHeader))
-	#h = basicTextGatherer()
-	curlPerform(URL=url, 
-			writefunction=writeFunction, writedata=writeBody, 
-		#	headerfunction=h$update, 
-				writeheader=writeHeader,
-			.opts = opts, curl = curlHandle)	
-#  	if (!is.null(.getCache("debug")) && .getCache("debug")) {
-		message("curlWriterDownload response headers:\n", readFile(headerfile))
-#  	}
-  } else {
-	  curlPerform(URL=url, 
-			  writefunction=writeFunction, writedata=writeBody, 
-			  .opts = opts, curl = curlHandle)
-  }
-  
-
+  h = basicTextGatherer()
+  curlPerform(URL=url, writefunction=writeFunction, headerfunction=h$update, 
+			writedata=ext, .opts = opts, curl = curlHandle)	
+	
+	
   .checkCurlResponse(object=curlHandle, logErrorToSynapse=TRUE)
-  destfile
+  fileName<-fileNameFromHeaders(h$value())
+  list(downloadedFile=destfile, fileName=fileName)
+}
+
+# looks for a header of the form:
+#	Content-Disposition: ... filename=<filename>
+# If found, returns <filename> else NULL
+fileNameFromHeaders<-function(headers) {
+	for (header in strsplit(headers, "\r\n", fixed=T)[[1]]) {
+		if (1==regexpr("^Content-Disposition:", header)[1]) {
+			pieces<-strsplit(header, "filename=")[[1]]
+			if (length(pieces)==2) return(pieces[2])
+		}
+	}
+	NULL
 }

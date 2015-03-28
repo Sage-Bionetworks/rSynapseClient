@@ -59,12 +59,13 @@ synapseDownloadHttpFileToDestination  <-
   ## if the download fails
   tmpFile <- tempfile()
   tryCatch(
-    .curlWriterDownload(url=url, destfile=tmpFile, opts = opts, curlHandle = curlHandle),
+    downloadResult<-.curlWriterDownload(url=url, destfile=tmpFile, opts = opts, curlHandle = curlHandle),
     error = function(ex){
       file.remove(tmpFile)
       stop(ex)
     }
   )
+  fileName<-downloadResult$fileName # TODO use this for the file name
   
   ## copy then delete. this avoids a cross-device error encountered
   ## on systems with multiple hard drives when using file.rename
