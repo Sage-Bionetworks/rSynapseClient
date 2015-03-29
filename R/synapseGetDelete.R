@@ -73,7 +73,7 @@
   }
   
   ##curlSetOpt(opts,curl=curlHandle)
-  response<-synapseRequestFollowingAllRedirects(
+  response<-synapseRequest(
       uri,
       endpoint,
       postfields = NULL, # the request body

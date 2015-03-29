@@ -42,7 +42,7 @@ integrationTestEntityFileAccess <-
             
     # download the file
     # /entity/{enityId}/file
-    downloadUri<-sprintf("/entity/%s/file", entity$id)
+    downloadUri<-sprintf("/entity/%s/file?redirect=FALSE", entity$id)
     # download into a temp file
     downloadedFile<-synapseClient:::synapseDownloadFromServiceToDestination(downloadUri)
     origChecksum<- as.character(tools::md5sum(filePath))

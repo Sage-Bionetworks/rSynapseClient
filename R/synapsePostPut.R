@@ -78,7 +78,7 @@
   # check own version, stopping if blacklisted
   checkBlackList()
   
-  response<-synapseRequestFollowingAllRedirects(
+  response<-synapseRequest(
     uri,
     endpoint,
     postfields = httpBody,

@@ -27,7 +27,7 @@ synapseDownloadFromServiceToDestination<-function(
   
   opts = .getCache("curlOpts")
   # we don't want to follow redirects, we just want to return the redirectURL
-  opts$followlocation<-FALSE
+  opts$followlocation<-NULL
   redirectUrl<-synapseGet(downloadUri, 
 				  endpoint=synapseServiceEndpoint(endpointName),   
 				  opts = opts)
