@@ -30,10 +30,10 @@ synapseDownloadFromServiceToDestination<-function(
   opts$followlocation<-FALSE
   redirectUrl<-synapseGet(downloadUri, 
 				  endpoint=synapseServiceEndpoint(endpointName),   
-				  opts = .getCache("curlOpts"))
+				  opts = opts)
   
   destfile<-synapseDownloadFileToDestination(url=redirectUrl, destfile=destfile, 
-		  curlHandle = curlHandle, , extraRetryStatusCodes=extraRetryStatusCodes)
+		  curlHandle = curlHandle, extraRetryStatusCodes=extraRetryStatusCodes)
   
   .checkCurlResponse(object=curlHandle)
   
