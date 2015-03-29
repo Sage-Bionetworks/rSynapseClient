@@ -91,7 +91,7 @@ createSFTPUploadSettings<-function(projectId) {
   uds@projectId<-projectId
   uds@settingsType<-"upload"
   uds@concreteType<-"org.sagebionetworks.repo.model.project.UploadDestinationListSetting"
-  uds@locations<-list(sl@storageLocationId, sl2@storageLocationId)
+  uds@locations<-c(sl@storageLocationId, sl2@storageLocationId)
   
   response<-synRestPOST("/projectSettings", synapseClient:::createListFromS4Object(uds))
   
