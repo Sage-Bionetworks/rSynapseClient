@@ -25,18 +25,15 @@ synapseDownloadFromServiceToDestination<-function(
   # check own version, stopping if blacklisted
   checkBlackList()
   
-  redirectUrl<-synRestGET(downloadUri, synapseServiceEndpoint(endpointName))
+  opts = .getCache("curlOpts")
+  # we don't want to follow redirects, we just want to return the redirectURL
+  opts$followlocation<-FALSE
+  redirectUrl<-synapseGet(downloadUri, 
+				  endpoint=synapseServiceEndpoint(endpointName),   
+				  opts = .getCache("curlOpts"))
   
-  synapseDownloadFileToDestination
-  
-  webRequestResult<-webRequestWithRetries(
-    fcn=function(curlHandle) {
-		synapseDownloadHttpFileToDestination(
-				url=redirectUrl, destfile=destfile, curlHandle=curlHandle, opts=.getCache("curlOpts"))
-    },
-    curlHandle=curlHandle,
-    extraRetryStatusCodes=extraRetryStatusCodes
-  )
+  result<-synapseDownloadFileToDestination(url=redirectUrl, destfile=destfile, 
+		  curlHandle = curlHandle, , extraRetryStatusCodes=extraRetryStatusCodes)
   
   destfile <- webRequestResult$result
   

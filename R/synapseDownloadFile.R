@@ -30,12 +30,12 @@ synapseDownloadFile  <-
 
 # download file from source which may involve one of a variety of protocols
 synapseDownloadFileToDestination  <- 
-  function (url, destfile, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"))
+  function (url, destfile, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"), extraRetryStatusCodes)
 {
   parsedUrl<-.ParsedUrl(url)
   protocol<-tolower(parsedUrl@protocol)
   if (protocol=="http" || protocol=="https" || protocol=="file" || protocol=="ftp") {
-    synapseDownloadHttpFileToDestination(url, destfile, curlHandle, opts)
+    synapseDownloadHttpFileToDestination(url, destfile, curlHandle, opts, extraRetryStatusCodes)
   } else if (protocol=="sftp") {
     synapseDownloadSftpFileToDestination(url, destfile)
   } else {
@@ -45,7 +45,7 @@ synapseDownloadFileToDestination  <-
 
 # download file from source which is HTTP/HTTPS
 synapseDownloadHttpFileToDestination  <- 
-    function (url, destfile, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"))
+    function (url, destfile, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"), extraRetryStatusCodes)
   {
     ## Download the file to a specified location
   splits <- strsplit(destfile, .Platform$file.sep)
@@ -58,6 +58,7 @@ synapseDownloadHttpFileToDestination  <-
   ## download to temp file first so that the existing local file (if there is one) is left in place
   ## if the download fails
   tmpFile <- tempfile()
+  # TODO wrap this in webRequestWithRetries
   tryCatch(
     downloadResult<-.curlWriterDownload(url=url, destfile=tmpFile, opts = opts, curlHandle = curlHandle),
     error = function(ex){
