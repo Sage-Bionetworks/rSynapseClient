@@ -548,7 +548,7 @@ synDownloadFileAttachment<-function(downloadUri, endpointName, fileHandleId, dow
 			stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
 		}
 	}
-	copySuccess<-file.copy(downloadResult$downloadedFile, filePath)
+	copySuccess<-file.copy(downloadResult$downloadedFile, filePath, overwrite=TRUE)
 	if (!copySuccess) stop(sprintf("Failed to copy %s to %s.", downloadResult$downloadedFile, filePath))
 	addToCacheMap(fileHandleId, filePath)
 	unlink(downloadResult$downloadedFile)
