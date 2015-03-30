@@ -24,9 +24,14 @@
   .Call("writer_close", ext)
 }
 
+# Download from the given URL to a temporary file in the given directory. 
+# Return the path to the downloaded file as well as the file name (either
+# from the Content-Disposition header or the tail of the URL).
 .curlWriterDownload <-
-  function(url, destfile=tempfile(), curlHandle = getCurlHandle(), writeFunction=.getCache('curlWriter'), opts = .getCache("curlOpts"))
+  function(url, destdir=tempdir(), curlHandle = getCurlHandle(), writeFunction=.getCache('curlWriter'), opts = .getCache("curlOpts"))
 {
+  destfile<-tempfile(tmpdir=destdir)
+  
   ext <- .curlWriterOpen(destfile)
   on.exit(.curlWriterClose(ext))
   
@@ -39,6 +44,7 @@
 	
   .checkCurlResponse(object=curlHandle, logErrorToSynapse=TRUE)
   fileName<-fileNameFromHeaders(h$value())
+  if (is.null(fileName)) fileName<-basename(url)
   list(downloadedFile=destfile, fileName=fileName)
 }
 

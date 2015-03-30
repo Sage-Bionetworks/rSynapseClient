@@ -191,6 +191,10 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
   writeFileAndUnlock(cacheMapFile, cacheRecordJson, lockExpiration)
 }
 
+fileMatchesTimestamp<-function(filePath, timestamp) {
+	!is.null(timestamp) && .formatAsISO8601(lastModifiedTimestamp(filePath))==timestamp
+}
+
 # is local file UNchanged
 # given a FileHandleId and a file path
 # returns TRUE if there is an entry in the Cache Map for the FileHandleId and the File Path
@@ -198,7 +202,36 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
 # returns FALSE if the timestamps differ OR if there is no entry in the Cache Map
 localFileUnchanged<-function(fileHandleId, filePath) {
   downloadedTimestamp<-getFromCacheMap(fileHandleId, filePath)
-  !is.null(downloadedTimestamp) && .formatAsISO8601(lastModifiedTimestamp(filePath))==downloadedTimestamp
+  fileMatchesTimestamp(filePath, downloadedTimestamp)
+}
+
+startswith<-function(str, prefix) {
+	spl<-strsplit(str, prefix)[[1]]
+	return(length(spl)==2 && nchar(spl[1])==0 && nchar(spl[2])>0)
+}
+
+# Searches for a file for the given handle id which is already downloaded in the
+# given location (directory). Looks both for an _unchanged_ file (i.e. not modified
+# since download) and a downloaded file, whether changed or not.  Returns the first
+# two matching files found in the slots 'unchanged' and 'any' of the returned list.
+# if no match is found, the corresponding slot is empty.
+getCachedInLocation<-function(fileHandleId, downloadLocation) {
+	cacheMapFile<-cacheMapFilePath(fileHandleId)
+	lockFile(cacheMapFile)
+	mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
+	unlockFile(cacheMapFile)
+	# this is necessary to allow Windows paths to work with toJSON/fromJSON
+	downloadLocation<-normalizePath(downloadLocation, winslash="/")
+	result<-list()
+	for (key in names(mapForFileHandleId)) {
+		if (startswith(key,downloadLocation) && file.exists(key)) {
+			if (is.null(result$any)) result$any<-key
+			if (fileMatchesTimestamp(key, mapForFileHandleId[[key]])) {
+				if (is.null(result$unchanged)) result$unchanged<-key
+			}
+		}
+	}
+	result
 }
 
 uploadAndAddToCacheMap<-function(filePath, uploadDestination, contentType=NULL) {
@@ -382,16 +415,18 @@ generateUniqueFileName<-function(folder, filename) {
   stop(sprintf("Cannot generate unique file name variation in folder %s for file %s", folder, filename))
 }
 
-downloadFromSynapse<-function(
-	downloadLocation, 
-	filePath, 
-	downloadUri, 
-	endpointName,
-	fileHandleId) {
-	dir.create(downloadLocation, recursive=T, showWarnings=F)
-	synapseDownloadFromServiceToDestination(downloadUri, endpointName, destfile=filePath, extraRetryStatusCodes=404)
-	addToCacheMap(fileHandleId, filePath)
-}
+#downloadFromSynapse<-function(
+#	downloadLocation, 
+#	filePath,
+#	downloadUri, 
+#	endpointName,
+#	fileHandleId) {
+#	result<-synapseDownloadFromServiceToDestination(downloadUri, endpointName, destdir=downloadLocation, extraRetryStatusCodes=404)
+#	copySuccess<-file.copy(result$downloadedFile, filePath)
+#	if (!copySuccess) stop(sprintf("Failed to copy %s to %s.", result$downloadedFile, filePath))
+#	unlink(result$downloadedFile)
+#	addToCacheMap(fileHandleId, filePath)
+#}
 
 
 getFileHandle<-function(entity) {
@@ -473,7 +508,7 @@ synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFi
   }
   
   if (downloadFile) {
-	  filePath<-synDownloadFileAttachment(downloadUri, endpointName, fileHandle$fileName,  fileHandle$id, downloadLocation, ifcollision)
+	  filePath<-synDownloadFileAttachment(downloadUri, endpointName, fileHandle$id, downloadLocation, ifcollision)
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }
@@ -489,41 +524,48 @@ synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFi
   filePath
 }
 
-synDownloadFileAttachment<-function(downloadUri, endpointName, fileName, fileHandleId, downloadLocation=NULL, ifcollision="keep.both") {
+synDownloadFileAttachment<-function(downloadUri, endpointName, fileHandleId, downloadLocation=NULL, ifcollision="keep.both") {
 	if (is.null(downloadLocation)) {
 		downloadLocation<-defaultDownloadLocation(fileHandleId)
 	} else {
 		if (file.exists(downloadLocation) && !file.info(downloadLocation)$isdir) stop(sprintf("%s is not a folder", downloadLocation))
 	}
-	filePath<-file.path(downloadLocation, fileName)
-	if (file.exists(filePath)) {
-		if (localFileUnchanged(fileHandleId, filePath)) {
-			# no need to download, 'filePath' is now the path to the local copy of the file
-		} else {
-			if (ifcollision=="overwrite.local") {
-				# download file from Synapse to downloadLocation
-				# we first capture the existing file.  If the download fails, we'll move it back
-				temp<-file.path(downloadLocation, sample(999999999, 1))
-				if (!file.rename(filePath, temp)) stop(sprintf("Failed to back up %s before downloading new version.", filePath))
-				tryCatch(
-						downloadFromSynapse(downloadLocation, filePath, downloadUri, endpointName, fileHandleId),
-						error = function(e) {file.rename(temp, filePath); stop(e)}
-				)
-				unlink(temp)
-			} else if (ifcollision=="keep.local") {
-				# nothing to do
-			} else if (ifcollision=="keep.both") {
-				#download file from Synapse to distinct filePath
-				uniqueFileName <- generateUniqueFileName(downloadLocation, fileName)
-				filePath <- file.path(downloadLocation, uniqueFileName)
-				downloadFromSynapse(downloadLocation, filePath, downloadUri, endpointName, fileHandleId) 
-			} else {
-				stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
-			}
-		}
-	} else { # filePath does not exist
-		downloadFromSynapse(downloadLocation, filePath, downloadUri, endpointName, fileHandleId)
+	
+	# if there is already a downloaded, unmodified version of the file in the desired directory, then return it
+	downloaded<-getCachedInLocation(fileHandleId, downloadLocation)
+	if (!is.null(downloaded$unchanged)) return(downloaded$unchanged)
+	if (!is.null(downloaded$any) && ifcollision=="keep.local") {
+		# there's no need to download
+		return(downloaded$any)
 	}
+	
+	# OK, we need to download it
+	downloadResult<-synapseDownloadFromServiceToDestination(downloadUri, endpointName, destdir=downloadLocation, extraRetryStatusCodes=404)
+	# result is list(downloadedFile, fileName) where 
+	# 'downloadedFile' is a temp file in the target location and fileName is the desired file name
+	
+	if (is.null(downloadResult$fileName)) stop(sprintf("download of %s failed to return file name.", downloadUri))
+	filePath<-file.path(downloadLocation, downloadResult$fileName)
+	if (file.exists(filePath)) {
+		if (ifcollision=="overwrite.local") {
+			# here we are reverting to the original, overwriting local changes to the file
+		} else if (ifcollision=="keep.local") {
+			# this is a weird edge case in which a file with the target name exists, but
+			# wasn't downloaded by us.  Since the user asked to keep the local copy we will do so.
+			unlink(downloadResult$downloadedFile)
+			return(filePath)
+		} else if (ifcollision=="keep.both") {
+			#download file from Synapse to distinct filePath
+			uniqueFileName <- generateUniqueFileName(downloadLocation, downloadResult$fileName)
+			filePath <- file.path(downloadLocation, uniqueFileName)
+		} else {
+			stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
+		}
+	}
+	copySuccess<-file.copy(downloadResult$downloadedFile, filePath)
+	if (!copySuccess) stop(sprintf("Failed to copy %s to %s.", downloadResult$downloadedFile, filePath))
+	addToCacheMap(fileHandleId, filePath)
+	unlink(downloadResult$downloadedFile)
 	filePath
 }
 

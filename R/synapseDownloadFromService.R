@@ -16,10 +16,13 @@
 
 ## this is the analog of 'synapseDownloadFile', switching to the Repo-file service
 # NOTE:  downloadUri must contain redirect=FALSE request parameter
+# This function assumes that there will be a redirect to the actual download URL.
+# We capture the URL then pass it to the next function which directs it to the right
+# handler for the protocol it has (e.g. https vs. sftp).
 synapseDownloadFromServiceToDestination<-function(
   downloadUri, 
   endpointName="REPO", 
-  destfile=tempfile(), 
+  destdir=tempdir(), 
   curlHandle = getCurlHandle(), 
   extraRetryStatusCodes=NULL) {
   # check own version, stopping if blacklisted
@@ -32,10 +35,10 @@ synapseDownloadFromServiceToDestination<-function(
 				  endpoint=synapseServiceEndpoint(endpointName),   
 				  opts = opts)
   
-  destfile<-synapseDownloadFileToDestination(url=redirectUrl, destfile=destfile, 
+  result<-synapseDownloadFileToDestination(url=redirectUrl, destdir=destdir, 
 		  curlHandle = curlHandle, extraRetryStatusCodes=extraRetryStatusCodes)
   
   .checkCurlResponse(object=curlHandle)
   
-  destfile
+  result
 }

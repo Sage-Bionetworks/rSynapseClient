@@ -25,72 +25,59 @@ synapseDownloadFile  <-
       destfile <- paste(destfile, ".tar", sep="")
   }
   
-  synapseDownloadFileToDestination(url=url, destfile=destfile, opts=opts)
+  synapseDownloadFileToDestination(url=url, destdir=dirname(destfile), opts=opts)
 }
 
 # download file from source which may involve one of a variety of protocols
 synapseDownloadFileToDestination  <- 
-  function (url, destfile, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"), extraRetryStatusCodes)
+  function (url, destdir, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"), extraRetryStatusCodes)
 {
   parsedUrl<-.ParsedUrl(url)
   protocol<-tolower(parsedUrl@protocol)
   if (protocol=="http" || protocol=="https" || protocol=="file" || protocol=="ftp") {
-    synapseDownloadHttpFileToDestination(url, destfile, curlHandle, opts, extraRetryStatusCodes)
+    result<-synapseDownloadHttpFileToDestination(url, destdir, curlHandle, opts, extraRetryStatusCodes)
   } else if (protocol=="sftp") {
-    synapseDownloadSftpFileToDestination(url, destfile)
+    result<-synapseDownloadSftpFileToDestination(url, destdir)
   } else {
     stop(sprintf("Unsupported protocol %s", protocol))
   }
+  result
 }
 
 # download file from source which is HTTP/HTTPS
 synapseDownloadHttpFileToDestination  <- 
-    function (url, destfile, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"), extraRetryStatusCodes)
+    function (url, destdir, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"), extraRetryStatusCodes)
   {
-    ## Download the file to a specified location
-  splits <- strsplit(destfile, .Platform$file.sep)
-  downloadDir <- path.expand(paste(splits[[1]][-length(splits[[1]])], collapse=.Platform$file.sep))
-  downloadFileName <- splits[[1]][length(splits[[1]])]
-  if(!file.exists(downloadDir)){
-    dir.create(downloadDir, recursive=TRUE)
-  }
+  	if (!file.exists(destdir)){
+   	 dir.create(destdir, recursive=TRUE)
+  	}
   
-  ## download to temp file first so that the existing local file (if there is one) is left in place
-  ## if the download fails
-  tmpFile <- tempfile()
   # TODO wrap this in webRequestWithRetries
   tryCatch(
-    downloadResult<-.curlWriterDownload(url=url, destfile=tmpFile, opts = opts, curlHandle = curlHandle),
+    downloadResult<-.curlWriterDownload(url=url, destdir=destdir, opts = opts, curlHandle = curlHandle),
     error = function(ex){
       file.remove(tmpFile)
       stop(ex)
     }
   )
-  fileName<-downloadResult$fileName # TODO use this for the file name
-  
-  ## copy then delete. this avoids a cross-device error encountered
-  ## on systems with multiple hard drives when using file.rename
-  if(!file.copy(tmpFile, destfile, overwrite = TRUE)){
-    file.remove(tmpFile)
-    stop("COULD NOT COPY: ", tmpFile, " TO: ", destfile)
-  }
-  file.remove(tmpFile)
-  return(destfile)
+  downloadResult
 }
 
 synapseDownloadSftpFileToDestination  <- 
-  function (url, destfile)
+  function (url, destdir)
 {
   if (!(RsftpPackageIsAvailable() && require("Rsftp"))) 
     stop("File is hosted on SFTP server but Rsftp package not installed/available.  Please install Rsftp and try again.")
   parsedUrl<-.ParsedUrl(url)
   credentials<-getCredentialsForHost(parsedUrl)
   urlDecodedPath<-URLdecode(parsedUrl@path)
-  success<-sftpDownload(parsedUrl@host, credentials$username, credentials$password, urlDecodedPath, destfile)
+  filePath<-tempfile(tmpdir=destdir)
+  success<-sftpDownload(parsedUrl@host, credentials$username, credentials$password, urlDecodedPath, filePath)
   if (!success) {
     message<-sprintf("Failed to download %s from %s", urlDecodedPath, parsedUrl@host)
     logErrorToSynapse(label=sprintf("sftp get %s", parsedUrl@host), message=)
     stop(message)
   }
+  list(downloadedFile=filePath, fileName=URLdecode(parsedUrl@file))
 }
 
