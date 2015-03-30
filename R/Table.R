@@ -540,7 +540,7 @@ synDownloadTableFile<-function(table, rowIdAndVersion, columnName, downloadLocat
 			selectColumn<-SelectColumn(id=column@id, columnType=column@columnType, name=column@name)
 		}
 	}
-	if (is.null(selectColumn)) stop(sprintf("Specified column, %s, not found in table %s.", columnName, tableId))
+	if (is.null(selectColumn)) stop(sprintf("Specified column, %s, not associated with entity %s.", columnName, tableId))
 	columnId<-selectColumn@id
 	# third, get the fileHandleId
 	if (is(table, "character")) {

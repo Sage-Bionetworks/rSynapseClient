@@ -376,5 +376,48 @@ integrationTestCSVFileWithAsTableColumns <- function() {
   synapseClient:::parseRowAndVersion(row.names(retrievedDataFrame))
 }
 
+integrationTestSynStoreAndDownloadFiles<-function() {
+	project<-synapseClient:::.getCache("testProject")
+	
+	# String, Integer, Double, Boolean, Date, Filehandleid, Entityid
+	tc1 <- TableColumn(name="stringType", columnType="STRING", enumValues=c("one", "two", "three"))
+	tc1 <- synStore(tc1)
+	tc2 <- TableColumn(name="fileHandleIdType", columnType="FILEHANDLEID")
+	tc2 <- synStore(tc2)
+	
+	pid<-propertyValue(project, "id")
+	tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2))
+	tschema <- synStore(tschema, createOrUpdate=FALSE)
+	
+	fileHandleIds<-NULL
+	md5s<-NULL
+	for (i in 1:2) {
+		# upload a file and receive the file handle
+		filePath<- tempfile()
+		connection<-file(filePath)
+		writeChar(sprintf("this is a test %s", sample(999999999, 1)), connection, eos=NULL)
+		close(connection)  
+		fileHandle<-synapseClient:::chunkedUploadFile(filePath)
+		checkTrue(!is.null(fileHandle$id))
+		fileHandleIds<-c(fileHandleIds, fileHandle$id)
+		md5s<-c(md5s, as.character(tools::md5sum(filePath)))
+	}
+	
+	dataFrame<-data.frame(
+			stringType=c("one", "two"), 
+			fileHandleIdType=fileHandleIds
+	)
+	
+	myTable <- Table(tschema, values=dataFrame)
+	myTable <- synStore(myTable, retrieveData=T)
+	
+	for (i in 1:2) {
+		rowIdAndVersion<-rownames(myTable@values)[i]
+		downloaded<-synDownloadTableFile(myTable, rowIdAndVersion, "fileHandleIdType")
+		checkEquals(as.character(tools::md5sum(downloaded)), md5s[i])
+	}
+}
+
+
 
   
