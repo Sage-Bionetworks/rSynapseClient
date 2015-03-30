@@ -524,7 +524,7 @@ synDownloadTableFile<-function(table, rowIdAndVersion, columnName, downloadLocat
 			if (!isSynapseId(table@schema)) stop(sprintf("%s is not a Synapse ID.", table@schema))
 			tableId<-table@schema
 		} else if (is(table@schema, "TableSchema")) {
-			tableId<-propertyValue(schema, "id")
+			tableId<-propertyValue(table@schema, "id")
 		} else {
 			stop(sprintf("Unexpected type: %s", class(table@schema)[[1]]))
 		}
