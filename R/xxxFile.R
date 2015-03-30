@@ -460,7 +460,7 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
     downloadUri<-sprintf("/entity/%s/version/%s/file?redirect=FALSE", id, propertyValue(file, "versionNumber"))
   }
   
-  filePath<-synGetFileAttachment(
+  filePath<-retrieveAttachedFileHandle(
     downloadUri,
     "REPO",
     fileHandle,
@@ -483,7 +483,7 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   file
 }
 
-synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
+retrieveAttachedFileHandle<-function(downloadUri, endpointName, fileHandle, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
   if (isExternalFileHandle(fileHandle)) {
     isExternalURL<-TRUE
     externalURL<-fileHandle$externalURL
@@ -494,7 +494,7 @@ synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFi
   }
   
   if (downloadFile) {
-	  filePath<-synDownloadFileAttachment(downloadUri, endpointName, fileHandle$id, downloadLocation, ifcollision)
+	  filePath<-downloadFromServiceWithCaching(downloadUri, endpointName, fileHandle$id, downloadLocation, ifcollision)
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }
@@ -511,7 +511,7 @@ synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFi
   filePath
 }
 
-synDownloadFileAttachment<-function(downloadUri, endpointName, fileHandleId, downloadLocation=NULL, ifcollision="keep.both") {
+downloadFromServiceWithCaching<-function(downloadUri, endpointName, fileHandleId, downloadLocation=NULL, ifcollision="keep.both") {
 	if (is.null(downloadLocation)) {
 		downloadLocation<-defaultDownloadLocation(fileHandleId)
 	} else {
@@ -527,7 +527,7 @@ synDownloadFileAttachment<-function(downloadUri, endpointName, fileHandleId, dow
 	}
 	
 	# OK, we need to download it
-	downloadResult<-synapseDownloadFromServiceToDestination(downloadUri, endpointName, destdir=downloadLocation, extraRetryStatusCodes=404)
+	downloadResult<-downloadFromService(downloadUri, endpointName, destdir=downloadLocation, extraRetryStatusCodes=404)
 	# result is list(downloadedFile, fileName) where 
 	# 'downloadedFile' is a temp file in the target location and fileName is the desired file name
 	

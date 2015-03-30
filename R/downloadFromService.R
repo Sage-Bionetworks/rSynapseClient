@@ -1,5 +1,5 @@
 ##
-## synapseDownloadFromService
+## downloadFromService
 ##
 ## for a wiki page attachment, downloadUri would be:
 ## /{ownerObjectType}/{ownerObjectId}/wiki/{wikiId}/attachment?fileName={attachmentFileName}
@@ -14,12 +14,12 @@
 ## author:  bruce.hoff@sagebase.org
 ##
 
-## this is the analog of 'synapseDownloadFile', switching to the Repo-file service
-# NOTE:  downloadUri must contain redirect=FALSE request parameter
+## Download a file from a path provided via redirect from a Synapse service
 # This function assumes that there will be a redirect to the actual download URL.
 # We capture the URL then pass it to the next function which directs it to the right
 # handler for the protocol it has (e.g. https vs. sftp).
-synapseDownloadFromServiceToDestination<-function(
+# NOTE:  downloadUri must contain redirect=FALSE request parameter
+downloadFromService<-function(
   downloadUri, 
   endpointName="REPO", 
   destdir=tempdir(), 
@@ -35,7 +35,7 @@ synapseDownloadFromServiceToDestination<-function(
 				  endpoint=synapseServiceEndpoint(endpointName),   
 				  opts = opts)
   
-  result<-synapseDownloadFileToDestination(url=redirectUrl, destdir=destdir, 
+  result<-protocolSpecificFileDownload(url=redirectUrl, destdir=destdir, 
 		  curlHandle = curlHandle, extraRetryStatusCodes=extraRetryStatusCodes)
   
   .checkCurlResponse(object=curlHandle)

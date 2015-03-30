@@ -99,7 +99,7 @@ synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollisio
   if (!is.null(submission@fileHandle$id)) { # otherwise it's not a File
     downloadUri<-sprintf("/evaluation/submission/%s/file/%s?redirect=FALSE", submission$id, submission@fileHandle$id)
 
-    filePath<-synGetFileAttachment(
+    filePath<-retrieveAttachedFileHandle(
       downloadUri,
       "REPO",
       submission@fileHandle,

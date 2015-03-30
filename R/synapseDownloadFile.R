@@ -25,19 +25,19 @@ synapseDownloadFile  <-
       destfile <- paste(destfile, ".tar", sep="")
   }
   
-  synapseDownloadFileToDestination(url=url, destdir=dirname(destfile), opts=opts)$downloadedFile
+  protocolSpecificFileDownload(url=url, destdir=dirname(destfile), opts=opts)$downloadedFile
 }
 
 # download file from source which may involve one of a variety of protocols
-synapseDownloadFileToDestination  <- 
+protocolSpecificFileDownload  <- 
   function (url, destdir, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"), extraRetryStatusCodes)
 {
   parsedUrl<-.ParsedUrl(url)
   protocol<-tolower(parsedUrl@protocol)
   if (protocol=="http" || protocol=="https" || protocol=="file" || protocol=="ftp") {
-    result<-synapseDownloadHttpFileToDestination(url, destdir, curlHandle, opts, extraRetryStatusCodes)
+    result<-downloadHttpFile(url, destdir, curlHandle, opts, extraRetryStatusCodes)
   } else if (protocol=="sftp") {
-    result<-synapseDownloadSftpFileToDestination(url, destdir)
+    result<-downloadSftpFile(url, destdir)
   } else {
     stop(sprintf("Unsupported protocol %s", protocol))
   }
@@ -45,25 +45,25 @@ synapseDownloadFileToDestination  <-
 }
 
 # download file from source which is HTTP/HTTPS
-synapseDownloadHttpFileToDestination  <- 
+downloadHttpFile  <- 
     function (url, destdir, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"), extraRetryStatusCodes)
   {
   	if (!file.exists(destdir)){
    	 dir.create(destdir, recursive=TRUE)
   	}
   
-  # TODO wrap this in webRequestWithRetries
-  tryCatch(
-    downloadResult<-.curlWriterDownload(url=url, destdir=destdir, opts = opts, curlHandle = curlHandle),
-    error = function(ex){
-      file.remove(tmpFile)
-      stop(ex)
-    }
-  )
-  downloadResult
+	wrwrResult<-webRequestWithRetries(
+		fcn=function(curlHandle) {
+			.curlWriterDownload(url=url, destdir=destdir, opts = opts, curlHandle = curlHandle)
+		},
+		curlHandle=curlHandle,
+		extraRetryStatusCode=NULL
+	)
+	
+	wrwrResult$result
 }
 
-synapseDownloadSftpFileToDestination  <- 
+downloadSftpFile  <- 
   function (url, destdir)
 {
   if (!(RsftpPackageIsAvailable() && require("Rsftp"))) 
