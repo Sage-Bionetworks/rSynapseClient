@@ -33,8 +33,8 @@ unitTestGetCachedInLocation <-function() {
 	
 	result<-synapseClient:::getCachedInLocation(fileHandleId, dirname(filePath1))
 	
-	checkEquals(result$any, normalizePath(filePath1))
-	checkEquals(result$unchanged, normalizePath(filePath2))
+	checkEquals(normalizePath(result$any), normalizePath(filePath1))
+	checkEquals(normalizePath(result$unchanged), normalizePath(filePath2))
 }
 
 

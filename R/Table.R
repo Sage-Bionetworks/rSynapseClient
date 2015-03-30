@@ -503,7 +503,7 @@ getFileHandleIdFromTableCell<-function(tableId, selectColumn, rowId, versionNumb
 	tableFileHandleResults<-createS4ObjectFromList(result, "TableFileHandleResults")
 	if (length(tableFileHandleResults@rows)!=1) stop(sprintf("Expected one row but found %s.", length(tableFileHandleResults@rows)))
 	row<-tableFileHandleResults@rows[[1]]@list
-	if (length(row)!=1) stop(sprintf("Excpected one column but found %s.", length(row)))
+	if (length(row)!=1) stop(sprintf("Expected one column but found %s.", length(row)))
 	fileHandle<-row[[1]]
 	fileHandleId<-fileHandle@id
 	if (is.null(fileHandleId)) stop("fileHandleId is null")
