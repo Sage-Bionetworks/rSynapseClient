@@ -64,6 +64,8 @@ ExternalStorageLocationSetting	org.sagebionetworks.repo.model.project.ExternalSt
 ExternalS3StorageLocationSetting	org.sagebionetworks.repo.model.project.ExternalS3StorageLocationSetting	false
 ColumnType	org.sagebionetworks.repo.model.table.ColumnType	false
 SelectColumn	org.sagebionetworks.repo.model.table.SelectColumn	false
+FileHandleResults	org.sagebionetworks.repo.model.file.FileHandleResults	false
+TableFileHandleResults	org.sagebionetworks.repo.model.table.TableFileHandleResults	false
 
 
 	
