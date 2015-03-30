@@ -25,7 +25,7 @@ synapseDownloadFile  <-
       destfile <- paste(destfile, ".tar", sep="")
   }
   
-  synapseDownloadFileToDestination(url=url, destdir=dirname(destfile), opts=opts)
+  synapseDownloadFileToDestination(url=url, destdir=dirname(destfile), opts=opts)$downloadedFile
 }
 
 # download file from source which may involve one of a variety of protocols

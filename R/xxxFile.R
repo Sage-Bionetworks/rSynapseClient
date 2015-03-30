@@ -415,20 +415,6 @@ generateUniqueFileName<-function(folder, filename) {
   stop(sprintf("Cannot generate unique file name variation in folder %s for file %s", folder, filename))
 }
 
-#downloadFromSynapse<-function(
-#	downloadLocation, 
-#	filePath,
-#	downloadUri, 
-#	endpointName,
-#	fileHandleId) {
-#	result<-synapseDownloadFromServiceToDestination(downloadUri, endpointName, destdir=downloadLocation, extraRetryStatusCodes=404)
-#	copySuccess<-file.copy(result$downloadedFile, filePath)
-#	if (!copySuccess) stop(sprintf("Failed to copy %s to %s.", result$downloadedFile, filePath))
-#	unlink(result$downloadedFile)
-#	addToCacheMap(fileHandleId, filePath)
-#}
-
-
 getFileHandle<-function(entity) {
   fileHandleId<-propertyValue(entity, "dataFileHandleId")
   if (is.null(fileHandleId)) stop(sprintf("Entity %s (version %s) is missing its FileHandleId", propertyValue(entity, "id"), propertyValue(entity, "version")))
