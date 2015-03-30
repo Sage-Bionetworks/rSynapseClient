@@ -63,10 +63,10 @@ integrationTestWikiService <-
     checkEquals(fileHandle, fileHandles$list[[1]])
     
     # download the raw file attachment
-    # /{ownerObjectType}/{ownerObjectId}/wiki/{wikiId}/attachment?fileName={attachmentFileName}
-    downloadUri<-sprintf("%s/attachment?fileName=%s", wikiUri, fileName)
+    # /{ownerObjectType}/{ownerObjectId}/wiki/{wikiId}/attachment?redirect=false&fileName={attachmentFileName}
+    downloadUri<-sprintf("%s/attachment?redirect=false&fileName=%s", wikiUri, fileName)
     # download into a temp file
-    downloadedFile<-synapseClient:::synapseDownloadFromServiceToDestination(downloadUri)
+    downloadedFile<-synapseClient:::downloadFromService(downloadUri)$downloadedFile
     origChecksum<- as.character(tools::md5sum(filePath))
     downloadedChecksum <- as.character(tools::md5sum(downloadedFile))
     checkEquals(origChecksum, downloadedChecksum)

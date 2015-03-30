@@ -75,9 +75,6 @@ unitTestMd5Sum <-
   
   newDestFile <- synapseClient:::synapseDownloadFile(url, cacheDir=synapseCacheDir(), checksum=srcChecksum)
   
-  ## check that the new and old destfiles have the same name
-  checkTrue(destFile == newDestFile)
-  
   ## check that the new and old destFiles don't have the same checksum
   checkTrue(destFileChecksum != as.character(tools::md5sum(newDestFile)))
   

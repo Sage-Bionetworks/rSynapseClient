@@ -69,32 +69,35 @@ scheduleExternalURLForDeletion<-function(externalURL) {
 }
 
 createSFTPUploadSettings<-function(projectId) {
-  euds<-synapseClient:::ExternalUploadDestinationSetting()
-  euds@url<-URLencode("sftp://ec2-54-212-85-156.us-west-2.compute.amazonaws.com/rClientIntegrationTest")
-  euds@supportsSubfolders<-TRUE
-  euds@concreteType<-"org.sagebionetworks.repo.model.project.ExternalUploadDestinationSetting"
-  euds@uploadType<-"SFTP"
-  euds@banner<-"*** A BIG ANNOUNCEMENT ***"
+  sl<-synapseClient:::ExternalStorageLocationSetting()
+  sl@url<-URLencode("sftp://ec2-54-212-85-156.us-west-2.compute.amazonaws.com/rClientIntegrationTest")
+  sl@supportsSubfolders<-TRUE
+  sl@concreteType<-"org.sagebionetworks.repo.model.project.ExternalStorageLocationSetting"
+  sl@uploadType<-"SFTP"
+  sl@banner<-"*** A BIG ANNOUNCEMENT ***"
+  response<-synRestPOST("/storageLocation", synapseClient:::createListFromS4Object(sl))
+  sl<-synapseClient:::createS4ObjectFromList(response, "ExternalStorageLocationSetting")
   
-  euds2<-synapseClient:::ExternalUploadDestinationSetting()
-  euds2@url<-URLencode("sftp://some.other.host.com/root")
-  euds2@supportsSubfolders<-TRUE
-  euds2@concreteType<-"org.sagebionetworks.repo.model.project.ExternalUploadDestinationSetting"
-  euds2@uploadType<-"SFTP"
-  euds2@banner<-"*** This is not a real host ***"
+  sl2<-synapseClient:::ExternalStorageLocationSetting()
+  sl2@url<-URLencode("sftp://some.other.host.com/root")
+  sl2@supportsSubfolders<-TRUE
+  sl2@concreteType<-"org.sagebionetworks.repo.model.project.ExternalStorageLocationSetting"
+  sl2@uploadType<-"SFTP"
+  sl2@banner<-"*** This is not a real host ***"
+  response<-synRestPOST("/storageLocation", synapseClient:::createListFromS4Object(sl2))
+  sl2<-synapseClient:::createS4ObjectFromList(response, "ExternalStorageLocationSetting")
   
   uds<-synapseClient:::UploadDestinationListSetting()
   uds@projectId<-projectId
   uds@settingsType<-"upload"
   uds@concreteType<-"org.sagebionetworks.repo.model.project.UploadDestinationListSetting"
-  uds@destinations<-synapseClient:::UploadDestinationSettingList(euds, euds2)
+  uds@locations<-c(sl@storageLocationId, sl2@storageLocationId)
   
   response<-synRestPOST("/projectSettings", synapseClient:::createListFromS4Object(uds))
   
   uds<-synapseClient:::createS4ObjectFromList(response, "UploadDestinationListSetting")
 }
 
-# disabled until SYNR-863 is fixed
 integrationTestSFTPRoundTrip <- function() {
   # NOTE:  The following values must be set up external to the test suite
   host<-synapseClient:::.getCache("test_sftp_host")
@@ -171,7 +174,6 @@ integrationTestSFTPRoundTrip <- function() {
   synRestDELETE(sprintf("/projectSettings/%s", uds@id))
 }
 
-# disabled until SYNR-863 is fixed
 integrationTestMoveSFTPFileToS3Container<-function() {
   project<-synapseClient:::.getCache("testProject")
   projectId<-propertyValue(project, "id")

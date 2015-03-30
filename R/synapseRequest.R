@@ -1,4 +1,4 @@
-# synapseRequestFollowingAllRedirects
+# synapseRequest
 #
 # calls getURL in RCurl letting RCurl follow redirects
 # looks up synapse endpoint to construct URL from the given URI
@@ -7,7 +7,7 @@
 ###############################################################
 
 
-synapseRequestFollowingAllRedirects<-function(
+synapseRequest<-function(
   uri, # omitting the endpoint
   endpoint=synapseServiceEndpoint("REPO"), # one of REPO, AUTH, FILE
   postfields = NULL, # the request body
@@ -19,9 +19,8 @@ synapseRequestFollowingAllRedirects<-function(
   
   endpoint<-resolvePermanentRedirects(endpoint)
     
-  followRedirOpts<-.opts
-  followRedirOpts$followlocation<-T # DO include 'followlocation'
-  followRedirOpts$header<-TRUE
+  opts<-.opts
+  opts$header<-TRUE
   
   url <- paste(endpoint$endpoint, uri, sep="")
   
@@ -31,7 +30,7 @@ synapseRequestFollowingAllRedirects<-function(
     httpheader, # the headers
     curl, # the curl handle
     debugfunction,
-    opts=followRedirOpts)
+    opts=opts)
  
   result$response
 }

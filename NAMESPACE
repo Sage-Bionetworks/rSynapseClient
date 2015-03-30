@@ -58,12 +58,8 @@ export(
   "touOnWeb",
   "sendMessage",
   "synTableQuery",
-  "synDeleteRows"
-)
-
-## S3 convenience methods
-export(
-  "synapseExecute"
+  "synDeleteRows",
+  "synDownloadTableFile"
 )
 
 ## Synapse object constructors 
@@ -182,20 +178,7 @@ export(
   "detach"
 )
 
-# Synapse object constructors to be deprecated (but left in code base for backward compatibility?)
-export(
-  "Data",
-	"Study",
-	"Code",
-	"Link",
-	"PhenotypeData",
-	"GenotypeData",
-	"ExpressionData",
-	"RObject",
-	"Summary",
-	"GenomicData"
-)
-# Methods used on deprecated Synapse objects above (but left in code base for backward compatibility?)
+# Methods used on deprecated Synapse objects (but left in code base for backward compatibility?)
 exportMethods(
   "addFile",
   "deleteFile",

@@ -54,13 +54,18 @@ LogEntry	org.sagebionetworks.repo.model.LogEntry	false
 UploadDestination	org.sagebionetworks.repo.model.file.UploadDestination	false
 S3UploadDestination	org.sagebionetworks.repo.model.file.S3UploadDestination	false
 ExternalUploadDestination	org.sagebionetworks.repo.model.file.ExternalUploadDestination	false
-UploadDestinationSetting	org.sagebionetworks.repo.model.project.UploadDestinationSetting	false
-ExternalUploadDestinationSetting	org.sagebionetworks.repo.model.project.ExternalUploadDestinationSetting	false
 ProjectSetting	org.sagebionetworks.repo.model.project.ProjectSetting	false
-S3UploadDestinationSetting	org.sagebionetworks.repo.model.project.S3UploadDestinationSetting	false
+UploadDestinationSetting       org.sagebionetworks.repo.model.project.UploadDestinationSetting false
 UploadDestinationListSetting	org.sagebionetworks.repo.model.project.UploadDestinationListSetting	false
+ProjectSettingsType	org.sagebionetworks.repo.model.project.ProjectSettingsType	false
+StorageLocationSetting	org.sagebionetworks.repo.model.project.StorageLocationSetting	false
+S3StorageLocationSetting	org.sagebionetworks.repo.model.project.S3StorageLocationSetting	false
+ExternalStorageLocationSetting	org.sagebionetworks.repo.model.project.ExternalStorageLocationSetting	false
+ExternalS3StorageLocationSetting	org.sagebionetworks.repo.model.project.ExternalS3StorageLocationSetting	false
 ColumnType	org.sagebionetworks.repo.model.table.ColumnType	false
 SelectColumn	org.sagebionetworks.repo.model.table.SelectColumn	false
+FileHandleResults	org.sagebionetworks.repo.model.file.FileHandleResults	false
+TableFileHandleResults	org.sagebionetworks.repo.model.table.TableFileHandleResults	false
 
 
 	

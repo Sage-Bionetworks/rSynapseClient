@@ -75,7 +75,7 @@ setMethod(
     
     class(entity) <- "GithubCode"
     
-    destfile <- .curlWriterDownload(url=url)
+    destfile <- .curlWriterDownload(url=url)$downloadedFile
     
     if(!exists("destfile")){
       stop(paste("Downloaded file", destfile, "does not exists"))
