@@ -7,6 +7,7 @@ legalFilePath<-function(filePath) {
 	gsub("[()`'<>\"|?*]", "_", filePath)
 }
 
+# Note: This will be deleted along with the code for Locationable
 synapseDownloadFile  <- 
   function (url, checksum, curlHandle = getCurlHandle(), cacheDir = synapseCacheDir(), opts = .getCache("curlOpts"), versionId = NULL)
 {
