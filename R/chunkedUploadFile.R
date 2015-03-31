@@ -77,7 +77,8 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
               customrequest="PUT", # the request method
               httpheader=headers, # the headers
               curl=curlHandle, 
-              debugfunction=NULL
+              debugfunction=NULL,
+			  .opts=.getCache("curlOpts")
             )
             # return the http response
 			httpResponse$body
