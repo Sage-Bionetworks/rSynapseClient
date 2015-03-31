@@ -8,9 +8,6 @@ getURLWithRetries<-function(url,
   opts
 ) {
   
-  optsWithHeader<-opts
-  optsWithHeader$header<-TRUE
-  
   result<-webRequestWithRetries(
       fcn=function(curlHandle) {
         if (is.null(postfields)) {
@@ -18,8 +15,7 @@ getURLWithRetries<-function(url,
               customrequest=customrequest, 
               httpheader=httpheader, 
               curl=curlHandle, 
-              debugfunction=debugfunction,
-              .opts=optsWithHeader
+              debugfunction=debugfunction
             )
         } else {
           .getURLIntern(url, 
@@ -27,16 +23,15 @@ getURLWithRetries<-function(url,
               customrequest=customrequest, 
               httpheader=httpheader, 
               curl=curlHandle, 
-              debugfunction=debugfunction,
-              .opts=optsWithHeader
+              debugfunction=debugfunction
             )
         }
       },
       curlHandle=curl,
       extraRetryStatusCode=NULL
   )
-  response<-parseHttpResponse(result$result)
-  list(response=response, httpStatus=result$httpStatus)
+  parsedHeaders<-parseHttpHeaders(result$headers)
+  list(response=result$body, httpStatus=parsedHeaders$statusCode)
 }
 
 
@@ -49,24 +44,30 @@ getURLWithRetries<-function(url,
   debugfunction,
   .opts
 ) {
+  h = basicTextGatherer()
+	
   if (missing(postfields)) {
-    getURL(url=url, 
+	  body<-getURL(url=url, 
       customrequest=customrequest, 
       httpheader=httpheader, 
       curl=curl, 
       debugfunction=debugfunction,
+	  headerfunction=h$update,
       .opts=.opts
     )
+	list(headers)
   } else {
-    getURL(url=url, 
+	  body<-getURL(url=url, 
       postfields=postfields, 
       customrequest=customrequest, 
       httpheader=httpheader, 
       curl=curl, 
       debugfunction=debugfunction,
+	  headerfunction=h$update,
       .opts=.opts
     )
   }
+  list(headers=h$value(), body=body)
 }
 
 # this is added for unit testing purposes, providing a function to override
