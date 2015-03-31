@@ -411,11 +411,38 @@ integrationTestSynStoreAndDownloadFiles<-function() {
 	myTable <- Table(tschema, values=dataFrame)
 	myTable <- synStore(myTable, retrieveData=T)
 	
+	# download by passing TableDataFrame
 	for (i in 1:2) {
 		rowIdAndVersion<-rownames(myTable@values)[i]
 		downloaded<-synDownloadTableFile(myTable, rowIdAndVersion, "fileHandleIdType")
 		checkEquals(as.character(tools::md5sum(downloaded)), md5s[i])
 	}
+	
+	# download by passing TableDataFrame
+	tableId<-propertyValue(tschema, "id")
+	for (i in 1:2) {
+		rowIdAndVersion<-rownames(myTable@values)[i]
+		downloaded<-synDownloadTableFile(tableId, rowIdAndVersion, "fileHandleIdType")
+		checkEquals(as.character(tools::md5sum(downloaded)), md5s[i])
+	}
+	
+	# download by passing TableDataFrame having id, not schema
+	myTable@schema<-tableId
+	for (i in 1:2) {
+		rowIdAndVersion<-rownames(myTable@values)[i]
+		downloaded<-synDownloadTableFile(myTable, rowIdAndVersion, "fileHandleIdType")
+		checkEquals(as.character(tools::md5sum(downloaded)), md5s[i])
+	}
+	
+	# download by passing TableFilePath
+	tableFilePath<-synTableQuery(sprintf("select * from %s", tableId), loadResult=FALSE)
+	checkTrue(is(tableFilePath, "TableFilePath"))
+	for (i in 1:2) {
+		rowIdAndVersion<-rownames(myTable@values)[i]
+		downloaded<-synDownloadTableFile(tableFilePath, rowIdAndVersion, "fileHandleIdType")
+		checkEquals(as.character(tools::md5sum(downloaded)), md5s[i])
+	}
+	
 }
 
 
