@@ -31,7 +31,7 @@ getURLWithRetries<-function(url,
       extraRetryStatusCode=NULL
   )
   parsedHeaders<-parseHttpHeaders(result$headers)
-  list(response=result$body, httpStatus=parsedHeaders$statusCode)
+  list(body=result$body, parsedHeaders=parsedHeaders)
 }
 
 

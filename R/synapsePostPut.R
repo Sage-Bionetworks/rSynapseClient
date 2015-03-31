@@ -101,7 +101,7 @@
 }
 
 # parse response body based on content type
-# the argument is a list in the format returned by 'parseHttpResponse'
+# the argument is a list in the format returned by 'parseHttpHeaders'
 parseResponseBody<-function(response) {
   contentType<-response$headers[["Content-Type"]]
   if (is.null(contentType) || contentType=="" || regexpr("application/json", contentType, fixed=T)>0) {
