@@ -27,13 +27,15 @@ parseHttpHeaders<-function(r) {
   if (length(parsedResult)>1) {
     for (j in 2:length(parsedResult)) {
       headerRow<-parsedResult[j]
-      i <- regexpr(":", headerRow, fixed=T)
-      if (i<0) stop(sprintf("Unexpected format for header %s", headerRow))
-      headers[[substr(headerRow, 1, i-1)]]<-trimWhitespace(substr(headerRow, i+1, nchar(headerRow)))
+	  if (nchar(headerRow)>0) {
+		  i <- regexpr(":", headerRow, fixed=T)
+		  if (i<0) stop(sprintf("Unexpected format for header %s", headerRow))
+		  headers[[substr(headerRow, 1, i-1)]]<-trimWhitespace(substr(headerRow, i+1, nchar(headerRow)))
+	  }
     }
   }
   # return list of response code, response string, headers
-  return(list(statusCode=responseStatusCode, statusString=responseStatusString, headers=headers))
+  list(statusCode=responseStatusCode, statusString=responseStatusString, headers=headers)
 }
 
 # from http://r.789695.n4.nabble.com/Remove-leading-and-trailing-white-spaces-td907851.html

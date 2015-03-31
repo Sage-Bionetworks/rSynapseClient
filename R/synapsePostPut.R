@@ -97,21 +97,21 @@
   if (checkHttpStatus) .checkCurlResponse(object=curlHandle, response=response$body)
   
   ## Parse response and prepare return value
-  parseResponseBody(response)
+  parseResponseBody(response$headers, response$body)
 }
 
 # parse response body based on content type
 # the argument is a list in the format returned by 'parseHttpHeaders'
-parseResponseBody<-function(response) {
-  contentType<-response$headers[["Content-Type"]]
+parseResponseBody<-function(headers, body) {
+  contentType<-headers[["Content-Type"]]
   if (is.null(contentType) || contentType=="" || regexpr("application/json", contentType, fixed=T)>0) {
-    if (is.null(response$body) || response$body=="") {
-      response$body
+    if (is.null(body) || body=="") {
+      body
     } else {
-      as.list(fromJSON(response$body))
+      as.list(fromJSON(body))
     }
   } else {
-    response$body
+    body
   }
   
 }

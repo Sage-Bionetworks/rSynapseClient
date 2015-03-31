@@ -1,3 +1,6 @@
+# execute web request with exponential back-off for failures
+#
+# returned value is list(body=<body>, parsedHeaders=list(statusCode, statusString, headers))
 
 getURLWithRetries<-function(url,
   postfields = NULL, # the request body
@@ -8,6 +11,7 @@ getURLWithRetries<-function(url,
   opts
 ) {
   
+  # result has the form list(result=list(headers,body), httpStatus=<status>)
   result<-webRequestWithRetries(
       fcn=function(curlHandle) {
         if (is.null(postfields)) {
@@ -26,16 +30,18 @@ getURLWithRetries<-function(url,
               debugfunction=debugfunction
             )
         }
+		# returns list(headers,body)
       },
       curlHandle=curl,
       extraRetryStatusCode=NULL
   )
-  parsedHeaders<-parseHttpHeaders(result$headers)
-  list(body=result$body, parsedHeaders=parsedHeaders)
+  parsedHeaders<-parseHttpHeaders(result$result$headers)
+  list(body=result$result$body, parsedHeaders=parsedHeaders)
 }
 
 
 # this is added for unit testing purposes, providing a function to override
+# returned value is list(headers, body), neither headers nor body have been parsed
 .getURLIntern<-function(url, 
   postfields,
   customrequest, 
