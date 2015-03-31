@@ -48,7 +48,7 @@ unitTestConnectionEstablished <-
   s<-"HTTP/1.0 200 Connection established\r\n\r\nHTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/json\r\nDate: Thu, 20 Feb 2014 00:44:53 GMT\r\nServer: Apache-Coyote/1.1\r\nContent-Length: 29\r\nConnection: keep-alive\r\n\r\n"
   ans <- synapseClient:::parseHttpHeaders(s)
   # parsed response has (1) status code, (2) status string, (3) headers
-  checkEquals(4, length(ans))
+  checkEquals(3, length(ans))
   checkEquals(200, ans$statusCode)
   checkEquals("OK", ans$statusString)
   checkEquals(6, length(ans$headers))

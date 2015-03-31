@@ -68,5 +68,5 @@ webRequestWithRetries<-function(fcn,
 
 # this is added for unit testing purposes, providing a function to override
 .logErrorToSynapse<-function(label, message) {
-  logErrorToSynapse(label, message)
+  	logErrorToSynapse(label, message)
 }

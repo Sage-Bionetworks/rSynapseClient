@@ -19,7 +19,8 @@ getURLWithRetries<-function(url,
               customrequest=customrequest, 
               httpheader=httpheader, 
               curl=curlHandle, 
-              debugfunction=debugfunction
+              debugfunction=debugfunction,
+			  .opts=opts
             )
         } else {
           .getURLIntern(url, 
@@ -27,7 +28,8 @@ getURLWithRetries<-function(url,
               customrequest=customrequest, 
               httpheader=httpheader, 
               curl=curlHandle, 
-              debugfunction=debugfunction
+              debugfunction=debugfunction,
+			  .opts=opts
             )
         }
 		# returns list(headers,body)
@@ -61,7 +63,6 @@ getURLWithRetries<-function(url,
 	  headerfunction=h$update,
       .opts=.opts
     )
-	list(headers)
   } else {
 	  body<-getURL(url=url, 
       postfields=postfields, 

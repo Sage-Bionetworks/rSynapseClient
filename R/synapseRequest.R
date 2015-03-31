@@ -29,6 +29,6 @@ synapseRequest<-function(
     debugfunction,
     opts=.opts)
  
-  result$body
+  list(headers=result$parsedHeaders$headers, body=result$body)
 }
 
