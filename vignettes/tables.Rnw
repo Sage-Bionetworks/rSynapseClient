@@ -70,6 +70,28 @@ table@values
 4_1 8.800000 stuff  90
 5_1 9.900000  here  80
 \end{verbatim}
+The following example shows how to add a new row to a Table.  First, define a new column:
+\begin{verbatim}
+newColumn<-TableColumn(name="new", columnType="STRING")
+newColumn<-synStore(newColumn)
+\end{verbatim}
+Now add the new column to the existing schema:
+\begin{verbatim}
+propertyValue(schema, "columnIds")<-c(propertyValue(schema, "columnIds"), newColumn$id)
+schema<-synStore(schema)
+\end{verbatim}
+When the table is retrieved, the values in the new column are NA:
+\begin{verbatim}
+table<-synTableQuery(sprintf("select * from %s", propertyValue(schema, "id")), loadResult=TRUE)
+table@values
+\end{verbatim}
+The NAs may be replaced with other values:
+\begin{verbatim}
+table@values["new"]<-c("one", "two", "three", "four", "five", "six")
+table<-synStore(table, retrieveData=TRUE)
+table@values
+\end{verbatim}
+
 You can delete selected rows from the table:
 \begin{verbatim}
 rowsToDelete<-synTableQuery(sprintf("select * from %s where c='foo'", schemaId))
