@@ -4,14 +4,14 @@
 \usepackage{Sweave}
 
 \title{How to Use Synapse Tables}
-\author{brucehoff}
+\author{Bruce Hoff}
 
 \begin{document}
 \maketitle
 Synapse allows you to create, modify and query tabular data.  You provide data
 in a data frame or csv file.
 
-
+\section{Creating a Table}
 Begin with a data frame in your session:
 \begin{verbatim}
 df<-data.frame("n"=c(1.1, 2.2, 3.3), 
@@ -41,18 +41,25 @@ schema<-TableSchema(name="aschema", parent=projectId, columns=cols)
 table<-Table(schema, fileHandleId)
 table<-synStore(table, retrieveData=TRUE)
 \end{verbatim}
+\section{Retrieving a Table}
 Query the table:
 \begin{verbatim}
 schemaId<-propertyValue(table@schema, "id")
 queryResult<-synTableQuery(sprintf("select * from %s where c='bar'", schemaId))
 \end{verbatim}
+\section{Updating Existing Values}
 The query result is a Table having a data frame in the 'values' slot. Now update
 the table and store it:
 \begin{verbatim}
 queryResult@values[2,"n"]<-pi
 table<-synStore(queryResult, retrieveData=TRUE)
 table@values
+           n   c  i
+0_0 1.100000 foo 10
+1_1 2.200000 bar 10
+2_1 3.141593 bar 20
 \end{verbatim}
+\section{Adding Rows to a Table}
 To add more rows, put the additional rows in another data frame, embed in a Table,
 and call 'synStore', as shown:
 \begin{verbatim}
@@ -66,11 +73,12 @@ table@values
 0_0 1.100000   foo  10
 1_1 2.200000   bar  10
 2_1 3.141593   bar  20
-3_1 7.700000  moar 100
-4_1 8.800000 stuff  90
-5_1 9.900000  here  80
+3_2 7.700000  moar 100
+4_2 8.800000 stuff  90
+5_2 9.900000  here  80
 \end{verbatim}
-The following example shows how to add a new row to a Table.  First, define a new column:
+\section{Adding new Columns to a Table}
+The following example shows how to add a new column to a Table.  First, define a new column:
 \begin{verbatim}
 newColumn<-TableColumn(name="new", columnType="STRING")
 newColumn<-synStore(newColumn)
@@ -82,16 +90,31 @@ schema<-synStore(schema)
 \end{verbatim}
 When the table is retrieved, the values in the new column are NA:
 \begin{verbatim}
-table<-synTableQuery(sprintf("select * from %s", propertyValue(schema, "id")), loadResult=TRUE)
+table<-synTableQuery(sprintf("select * from %s", propertyValue(schema, "id")), 
+	loadResult=TRUE)
 table@values
+           n     c   i new
+0_0 1.100000   foo  10  NA
+1_1 2.200000   bar  10  NA
+2_1 3.141593   bar  20  NA
+3_2 7.700000  moar 100  NA
+4_2 8.800000 stuff  90  NA
+5_2 9.900000  here  80  NA
 \end{verbatim}
 The NAs may be replaced with other values:
 \begin{verbatim}
 table@values["new"]<-c("one", "two", "three", "four", "five", "six")
 table<-synStore(table, retrieveData=TRUE)
 table@values
+           n     c   i   new
+0_3 1.100000   foo  10   one
+1_3 2.200000   bar  10   two
+2_3 3.141593   bar  20 three
+3_3 7.700000  moar 100  four
+4_3 8.800000 stuff  90  five
+5_3 9.900000  here  80   six
 \end{verbatim}
-
+\section{Deleting From a Table}
 You can delete selected rows from the table:
 \begin{verbatim}
 rowsToDelete<-synTableQuery(sprintf("select * from %s where c='foo'", schemaId))
@@ -102,7 +125,7 @@ You can also delete the entire table:
 synDelete(schemaId)
 \end{verbatim}
 
-
+\section{Managing Tabular Data on the File System}
 Table creation and retrieval can be done with files on disk.  No need to load
 the data into memory first.
 First we create a csv file to use:
