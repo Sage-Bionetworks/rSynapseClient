@@ -72,24 +72,21 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
             chunkUploadUrl <- createChunkedFileUploadChunkURL(chunkRequest)
             if (debug) message(sprintf('url= %s\n', chunkUploadUrl))
             
-            optsWithHeader<-.getCache("curlOpts")
-            optsWithHeader$header<-TRUE
             httpResponse<-.getURLIntern(chunkUploadUrl, 
               postfields=chunk, # the request body
               customrequest="PUT", # the request method
               httpheader=headers, # the headers
               curl=curlHandle, 
               debugfunction=NULL,
-              .opts=optsWithHeader
+			  .opts=.getCache("curlOpts")
             )
             # return the http response
-            parseHttpResponse(httpResponse)
+			httpResponse$body
           }, 
           curlHandle,
           extraRetryStatusCode=NULL
         )
-        httpResponse<-result$result
-        .checkCurlResponse(object=curlHandle, response=httpResponse, logErrorToSynapse=TRUE)
+        .checkCurlResponse(object=curlHandle, response=result$body, logErrorToSynapse=TRUE)
         
         totalUploadedBytes <- totalUploadedBytes + length(chunk)
         percentUploaded <- totalUploadedBytes*100/fileSizeBytes

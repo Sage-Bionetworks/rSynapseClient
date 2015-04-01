@@ -92,7 +92,7 @@
   if (checkHttpStatus) .checkCurlResponse(object=curlHandle, response=response$body)
   
   if("GET" == requestMethod) {
-    parseResponseBody(response)
+    parseResponseBody(response$headers, response$body)
   }
 }
 

@@ -30,7 +30,6 @@ synapseGetFollowingPermanentRedirects<-function(
   customrequest<-"GET"
   noRedirOpts<-.opts
   noRedirOpts$followlocation<-NULL # do NOT include 'followlocation'
-  noRedirOpts$header<-TRUE
   MAX_REDIRECTS<-.getCache("webRequestMaxRedirects")
   if (is.null(MAX_REDIRECTS) || MAX_REDIRECTS<1) stop(sprintf("Illegal value for MAX_REDIRECTS %d.", MAX_REDIRECTS))
   
@@ -50,8 +49,8 @@ synapseGetFollowingPermanentRedirects<-function(
       debugfunction,
       opts=noRedirOpts)
     
-    if (result$httpStatus==301) {
-      redirectLocation<-result$response$headers[["Location"]]
+    if (result$parsedHeaders$statusCode==301) {
+      redirectLocation<-result$parsedHeaders$headers[["Location"]]
       if (is.null(redirectLocation)) stop("received redirect status but no redirect location")
       # uri should be at the end of the redirect location
       uriStart <- regexpr(uri, redirectLocation, fixed=T)
