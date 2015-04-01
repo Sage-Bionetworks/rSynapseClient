@@ -230,6 +230,8 @@ setMethod(
   signature = "SynapseAnnotations",
   definition = function(entity){
     annotations <- as.list(entity)
+    
+    emptyNamedList<-structure(list(), names = character())
 
     for(key in names(annotations)){
       ## This is one of our annotation buckets
@@ -238,6 +240,10 @@ setMethod(
           if(is.scalar(annotations[[key]][[annotKey]])) {
             annotations[[key]][[annotKey]] <- list(annotations[[key]][[annotKey]])
           }
+        }
+        
+        if (length(annotations[[key]])==0) {
+          annotations[[key]]<-emptyNamedList
         }
       }
     }

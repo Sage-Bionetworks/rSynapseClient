@@ -174,8 +174,19 @@ setMethod(
     relPath <- gsub("^[\\/]+", "", relPath)
     info <- as.list(file.info(srcPath))
 
+    
     ## convert all values to character for now
-    lapply(names(info), function(i) info[[i]] <<- as.character(info[[i]]))
+    # Without the following, on Windows + R 3.1 the 'as.character(info[i])' will generate 
+    # a warning which is translated into an error in a number of tests
+    originalWarnLevel<-options()$warn
+    options(warn=0)
+    tryCatch(
+      for (i in names(info)) {
+        info[[i]]<-as.character(info[[i]])
+      },
+      finally = options(warn=originalWarnLevel)
+    )
+    
     object$addFileMetaData(srcPath, destPath, relativePath = relPath, fileInfo = info)
   }
 )

@@ -15,13 +15,13 @@
 )
 {
   
-  if(is.null(uri))
-    stop("uri cannot be null")
+  if(is.null(uri) || length(uri)==0)
+    stop("uri is required")
 
   path<-endpoint$endpointPrefix
   
-  if(is.null(path))
-    stop("path cannot be null")
+  if(is.null(path) || length(path)==0)
+    stop("path is required")
 
   ## constants
   kValidMethods <- c("GET", "DELETE")
@@ -73,7 +73,7 @@
   }
   
   ##curlSetOpt(opts,curl=curlHandle)
-  response<-synapseRequestFollowingAllRedirects(
+  response<-synapseRequest(
       uri,
       endpoint,
       postfields = NULL, # the request body
@@ -83,16 +83,16 @@
       debugfunction=d$update,
       .opts=opts
       )
-
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
+	message("RESPONSE_HEADERS:: ", response$headers)
     message("RESPONSE_BODY: ", response$body)
   }
   
-  if (checkHttpStatus) .checkCurlResponse(curlHandle, response$body)
+  if (checkHttpStatus) .checkCurlResponse(object=curlHandle, response=response$body)
   
   if("GET" == requestMethod) {
-    parseResponseBody(response)
+    parseResponseBody(response$headers, response$body)
   }
 }
 

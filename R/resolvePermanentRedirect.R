@@ -28,8 +28,8 @@ resolvePermanentRedirects<-function(endpoint) {
       .opts=.getCache("curlOpts"))  
     # we expect a 404 error since we called a non-existent service
     # might also get a 401 error if authentication is required
-    status<-redirectResult$httpStatus
-    if (status<400 || status>=500) stop(sprintf("Expected HTTP Status 4xx but found %s", redirectResult$httpStatus))
+    status<-redirectResult$parsedHeaders$statusCode
+    if (status<400 || status>=500) stop(sprintf("Expected HTTP Status 4xx but found %s", status))
     .setCache(redirectResolvedKey, TRUE)
   }
   

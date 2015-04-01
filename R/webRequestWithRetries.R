@@ -3,7 +3,8 @@
 # extraRetryStatusCodes is a vector of status codes to retry in addition
 # to the standard ones (502,503,504 see SYNR-296)
 # returns a list having two elements (1) the response of the web request,
-# (2) the returned http status code
+# (2) the returned http status code.  
+# The result is in the form list(result, httpStatus)
 #
 # Author: brucehoff
 ###############################################################################
@@ -25,7 +26,8 @@ webRequestWithRetries<-function(fcn,
     "Failure when receiving data from the peer",
     "Empty reply from server",
     "SSL read: error:00000000",
-    "Unknown SSL protocol error")
+    "Unknown SSL protocol error",
+    "couldn't connect to host")
   
   retryStatusCodes<-append(c(502,503,504), extraRetryStatusCodes)
   
@@ -66,5 +68,5 @@ webRequestWithRetries<-function(fcn,
 
 # this is added for unit testing purposes, providing a function to override
 .logErrorToSynapse<-function(label, message) {
-  logErrorToSynapse(label, message)
+  	logErrorToSynapse(label, message)
 }

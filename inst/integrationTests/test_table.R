@@ -213,7 +213,7 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   
   # test a more complicated aggregation query
   queryResult<-synTableQuery(sprintf("select sweet, count(sweet) from %s where sweet='one'", propertyValue(tschema, "id")), verbose=FALSE)
-  expected<-data.frame(sweet="one", "COUNT.sweet."=as.integer(rowsPerCategory))
+  expected<-data.frame(sweet="one", "COUNT(sweet)"=as.integer(rowsPerCategory), check.names=FALSE)
   checkTrue(all(expected==queryResult@values))
   checkTrue(all(names(expected)==names(queryResult@values)))
   
@@ -299,11 +299,16 @@ integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
   tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2))
   tschema <- synStore(tschema, createOrUpdate=FALSE)
   
-  dataFrame <- data.frame(sweet=c(1:5, 1.234e-10, 5.678e+10, NA), sweet2=c(NA, 6:10, 1.234567, 9.876543))
+  dataFrame <- data.frame(sweet=c(1:5, 1.234e-10, 5.678e+10, NA, NaN, Inf, -Inf), sweet2=c(NA, 6:10, 1.234567, 9.876543, Inf, NaN, 1))
   myTable <- Table(tschema, values=dataFrame)
   myTable <- synStore(myTable, retrieveData=T)
   # now check that the data frames are the same
   checkTrue(dataFramesAreSame(dataFrame,myTable@values))
+  
+  # also check what happens when query result is empty
+  queryResult<-synTableQuery(sprintf("select * from %s where sweet=99", propertyValue(tschema, "id")), verbose=FALSE)
+  # verify that the result is empty
+  checkTrue(nrow(queryResult@values)==0)
 }
 
 integrationTestSynStoreCSVFileNoRetrieve <- function() {
@@ -344,5 +349,102 @@ integrationTestSynStoreAndRetrieveCSVFile <- function() {
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(retrievedDataFrame))
 }
+
+integrationTestCSVFileWithAsTableColumns <- function() {
+  project<-synapseClient:::.getCache("testProject")
+  
+  csvFilePath<-system.file("resources/test/test.csv", package = "synapseClient")
+  tcResult<-as.tableColumns(csvFilePath)
+  tableColumns<-tcResult$tableColumns
+  tableColumnNames<-list()
+  for (column in tableColumns) tableColumnNames<-append(tableColumnNames, column@name)
+  tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
+  
+  table<-Table(tableSchema=tableSchema, values=tcResult$fileHandleId)
+  filePath<-tempfile()
+  retrievedTable<-synStore(table, retrieveData=TRUE, verbose=FALSE, filePath=filePath)
+  checkTrue(is(retrievedTable, "TableFilePath"))
+  checkTrue(!is.null(propertyValue(retrievedTable@schema, "id")))
+  show(retrievedTable) # make sure 'show' works
+  checkTrue(length(retrievedTable@updateEtag)>0)
+  # now check that the data frames are the same
+  retrievedDataFrame<-synapseClient:::loadCSVasDataFrame(retrievedTable@filePath)
+  dataFrame<-read.csv(csvFilePath, header=TRUE)
+  checkTrue(all(dataFrame==retrievedDataFrame))
+  checkTrue(all(tableColumnNames==names(retrievedDataFrame)))
+  # make sure the row labels are valid
+  synapseClient:::parseRowAndVersion(row.names(retrievedDataFrame))
+}
+
+integrationTestSynStoreAndDownloadFiles<-function() {
+	project<-synapseClient:::.getCache("testProject")
+	
+	# String, Integer, Double, Boolean, Date, Filehandleid, Entityid
+	tc1 <- TableColumn(name="stringType", columnType="STRING", enumValues=c("one", "two", "three"))
+	tc1 <- synStore(tc1)
+	tc2 <- TableColumn(name="fileHandleIdType", columnType="FILEHANDLEID")
+	tc2 <- synStore(tc2)
+	
+	pid<-propertyValue(project, "id")
+	tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2))
+	tschema <- synStore(tschema, createOrUpdate=FALSE)
+	
+	fileHandleIds<-NULL
+	md5s<-NULL
+	for (i in 1:2) {
+		# upload a file and receive the file handle
+		filePath<- tempfile()
+		connection<-file(filePath)
+		writeChar(sprintf("this is a test %s", sample(999999999, 1)), connection, eos=NULL)
+		close(connection)  
+		fileHandle<-synapseClient:::chunkedUploadFile(filePath)
+		checkTrue(!is.null(fileHandle$id))
+		fileHandleIds<-c(fileHandleIds, fileHandle$id)
+		md5s<-c(md5s, as.character(tools::md5sum(filePath)))
+	}
+	
+	dataFrame<-data.frame(
+			stringType=c("one", "two"), 
+			fileHandleIdType=fileHandleIds
+	)
+	
+	myTable <- Table(tschema, values=dataFrame)
+	myTable <- synStore(myTable, retrieveData=T)
+	
+	# download by passing TableDataFrame
+	for (i in 1:2) {
+		rowIdAndVersion<-rownames(myTable@values)[i]
+		downloaded<-synDownloadTableFile(myTable, rowIdAndVersion, "fileHandleIdType")
+		checkEquals(as.character(tools::md5sum(downloaded)), md5s[i])
+	}
+	
+	# download by passing TableDataFrame
+	tableId<-propertyValue(tschema, "id")
+	for (i in 1:2) {
+		rowIdAndVersion<-rownames(myTable@values)[i]
+		downloaded<-synDownloadTableFile(tableId, rowIdAndVersion, "fileHandleIdType")
+		checkEquals(as.character(tools::md5sum(downloaded)), md5s[i])
+	}
+	
+	# download by passing TableDataFrame having id, not schema
+	myTable@schema<-tableId
+	for (i in 1:2) {
+		rowIdAndVersion<-rownames(myTable@values)[i]
+		downloaded<-synDownloadTableFile(myTable, rowIdAndVersion, "fileHandleIdType")
+		checkEquals(as.character(tools::md5sum(downloaded)), md5s[i])
+	}
+	
+	# download by passing TableFilePath
+	tableFilePath<-synTableQuery(sprintf("select * from %s", tableId), loadResult=FALSE)
+	checkTrue(is(tableFilePath, "TableFilePath"))
+	for (i in 1:2) {
+		rowIdAndVersion<-rownames(myTable@values)[i]
+		downloaded<-synDownloadTableFile(tableFilePath, rowIdAndVersion, "fileHandleIdType")
+		checkEquals(as.character(tools::md5sum(downloaded)), md5s[i])
+	}
+	
+}
+
+
 
   

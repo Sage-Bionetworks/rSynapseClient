@@ -12,7 +12,7 @@ getVersionInfo<-function() {
   cacheTimestamp<-.getCache(cacheTimestampName)
   versionInfo<-.getCache(cacheVersionInfoName)
   if (is.null(versionInfo) || is.null(cacheTimestamp) || Sys.time()-now>cacheRefreshSeconds) {
-    response<-getURLWithRetries(.getVersionsEndpoint(), opts=.getCache("curlOpts"))$response
+    response<-getURLWithRetries(.getVersionsEndpoint(), opts=.getCache("curlOpts"))
     versionInfo <- fromJSON(response$body)
     .setCache(cacheTimestampName, now)
     .setCache(cacheVersionInfoName, versionInfo)

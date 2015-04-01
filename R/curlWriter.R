@@ -24,14 +24,39 @@
   .Call("writer_close", ext)
 }
 
+# Download from the given URL to a temporary file in the given directory. 
+# Return the path to the downloaded file as well as the file name (either
+# from the Content-Disposition header or the tail of the URL).
 .curlWriterDownload <-
-  function(url, destfile=tempfile(), curlHandle = getCurlHandle(), writeFunction=.getCache('curlWriter'), opts = .getCache("curlOpts"))
+  function(url, destdir=tempdir(), curlHandle = getCurlHandle(), writeFunction=.getCache('curlWriter'), opts = .getCache("curlOpts"))
 {
+  destfile<-tempfile(tmpdir=destdir)
+  
   ext <- .curlWriterOpen(destfile)
   on.exit(.curlWriterClose(ext))
+  
   opts$noprogress <- 0L
-  curlPerform(URL=url, writefunction=writeFunction,
-    writedata=ext, .opts = opts, curl = curlHandle)
-  .checkCurlResponse(curlHandle)
-  destfile
+  
+  h = basicTextGatherer()
+  curlPerform(URL=url, writefunction=writeFunction, headerfunction=h$update, 
+			writedata=ext, .opts = opts, curl = curlHandle)	
+	
+	
+  .checkCurlResponse(object=curlHandle, logErrorToSynapse=TRUE)
+  fileName<-fileNameFromHeaders(h$value())
+  if (is.null(fileName)) fileName<-basename(url)
+  list(downloadedFile=destfile, fileName=fileName)
+}
+
+# looks for a header of the form:
+#	Content-Disposition: ... filename=<filename>
+# If found, returns <filename> else NULL
+fileNameFromHeaders<-function(headers) {
+	for (header in strsplit(headers, "\r\n", fixed=T)[[1]]) {
+		if (1==regexpr("^Content-Disposition:", header)[1]) {
+			pieces<-strsplit(header, "filename=")[[1]]
+			if (length(pieces)==2) return(pieces[2])
+		}
+	}
+	NULL
 }

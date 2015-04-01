@@ -110,6 +110,10 @@ setMethod(
 )
 
 synUpdateWiki<-function(wikiPage) {
+  attachmentIds<-propertyValue(wikiPage, "attachmentFileHandleIds")
+  if (!is.null(attachmentIds) && length(attachmentIds)==1) {
+    propertyValue(wikiPage, "attachmentFileHandleIds")<-list(attachmentIds)
+  }
   listResult<-synRestPUT(wikiPage@updateUri, wikiPage)
   populateWikiPage(wikiPage@createUri, listResult)
 }

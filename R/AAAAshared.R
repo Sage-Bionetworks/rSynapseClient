@@ -5,11 +5,16 @@
 # Author: brucehoff		
 #########################################################################
 
-readSchema <- function(name, path) { 
+readSchema <- function(name, path) {
+  
   # remove the following when SYNR-841 is done
   if (name=="org.sagebionetworks.repo.model.file.UploadType") {
     return(list(type="string", enum=c("S3", "SFTP", "HTTPS")))
+  } else if (name=="org.sagebionetworks.repo.model.table.ColumnType") {
+    return(list(type="string", enum=c("STRING", "DOUBLE", "INTEGER", "BOOLEAN", "DATE", "FILEHANDLEID", "ENTITYID", "LINK")))
   }
+  
+  
   file <- sprintf("%s.json", gsub("[\\.]", "/", name))
   
   fullPath <- file.path(path,file)
@@ -17,7 +22,7 @@ readSchema <- function(name, path) {
   if(!file.exists(fullPath))
     stop(sprintf("Could not find file: %s for entity: %s", fullPath, name))
   
-  schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
+  schema <- fromJSON(file=fullPath)
   schema
 }
 

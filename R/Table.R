@@ -65,7 +65,9 @@ setMethod(
     values,
     linesToSkip,
     quoteCharacter,
+    isFirstLineHeader,
     escapeCharacter,
+    lineEnd,
     separator,
     updateEtag) {
     result<-new("TableFilePath")
@@ -73,7 +75,9 @@ setMethod(
     result@filePath<-values
     if (!missing(linesToSkip)) result@linesToSkip<-linesToSkip
     if (!missing(quoteCharacter)) result@quoteCharacter<-quoteCharacter
+    if (!missing(isFirstLineHeader)) result@isFirstLineHeader<-isFirstLineHeader
     if (!missing(escapeCharacter)) result@escapeCharacter<-escapeCharacter
+    if (!missing(lineEnd)) result@lineEnd<-lineEnd
     if (!missing(separator)) result@separator<-separator
     if (!missing(updateEtag)) result@updateEtag<-updateEtag
     result
@@ -83,10 +87,25 @@ setMethod(
 setMethod(
   f = "Table",
   signature = signature("TableSchemaOrCharacter", "integer"),
-  definition = function(tableSchema, values, updateEtag) {
-    result<-new("TableRowCount")
+  definition = function(
+    tableSchema, 
+    values,
+    linesToSkip,
+    quoteCharacter,
+    isFirstLineHeader,
+    escapeCharacter,
+    lineEnd,
+    separator,
+    updateEtag) {
+    result<-new("TableFileHandleId")
     result@schema<-tableSchema
-    result@rowCount<-values
+    result@fileHandleId<-values
+    if (!missing(linesToSkip)) result@linesToSkip<-linesToSkip
+    if (!missing(quoteCharacter)) result@quoteCharacter<-quoteCharacter
+    if (!missing(isFirstLineHeader)) result@isFirstLineHeader<-isFirstLineHeader
+    if (!missing(escapeCharacter)) result@escapeCharacter<-escapeCharacter
+    if (!missing(lineEnd)) result@lineEnd<-lineEnd
+    if (!missing(separator)) result@separator<-separator
     if (!missing(updateEtag)) result@updateEtag<-updateEtag
     result
   }
@@ -178,15 +197,36 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   # use an anonymous 'file()' connection to collect output."
   filePath<-tempfile()
   writeDataFrameToCSV(dataFrameToWrite, filePath)
-  rowsProcessed<-uploadCSVFileToTable(filePath=filePath, tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
+  s3FileHandle<-chunkedUploadFile(filePath)
+  
+  rowsProcessed<-uploadFileHandleIdToTable(as.integer(s3FileHandle$id), tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
+}
+
+# returns the Synapse types which can hold the given R type, with the first one being the preferred
+getTableColumnTypeForDataFrameColumnType<-function(dfColumnType) {
+  map<-list(integer=c("INTEGER","DOUBLE","FILEHANDLEID"), 
+    factor=c("STRING","FILEHANDLEID","ENTITYID","LINK"), 
+    character=c("STRING","FILEHANDLEID","ENTITYID","LINK"), 
+    numeric=c("DOUBLE","INTEGER","FILEHANDLEID"), 
+    logical=c("BOOLEAN","STRING"),
+    Date=c("DATE","STRING"),
+    POSIXct=c("DATE","STRING"))
+  result<-map[[dfColumnType]]
+  if (is.null(result)) stop(sprintf("No column type for %s", dfColumnType))
+  result
 }
 
 writeDataFrameToCSV<-function(dataFrame, filePath) {
+  for (i in 1:dim(dataFrame)[2]) {
+    if (is.numeric(dataFrame[[i]])) {
+      dataFrame[[i]][is.nan(dataFrame[[i]])]<-"NaN"
+    }
+  }
   write.csv(x=dataFrame, file=filePath, row.names=FALSE, na="")
 }
 
 readDataFrameFromCSV<-function(filePath) {
-  read.csv(filePath, encoding="UTF-8", stringsAsFactors=FALSE)
+  read.csv(filePath, encoding="UTF-8", stringsAsFactors=FALSE, check.names=FALSE)
 }
 
 setMethod(
@@ -202,23 +242,30 @@ setMethod(
       sql<-sprintf("select * from %s", tableId)
       downloadResult<-downloadTableToCSVFile(sql, verbose, filePath=filePath)
       dataframe<-loadCSVasDataFrame(downloadResult$filePath)
-      dataframe<-convertDataFrameTypeToSchemaType(dataframe, tableId)
+      dataframe<-convertDataFrameTypeToSchemaType(dataframe, downloadResult$headers)
       Table(entity@schema, dataframe, downloadResult$etag)
     } else {
-      Table(entity@schema, rowsProcessed)
+      TableRowCount(entity@schema, rowsProcessed)
     }
   }
 )
 
-convertDataFrameTypeToSchemaType<-function(dataframe, tableId) {
-  columns<-synGetColumns(tableId)
-  for (columnModel in columns@content) {
-    columnIndex<-match(columnModel@name, names(dataframe))
-    if (!is.na(columnIndex)) { # make sure the the column is in the data frame
-      if (columnModel@columnType=="BOOLEAN") {
+TableRowCount<-function(schema, rowCount, updateEtag) {
+  result<-new("TableRowCount")
+  result@schema<-schema
+  result@rowCount<-rowCount
+  if (!missing(updateEtag)) result@updateEtag<-updateEtag
+  result
+}
+
+convertDataFrameTypeToSchemaType<-function(dataframe, headers) {
+  for (header in headers@content) {
+    columnIndex<-match(header@name, names(dataframe))
+    if (length(columnIndex)>0 && !is.na(columnIndex)) { # make sure the the column is in the data frame
+      if (header@columnType=="BOOLEAN") {
         # Synapse returns values "true", "false", which have to be converted to TRUE, FALSE
         dataframe[[columnIndex]]<-(dataframe[[columnIndex]]=="true")
-      } else if (columnModel@columnType=="DATE") {
+      } else if (header@columnType=="DATE") {
         dataframe[[columnIndex]]<-as.Date(dataframe[[columnIndex]]/(24*3600*1000), "1970-01-01")
       }
     }
@@ -233,36 +280,63 @@ setMethod(
     retrieveData=FALSE, 
     verbose=TRUE,
     filePath=NULL) {
+    s3FileHandle<-chunkedUploadFile(entity@filePath)
+    synStore(entity=
+        Table(
+          tableSchema=entity@schema, 
+          values=as.integer(s3FileHandle$id),
+          linesToSkip=entity@linesToSkip,
+          quoteCharacter=entity@quoteCharacter,
+          isFirstLineHeader=entity@isFirstLineHeader,
+          escapeCharacter=entity@escapeCharacter,
+          lineEnd=entity@lineEnd,
+          separator=entity@separator,
+          updateEtag=entity@updateEtag
+        ),
+        retrieveData=retrieveData,
+        verbose=verbose,
+        filePath=filePath)
+    
+   }
+)
+
+setMethod(
+  f = "synStore",
+  signature = "TableFileHandleId",
+  definition = function(entity, 
+    retrieveData=FALSE, 
+    verbose=TRUE,
+    filePath=NULL) {
     entity@schema<-ensureTableSchemaIsRetrieved(entity@schema)
     entity@schema<-ensureTableSchemaStored(entity@schema)
     tableId<-propertyValue(entity@schema, "id")
-    rowsProcessed<-uploadCSVFileToTable(
-      entity@filePath, 
+    rowsProcessed<-uploadFileHandleIdToTable(
+      entity@fileHandleId, 
       tableId,
       verbose,
       entity@linesToSkip,
       entity@quoteCharacter,
       entity@isFirstLineHeader,
       entity@escapeCharacter,
-      entity@separator
+      entity@separator,
+      entity@lineEnd
     )
     if (retrieveData) {
       sql=sprintf("select * from %s", tableId)
       downloadResult<-downloadTableToCSVFile(sql, verbose, filePath=filePath)
       Table(tableSchema=entity@schema, values=downloadResult$filePath, updateEtag=downloadResult$etag)
     } else {
-      Table(entity@schema, rowsProcessed)
+      TableRowCount(entity@schema, rowsProcessed)
     }
   }
 )
 
-# upload CSV file to the given table ID
+# adds content of uploaded file as rows in Table given by TableId
 # returns the number of rows processed
-uploadCSVFileToTable<-function(filePath, tableId, 
+uploadFileHandleIdToTable<-function(fileHandleId, tableId, 
   verbose=TRUE, linesToSkip=as.integer(0), quoteCharacter=character(0), isFirstLineHeader=TRUE,
   escapeCharacter=character(0), separator=character(0), lineEnd=character(0), updateEtag=character(0)) {
-  s3FileHandle<-chunkedUploadFile(filePath)
-  
+   
   request<-UploadToTableRequest(
     linesToSkip=linesToSkip,
     csvTableDescriptor=CsvTableDescriptor(
@@ -271,14 +345,14 @@ uploadCSVFileToTable<-function(filePath, tableId,
       escapeCharacter=escapeCharacter,
       separator=separator,
       lineEnd=lineEnd
-      ),
+    ),
     tableId=tableId,
-    uploadFileHandleId=s3FileHandle$id,
+    uploadFileHandleId=as.character(fileHandleId),
     updateEtag=updateEtag
   )
-
-  asyncJobId<-createS4ObjectFromList(synRestPOST("/table/upload/csv/async/start", createListFromS4Object(request)) ,"AsyncJobId")
-  responseBodyAsList<-trackProgress(sprintf("/table/upload/csv/async/get/%s", asyncJobId@token), verbose)
+  
+  asyncJobId<-createS4ObjectFromList(synRestPOST(sprintf("/entity/%s/table/upload/csv/async/start", tableId), createListFromS4Object(request)) ,"AsyncJobId")
+  responseBodyAsList<-trackProgress(sprintf("/entity/%s/table/upload/csv/async/get/%s", tableId, asyncJobId@token), verbose)
   responseBody<-createS4ObjectFromList(responseBodyAsList, "UploadToTableResult")
   if (verbose) cat(sprintf("Complete.  Processed %d rows.\n", responseBody@rowsProcessed))
   responseBody@rowsProcessed
@@ -313,7 +387,7 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
       Sys.sleep(1);
     } else {
       # this handles non-2xx statuses
-      .checkCurlResponse(curlHandle, toJSON(checkResultAsList))
+      .checkCurlResponse(object=curlHandle, response=toJSON(checkResultAsList))
       # the job is finished
       if (verbose) cat("\n")
       return(checkResultAsList)
@@ -327,11 +401,16 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
 # execute a query and download the results
 # returns the download file path and etag
 downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, filePath=NULL) {
+  # Extract tableId from query
+  pattern <- "from\\s+(syn\\d+)"
+  m <- regexec(pattern, sql)
+  matches <- regmatches(sql, m)
+  tableId <- matches[[1]][2]
   request<-DownloadFromTableRequest(sql=sql, includeRowIdAndRowVersion=includeRowIdAndRowVersion, writeHeader=TRUE)
-  asyncJobId<-createS4ObjectFromList(synRestPOST("/table/download/csv/async/start", createListFromS4Object(request)) ,"AsyncJobId")
-  responseBodyAsList<-trackProgress(sprintf("/table/download/csv/async/get/%s", asyncJobId@token), verbose)
+  asyncJobId<-createS4ObjectFromList(synRestPOST(sprintf("/entity/%s/table/download/csv/async/start", tableId), createListFromS4Object(request)) ,"AsyncJobId")
+  responseBodyAsList<-trackProgress(sprintf("/entity/%s/table/download/csv/async/get/%s", tableId, asyncJobId@token), verbose)
   responseBody<-createS4ObjectFromList(responseBodyAsList, "DownloadFromTableResult")
-  downloadUri<-sprintf("/fileHandle/%s/url", responseBody@resultsFileHandleId)
+  downloadUri<-sprintf("/fileHandle/%s/url?redirect=FALSE", responseBody@resultsFileHandleId)
   if (is.null(filePath)) {
     fileName<-sprintf("queryResult_%s.csv", responseBody@resultsFileHandleId)
     downloadLocation<- NULL
@@ -339,24 +418,24 @@ downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, f
     fileName <- basename(filePath)
     downloadLocation <- dirname(filePath)
   }
-  fileHandle<-S3FileHandle(id=responseBody$resultsFileHandleId, fileName=fileName)
+  fileHandle<-S3FileHandle(id=responseBody@resultsFileHandleId, fileName=fileName)
   fileHandleAsList<-createListFromS4Object(fileHandle)
-  filePath<-synGetFileAttachment(downloadUri, "FILE", fileHandleAsList, downloadFile=T, downloadLocation=downloadLocation, ifcollision="overwrite.local", load=F)
-  list(filePath=filePath, etag=responseBody@etag)
+  filePath<-downloadFromServiceWithCaching(downloadUri, "FILE", fileHandleAsList$id, downloadLocation, ifcollision="overwrite.local")
+  list(filePath=filePath, etag=responseBody@etag, headers=responseBody@headers)
 }
 
 loadCSVasDataFrame<-function(filePath) {
+  if (file.info(filePath)$size==0) {
+    # this may occur if the table or query result set is empty
+    return(data.frame())
+  }
   dataframe<-readDataFrameFromCSV(filePath)
   rowIdIndex<-match("ROW_ID", names(dataframe))
   rowVersionIndex<-match("ROW_VERSION", names(dataframe))
   if (!is.na(rowIdIndex) && !is.na(rowVersionIndex)) {
     # the read-in dataframe has row numbers and versions to remove
-    strippedframe<-dataframe[,-c(rowIdIndex, rowVersionIndex)]
-    if (class(strippedframe)!="data.frame") {
-      # SYNR-828: selecting just one row of a data frame creates a vector
-      strippedframe<-as.data.frame(strippedframe)
-      names(strippedframe)<-names(dataframe)[-c(rowIdIndex, rowVersionIndex)]
-    }
+    # 'drop=FALSE' is needed to avoid converting a one-column data frame into a vector (SYNR-828)
+    strippedframe<-dataframe[,-c(rowIdIndex, rowVersionIndex), drop=FALSE]
     # use the two stripped columns as the row names
     row.names(strippedframe)<-paste(dataframe[[rowIdIndex]], dataframe[[rowVersionIndex]], sep="_")
     strippedframe
@@ -391,7 +470,7 @@ synTableQuery<-function(sqlString, loadResult=TRUE, verbose=TRUE, filePath=NULL)
   if (loadResult) {
     # if it's an aggregation query there are no row labels
     dataframe<-loadCSVasDataFrame(downloadResult$filePath)
-    dataframe<-convertDataFrameTypeToSchemaType(dataframe, tableId)
+    dataframe<-convertDataFrameTypeToSchemaType(dataframe, downloadResult$headers)
     Table(tableSchema=tableId, values=dataframe, updateEtag=downloadResult$etag)
   } else {
     Table(tableSchema=tableId, values=downloadResult$filePath, updateEtag=downloadResult$etag)
@@ -409,7 +488,83 @@ synDeleteRows<-function(tableDataFrame) {
   request<-RowSelection(tableId=tableId, etag=tableDataFrame@updateEtag, rowIds=rowIds)
   responseBodyAsList<-synRestPOST(sprintf("/entity/%s/table/deleteRows", tableId), createListFromS4Object(request))
   response<-createS4ObjectFromList(responseBodyAsList, "RowReferenceSet")
-  Table(tableDataFrame@schema, length(response@rows), response@etag)
+  TableRowCount(tableDataFrame@schema, length(response@rows), response@etag)
+}
+
+getFileHandleIdFromTableCell<-function(tableId, selectColumn, rowId, versionNumber) {
+	selectColumnList<-SelectColumnList(selectColumn)
+	rowReferenceList<-RowReferenceList(RowReference(rowId=rowId, versionNumber=versionNumber))
+	rowReferenceSet<-RowReferenceSet(
+			tableId=tableId,
+			headers=selectColumnList,
+			rows=rowReferenceList
+	)
+	result<-synRestPOST(sprintf("/entity/%s/table/filehandles", tableId), createListFromS4Object(rowReferenceSet))
+	tableFileHandleResults<-createS4ObjectFromList(result, "TableFileHandleResults")
+	if (length(tableFileHandleResults@rows)!=1) stop(sprintf("Expected one row but found %s.", length(tableFileHandleResults@rows)))
+	row<-tableFileHandleResults@rows[[1]]@list
+	if (length(row)!=1) stop(sprintf("Expected one column but found %s.", length(row)))
+	fileHandle<-row[[1]]
+	fileHandleId<-fileHandle@id
+	if (is.null(fileHandleId)) stop("fileHandleId is null")
+	fileHandleId
+}
+
+# 'table' can be a table ID, a TableDataFrame, or a TableFilePath
+synDownloadTableFile<-function(table, rowIdAndVersion, columnName, downloadLocation=NULL, ifcollision="keep.both") {
+	pair<-parseRowAndVersion(rowIdAndVersion)
+	rowId<-pair[1]
+	versionNumber<-pair[2]
+	# first get the tableId
+	if (is(table, "character")) {
+		if (!isSynapseId(table)) stop(sprintf("%s is not a Synapse ID.", table))
+		tableId<-table
+	} else if (is(table, "Table")) {
+		if (is(table@schema, "character")) {
+			if (!isSynapseId(table@schema)) stop(sprintf("%s is not a Synapse ID.", table@schema))
+			tableId<-table@schema
+		} else if (is(table@schema, "TableSchema")) {
+			tableId<-propertyValue(table@schema, "id")
+		} else {
+			stop(sprintf("Unexpected type: %s", class(table@schema)[[1]]))
+		}
+	} else {
+		stop(sprintf("Unexpected type %s", class(table)))
+	}
+	# second get the columnId
+	columns<-synGetColumns(tableId)
+	selectColumn<-NULL
+	for (column in columns@content) {
+		if (column@name==columnName) {
+			if (!is.null(selectColumn)) stop(sprintf("Multiple columns match %s", columnName))
+			selectColumn<-SelectColumn(id=column@id, columnType=column@columnType, name=column@name)
+		}
+	}
+	if (is.null(selectColumn)) stop(sprintf("Specified column, %s, not associated with entity %s.", columnName, tableId))
+	columnId<-selectColumn@id
+	# third, get the fileHandleId
+	if (is(table, "character")) {
+		fileHandleId<-getFileHandleIdFromTableCell(tableId, selectColumn, rowId, versionNumber)
+	} else if (is(table, "Table")) {
+		if (is(table, "TableDataFrame")) {
+			dataframe<-table@values
+		} else if (is(table, "TableFilePath")) {
+			dataframe<-loadCSVasDataFrame(table@filePath)
+		} else {
+			stop(sprintf("Unexpected type %s", class(table)))
+		}
+		# if possible get the fileHandleId from the in-memory data frame
+		fileHandleId<-dataframe[rowIdAndVersion, columnName]
+		# if the in-memory data doesn't overlap with the row/column of interest we will get
+		# NULL back.  In this case we query to get the fileHandleId of interest
+		if (is.null(fileHandleId)) {
+			fileHandleId<-getFileHandleIdFromTableCell(tableId, selectColumn, rowId, versionNumber)
+		}
+	} else {
+		stop(sprintf("Unexpected type %s", class(table)))
+	}
+	uri<-sprintf("/entity/%s/table/column/%s/row/%s/version/%s/file?redirect=FALSE", tableId, columnId, rowId, versionNumber)
+	downloadFromServiceWithCaching(uri, "REPO", fileHandleId, downloadLocation, ifcollision)
 }
 
 

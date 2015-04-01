@@ -11,9 +11,9 @@
 	synapseClient:::.setCache("testProject", project)
 
 	## Create Data
-	data <- Data(list(name="test data", parentId=propertyValue(project, "id")))
-	createdData <- createEntity(data)
-	synapseClient:::.setCache("testData", createdData)
+	folder <- Folder(list(name="test folder", parentId=propertyValue(project, "id")))
+	createdFolder <- createEntity(folder)
+	synapseClient:::.setCache("testFolder", createdFolder)
 }
 
 .tearDown <- 
@@ -23,9 +23,9 @@
 		try(deleteEntity(synapseClient:::.getCache("testActivity")))
 		synapseClient:::.deleteCache("testActivity")
 	}
-	if(!is.null(synapseClient:::.getCache("testData"))) {
-		try(deleteEntity(synapseClient:::.getCache("testData")))
-		synapseClient:::.deleteCache("testData")
+	if(!is.null(synapseClient:::.getCache("testFolder"))) {
+		try(deleteEntity(synapseClient:::.getCache("testFolder")))
+		synapseClient:::.deleteCache("testFolder")
 	}
 	if(!is.null(synapseClient:::.getCache("testProject"))) {
 	  try(deleteEntity(synapseClient:::.getCache("testProject")))
@@ -41,8 +41,8 @@ integrationTestCRUDS4Activity <-
   activity<-Activity(list(name=name))
   description<-"a description of the activity"
   propertyValue(activity, "description")<-description
-  testData <-synapseClient:::.getCache("testData")
-  propertyValue(activity, "used")<-list(list(reference=list(targetId=propertyValue(testData, "id")), 
+  testFolder <-synapseClient:::.getCache("testFolder")
+  propertyValue(activity, "used")<-list(list(reference=list(targetId=propertyValue(testFolder, "id")), 
       wasExecuted=F, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"))
   activity<-createEntity(activity)
   activityId<-propertyValue(activity, "id")
@@ -59,13 +59,13 @@ integrationTestCRUDS4Activity <-
   checkEquals(3, length(used2[[1]])) # (1) 'wasExecuted', (2) the reference, (3) the concrete type
   targetId<-used2[[1]]$reference$targetId
   names(targetId)<-NULL # needed to make the following check work
-  checkEquals(propertyValue(testData, "id"), targetId)
+  checkEquals(propertyValue(testFolder, "id"), targetId)
   checkEquals(F, used2[[1]]$wasExecuted)
   
   # update
   descr2<-"another description"
   propertyValue(act2, "description")<-descr2
-  propertyValue(act2, "used")<-list(list(reference=list(targetId=propertyValue(testData, "id")), 
+  propertyValue(act2, "used")<-list(list(reference=list(targetId=propertyValue(testFolder, "id")), 
       wasExecuted=T, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"))
   act2<-updateEntity(act2)
   checkEquals(descr2, propertyValue(act2, "description"))
@@ -75,7 +75,7 @@ integrationTestCRUDS4Activity <-
   checkEquals(3, length(used2[[1]])) # (1) 'wasExecuted', (2) the reference, (3) the concrete type
   targetId<-used2[[1]]$reference$targetId
   names(targetId)<-NULL # needed to make the following check work
-  checkEquals(propertyValue(testData, "id"), targetId)
+  checkEquals(propertyValue(testFolder, "id"), targetId)
   checkEquals(T, used2[[1]]$wasExecuted)
   
   # delete
@@ -88,8 +88,8 @@ integrationTestCRUDS4Activity <-
 integrationTestSynStore<-function() {
   name<-"testName"
   description<-"a description of the activity"
-  testData <-synapseClient:::.getCache("testData")
-  activity<-Activity(name=name, description=description, used=testData)
+  testFolder <-synapseClient:::.getCache("testFolder")
+  activity<-Activity(name=name, description=description, used=testFolder)
   activity<-synStore(activity)
   activityId<-propertyValue(activity, "id")
   checkTrue(!is.null(activityId))
@@ -103,7 +103,7 @@ integrationTestSynStore<-function() {
   checkEquals(3, length(used2[[1]])) # (1) 'wasExecuted', (2) the reference, (3) the concrete type
   targetId<-used2[[1]]$reference$targetId
   names(targetId)<-NULL # needed to make the following check work
-  checkEquals(propertyValue(testData, "id"), targetId)
+  checkEquals(propertyValue(testFolder, "id"), targetId)
   checkEquals(F, used2[[1]]$wasExecuted)
 }
 
@@ -118,8 +118,8 @@ integrationTestReferenceConstructor <-
   ## Create Activity
   name<-"testName"
   description<-"a description of the activity"
-  testData <-synapseClient:::.getCache("testData")
-  activity<-Activity(list(name=name, description=description, used=propertyValue(testData, "id")))
+  testFolder <-synapseClient:::.getCache("testFolder")
+  activity<-Activity(list(name=name, description=description, used=propertyValue(testFolder, "id")))
   activity<-createEntity(activity)
   activityId<-propertyValue(activity, "id")
   checkTrue(!is.null(activityId))
@@ -141,8 +141,8 @@ integrationTestEntityConstructor <-
   ## Create Activity
   name<-"testName"
   description<-"a description of the activity"
-  testData <-synapseClient:::.getCache("testData")
-  activity<-Activity(list(name=name, description=description, used=list(testData)))
+  testFolder <-synapseClient:::.getCache("testFolder")
+  activity<-Activity(list(name=name, description=description, used=list(testFolder)))
   activity<-createEntity(activity)
   activityId<-propertyValue(activity, "id")
   checkTrue(!is.null(activityId))

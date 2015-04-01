@@ -6,7 +6,7 @@
 
 createS4ObjectFromList<-function(content, className) {
   if (is.null(content)) return(NULL)
-  if (!is.list(content) && length(content)>1) {
+  if (!is.list(content) && (length(content)>1 || length(names(content))>0)) {
     # it's a vector.  Coerce to a list
     content<-as.list(content)
   }
@@ -25,12 +25,13 @@ createS4ObjectFromList<-function(content, className) {
   constructorArgs<-list()   
   slotTypes<-getSlots(className)
   for (slotName in names(content)) {
-    s4SlotType <- slotTypes[slotName]
-    if (is.na(s4SlotType)) stop(sprintf("No slot %s in %s", slotName, className))
-    
     slotValue <- content[[slotName]]
-    
-    if (isPrimitiveType(s4SlotType)) {
+    s4SlotType <- slotTypes[slotName]
+    if (is.na(s4SlotType)) {
+      # this allows the client to function in the face of an 'additive' API change, i.e.
+      # the client ignores the unexpected value.
+      warning(sprintf("Entry %s found in list but %s has no such slot.", slotName, className))
+    } else if (isPrimitiveType(s4SlotType)) {
       # not sure why empty lists are mapped to "AsIs" types, but it's the behavior of RJSONIO
       if (is(slotValue, "list") || is(slotValue, "AsIs")) {
         slotValue<-unlist(slotValue) 

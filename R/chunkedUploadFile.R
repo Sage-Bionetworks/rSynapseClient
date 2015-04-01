@@ -14,7 +14,7 @@
 #  Author: brucehoff
 ###############################################################################
 
-chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes=5*1024*1024, contentType=NULL) {
+chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), curlHandle=getCurlHandle(), chunksizeBytes=5*1024*1024, contentType=NULL) {
   if (chunksizeBytes < 5*1024*1024)
       stop('Minimum chunksize is 5 MB.')
   
@@ -43,7 +43,7 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   headers <- list('Content-Type'=contentType)
   
   ## get token
-  token <- createChunkedFileUploadToken(filepath, contentType)
+  token <- createChunkedFileUploadToken(filepath, uploadDestination, contentType)
   if (debug) {
     message(sprintf('\n\ntoken: %s\n', listToString(token)))
   }
@@ -64,19 +64,29 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
         
         ## get the signed S3 URL
         chunkRequest <- list(chunkNumber=chunkNumber, chunkedFileToken=token)
-        chunkUploadUrl <- createChunkedFileUploadChunkURL(chunkRequest)
-        if (debug) message(sprintf('url= %s\n', chunkUploadUrl))
         
         curlHandle<-getCurlHandle()
-        ## PUT the chunk to S3
-        response <- getURLWithRetries(chunkUploadUrl,
-          postfields = chunk, # the request body
-          customrequest="PUT", # the request method
-          httpheader=headers, # the headers
-          curl=curlHandle,
-          opts=.getCache("curlOpts")
+
+        result<-webRequestWithRetries(
+          fcn=function(curlHandle) {
+            chunkUploadUrl <- createChunkedFileUploadChunkURL(chunkRequest)
+            if (debug) message(sprintf('url= %s\n', chunkUploadUrl))
+            
+            httpResponse<-.getURLIntern(chunkUploadUrl, 
+              postfields=chunk, # the request body
+              customrequest="PUT", # the request method
+              httpheader=headers, # the headers
+              curl=curlHandle, 
+              debugfunction=NULL,
+			  .opts=.getCache("curlOpts")
+            )
+            # return the http response
+			httpResponse$body
+          }, 
+          curlHandle,
+          extraRetryStatusCode=NULL
         )
-        .checkCurlResponse(curlHandle, response$response)
+        .checkCurlResponse(object=curlHandle, response=result$body, logErrorToSynapse=TRUE)
         
         totalUploadedBytes <- totalUploadedBytes + length(chunk)
         percentUploaded <- totalUploadedBytes*100/fileSizeBytes
@@ -95,7 +105,7 @@ chunkedUploadFile<-function(filepath, curlHandle=getCurlHandle(), chunksizeBytes
   completeChunkFileUpload(token, chunkResults)
 }
 
-createChunkedFileUploadToken<-function(filepath, contentType) {
+createChunkedFileUploadToken<-function(filepath, s3UploadDestination, contentType) {
   md5 <- tools::md5sum(path.expand(filepath))
   if (is.na(md5)) stop(sprintf("Unable to compute md5 for %s", filepath))
   names(md5)<-NULL # Needed to make toJSON work right
@@ -114,19 +124,6 @@ createChunkedFileUploadToken<-function(filepath, contentType) {
 # returns the URL for uploading the specified chunk
 createChunkedFileUploadChunkURL<-function(chunkRequest) {
   synapsePost(uri='/createChunkedFileUploadChunkURL', 
-    entity=chunkRequest, 
-    endpoint=synapseServiceEndpoint("FILE"))
-}
-
-addChunkToFile<-function(chunkRequest) {
-  ## We occasionally get an error on addChunkToFile:
-  ## 500 Server Error: Internal Server Error
-  ## {u'reason': u'The specified key does not exist.'}
-  ## This might be because S3 hasn't yet finished propagating the
-  ## addition of the new chunk. So, retry_request will wait and retry.
-
-  # TODO add retry for 500 error, but just for this case, not for all POSTs
-  synapsePost(uri='/addChunkToFile', 
     entity=chunkRequest, 
     endpoint=synapseServiceEndpoint("FILE"))
 }

@@ -7,7 +7,7 @@
 unitTestCreateS4ObjectFromList<-function() {
   # simple case: list argument has just primitives
   listRep<-list(name="name", description="description")
-  e<-synapseClient:::createS4ObjectFromList(list(name="name", description="description"), "Evaluation")
+  e<-synapseClient:::createS4ObjectFromList(listRep, "Evaluation")
   checkEquals("name", e@name)
   checkEquals("description", e@description)
   
@@ -122,5 +122,18 @@ unitTestFileHandle<-function() {
   fileHandleAsList<-synapseClient:::createListFromS4Object(fileHandle)
 }
 
+unitTestExtraField<-function() {
+  listRep<-list(name="name", description="description", foo="bar")
+  # should ignore the unexpected field "foo"
+  e<-synapseClient:::createS4ObjectFromList(listRep, "Evaluation")
+  checkEquals("name", e@name)
+  checkEquals("description", e@description)
+}
+
+unitTestEmptyExceptConcreteType<-function() {
+  fileHandle<-c(concreteType="org.sagebionetworks.repo.model.file.S3FileHandle")
+  s4FileHandle<-synapseClient:::createS4ObjectFromList(fileHandle, "FileHandle")
+  checkEquals(s4FileHandle, synapseClient:::S3FileHandle())
+}
 
 

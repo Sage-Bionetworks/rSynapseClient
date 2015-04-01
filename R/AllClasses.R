@@ -61,6 +61,9 @@ setClass(
 ## used to store typed synapse properties once the JSON schema is integrated
 ## with the R Synapse client
 ##
+
+emptyNamedList<-structure(list(), names = character()) # copied from RJSONIO
+
 setClass(
     Class = "TypedPropertyStore",
     representation = representation(
@@ -196,7 +199,7 @@ setRefClass(
           if(!file.exists(file)){
             .self$metaData <- emptyNamedList
           }else{
-            dd <- fromJSON(file, simplifyWithNames=FALSE)
+            dd <- fromJSON(file=file)
             .self$metaData <- dd$metaData
             .self$archiveFile <- dd$archiveFile
             if(.self$archiveFile=="")
@@ -311,7 +314,12 @@ setRefClass(
           files <- .generateFileList(attr(files, "rootDir"))
           .self$deleteFileMetaData()
 
-          lapply(files$srcfiles, function(i){
+          # Without the following, on Windows + R 3.1 the 'as.character(info[i])' will generate 
+          # a warning which is translated into an error in a number of tests
+          originalWarnLevel<-options()$warn
+          options(warn=0)
+          tryCatch(
+            lapply(files$srcfiles, function(i){
                 info <- file.info(files$srcfiles[i])
                 for(name in names(info))
                   info[[name]] <- as.character(info[[name]])
@@ -320,6 +328,8 @@ setRefClass(
                 rPath <- gsub("^[\\/]", "", rPath)
                 .self$metaData[[i]] <- list(srcPath=.self$archiveFile, relativePath = rPath, fileInfo=info)
               }
+            ),
+            finally = options(warn=originalWarnLevel)
           )
 
           ## persist the metadata to disk
@@ -531,6 +541,7 @@ setClass(
     quoteCharacter="character",
     isFirstLineHeader="logical",
     escapeCharacter="character",
+    lineEnd="character",
     separator="character"
     )
 )
@@ -539,6 +550,21 @@ setClass(
   Class = "TableRowCount",
   contains = c("Table"),
   representation=representation(rowCount="integer", updateEtag="character")
+)
+
+setClass(
+  Class = "TableFileHandleId",
+  contains = c("Table"),
+  representation=representation(
+    fileHandleId="integer",
+    updateEtag="character",
+    linesToSkip="integer",
+    quoteCharacter="character",
+    isFirstLineHeader="logical",
+    escapeCharacter="character",
+    lineEnd="character",
+    separator="character"
+    )
 )
 
 
