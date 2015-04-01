@@ -5,7 +5,7 @@ UserPreference	org.sagebionetworks.repo.model.UserPreference	false
 UserPreferenceBoolean	org.sagebionetworks.repo.model.UserPreferenceBoolean	false
 UserProfile	org.sagebionetworks.repo.model.UserProfile false
 Evaluation	org.sagebionetworks.evaluation.model.Evaluation	false
-SubmissionQuota	org.sagebionetworks.evaluation.model.SubmissionQuota false
+SubmissionQuota	org.sagebionetworks.evaluation.model.SubmissionQuota true
 AnnotationBase	org.sagebionetworks.repo.model.annotation.AnnotationBase	false
 DoubleAnnotation	org.sagebionetworks.repo.model.annotation.DoubleAnnotation	false
 LongAnnotation	org.sagebionetworks.repo.model.annotation.LongAnnotation false

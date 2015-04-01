@@ -33,7 +33,7 @@ mySetUp <- function(httpErrorStatusCode, errorMessage)
       return(errorMessage)
     } else {
       synapseClient:::.setCache("httpStatus", 200)
-      return("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"foo\":\"bar\"}")
+      return(list(headers="HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n", body="{\"foo\":\"bar\"}"))
     }
   }
   attr(myGetUrl, "origDef") <- synapseClient:::.getURLIntern
@@ -89,7 +89,7 @@ mySetUp <- function(httpErrorStatusCode, errorMessage)
 unitTestExponentialBackoffFor503ShouldFail <- 
   function()
 {
-  mySetUp(503, "HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/json\r\n\r\n")
+  mySetUp(503, list(headers="HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/json\r\n", body=""))
   
   opts<-synapseClient:::.getCache("curlOpts")
   opts$timeout.ms<-100
@@ -105,7 +105,7 @@ unitTestExponentialBackoffFor503ShouldFail <-
 unitTestExponentialBackoffFor503ShouldComplete <- 
   function()
 {
-  mySetUp(503, "HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/json\r\n\r\n")
+  mySetUp(503, list(headers="HTTP/1.1 503 Service Unavailable\r\nContent-Type: application/json\r\n", body=""))
   opts<-synapseClient:::.getCache("curlOpts")
   opts$timeout.ms<-100
   
@@ -120,7 +120,7 @@ unitTestExponentialBackoffFor503ShouldComplete <-
 unitTestExponentialBackoffFor502ShouldFail <- 
   function()
 {
-  mySetUp(502, "HTTP Error: 502 for request https://file-prod.prod.sagebase.org/repo/v1/query\r\n\r\n")
+  mySetUp(502, list(headers="HTTP Error: 502 for request https://file-prod.prod.sagebase.org/repo/v1/query\r\n", body=""))
   
   opts<-synapseClient:::.getCache("curlOpts")
   opts$timeout.ms<-100
@@ -136,7 +136,7 @@ unitTestExponentialBackoffFor502ShouldFail <-
 unitTestExponentialBackoffFor502ShouldComplete <- 
   function()
 {
-  mySetUp(502, "HTTP Error: 502 for request https://file-prod.prod.sagebase.org/repo/v1/query\r\n\r\n")
+  mySetUp(502, list(headers="HTTP Error: 502 for request https://file-prod.prod.sagebase.org/repo/v1/query\r\n", body=""))
   opts<-synapseClient:::.getCache("curlOpts")
   opts$timeout.ms<-100
   

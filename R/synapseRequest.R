@@ -1,6 +1,6 @@
 # synapseRequest
 #
-# calls getURL in RCurl letting RCurl follow redirects
+# calls getURL in RCurl after resolving permanent redirects
 # looks up synapse endpoint to construct URL from the given URI
 # 
 # Author: brucehoff
@@ -19,9 +19,6 @@ synapseRequest<-function(
   
   endpoint<-resolvePermanentRedirects(endpoint)
     
-  opts<-.opts
-  opts$header<-TRUE
-  
   url <- paste(endpoint$endpoint, uri, sep="")
   
   result<-getURLWithRetries(url,
@@ -30,8 +27,8 @@ synapseRequest<-function(
     httpheader, # the headers
     curl, # the curl handle
     debugfunction,
-    opts=opts)
+    opts=.opts)
  
-  result$response
+  list(headers=result$parsedHeaders$headers, body=result$body)
 }
 

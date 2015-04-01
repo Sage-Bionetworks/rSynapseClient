@@ -22,7 +22,7 @@
       synapseClient:::.setCache("exponentialBackoffWillFail", FALSE)
       stop("Error in function (type, msg, asError = TRUE)  : Connection reset by peer") 
     } else {
-      return("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"foo\":\"bar\"}")
+      return(list(headers="HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n", body="{\"foo\":\"bar\"}"))
     }
   }
   attr(myGetUrl, "origDef") <- synapseClient:::.getURLIntern
