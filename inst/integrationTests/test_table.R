@@ -311,6 +311,22 @@ integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
   checkTrue(nrow(queryResult@values)==0)
 }
 
+integrationTestSynStoreNAColumn <- function() {
+	project<-synapseClient:::.getCache("testProject")
+	
+	tc1<-TableColumn(name="R_Integration_Test_Column_0", columnType="STRING")
+	tc2<-TableColumn(name="R_Integration_Test_Column_1", columnType="INTEGER")
+	tableColumns<-c(tc1,tc2)
+	
+	tableSchema<-createTableSchema(propertyValue(project, "id"), tableColumns)
+	tableSchema<-synStore(tableSchema)
+	dataFrame <- data.frame("R_Integration_Test_Column_0"=c("A", "B", "C"), 
+			"R_Integration_Test_Column_1"=c(NA, NA, NA))
+	table<-Table(tableSchema=propertyValue(tableSchema, "id"), values=dataFrame)
+	stored<-synStore(table, verbose=FALSE)
+	checkEquals(stored@rowCount, 3)
+}
+
 integrationTestSynStoreCSVFileNoRetrieve <- function() {
   project<-synapseClient:::.getCache("testProject")
   

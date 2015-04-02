@@ -176,7 +176,8 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
     expectedTableColumnTypes<-getTableColumnTypeForDataFrameColumnType(dfColumnType)
     tableColumnType<-schemaColumn@columnType
     if (!any(tableColumnType==expectedTableColumnTypes)) {
-      stop(sprintf("Column %s has type %s but %s is expected.", dfColumnName, tableColumnType, 
+      stop(sprintf("Column %s has type %s in Synapse but %s in the data frame. Allowed data frame columns types: %s.", 
+					  dfColumnName, tableColumnType, dfColumnType, 
           paste(expectedTableColumnTypes, collapse=" or ")))
     }
   }
@@ -208,7 +209,9 @@ getTableColumnTypeForDataFrameColumnType<-function(dfColumnType) {
     factor=c("STRING","FILEHANDLEID","ENTITYID","LINK"), 
     character=c("STRING","FILEHANDLEID","ENTITYID","LINK"), 
     numeric=c("DOUBLE","INTEGER","FILEHANDLEID"), 
-    logical=c("BOOLEAN","STRING"),
+	# note, if a column is all NA then the type is 'logical', so we must allow
+	# any table column type for this R type
+    logical=c("BOOLEAN","STRING","FILEHANDLEID","ENTITYID","LINK","INTEGER","DOUBLE", "DATE"),
     Date=c("DATE","STRING"),
     POSIXct=c("DATE","STRING"))
   result<-map[[dfColumnType]]
