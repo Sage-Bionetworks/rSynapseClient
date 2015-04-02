@@ -71,7 +71,7 @@ integrationTestPrivateBucketRoundTrip <- function() {
 	
 	# download one last time
 	file<-synGet(propertyValue(file, "id"), downloadLocation=tempdir())
-	# check that it's a new file but in the same location as before
+	# check that it's a new file but stored in the same, private bucket
 	checkEquals(modifiedMd5, as.character(tools::md5sum(getFileLocation(file))))
 	checkEquals(storageLocationId, file@fileHandle$storageLocationId)
 	checkTrue(file@fileHandle$id!=fileHandleId)
