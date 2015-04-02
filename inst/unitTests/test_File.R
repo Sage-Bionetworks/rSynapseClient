@@ -117,7 +117,7 @@ unitTestSynAnnotSetMethod<-function() {
 
 unitTestFileUtilities<-function() {
   file<-new("File")
-  file@fileHandle<-list(concreteType="S3FileHandle")
+  file@fileHandle<-list(concreteType="S3FileHandle", storageLocationId="101")
   checkTrue(!synapseClient:::isExternalFileHandle(file@fileHandle))
   checkTrue(!synapseClient:::fileHasFileHandleId(file))
   checkTrue(!synapseClient:::fileHasFilePath(file))
@@ -196,19 +196,12 @@ unitTestIsLoadable <- function() {
 }
 
 unitTestSelectUploadDestination<-function() {
-  uploadDestinations<-synapseClient:::UploadDestinationList(synapseClient:::S3UploadDestination())
-  checkEquals(synapseClient:::S3UploadDestination(), synapseClient:::selectUploadDestination("S3", uploadDestinations))
-  checkEquals(NULL, synapseClient:::selectUploadDestination("sftp://host.com/foo/bar", uploadDestinations))
-  checkEquals(synapseClient:::S3UploadDestination(), synapseClient:::selectUploadDestination(character(0), uploadDestinations))
-  
-  url<-"sftp://host.com"
-  eud<-synapseClient:::ExternalUploadDestination(url=url)
-  uploadDestinations<-synapseClient:::UploadDestinationList(synapseClient:::S3UploadDestination(), eud)
-  checkEquals(eud, synapseClient:::selectUploadDestination(url, uploadDestinations))
+	expected<-synapseClient:::S3UploadDestination(storageLocationId=as.integer(101))
+  	uploadDestinations<-synapseClient:::UploadDestinationList(expected)
+	file<-File(parentId="syn101")
+	file@fileHandle <- list(storageLocationId=as.integer(101))
+  	checkEquals(expected, synapseClient:::selectUploadDestination(file, uploadDestinations))
+	file@fileHandle <- list(storageLocationId=as.integer(202))
+	checkEquals(NULL, synapseClient:::selectUploadDestination(file, uploadDestinations))
 }
 
-unitTestMatchUrlHosts<-function() {
-  checkTrue(synapseClient:::matchURLHosts("sftp://host.com/foo", "sftp://host.com/folder/uuid"))
-  checkTrue(!synapseClient:::matchURLHosts("sftp://host.com/foo", "http://host.com/folder/uuid"))
-  checkTrue(!synapseClient:::matchURLHosts("sftp://host.com/foo", "sftp://someotherhost.com/folder/uuid"))
-}

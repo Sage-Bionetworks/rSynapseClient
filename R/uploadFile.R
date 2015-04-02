@@ -6,7 +6,8 @@
 
 uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHandle(), contentType=NULL) {
   if (!is.null(uploadDestination@banner)) message(uploadDestination@banner)
-  if (is(uploadDestination, "S3UploadDestination")) {
+  if (is(uploadDestination, "S3UploadDestination") ||
+		  is(uploadDestination, "ExternalS3UploadDestination") ) {
     chunkedUploadFile(filepath=filePath, uploadDestination=uploadDestination, curlHandle=curlHandle, contentType=contentType)
   } else if (is(uploadDestination, "ExternalUploadDestination")) {
     if (uploadDestination@uploadType=="S3") {
@@ -31,7 +32,7 @@ uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHand
         stop(message)
       }
       cat("... Upload complete.\n")
-      synapseLinkExternalFile(URLencode(paste(urlDecodedDestination, fileName, sep="/")), contentType)
+      synapseLinkExternalFile(URLencode(paste(urlDecodedDestination, fileName, sep="/")), contentType, uploadDestination@storageLocationId)
     } else if (uploadDestination@uploadType=="HTTPS") {
       stop("Upload to specified HTTPS destination is not yet supported.")
     }
