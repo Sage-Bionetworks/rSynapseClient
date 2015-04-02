@@ -117,7 +117,7 @@ unitTestSynAnnotSetMethod<-function() {
 
 unitTestFileUtilities<-function() {
   file<-new("File")
-  file@fileHandle<-list(concreteType="S3FileHandle")
+  file@fileHandle<-list(concreteType="S3FileHandle", storageLocationId="101")
   checkTrue(!synapseClient:::isExternalFileHandle(file@fileHandle))
   checkTrue(!synapseClient:::fileHasFileHandleId(file))
   checkTrue(!synapseClient:::fileHasFilePath(file))
