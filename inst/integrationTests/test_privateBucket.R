@@ -41,7 +41,9 @@
 
 integrationTestPrivateBucketRoundTrip <- function() {
 	project<-synapseClient:::.getCache("testProject")
+	projectSettings<-synapseClient:::.getCache("testProjectSettings")
 	projectId<-propertyValue(project, "id")
+	
 	# upload to private bucket
 	filePath<- tempfile()
 	connection<-file(filePath)
@@ -51,7 +53,6 @@ integrationTestPrivateBucketRoundTrip <- function() {
 	file<-File(path=filePath, parentId=projectId)
 	file<-synStore(file)
 	# check that it was uploaded to the right place
-	projectSettings<-synapseClient:::.getCache("testProjectSettings")
 	storageLocationId<-projectSettings@locations[1]
 	checkEquals(storageLocationId, file@fileHandle$storageLocationId)
 	fileHandleId<-file@fileHandle$id
@@ -62,6 +63,7 @@ integrationTestPrivateBucketRoundTrip <- function() {
 	checkEquals(storageLocationId, file@fileHandle$storageLocationId)
 	
 	# update file
+	Sys.sleep(1.1) # make sure new timestamp will be different from original
 	connection<-file(getFileLocation(file))
 	writeChar(sprintf("this is a test %s", sample(999999999, 1)), connection, eos=NULL)
 	close(connection)  

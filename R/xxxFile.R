@@ -291,7 +291,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, uploadDestination=uploadDestination, contentType=contentType)
       } else { # ... we are storing a new file which we are linking, but not uploading
         # link external URL in Synapse, get back fileHandle	
-        fileHandle<-synapseLinkExternalFile(file@filePath, contentType)
+        fileHandle<-synapseLinkExternalFile(file@filePath, contentType, storageLocationId=NULL)
         # note, there's no cache map entry to create
       }
       #	save fileHandle in slot, put id in entity properties
@@ -323,7 +323,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         # may need to update the external file handle
         if (filePath!=externalURL) {
           # update the file handle
-          file@fileHandle<-synapseLinkExternalFile(filePath, contentType)
+          file@fileHandle<-synapseLinkExternalFile(filePath, contentType, storageLocationId=NULL)
           propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
         }
       } else {
