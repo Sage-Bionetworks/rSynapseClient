@@ -8,12 +8,12 @@ checkBlackList<-function(logErrorsToSynapse=TRUE) {
   # get my own version
   myOwnVersion<-packageDescription("synapseClient", fields="Version")
   serverVersion<-getServerVersion(logErrorsToSynapse)
-  .checkBlackListGivenMyVersion(myOwnVersion, serverVersion, checkBlackList)
+  .checkBlackListGivenMyVersion(myOwnVersion, serverVersion, logErrorsToSynapse)
 }
 
 
 # provided for integration testing
-.checkBlackListGivenMyVersion<-function(myOwnVersion, serverVersion, checkBlackList, logErrorsToSynapse=TRUE) {
+.checkBlackListGivenMyVersion<-function(myOwnVersion, serverVersion, logErrorsToSynapse=TRUE) {
   if (is.null(myOwnVersion) || myOwnVersion=="") return
   
   # get the latest version, release notes, black list, and optional user message
