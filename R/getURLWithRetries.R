@@ -8,7 +8,8 @@ getURLWithRetries<-function(url,
   httpheader=NULL, # the headers
   curl=getCurlHandle(), # the curl handle
   debugfunction = NULL,
-  opts
+  opts,
+  logErrorsToSynapse=TRUE
 ) {
   
   # result has the form list(result=list(headers,body), httpStatus=<status>)
@@ -35,7 +36,8 @@ getURLWithRetries<-function(url,
 		# returns list(headers,body)
       },
       curlHandle=curl,
-      extraRetryStatusCode=NULL
+      extraRetryStatusCode=NULL,
+	  logErrorsToSynapse
   )
   parsedHeaders<-parseHttpHeaders(result$result$headers)
   list(body=result$result$body, parsedHeaders=parsedHeaders)

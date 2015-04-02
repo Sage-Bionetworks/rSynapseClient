@@ -12,7 +12,8 @@
     curlHandle = getCurlHandle(), 
     anonymous = FALSE, 
     opts = .getCache("curlOpts"),
-    checkHttpStatus=T
+    checkHttpStatus=T,
+	logErrorsToSynapse=TRUE
 )
 {
   ## constants
@@ -76,7 +77,7 @@
   }
   
   # check own version, stopping if blacklisted
-  checkBlackList()
+  checkBlackList(logErrorsToSynapse)
   
   response<-synapseRequest(
     uri,
@@ -86,7 +87,8 @@
     httpheader = header,
     curl = curlHandle,
     debugfunction=d$update,
-    .opts=opts
+    .opts=opts,
+	logErrorsToSynapse
   )
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
