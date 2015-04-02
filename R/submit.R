@@ -38,6 +38,9 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
         versionNumber=entityVersion, 
         name=submissionName))
   } else {
+	# find the team ID for the given team name
+	# get the eligible contributors
+	# include the team id, contributors, and eligibility hash in the submission
     submission<-createSubmissionFromProperties(list(evaluationId=evaluationId, 
         entityId=entityId, 
         versionNumber=entityVersion, 
