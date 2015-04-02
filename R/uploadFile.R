@@ -6,7 +6,8 @@
 
 uploadFileToEntity<-function(filePath, uploadDestination, curlHandle=getCurlHandle(), contentType=NULL) {
   if (!is.null(uploadDestination@banner)) message(uploadDestination@banner)
-  if (is(uploadDestination, "S3UploadDestination")) {
+  if (is(uploadDestination, "S3UploadDestination") ||
+		  is(uploadDestination, "ExternalS3UploadDestination") ) {
     chunkedUploadFile(filepath=filePath, uploadDestination=uploadDestination, curlHandle=curlHandle, contentType=contentType)
   } else if (is(uploadDestination, "ExternalUploadDestination")) {
     if (uploadDestination@uploadType=="S3") {

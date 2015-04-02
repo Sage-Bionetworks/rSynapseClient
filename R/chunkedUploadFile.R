@@ -113,7 +113,8 @@ createChunkedFileUploadToken<-function(filepath, s3UploadDestination, contentTyp
   chunkedFileTokenRequest<-list(
     fileName=basename(filepath),
     contentType=contentType,
-    contentMD5=md5
+    contentMD5=md5,
+	storageLocationId=s3UploadDestination@storageLocationId
   )
   
   synapsePost(uri='/createChunkedFileUploadToken', 

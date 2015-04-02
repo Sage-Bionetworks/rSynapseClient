@@ -3,7 +3,7 @@
 # Author: brucehoff
 ###############################################################################
 
-uploadStringToFile<-function(content, contentType="text/plain") {
+uploadStringToSynapseS3File<-function(content, contentType="text/plain") {
   if (is.null(content) || nchar(content)==0) stop("Missing content.")
   
   MINIMUM_CHUNK_SIZE_BYTES<-5*1024*1024
@@ -15,7 +15,8 @@ uploadStringToFile<-function(content, contentType="text/plain") {
   chunkedFileTokenRequest<-list(
     fileName="content",
     contentType=contentType,
-    contentMD5=contentMD5
+    contentMD5=contentMD5,
+	storageLocationId=NULL # by default this specifies the Synapse S3 storage location
   )
   
   chunkedFileUploadToken<-synapsePost(uri='/createChunkedFileUploadToken', 
