@@ -110,12 +110,20 @@ createChunkedFileUploadToken<-function(filepath, s3UploadDestination, contentTyp
   if (is.na(md5)) stop(sprintf("Unable to compute md5 for %s", filepath))
   names(md5)<-NULL # Needed to make toJSON work right
 
-  chunkedFileTokenRequest<-list(
-    fileName=basename(filepath),
-    contentType=contentType,
-    contentMD5=md5,
-	storageLocationId=s3UploadDestination@storageLocationId
-  )
+  if (length(s3UploadDestination@storageLocationId)==0) {
+	  chunkedFileTokenRequest<-list(
+			  fileName=basename(filepath),
+			  contentType=contentType,
+			  contentMD5=md5
+	  )
+  } else {
+	  chunkedFileTokenRequest<-list(
+			  fileName=basename(filepath),
+			  contentType=contentType,
+			  contentMD5=md5,
+			  storageLocationId=s3UploadDestination@storageLocationId
+	  )
+  }
   
   synapsePost(uri='/createChunkedFileUploadToken', 
     entity=chunkedFileTokenRequest, 
