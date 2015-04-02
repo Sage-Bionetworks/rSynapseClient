@@ -24,13 +24,15 @@ createS4ObjectFromList<-function(content, className) {
   
   constructorArgs<-list()   
   slotTypes<-getSlots(className)
+  extra<-list()
   for (slotName in names(content)) {
     slotValue <- content[[slotName]]
     s4SlotType <- slotTypes[slotName]
     if (is.na(s4SlotType)) {
       # this allows the client to function in the face of an 'additive' API change, i.e.
-      # the client ignores the unexpected value.
-      warning(sprintf("Entry %s found in list but %s has no such slot.", slotName, className))
+      # the client carries along the unexpected values and will return them if the object
+	  # is updated (PUT) to the server
+	  extra[[slotName]]<-slotValue
     } else if (isPrimitiveType(s4SlotType)) {
       # not sure why empty lists are mapped to "AsIs" types, but it's the behavior of RJSONIO
       if (is(slotValue, "list") || is(slotValue, "AsIs")) {
@@ -57,7 +59,9 @@ createS4ObjectFromList<-function(content, className) {
       }
     }
   }
-  do.call(className, constructorArgs)
+  created<-do.call(className, constructorArgs)
+  created@extra<-extra
+  created
 }
 
 createTypedListFromList<-function(content, className) {

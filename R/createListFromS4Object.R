@@ -50,6 +50,11 @@ createListFromS4ObjectIntern<-function(obj, schemaDef) {
     value<-slot(obj, slotName)
     result[[slotName]]<-createListFromS4ObjectIntern(value, elemSchema)
   }
+  for (name in names(obj@extra)) {
+	  if (any(name==names(result))) 
+		  stop(sprintf("'extra' field %s collides with existing element in object of type %s", name, class(obj)))
+	  result[[name]]<-obj@extra[[name]]
+  }
   
   # An object with no field values becomes an empty list.
   # To keep RJSONIO from erroneously encoding as an empty _JSON_ list ("[]")
