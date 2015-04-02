@@ -97,8 +97,6 @@ defineS4ClassForSchema <- function(fullSchemaName) {
   schemaDef <- readEntityDef(fullSchemaName, getSchemaPath())
   
   # make sure all extended classes are defined
-  # we start with the base class for all auto-generated classes,
-  # then add other super-classes defined by the JSON schemas
   superClasses<-character()
   implements <- getImplements(schemaDef)
   if (!is.null(implements)) {
