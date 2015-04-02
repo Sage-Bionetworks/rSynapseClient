@@ -9,8 +9,9 @@ synapsePost <-
     endpoint=synapseServiceEndpoint("REPO"), 
     curlHandle=getCurlHandle(), 
     anonymous = FALSE, 
-   opts = .getCache("curlOpts"),
-   checkHttpStatus=T
+    opts = .getCache("curlOpts"),
+    checkHttpStatus=TRUE,
+	logErrorsToSynapse=TRUE
 )
 {
   ## constants
@@ -24,6 +25,7 @@ synapsePost <-
     curlHandle = curlHandle, 
     anonymous = anonymous, 
     opts = opts,
-    checkHttpStatus=checkHttpStatus
+    checkHttpStatus=checkHttpStatus,
+	logErrorsToSynapse=logErrorsToSynapse
   )
 }

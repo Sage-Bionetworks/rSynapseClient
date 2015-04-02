@@ -13,7 +13,8 @@
 
 webRequestWithRetries<-function(fcn,
   curlHandle,
-  extraRetryStatusCodes=NULL) {
+  extraRetryStatusCodes=NULL,
+  logErrorsToSynapse=TRUE) {
   INITIAL_BACKOFF_SECONDS <- 1
   BACKOFF_MULTIPLIER <- 2 # i.e. the back off time is (initial)*[multiplier^(# retries)]
   
@@ -42,7 +43,7 @@ webRequestWithRetries<-function(fcn,
         backoff <- backoff * BACKOFF_MULTIPLIER
       } else {
         # ... otherwise it's some other error
-        .logErrorToSynapse("", rawResponse[[1]])
+        if (logErrorsToSynapse) .logErrorToSynapse("", rawResponse[[1]])
         stop(rawResponse[[1]])
       }
     } else {
@@ -58,7 +59,7 @@ webRequestWithRetries<-function(fcn,
   }
   if (class(rawResponse)=="try-error") {
     # then we gave up on the exponential retry
-    .logErrorToSynapse("", rawResponse[[1]])
+		if (logErrorsToSynapse) .logErrorToSynapse("", rawResponse[[1]])
     stop(rawResponse[[1]])
   }
   

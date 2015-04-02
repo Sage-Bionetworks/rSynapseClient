@@ -11,7 +11,8 @@ synapsePut <-
     curlHandle=getCurlHandle(), 
     anonymous = FALSE, 
     opts = .getCache("curlOpts"),
-    checkHttpStatus=T
+    checkHttpStatus=TRUE,
+	logErrorsToSynapse=TRUE
 )
 {
   ## constants
@@ -25,6 +26,7 @@ synapsePut <-
     curlHandle = curlHandle, 
     anonymous = anonymous,  
     opts = opts,
-    checkHttpStatus=checkHttpStatus
+    checkHttpStatus=checkHttpStatus,
+	logErrorsToSynapse=logErrorsToSynapse
   )
 }
