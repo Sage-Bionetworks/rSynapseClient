@@ -567,8 +567,6 @@ setClass(
     )
 )
 
-
-
 # This is an abstract class for a typed list
 # Concrete extensions should fill the 'type' slot
 # with the class of the elements in the list
