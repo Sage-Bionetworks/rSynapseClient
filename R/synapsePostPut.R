@@ -77,7 +77,7 @@
   }
   
   # check own version, stopping if blacklisted
-  checkBlackList()
+  checkBlackList(logErrorsToSynapse)
   
   response<-synapseRequest(
     uri,

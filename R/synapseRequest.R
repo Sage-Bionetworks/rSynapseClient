@@ -18,7 +18,7 @@ synapseRequest<-function(
   .opts,
   logErrorsToSynapse=TRUE) {
   
-  endpoint<-resolvePermanentRedirects(endpoint)
+  endpoint<-resolvePermanentRedirects(endpoint, logErrorsToSynapse=logErrorsToSynapse)
     
   url <- paste(endpoint$endpoint, uri, sep="")
   

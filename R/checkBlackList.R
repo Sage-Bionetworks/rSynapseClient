@@ -4,21 +4,21 @@
 # Author: brucehoff
 ###############################################################################
 
-checkBlackList<-function() {
+checkBlackList<-function(logErrorsToSynapse=TRUE) {
   # get my own version
   myOwnVersion<-packageDescription("synapseClient", fields="Version")
-  serverVersion<-getServerVersion()
-  .checkBlackListGivenMyVersion(myOwnVersion, serverVersion)
+  serverVersion<-getServerVersion(logErrorsToSynapse)
+  .checkBlackListGivenMyVersion(myOwnVersion, serverVersion, checkBlackList)
 }
 
 
 # provided for integration testing
-.checkBlackListGivenMyVersion<-function(myOwnVersion, serverVersion) {
+.checkBlackListGivenMyVersion<-function(myOwnVersion, serverVersion, checkBlackList, logErrorsToSynapse=TRUE) {
   if (is.null(myOwnVersion) || myOwnVersion=="") return
   
   # get the latest version, release notes, black list, and optional user message
   # a local cache is used to avoid making too many web service calls for this static info
-  versionInfo <- getVersionInfo()
+  versionInfo <- getVersionInfo(logErrorsToSynapse)
   
   if (.versionIsBlackListed(myOwnVersion, serverVersion, versionInfo$blacklist)) {
     # check whether the *latest* version is also blacklisted for the server we're using
