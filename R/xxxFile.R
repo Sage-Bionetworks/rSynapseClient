@@ -337,19 +337,11 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
 # containerDestinations has type UploadDestinationList, a TypeList of UploadDestination
 selectUploadDestination<-function(file, containerDestinations) {
   	fileStorageLocationId<-file@fileHandle$storageLocationId
-	if (is.null(fileStorageLocationId)) {
-	    for (dest in containerDestinations@content) {
-		  if (!is.null(dest@storageLocationId)) {
-			  return (dest)
-		  }
-	    }
-	} else {
-		for (dest in containerDestinations@content) {
-			if (fileStorageLocationId==dest@storageLocationId) {
-				return (dest)
-			}
+	if (is.null(fileStorageLocationId)) return(NULL)
+	for (dest in containerDestinations@content) {
+		if (fileStorageLocationId==dest@storageLocationId) {
+			return (dest)
 		}
-		
 	}
   	NULL
 }
