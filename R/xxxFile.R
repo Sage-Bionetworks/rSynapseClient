@@ -117,7 +117,7 @@ setMethod(
       }
 )
 
-isExternalFileHandle<-function(fileHandle) {length(fileHandle)>0 && fileHandle$concreteType=="org.sagebionetworks.repo.model.file.ExternalFileHandle"}
+isExternalFileHandle<-function(fileHandle) {length(fileHandle)>0 && is.null(fileHandle$storageLocationId)}
 fileHasFileHandleId<-function(file) {!is.null(file@fileHandle$id)}
 fileHasFilePath<-function(file) {length(file@filePath)>0 && nchar(file@filePath)>0}
 
