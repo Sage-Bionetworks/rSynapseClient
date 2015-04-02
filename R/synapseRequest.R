@@ -15,9 +15,10 @@ synapseRequest<-function(
   httpheader, # the headers
   curl, # the curl handle
   debugfunction = NULL,
-  .opts) {
+  .opts,
+  logErrorsToSynapse=TRUE) {
   
-  endpoint<-resolvePermanentRedirects(endpoint)
+  endpoint<-resolvePermanentRedirects(endpoint, logErrorsToSynapse=logErrorsToSynapse)
     
   url <- paste(endpoint$endpoint, uri, sep="")
   
@@ -27,7 +28,8 @@ synapseRequest<-function(
     httpheader, # the headers
     curl, # the curl handle
     debugfunction,
-    opts=.opts)
+    opts=.opts,
+	logErrorsToSynapse)
  
   list(headers=result$parsedHeaders$headers, body=result$body)
 }
