@@ -199,9 +199,21 @@ unitTestSelectUploadDestination<-function() {
 	expected<-synapseClient:::S3UploadDestination(storageLocationId=as.integer(101))
   	uploadDestinations<-synapseClient:::UploadDestinationList(expected)
 	file<-File(parentId="syn101")
-	file@fileHandle <- list(storageLocationId=as.integer(101))
+	file@fileHandle <- list(storageLocationId=as.integer(101), concreteType = "org.sagebionetworks.repo.model.file.S3FileHandle")
   	checkEquals(expected, synapseClient:::selectUploadDestination(file, uploadDestinations))
-	file@fileHandle <- list(storageLocationId=as.integer(202))
+	file@fileHandle <- list(storageLocationId=as.integer(202),  concreteType = "org.sagebionetworks.repo.model.file.S3FileHandle")
 	checkEquals(NULL, synapseClient:::selectUploadDestination(file, uploadDestinations))
+	
+	# remove later
+	url<-"sftp://host.com/some_uuid"
+	eud<-synapseClient:::ExternalUploadDestination(url=url, storageLocationId=as.integer(303))
+	uploadDestinations<-synapseClient:::UploadDestinationList(expected, eud)
+	file@fileHandle<-list(externalURL="sftp://host.com/foo/bar", concreteType = "org.sagebionetworks.repo.model.file.ExternalFileHandle")
+	checkEquals(eud, synapseClient:::selectUploadDestination(file, uploadDestinations))
 }
 
+unitTestMatchUrlHosts<-function() {
+	checkTrue(synapseClient:::matchURLHosts("sftp://host.com/foo", "sftp://host.com/folder/uuid"))
+	checkTrue(!synapseClient:::matchURLHosts("sftp://host.com/foo", "http://host.com/folder/uuid"))
+	checkTrue(!synapseClient:::matchURLHosts("sftp://host.com/foo", "sftp://someotherhost.com/folder/uuid"))
+}
