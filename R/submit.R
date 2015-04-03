@@ -39,17 +39,60 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
         name=submissionName))
   } else {
 	# find the team ID for the given team name
+	teamId<-findTeamIdForName(teamName)
+	if (is.null(teamId)) stop(sprintf("There is no team named %s.", teamName))
 	# get the eligible contributors
+	tse<-getTeamSubmissionEligibility(evaluationId, teamId)
+	if (!tse@teamEligibility@isEligible) {
+		stop(sprintf("Team %s is ineligible to submit to the specified Evaluation at this time.", teamName))
+	}
+	contributors<-SubmissionContributorList()
+	for (memberEligibility in tse@membersEligibility@content) {
+		if (memberEligibility@isEligible) {
+			contributors<-append(contributors, 
+					SubmissionContributor(principalId=memberEligibility@principalId))
+		}
+	}
+	
 	# include the team id, contributors, and eligibility hash in the submission
     submission<-createSubmissionFromProperties(list(evaluationId=evaluationId, 
         entityId=entityId, 
         versionNumber=entityVersion, 
         name=submissionName,
-        submitterAlias=teamName))
+        submitterAlias=teamName,
+		teamId=teamId,
+		contributors=contributors))
   } 
   
-  createdSubmission<-synCreateSubmission(submission, entityEtag=etag)
+  createdSubmission<-synCreateSubmission(submission, entityEtag=etag, eligibilityStateHash=tse@eligibilityStateHash)
   if (!silent) message(evaluation$submissionReceiptMessage)
   list(submission=createdSubmission, submissionReceiptMessage=evaluation$submissionReceiptMessage)
+}
+
+findTeamIdForName<-function(teamName) {
+	limit<-50
+	offset<-0
+	teamId<-NULL
+	repeat {
+		# TODO:  URL encode fragment
+		page<-synRestGET(sprintf("/teams?fragment=%s&offset=%s&limit=%s", teamName, offset, limit))
+		teams<-page$results
+		for (teamList in teams) {
+			teamList<-createS4ObjectForTeam(teamList, "Team")
+			if (team@name==teamName) {
+				teamId<-team@id
+				break
+			}
+		}
+		if (!is.null(teamId)) break
+		offset<-offset+limit
+		if (offset>=page$totalNumberOfResults) break
+	}
+	teamId
+}
+
+getTeamSubmissionEligibility<-function(evaluationId, teamId) {
+	result<-synRestGET(sprintf("/evaluation/%s/team/%s/submissionEligibility", evaluationId, teamId))
+	createS4ObjectForList(result, "TeamSubmissionEligibility")
 }
 

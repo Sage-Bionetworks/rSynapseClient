@@ -138,9 +138,11 @@ setMethod(
   }
 )
 
-synCreateSubmission<-function(submission, entityEtag) {
-  createSubmissionFromProperties(synRestPOST(sprintf("/evaluation/submission?etag=%s", entityEtag), 
-  				createListFromS4Object(submission@submissionContent)))
+synCreateSubmission<-function(submission, entityEtag, eligibilityStateHash) {
+  createSubmissionFromProperties(
+		synRestPOST(sprintf("/evaluation/submission?etag=%s,eligibilityStateHash=%s", 
+				entityEtag, eligibilityStateHash), 
+  		createListFromS4Object(submission@submissionContent)))
 }
 
 newSubmissionStatus<-function(content) {
