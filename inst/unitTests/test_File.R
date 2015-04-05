@@ -1,4 +1,4 @@
-# These are the test_Locationable tests adapted for Files
+
 #
 ###############################################################################
 

@@ -3,32 +3,6 @@
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
-legalFilePath<-function(filePath) {
-	gsub("[()`'<>\"|?*]", "_", filePath)
-}
-
-# Note: This will be deleted along with the code for Locationable
-synapseDownloadFile  <- 
-  function (url, checksum, curlHandle = getCurlHandle(), cacheDir = synapseCacheDir(), opts = .getCache("curlOpts"), versionId = NULL)
-{
-	if (is.null(cacheDir)) stop(paste("cacheDir is required. synapseCacheDir() returns ", synapseCacheDir()))
-	
-  ## Download the file to the cache
-  destfile <- .generateCacheDestFile(url, versionId)
-  
-  ## temporary hack for github url that does not contain file extension
-  parsedUrl <- .ParsedUrl(url)
-  if( parsedUrl@host=="github.com" ){
-    splits <- strsplit(parsedUrl@pathPrefix, "/")
-    if( splits[[1]][length(splits[[1]])] == "zipball" )
-      destfile <- paste(destfile, ".zip", sep="")
-    if( splits[[1]][length(splits[[1]])] == "tarball" )
-      destfile <- paste(destfile, ".tar", sep="")
-  }
-  
-  protocolSpecificFileDownload(url=url, destdir=dirname(destfile), opts=opts)$downloadedFile
-}
-
 # download file from source which may involve one of a variety of protocols
 protocolSpecificFileDownload  <- 
   function (url, destdir, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"), extraRetryStatusCodes)

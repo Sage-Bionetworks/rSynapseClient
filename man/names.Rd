@@ -8,10 +8,6 @@ names
 variation of names() for certain S-4 objects in the synapseClient package
 }
 \usage{
-names(CachingObjectOwner)
-names(EnhancedEnvironment)
-names(LocationableWithoutBinaries)
-names(Locationable)
 names(Entity)
 names(QueryResult)
 names(SynapseProperties)
