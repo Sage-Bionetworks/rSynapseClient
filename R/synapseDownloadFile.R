@@ -32,7 +32,7 @@ downloadHttpFile  <-
 			.curlWriterDownload(url=url, destdir=destdir, opts = opts, curlHandle = curlHandle)
 		},
 		curlHandle=curlHandle,
-		extraRetryStatusCode=NULL
+		extraRetryStatusCodes=NULL
 	)
 	
 	wrwrResult$result

@@ -12,7 +12,8 @@ synapsePut <-
     anonymous = FALSE, 
     opts = .getCache("curlOpts"),
     checkHttpStatus=TRUE,
-	logErrorsToSynapse=TRUE
+	logErrorsToSynapse=TRUE,
+	extraRetryStatusCodes=NULL
 )
 {
   ## constants
@@ -27,6 +28,7 @@ synapsePut <-
     anonymous = anonymous,  
     opts = opts,
     checkHttpStatus=checkHttpStatus,
-	logErrorsToSynapse=logErrorsToSynapse
+	logErrorsToSynapse=logErrorsToSynapse,
+	extraRetryStatusCodes=extraRetryStatusCodes
   )
 }
