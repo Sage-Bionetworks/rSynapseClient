@@ -641,22 +641,6 @@ setMethod(
 )
 
 setMethod(
-  f = "moveFile",
-  signature = signature("File", "character", "character"),
-  definition = function(entity, src, dest){
-    stop("Unsupported operation for Files.")
-  }
-)
-
-setMethod(
-  f = "deleteFile",
-  signature = signature("File", "character"),
-  definition = function(entity, file){
-    stop("Unsupported operation for Files.")
-  }
-)
-
-setMethod(
   f = "addFile",
   signature = signature("File", "character", "character"),
   definition = function(entity, file, path) { # Note 'entity' is a File, not an Entity

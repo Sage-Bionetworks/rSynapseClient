@@ -4,6 +4,13 @@
 ###############################################################################
 
 setGeneric(
+	name = ".populateSlotsFromEntity",
+	def = function(object, entity, json){
+		standardGeneric(".populateSlotsFromEntity")
+	}
+)
+
+setGeneric(
   name="Activity",
   def = function(activity, ...) {
     standardGeneric("Activity")

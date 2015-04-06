@@ -10,7 +10,6 @@ kSynapseRAnnotationTypeMap <- list(
   doubleAnnotations = "numeric",
   dateAnnotations = "POSIXt"
 )
-kSupportedDataLocationTypes <- c("external", "awss3")
 
 .onAttach <-
   function(libname, pkgname)
@@ -83,7 +82,6 @@ kSupportedDataLocationTypes <- c("external", "awss3")
       .setCache("debug", Config.hasSection(config, "debug"))
   }, silent = TRUE)
   
-  synapseDataLocationPreferences(kSupportedDataLocationTypes)
   synapseCacheDir(gsub("[\\/]+", "/", path.expand("~/.synapseCache")))
 
   entities <- entitiesToLoad()

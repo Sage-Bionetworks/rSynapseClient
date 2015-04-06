@@ -145,44 +145,9 @@ export(
 )
 
 
-#####
-## TO BE DEPRECATED
-#####
-
-### DEPRECATED FUNCTIONS
-###  These functions have .Rd files, but are deprecated **and will ultimately be removed**
-###  Removing from export() requires also removing unit and integration tests which use them
-###  B. Bot -- these are functions that are used internally, but do not need to be exported / exposed to users
-export(
-  "as.environment.EnhancedEnvironment",
-  "as.environment.GlobalCache", 
-  "as.environment.ArchiveOwner", 
-  "as.list.SimplePropertyOwner", 
-  "as.list.SynapseAnnotations", 
-  "as.list.TypedPropertyStore", 
-  "as.list.SynapseProperties",
-  "length.EnhancedEnvironment", 
-  "length.QueryResult",
-  "names.CachingObjectOwner", 
-  "names.EnhancedEnvironment", 
-  "names.LocationableWithoutBinaries",
-  "names.Locationable",
-  "names.Entity",
-  "names.QueryResult",
-  "names.SynapseProperties",
-  "getPackageName.EnhancedEnvironment", 
-  "getPackageName.ArchiveOwner",
-  "getPackageName",
-  "setPackageName",
-  "attach",
-  "detach"
-)
-
-# Methods used on deprecated Synapse objects (but left in code base for backward compatibility?)
+# Methods used on deprecated Synapse objects (but left in code base for backward compatibility)
 exportMethods(
   "addFile",
-  "deleteFile",
-  "moveFile",
   "addObject",
   "deleteObject",
   "getObject",
