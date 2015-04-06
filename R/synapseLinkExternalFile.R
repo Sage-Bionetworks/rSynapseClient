@@ -6,12 +6,16 @@
 # links external URL via the Synapse File Services, returning a FileHandle
 #
 
-synapseLinkExternalFile<-function(externalURL, contentType) {
+synapseLinkExternalFile<-function(externalURL, contentType, storageLocationId) {
   fileName<-basename(externalURL)
   if (is.null(contentType)) {
     contentType<-getMimeTypeForFile(fileName)
   }
   uri<- "/externalFileHandle"
-  body<-list(externalURL=externalURL, fileName=fileName, contentType=contentType, concreteType="org.sagebionetworks.repo.model.file.ExternalFileHandle")
+  body<-list(externalURL=externalURL, 
+		  fileName=fileName, 
+		  contentType=contentType, 
+		  concreteType="org.sagebionetworks.repo.model.file.ExternalFileHandle",
+		  storageLocationId=storageLocationId)
   synapsePost(uri, body, endpoint=synapseFileServiceEndpoint())
 }

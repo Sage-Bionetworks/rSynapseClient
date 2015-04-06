@@ -261,7 +261,7 @@ integrationTestMetadataRoundTrip_URL <- function() {
   
   # create a file to be uploaded
   synapseStore<-FALSE
-  filePath<-"http://dilbert.com/index.html"
+  filePath<-"http://www.google.com/favicon.ico"
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
   
   # now store it
@@ -568,12 +568,12 @@ roundTripIntern<-function(project) {
   downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation, ifcollision="keep.local")
   # file path is the same, timestamp should not change
   Sys.sleep(1.0)
-  checkEquals(getFileLocation(downloadedToSpecified), fp)
+  checkEquals(normalizePath(getFileLocation(downloadedToSpecified)), normalizePath(fp))
   checkEquals(timestamp, synapseClient:::lastModifiedTimestamp(fp))
   
   # download again with the 'overwrite' choice
   downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation, ifcollision="overwrite.local")
-  checkEquals(getFileLocation(downloadedToSpecified), fp)
+  checkEquals(normalizePath(getFileLocation(downloadedToSpecified)), normalizePath(fp))
   # timestamp SHOULD change
   checkTrue(timestamp!=synapseClient:::lastModifiedTimestamp(fp)) 
 
@@ -582,9 +582,9 @@ roundTripIntern<-function(project) {
   # download with the 'keep both' choice (the default)
   downloadedToSpecified<-synGet(id, downloadLocation=specifiedLocation)
   # there should be a second file
-  checkTrue(getFileLocation(downloadedToSpecified)!=fp)
+  checkTrue(normalizePath(getFileLocation(downloadedToSpecified))!=normalizePath(fp))
   # it IS in the specified directory
-  checkFilesEqual(specifiedLocation, dirname(getFileLocation(downloadedToSpecified)))
+  checkFilesEqual(normalizePath(specifiedLocation), normalizePath(dirname(getFileLocation(downloadedToSpecified))))
   
   # delete the cached file
   deleteEntity(downloadedFile)
@@ -1013,7 +1013,7 @@ integrationTestExternalLink<-function() {
   
   # create a file to be uploaded
   synapseStore<-FALSE
-  filePath<-"http://dilbert.com/index.html"
+  filePath<-"http://www.google.com/favicon.ico"
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
   
   # now store it

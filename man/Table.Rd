@@ -33,5 +33,5 @@ Table Constructor
   }
 }
 \seealso{
-\code{\link{TableSchema},\link{RowList},\link{synStore},\link{as.tableColumns}}
+\code{\link{TableSchema},\link{RowList},\link{synStore},,\link{synDownloadTableFile}\link{as.tableColumns}}
 }

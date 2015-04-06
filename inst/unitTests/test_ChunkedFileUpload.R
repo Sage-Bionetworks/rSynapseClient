@@ -19,7 +19,7 @@
         stop("Connection reset by peer")
       } else {
         # nonsenscial response
-        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"foo\":\"bar\"}"
+        list(headers="HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n", body="{\"foo\":\"bar\"}")
       }
   })
   synapseClient:::.mock(".checkCurlResponse", function(object, response, call.=FALSE, logErrorToSynapse=FALSE) {TRUE})

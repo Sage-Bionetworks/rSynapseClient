@@ -118,6 +118,9 @@ setMethod(
 )
 
 isExternalFileHandle<-function(fileHandle) {length(fileHandle)>0 && fileHandle$concreteType=="org.sagebionetworks.repo.model.file.ExternalFileHandle"}
+# TODO once all file handle's storageLocationIds are back-filled (PLFM-3327):
+# isExternalFileHandle<-function(fileHandle) {length(fileHandle)>0 && is.null(fileHandle$storageLocationId)}
+
 fileHasFileHandleId<-function(file) {!is.null(file@fileHandle$id)}
 fileHasFilePath<-function(file) {length(file@filePath)>0 && nchar(file@filePath)>0}
 
@@ -191,6 +194,10 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
   writeFileAndUnlock(cacheMapFile, cacheRecordJson, lockExpiration)
 }
 
+fileMatchesTimestamp<-function(filePath, timestamp) {
+	!is.null(timestamp) && .formatAsISO8601(lastModifiedTimestamp(filePath))==timestamp
+}
+
 # is local file UNchanged
 # given a FileHandleId and a file path
 # returns TRUE if there is an entry in the Cache Map for the FileHandleId and the File Path
@@ -198,7 +205,36 @@ addToCacheMap<-function(fileHandleId, filePath, timestamp=NULL) {
 # returns FALSE if the timestamps differ OR if there is no entry in the Cache Map
 localFileUnchanged<-function(fileHandleId, filePath) {
   downloadedTimestamp<-getFromCacheMap(fileHandleId, filePath)
-  !is.null(downloadedTimestamp) && .formatAsISO8601(lastModifiedTimestamp(filePath))==downloadedTimestamp
+  fileMatchesTimestamp(filePath, downloadedTimestamp)
+}
+
+startswith<-function(str, prefix) {
+	spl<-strsplit(str, prefix)[[1]]
+	return(length(spl)==2 && nchar(spl[1])==0 && nchar(spl[2])>0)
+}
+
+# Searches for a file for the given handle id which is already downloaded in the
+# given location (directory). Looks both for an _unchanged_ file (i.e. not modified
+# since download) and a downloaded file, whether changed or not.  Returns the first
+# two matching files found in the slots 'unchanged' and 'any' of the returned list.
+# if no match is found, the corresponding slot is empty.
+getCachedInLocation<-function(fileHandleId, downloadLocation) {
+	cacheMapFile<-cacheMapFilePath(fileHandleId)
+	lockFile(cacheMapFile)
+	mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
+	unlockFile(cacheMapFile)
+	# this is necessary to allow Windows paths to work with toJSON/fromJSON
+	downloadLocation<-normalizePath(downloadLocation, winslash="/")
+	result<-list()
+	for (key in names(mapForFileHandleId)) {
+		if (startswith(key,downloadLocation) && file.exists(key)) {
+			if (is.null(result$any)) result$any<-key
+			if (fileMatchesTimestamp(key, mapForFileHandleId[[key]])) {
+				if (is.null(result$unchanged)) result$unchanged<-key
+			}
+		}
+	}
+	result
 }
 
 uploadAndAddToCacheMap<-function(filePath, uploadDestination, contentType=NULL) {
@@ -258,7 +294,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, uploadDestination=uploadDestination, contentType=contentType)
       } else { # ... we are storing a new file which we are linking, but not uploading
         # link external URL in Synapse, get back fileHandle	
-        fileHandle<-synapseLinkExternalFile(file@filePath, contentType)
+        fileHandle<-synapseLinkExternalFile(file@filePath, contentType, storageLocationId=NULL)
         # note, there's no cache map entry to create
       }
       #	save fileHandle in slot, put id in entity properties
@@ -266,16 +302,16 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
       propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
     }
   } else { # fileHandle is not null, i.e. we're updating a Synapse File that's already created
-    #	if fileHandle is inconsistent with filePath or synapseStore, raise an exception 
+    # if fileHandle is inconsistent with filePath or synapseStore, raise an exception 
     validateFile(file)
     if (file@synapseStore) {
       if (!fileHasFilePath(file) || localFileUnchanged(file@fileHandle$id, file@filePath)) {
         # since local file matches Synapse file (or was not actually retrieved) nothing to store
       } else {
         uploadDestinations<-getUploadDestinations(propertyValue(file, "parentId"))
-        uploadDestination<-selectUploadDestination(getUrlForFileHandle(file@fileHandle), uploadDestinations)
+        uploadDestination<-selectUploadDestination(file, uploadDestinations)
         if(is.null(uploadDestination)) {
-          stop("Container lacks upload destination matching file's current URL.")
+          stop("File's container lacks upload destination for the file's storage location.")
         }
         #	load file into Synapse, get back fileHandle (save in slot, put id in properties)       
         fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, uploadDestination=uploadDestination, contentType=contentType)
@@ -290,7 +326,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         # may need to update the external file handle
         if (filePath!=externalURL) {
           # update the file handle
-          file@fileHandle<-synapseLinkExternalFile(filePath, contentType)
+          file@fileHandle<-synapseLinkExternalFile(filePath, contentType, storageLocationId=NULL)
           propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
         }
       } else {
@@ -301,36 +337,47 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
   file
 }
 
-selectUploadDestination<-function(fileUrl, containerDestinations) {
-  if (length(fileUrl)==0) {
-    return(containerDestinations[[1]])
-  } else {
-    for (dest in containerDestinations@content) {
-      if (fileUrl=="S3") {
-        if (is(dest, "S3UploadDestination")) {
-          return(dest)
-        }
-      } else if (is(dest, "ExternalUploadDestination")) {
-        if (matchURLHosts(fileUrl, dest@url)) {
-          return (dest)
-        }
-      }
-    }
-  }
-  NULL
+# containerDestinations has type UploadDestinationList, a TypeList of UploadDestination
+selectUploadDestination<-function(file, containerDestinations) {
+  	fileStorageLocationId<-file@fileHandle$storageLocationId
+	if (!is.null(fileStorageLocationId)) {
+		for (dest in containerDestinations@content) {
+			if (fileStorageLocationId==dest@storageLocationId) {
+				return (dest)
+			}
+		}
+	}
+	
+	# remove the following once PLFM-3327 is done
+	# if the above fails to match an upload destination, try matching on URL
+	if (isExternalFileHandle(file@fileHandle)) {
+		fileUrl<-file@fileHandle$externalURL
+		if (length(fileUrl)==0) {
+			stop(sprintf("No file handle url for file handle %s", file@fileHandle$id))
+		} 
+		
+		for (dest in containerDestinations@content) {
+			if (is(dest, "ExternalUploadDestination") && 
+					matchURLHosts(fileUrl, dest@url)) {
+				return (dest)
+			}
+		}
+	}
+
+  	NULL
 }
 
-# match protocol, host and port
 matchURLHosts<-function(url1, url2) {
-  parsedUrl1<-.ParsedUrl(url1)
-  parsedUrl2<-.ParsedUrl(url2)
-  parsedUrl1@protocol==parsedUrl2@protocol &&
-    parsedUrl1@host==parsedUrl2@host
+	 parsedUrl1<-.ParsedUrl(url1)
+	 parsedUrl2<-.ParsedUrl(url2)
+	 parsedUrl1@protocol==parsedUrl2@protocol &&
+			 parsedUrl1@host==parsedUrl2@host
 }
 
-fileHandleMatchesUploadDestination<-function(fileHandleUrl, containerEntityId) {
+
+fileHandleMatchesUploadDestination<-function(file, containerEntityId) {
   uploadDestinations<-getUploadDestinations(containerEntityId)
-  !is.null(selectUploadDestination(fileHandleUrl, uploadDestinations))
+  !is.null(selectUploadDestination(file, uploadDestinations))
 }
 
 getUploadDestinations<-function(containerEntityId) {
@@ -338,16 +385,6 @@ getUploadDestinations<-function(containerEntityId) {
   uploadDestinations<-createTypedListFromList(uploadDestinationResponse$list, "UploadDestinationList")
   if (length(uploadDestinations)==0) stop(sprintf("Entity %s has no upload destinations to choose from.", containerEntityId))
   uploadDestinations
-}
-
-getUrlForFileHandle<-function(fileHandle) {
-  if (fileHandle$concreteType=="org.sagebionetworks.repo.model.file.S3FileHandle") {
-    "S3"
-  } else if (fileHandle$concreteType=="org.sagebionetworks.repo.model.file.ExternalFileHandle") {
-    fileHandle$externalURL
-  } else {
-    stop(sprintf("Unexpected file handle type %s", fileHandle$concreteType))
-  }
 }
 
 # we define these functions to allow mocking during testing
@@ -382,23 +419,6 @@ generateUniqueFileName<-function(folder, filename) {
   stop(sprintf("Cannot generate unique file name variation in folder %s for file %s", folder, filename))
 }
 
-downloadFromSynapseOrExternal<-function(
-  downloadLocation, 
-  filePath, 
-  isExternalUrl, 
-  downloadUri, 
-  endpointName, 
-  externalURL, 
-  fileHandle) {
-  dir.create(downloadLocation, recursive=T, showWarnings=F)
-  if (isExternalUrl==FALSE) {
-    synapseDownloadFromServiceToDestination(downloadUri, endpointName, destfile=filePath, extraRetryStatusCodes=404)
-  } else {
-    synapseDownloadFileToDestination(externalURL, filePath)
-  }
-  addToCacheMap(fileHandle$id, filePath)
-}
-
 getFileHandle<-function(entity) {
   fileHandleId<-propertyValue(entity, "dataFileHandleId")
   if (is.null(fileHandleId)) stop(sprintf("Entity %s (version %s) is missing its FileHandleId", propertyValue(entity, "id"), propertyValue(entity, "version")))
@@ -418,7 +438,7 @@ getFileHandle<-function(entity) {
 # Note this is 'broken out' from 'synGetFile' to allow mocking 
 # during integration test
 hasUnfulfilledAccessRequirements<-function(id) {
-  unfulfilledAccessRequirements<-synapseGet(sprintf("/entity/%s/accessRequirementUnfulfilled", id))
+  unfulfilledAccessRequirements<-synapseGet(sprintf("/entity/%s/accessRequirementUnfulfilled?accessType=DOWNLOAD", id))
   unfulfilledAccessRequirements$totalNumberOfResults>0
 }
 
@@ -439,12 +459,12 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   file@fileHandle<-fileHandle
   
   if (is.null(propertyValue(file, "versionNumber"))) {
-    downloadUri<-sprintf("/entity/%s/file", id)
+    downloadUri<-sprintf("/entity/%s/file?redirect=FALSE", id)
   } else {
-    downloadUri<-sprintf("/entity/%s/version/%s/file", id, propertyValue(file, "versionNumber"))
+    downloadUri<-sprintf("/entity/%s/version/%s/file?redirect=FALSE", id, propertyValue(file, "versionNumber"))
   }
   
-  filePath<-synGetFileAttachment(
+  filePath<-retrieveAttachedFileHandle(
     downloadUri,
     "REPO",
     fileHandle,
@@ -456,9 +476,10 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
     
   # now construct File from 'result', which has filePath, synapseStore 
   if (!is.null(filePath)) file@filePath<-filePath
-  # if the file location matches one of the upload destinations for the container then we can store it
-  # back to that location later
-  file@synapseStore<-fileHandleMatchesUploadDestination(getUrlForFileHandle(fileHandle), propertyValue(file, "parentId"))
+  # if the file handle is not an external one or if it is external but the storageLocation
+  # is 'recognized' by the file's parent project, then we can store it back later
+  file@synapseStore<-!isExternalFileHandle(fileHandle) ||
+		  fileHandleMatchesUploadDestination(file, propertyValue(file, "parentId"))
   if (load) {
     if (is.null(file@objects)) file@objects<-new.env(parent=emptyenv())
     # Note: the following only works if 'path' is a file system path, not a URL
@@ -467,7 +488,7 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
   file
 }
 
-synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
+retrieveAttachedFileHandle<-function(downloadUri, endpointName, fileHandle, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
   if (isExternalFileHandle(fileHandle)) {
     isExternalURL<-TRUE
     externalURL<-fileHandle$externalURL
@@ -478,43 +499,11 @@ synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFi
   }
   
   if (downloadFile) {
-    if (is.null(downloadLocation)) {
-      downloadLocation<-defaultDownloadLocation(fileHandle$id)
-    } else {
-      if (file.exists(downloadLocation) && !file.info(downloadLocation)$isdir) stop(sprintf("%s is not a folder", downloadLocation))
-    }
-    filePath<-file.path(downloadLocation, fileHandle$fileName)
-    if (file.exists(filePath)) {
-      if (localFileUnchanged(fileHandle$id, filePath)) {
-        # no need to download, 'filePath' is now the path to the local copy of the file
-      } else {
-  			if (ifcollision=="overwrite.local") {
-  				# download file from Synapse to downloadLocation
-          # we first capture the existing file.  If the download fails, we'll move it back
-          temp<-file.path(downloadLocation, sample(999999999, 1))
-          if (!file.rename(filePath, temp)) stop(sprintf("Failed to back up %s before downloading new version.", filePath))
-          tryCatch(
-            downloadFromSynapseOrExternal(downloadLocation, filePath, isExternalURL, downloadUri, endpointName, externalURL, fileHandle),
-            error = function(e) {file.rename(temp, filePath); stop(e)}
-          )
-          unlink(temp)
-        } else if (ifcollision=="keep.local") {
-  				# nothing to do
-        } else if (ifcollision=="keep.both") {
-          #download file from Synapse to distinct filePath
-          uniqueFileName <- generateUniqueFileName(downloadLocation, fileHandle$fileName)
-          filePath <- file.path(downloadLocation, uniqueFileName)
-          downloadFromSynapseOrExternal(downloadLocation, filePath, isExternalURL, downloadUri, endpointName, externalURL, fileHandle) 
-        } else {
-  				stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
-        }
-      }
-    } else { # filePath does not exist
-      downloadFromSynapseOrExternal(downloadLocation, filePath, isExternalURL, downloadUri, endpointName, externalURL, fileHandle) 
-    }
+	  filePath<-downloadFromServiceWithCaching(downloadUri, endpointName, fileHandle$id, downloadLocation, ifcollision)
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }
+  
   if (load) {
     if(is.null(filePath)) {
       if (!isExternalURL(fileHandle) && !downloadFile) {
@@ -525,6 +514,51 @@ synGetFileAttachment<-function(downloadUri, endpointName, fileHandle, downloadFi
     }
   }
   filePath
+}
+
+downloadFromServiceWithCaching<-function(downloadUri, endpointName, fileHandleId, downloadLocation=NULL, ifcollision="keep.both") {
+	if (is.null(downloadLocation)) {
+		downloadLocation<-defaultDownloadLocation(fileHandleId)
+	} else {
+		if (file.exists(downloadLocation) && !file.info(downloadLocation)$isdir) stop(sprintf("%s is not a folder", downloadLocation))
+	}
+	
+	# if there is already a downloaded, unmodified version of the file in the desired directory, then return it
+	downloaded<-getCachedInLocation(fileHandleId, downloadLocation)
+	if (!is.null(downloaded$unchanged)) return(downloaded$unchanged)
+	if (!is.null(downloaded$any) && ifcollision=="keep.local") {
+		# there's no need to download
+		return(downloaded$any)
+	}
+	
+	# OK, we need to download it
+	downloadResult<-downloadFromService(downloadUri, endpointName, destdir=downloadLocation, extraRetryStatusCodes=404)
+	# result is list(downloadedFile, fileName) where 
+	# 'downloadedFile' is a temp file in the target location and fileName is the desired file name
+	
+	if (is.null(downloadResult$fileName)) stop(sprintf("download of %s failed to return file name.", downloadUri))
+	filePath<-file.path(downloadLocation, downloadResult$fileName)
+	if (file.exists(filePath)) {
+		if (ifcollision=="overwrite.local") {
+			# here we are reverting to the original, overwriting local changes to the file
+		} else if (ifcollision=="keep.local") {
+			# this is a weird edge case in which a file with the target name exists, but
+			# wasn't downloaded by us.  Since the user asked to keep the local copy we will do so.
+			unlink(downloadResult$downloadedFile)
+			return(filePath)
+		} else if (ifcollision=="keep.both") {
+			#download file from Synapse to distinct filePath
+			uniqueFileName <- generateUniqueFileName(downloadLocation, downloadResult$fileName)
+			filePath <- file.path(downloadLocation, uniqueFileName)
+		} else {
+			stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
+		}
+	}
+	copySuccess<-file.copy(downloadResult$downloadedFile, filePath, overwrite=TRUE)
+	if (!copySuccess) stop(sprintf("Failed to copy %s to %s.", downloadResult$downloadedFile, filePath))
+	addToCacheMap(fileHandleId, filePath)
+	unlink(downloadResult$downloadedFile)
+	filePath
 }
 
 
@@ -603,22 +637,6 @@ setMethod(
   signature = signature("File","numeric"),
   definition = function(entity, versionId){
     loadEntity(entity, as.character(versionId))
-  }
-)
-
-setMethod(
-  f = "moveFile",
-  signature = signature("File", "character", "character"),
-  definition = function(entity, src, dest){
-    stop("Unsupported operation for Files.")
-  }
-)
-
-setMethod(
-  f = "deleteFile",
-  signature = signature("File", "character"),
-  definition = function(entity, file){
-    stop("Unsupported operation for Files.")
   }
 )
 

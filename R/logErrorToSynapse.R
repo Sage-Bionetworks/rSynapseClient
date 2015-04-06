@@ -10,6 +10,7 @@ logErrorToSynapse<-function(label, message) {
   synapsePost("/log",
     createListFromS4Object(logEntry), 
     anonymous = TRUE, 
-    checkHttpStatus=FALSE
+    checkHttpStatus=FALSE,
+	logErrorsToSynapse=FALSE # if an error occurs while logging, don't recursively generate the same error
   )
 }

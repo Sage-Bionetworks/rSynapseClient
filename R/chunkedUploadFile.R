@@ -72,24 +72,21 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
             chunkUploadUrl <- createChunkedFileUploadChunkURL(chunkRequest)
             if (debug) message(sprintf('url= %s\n', chunkUploadUrl))
             
-            optsWithHeader<-.getCache("curlOpts")
-            optsWithHeader$header<-TRUE
             httpResponse<-.getURLIntern(chunkUploadUrl, 
               postfields=chunk, # the request body
               customrequest="PUT", # the request method
               httpheader=headers, # the headers
               curl=curlHandle, 
               debugfunction=NULL,
-              .opts=optsWithHeader
+			  .opts=.getCache("curlOpts")
             )
             # return the http response
-            parseHttpResponse(httpResponse)
+			httpResponse$body
           }, 
           curlHandle,
-          extraRetryStatusCode=NULL
+          extraRetryStatusCodes=NULL
         )
-        httpResponse<-result$result
-        .checkCurlResponse(object=curlHandle, response=httpResponse, logErrorToSynapse=TRUE)
+        .checkCurlResponse(object=curlHandle, response=result$body, logErrorToSynapse=TRUE)
         
         totalUploadedBytes <- totalUploadedBytes + length(chunk)
         percentUploaded <- totalUploadedBytes*100/fileSizeBytes
@@ -113,15 +110,25 @@ createChunkedFileUploadToken<-function(filepath, s3UploadDestination, contentTyp
   if (is.na(md5)) stop(sprintf("Unable to compute md5 for %s", filepath))
   names(md5)<-NULL # Needed to make toJSON work right
 
-  chunkedFileTokenRequest<-list(
-    fileName=basename(filepath),
-    contentType=contentType,
-    contentMD5=md5
-  )
+  if (length(s3UploadDestination@storageLocationId)==0) {
+	  chunkedFileTokenRequest<-list(
+			  fileName=basename(filepath),
+			  contentType=contentType,
+			  contentMD5=md5
+	  )
+  } else {
+	  chunkedFileTokenRequest<-list(
+			  fileName=basename(filepath),
+			  contentType=contentType,
+			  contentMD5=md5,
+			  storageLocationId=s3UploadDestination@storageLocationId
+	  )
+  }
   
   synapsePost(uri='/createChunkedFileUploadToken', 
     entity=chunkedFileTokenRequest, 
-    endpoint=synapseServiceEndpoint("FILE"))
+    endpoint=synapseServiceEndpoint("FILE"),
+	extraRetryStatusCodes="500")
 }
 
 # returns the URL for uploading the specified chunk

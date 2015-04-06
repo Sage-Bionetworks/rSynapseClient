@@ -22,7 +22,7 @@ readSchema <- function(name, path) {
   if(!file.exists(fullPath))
     stop(sprintf("Could not find file: %s for entity: %s", fullPath, name))
   
-  schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
+  schema <- fromJSON(file=fullPath)
   schema
 }
 

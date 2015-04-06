@@ -11,7 +11,9 @@
     curlHandle=getCurlHandle(), 
     anonymous = .getCache("anonymous"), 
     opts = .getCache("curlOpts"), 
-    checkHttpStatus=T
+    checkHttpStatus=T,
+	logErrorsToSynapse=TRUE,
+	extraRetryStatusCodes=NULL
 )
 {
   
@@ -73,7 +75,7 @@
   }
   
   ##curlSetOpt(opts,curl=curlHandle)
-  response<-synapseRequestFollowingAllRedirects(
+  response<-synapseRequest(
       uri,
       endpoint,
       postfields = NULL, # the request body
@@ -81,18 +83,20 @@
       httpheader = header,
       curl = curlHandle, # the curl handle
       debugfunction=d$update,
-      .opts=opts
+      .opts=opts,
+	  logErrorsToSynapse,
+	  extraRetryStatusCodes=extraRetryStatusCodes
       )
-
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
+	message("RESPONSE_HEADERS:: ", response$headers)
     message("RESPONSE_BODY: ", response$body)
   }
   
   if (checkHttpStatus) .checkCurlResponse(object=curlHandle, response=response$body)
   
   if("GET" == requestMethod) {
-    parseResponseBody(response)
+    parseResponseBody(response$headers, response$body)
   }
 }
 
