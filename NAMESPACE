@@ -158,6 +158,7 @@ exportMethods(
   "createEntity", 
   "updateEntity", 
   "downloadEntity", 
-  "loadEntity" 
+  "loadEntity",
+  "length.QueryResult"
 )
 
