@@ -89,7 +89,8 @@ export(
 	"as.RowList",
 	"UserPreferenceBoolean",
 	"Settings",
-  	"length.QueryResult"
+  	"length.QueryResult",
+  	"names.QueryResult"
 )
 
 ## entity S4 methods
