@@ -383,9 +383,6 @@ integrationTestGetFile <-
   fetchedFile <- getEntity(as.character(propertyValue(createdFile, "id")))
   checkEquals(propertyValue(fetchedFile, "id"), propertyValue(createdFile, "id"))
   
-  fetchedFile <- getEntity(synapseClient:::.extractEntityFromSlots(createdFile))
-  checkEquals(propertyValue(fetchedFile, "id"), propertyValue(createdFile, "id"))
-  
   fetchedFile <- getEntity(createdFile)
   checkEquals(propertyValue(fetchedFile, "id"), propertyValue(createdFile, "id"))
 }
