@@ -10,7 +10,8 @@ synapseGet <-
     anonymous = .getCache("anonymous"), 
     opts = .getCache("curlOpts"),  
     checkHttpStatus=TRUE,
-	logErrorsToSynapse=TRUE
+	logErrorsToSynapse=TRUE,
+	extraRetryStatusCodes=NULL
 )
 {
   ## constants
@@ -24,7 +25,8 @@ synapseGet <-
     anonymous = anonymous, 
     opts = opts,
     checkHttpStatus=checkHttpStatus,
-	logErrorsToSynapse=logErrorsToSynapse
+	logErrorsToSynapse=logErrorsToSynapse,
+	extraRetryStatusCodes=extraRetryStatusCodes
   )
 }
 

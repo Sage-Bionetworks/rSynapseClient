@@ -84,7 +84,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 			httpResponse$body
           }, 
           curlHandle,
-          extraRetryStatusCode=NULL
+          extraRetryStatusCodes=NULL
         )
         .checkCurlResponse(object=curlHandle, response=result$body, logErrorToSynapse=TRUE)
         
@@ -127,7 +127,8 @@ createChunkedFileUploadToken<-function(filepath, s3UploadDestination, contentTyp
   
   synapsePost(uri='/createChunkedFileUploadToken', 
     entity=chunkedFileTokenRequest, 
-    endpoint=synapseServiceEndpoint("FILE"))
+    endpoint=synapseServiceEndpoint("FILE"),
+	extraRetryStatusCodes="500")
 }
 
 # returns the URL for uploading the specified chunk

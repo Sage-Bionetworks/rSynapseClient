@@ -12,7 +12,8 @@
     anonymous = .getCache("anonymous"), 
     opts = .getCache("curlOpts"), 
     checkHttpStatus=T,
-	logErrorsToSynapse=TRUE
+	logErrorsToSynapse=TRUE,
+	extraRetryStatusCodes=NULL
 )
 {
   
@@ -83,7 +84,8 @@
       curl = curlHandle, # the curl handle
       debugfunction=d$update,
       .opts=opts,
-	  logErrorsToSynapse
+	  logErrorsToSynapse,
+	  extraRetryStatusCodes=extraRetryStatusCodes
       )
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
