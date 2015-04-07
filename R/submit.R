@@ -38,7 +38,7 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
         versionNumber=entityVersion, 
         name=submissionName))
 	createdSubmission<-synCreateSubmission(submission, entityEtag=etag)
-} else {
+  } else {
 	# find the team ID for the given team name
 	teamId<-findTeamIdForName(teamName)
 	if (is.null(teamId)) stop(sprintf("There is no team named %s.", teamName))
@@ -78,7 +78,7 @@ findTeamIdForName<-function(teamName) {
 		page<-synRestGET(sprintf("/teams?fragment=%s&offset=%s&limit=%s", URLencode(teamName), offset, limit))
 		teams<-page$results
 		for (teamList in teams) {
-			teamList<-createS4ObjectFromList(teamList, "Team")
+			team<-createS4ObjectFromList(teamList, "Team")
 			if (team@name==teamName) {
 				teamId<-team@id
 				break
