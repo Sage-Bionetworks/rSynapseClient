@@ -13,7 +13,7 @@
   synapseClient:::.setCache("testEvaluation", evaluation)
   
   # create a participant team
-  participantTeam<-Team(name=sprintf("participant_team_%d", sample(10000,1)))
+  participantTeam<-synapseClient:::Team(name=sprintf("participant_team_%d", sample(10000,1)))
   response<-synRestPOST("/team", synapseClient:::createListFromS4Object(participantTeam))
   participantTeam<-synapseClient:::createS4ObjectFromList(response, "Team")
   synapseClient:::.setCache("participantTeam", participantTeam)
@@ -25,7 +25,7 @@
   synapseClient:::.setCache("testChallenge", challenge)
 	
   # create a challenge team
-  submitTeam<-Team(name=sprintf("submit_team_%d", sample(10000,1)))
+  submitTeam<-synapseClient:::Team(name=sprintf("submit_team_%d", sample(10000,1)))
   response<-synRestPOST("/team", synapseClient:::createListFromS4Object(submitTeam))
   submitTeam<-synapseClient:::createS4ObjectFromList(response, "Team")
   synapseClient:::.setCache("submitTeam", submitTeam)
