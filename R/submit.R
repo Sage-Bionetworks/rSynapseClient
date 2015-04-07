@@ -93,6 +93,6 @@ findTeamIdForName<-function(teamName) {
 
 getTeamSubmissionEligibility<-function(evaluationId, teamId) {
 	result<-synRestGET(sprintf("/evaluation/%s/team/%s/submissionEligibility", evaluationId, teamId))
-	createS4ObjectForList(result, "TeamSubmissionEligibility")
+	createS4ObjectFromList(result, "TeamSubmissionEligibility")
 }
 
