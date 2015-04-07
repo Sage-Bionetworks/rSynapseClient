@@ -31,7 +31,7 @@
   synapseClient:::.setCache("submitTeam", submitTeam)
 	
   # register the team for the challenge
-  challengeTeam<-ChallengeTeam(challengeId=challenge$id, teamId=submitTeam$id)
+  challengeTeam<-synapseClient:::ChallengeTeam(challengeId=challenge$id, teamId=submitTeam$id)
   response<-synRestPOST(sprintf("/challenge/%s/challengeTeam", challenge$id),
 		  synapseClient:::createListFromS4Object(challengeTeam))
   challengeTeam<-synapseClient:::createS4ObjectFromList(response, "ChallengeTeam")
