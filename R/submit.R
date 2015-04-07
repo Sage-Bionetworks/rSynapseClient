@@ -37,7 +37,8 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
         entityId=entityId, 
         versionNumber=entityVersion, 
         name=submissionName))
-  } else {
+	createdSubmission<-synCreateSubmission(submission, entityEtag=etag)
+} else {
 	# find the team ID for the given team name
 	teamId<-findTeamIdForName(teamName)
 	if (is.null(teamId)) stop(sprintf("There is no team named %s.", teamName))
@@ -62,9 +63,9 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
         submitterAlias=teamName,
 		teamId=teamId,
 		contributors=contributors))
-  } 
+	createdSubmission<-synCreateSubmission(submission, entityEtag=etag, eligibilityStateHash=tse@eligibilityStateHash)
+} 
   
-  createdSubmission<-synCreateSubmission(submission, entityEtag=etag, eligibilityStateHash=tse@eligibilityStateHash)
   if (!silent) message(evaluation$submissionReceiptMessage)
   list(submission=createdSubmission, submissionReceiptMessage=evaluation$submissionReceiptMessage)
 }
