@@ -223,7 +223,10 @@ writeDataFrameToCSV<-function(dataFrame, filePath) {
   for (i in 1:dim(dataFrame)[2]) {
     if (is.numeric(dataFrame[[i]])) {
       dataFrame[[i]][is.nan(dataFrame[[i]])]<-"NaN"
-    }
+    } else if (is(dataFrame[[i]], "POSIXct")) {
+		# convert POSIXct to unix epoch (millis) before uploading to Synapse
+		dataFrame[[i]]<-1000*as.numeric(dataFrame[[i]])
+	}
   }
   write.csv(x=dataFrame, file=filePath, row.names=FALSE, na="")
 }

@@ -274,17 +274,21 @@ integrationTestSynStoreAndRetrieveAllTypes<-function() {
 }
 
 # checks values and column labels, but not row labels
-# we have to use this to compare data frames that have NAs
 dataFramesAreSame<-function(df1, df2) {
-  if (nrow(df1)!=nrow(df2) || ncol(df1)!=ncol(df2)) return(FALSE)
-  if (any(names(df1)!=names(df2))) return(FALSE)
-  if (nrow(df1)==0 || ncol(df1)==0) return(TRUE)
-  for (r in 1:nrow(df1)) {
-    for (c in 1:ncol(df1)) {
-      if (!identical(df1[r,c], df2[r,c])) return(FALSE)
-    }
-  }
-  TRUE
+	if (nrow(df1)!=nrow(df2) || ncol(df1)!=ncol(df2)) return(FALSE)
+	if (any(names(df1)!=names(df2))) return(FALSE)
+	if (nrow(df1)==0 || ncol(df1)==0) return(TRUE)
+	for (c in 1:ncol(df1)) {
+		if ((is.numeric(df1[[c]]) && is.numeric(df2[[c]])) ||
+				(is(df1[[c]], "POSIXct") && is(df2[[c]], "POSIXct"))) {
+			if (!all.equal(df1[[c]], df2[[c]])) return (FALSE)
+		} else {
+			for (r in 1:nrow(df1)) {
+				if (!identical(df1[r,c], df2[r,c])) return(FALSE)
+			}
+		}
+	}
+	TRUE
 }
 
 integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
