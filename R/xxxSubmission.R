@@ -140,13 +140,14 @@ setMethod(
 
 synCreateSubmission<-function(submission, entityEtag, eligibilityStateHash) {
 	if (missing(eligibilityStateHash)) {
-		response<-synRestPOST(sprintf("/evaluation/submission?etag=%s", entityEtag))
+		uri<-sprintf("/evaluation/submission?etag=%s", entityEtag)
 	} else {
-		response<-synRestPOST(sprintf("/evaluation/submission?etag=%s,eligibilityStateHash=%s", 
-						entityEtag, eligibilityStateHash))
+		uri<-sprintf("/evaluation/submission?etag=%s,eligibilityStateHash=%s", 
+				entityEtag, eligibilityStateHash)
 	}
-  createSubmissionFromProperties(response, 
-  		createListFromS4Object(submission@submissionContent))
+	requestBody<-createListFromS4Object(submission@submissionContent)
+	response<-synRestPOST(uri, requestBody)
+	createSubmissionFromProperties(response)
 }
 
 newSubmissionStatus<-function(content) {
