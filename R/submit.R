@@ -74,8 +74,7 @@ findTeamIdForName<-function(teamName) {
 	offset<-0
 	teamId<-NULL
 	repeat {
-		# TODO:  URL encode fragment
-		page<-synRestGET(sprintf("/teams?fragment=%s&offset=%s&limit=%s", teamName, offset, limit))
+		page<-synRestGET(sprintf("/teams?fragment=%s&offset=%s&limit=%s", URLencode(teamName), offset, limit))
 		teams<-page$results
 		for (teamList in teams) {
 			teamList<-createS4ObjectForTeam(teamList, "Team")
