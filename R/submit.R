@@ -78,7 +78,7 @@ findTeamIdForName<-function(teamName) {
 		page<-synRestGET(sprintf("/teams?fragment=%s&offset=%s&limit=%s", URLencode(teamName), offset, limit))
 		teams<-page$results
 		for (teamList in teams) {
-			teamList<-createS4ObjectForTeam(teamList, "Team")
+			teamList<-createS4ObjectFromList(teamList, "Team")
 			if (team@name==teamName) {
 				teamId<-team@id
 				break
