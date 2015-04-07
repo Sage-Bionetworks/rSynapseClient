@@ -47,11 +47,11 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
 	if (!tse@teamEligibility@isEligible) {
 		stop(sprintf("Team %s is ineligible to submit to the specified Evaluation at this time.", teamName))
 	}
-	contributors<-SubmissionContributorList()
+	contributors<-list()
 	for (memberEligibility in tse@membersEligibility@content) {
 		if (memberEligibility@isEligible) {
 			contributors<-append(contributors, 
-					SubmissionContributor(principalId=memberEligibility@principalId))
+					list(principalId=as.character(memberEligibility@principalId)))
 		}
 	}
 	
@@ -63,8 +63,8 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
         submitterAlias=teamName,
 		teamId=teamId,
 		contributors=contributors))
-	createdSubmission<-synCreateSubmission(submission, entityEtag=etag, eligibilityStateHash=tse@eligibilityStateHash)
-} 
+	createdSubmission<-synCreateSubmission(submission, entityEtag=etag, submissionEligibilityHash=tse@eligibilityStateHash)
+  } 
   
   if (!silent) message(evaluation$submissionReceiptMessage)
   list(submission=createdSubmission, submissionReceiptMessage=evaluation$submissionReceiptMessage)

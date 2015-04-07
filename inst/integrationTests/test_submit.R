@@ -57,7 +57,7 @@
   synRestDELETE(sprintf("/team/%s", participantTeam$id))
 }
 
-integrationTest_submit <- function() {
+integrationTest_submitWithTeam <- function() {
   # create an entity
   project<-synapseClient:::.getCache("testProject")
   pid<-propertyValue(project, "id")
