@@ -269,7 +269,7 @@ convertDataFrameTypeToSchemaType<-function(dataframe, headers) {
         # Synapse returns values "true", "false", which have to be converted to TRUE, FALSE
         dataframe[[columnIndex]]<-(dataframe[[columnIndex]]=="true")
       } else if (header@columnType=="DATE") {
-        dataframe[[columnIndex]]<-as.Date(dataframe[[columnIndex]]/(24*3600*1000), "1970-01-01")
+		dataframe[[columnIndex]]<-as.POSIXct(dataframe[[columnIndex]]/1000, origin="1970-01-01")
       }
     }
   }
