@@ -223,10 +223,7 @@ writeDataFrameToCSV<-function(dataFrame, filePath) {
   for (i in 1:dim(dataFrame)[2]) {
     if (is.numeric(dataFrame[[i]])) {
       dataFrame[[i]][is.nan(dataFrame[[i]])]<-"NaN"
-    } else if (is(dataFrame[[i]], "POSIXct")) {
-		# convert POSIXct before uploading to Synapse
-		dataFrame[[i]]<-format(as.POSIXlt(dataFrame[[i]], 'UTC', usetz=TRUE), "%Y-%m-%d %H:%M:%S.000")
-	}
+    }
   }
   write.csv(x=dataFrame, file=filePath, row.names=FALSE, na="")
 }
@@ -272,7 +269,7 @@ convertDataFrameTypeToSchemaType<-function(dataframe, headers) {
         # Synapse returns values "true", "false", which have to be converted to TRUE, FALSE
         dataframe[[columnIndex]]<-(dataframe[[columnIndex]]=="true")
       } else if (header@columnType=="DATE") {
-		dataframe[[columnIndex]]<-as.POSIXct(dataframe[[columnIndex]]/1000, origin="1970-01-01")
+        dataframe[[columnIndex]]<-as.Date(dataframe[[columnIndex]]/(24*3600*1000), "1970-01-01")
       }
     }
   }

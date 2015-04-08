@@ -44,7 +44,10 @@
 	
   .checkCurlResponse(object=curlHandle, logErrorToSynapse=TRUE)
   fileName<-fileNameFromHeaders(h$value())
-  if (is.null(fileName)) fileName<-basename(url)
+  if (is.null(fileName)) {
+	  parsedUrl<-.ParsedUrl(url)
+	  fileName<-parsedUrl@file
+  }
   list(downloadedFile=destfile, fileName=fileName)
 }
 
