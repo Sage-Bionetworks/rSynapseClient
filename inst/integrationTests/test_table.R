@@ -223,6 +223,11 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   checkEquals(deletionResult@rowCount, rowsToUpload)
 }
 
+roundPOSIXct<-function(x) {
+	y<-round(as.numeric(x))
+	as.POSIXct(y, origin="1970-01-01")
+}
+
 integrationTestSynStoreAndRetrieveAllTypes<-function() {
   project<-synapseClient:::.getCache("testProject")
   
@@ -254,7 +259,7 @@ integrationTestSynStoreAndRetrieveAllTypes<-function() {
     intType=sample.int(rowsToUpload, replace = T),
     doubleType=as.numeric(sample.int(rowsToUpload, replace = T)),
     booleanType=sample(c(TRUE, FALSE), size = rowsToUpload, replace = T),
-    dateType=sample(Sys.Date()+c(1,2,3), size = rowsToUpload, replace = T),
+    dateType=sample(roundPOSIXct(Sys.time()+c(1,2,3)), size = rowsToUpload, replace = T),
     fileHandleIdType1=sample(c("111", "222", "333"), size = rowsToUpload, replace = T),
     fileHandleIdType2=sample(c(444, 555, 666), size = rowsToUpload, replace = T),
     entityIdType=sample(c("syn123", "syn456", "syn789"), size = rowsToUpload, replace = T)
@@ -274,17 +279,21 @@ integrationTestSynStoreAndRetrieveAllTypes<-function() {
 }
 
 # checks values and column labels, but not row labels
-# we have to use this to compare data frames that have NAs
 dataFramesAreSame<-function(df1, df2) {
-  if (nrow(df1)!=nrow(df2) || ncol(df1)!=ncol(df2)) return(FALSE)
-  if (any(names(df1)!=names(df2))) return(FALSE)
-  if (nrow(df1)==0 || ncol(df1)==0) return(TRUE)
-  for (r in 1:nrow(df1)) {
-    for (c in 1:ncol(df1)) {
-      if (!identical(df1[r,c], df2[r,c])) return(FALSE)
-    }
-  }
-  TRUE
+	if (nrow(df1)!=nrow(df2) || ncol(df1)!=ncol(df2)) return(FALSE)
+	if (any(names(df1)!=names(df2))) return(FALSE)
+	if (nrow(df1)==0 || ncol(df1)==0) return(TRUE)
+	for (c in 1:ncol(df1)) {
+		if ((is.numeric(df1[[c]]) && is.numeric(df2[[c]])) ||
+				(is(df1[[c]], "POSIXct") && is(df2[[c]], "POSIXct"))) {
+			if (!all.equal(df1[[c]], df2[[c]])) return (FALSE)
+		} else {
+			for (r in 1:nrow(df1)) {
+				if (!identical(df1[r,c], df2[r,c])) return(FALSE)
+			}
+		}
+	}
+	TRUE
 }
 
 integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
