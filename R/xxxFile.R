@@ -499,7 +499,7 @@ retrieveAttachedFileHandle<-function(downloadUri, endpointName, fileHandle, down
   }
   
   if (downloadFile) {
-	  filePath<-downloadFromServiceWithCaching(downloadUri, endpointName, fileHandle$id, downloadLocation, ifcollision)
+	  filePath<-downloadFromServiceWithCaching(downloadUri, endpointName, fileHandle$id, downloadLocation, ifcollision, fileNameHint=fileHandle$fileName)
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }
@@ -516,7 +516,7 @@ retrieveAttachedFileHandle<-function(downloadUri, endpointName, fileHandle, down
   filePath
 }
 
-downloadFromServiceWithCaching<-function(downloadUri, endpointName, fileHandleId, downloadLocation=NULL, ifcollision="keep.both") {
+downloadFromServiceWithCaching<-function(downloadUri, endpointName, fileHandleId, downloadLocation=NULL, ifcollision="keep.both", fileNameHint=NULL) {
 	if (is.null(downloadLocation)) {
 		downloadLocation<-defaultDownloadLocation(fileHandleId)
 	} else {
@@ -536,28 +536,41 @@ downloadFromServiceWithCaching<-function(downloadUri, endpointName, fileHandleId
 	# result is list(downloadedFile, fileName) where 
 	# 'downloadedFile' is a temp file in the target location and fileName is the desired file name
 	
-	if (is.null(downloadResult$fileName)) stop(sprintf("download of %s failed to return file name.", downloadUri))
-	filePath<-file.path(downloadLocation, downloadResult$fileName)
-	if (file.exists(filePath)) {
-		if (ifcollision=="overwrite.local") {
-			# here we are reverting to the original, overwriting local changes to the file
-		} else if (ifcollision=="keep.local") {
-			# this is a weird edge case in which a file with the target name exists, but
-			# wasn't downloaded by us.  Since the user asked to keep the local copy we will do so.
-			unlink(downloadResult$downloadedFile)
-			return(filePath)
-		} else if (ifcollision=="keep.both") {
-			#download file from Synapse to distinct filePath
-			uniqueFileName <- generateUniqueFileName(downloadLocation, downloadResult$fileName)
-			filePath <- file.path(downloadLocation, uniqueFileName)
+	
+	if (is.null(downloadResult$fileName)) {
+		if (is.null(fileNameHint)) {
+			filePath<-downloadResult$downloadedFile
+			fileRename<-FALSE
 		} else {
-			stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
+			filePath<-file.path(downloadLocation, fileNameHint)
+			fileRename<-TRUE
 		}
+	} else {
+		filePath<-file.path(downloadLocation, downloadResult$fileName)
+		fileRename<-TRUE
 	}
-	copySuccess<-file.copy(downloadResult$downloadedFile, filePath, overwrite=TRUE)
-	if (!copySuccess) stop(sprintf("Failed to copy %s to %s.", downloadResult$downloadedFile, filePath))
+	if (fileRename) {
+		if (file.exists(filePath)) {
+			if (ifcollision=="overwrite.local") {
+				# here we are reverting to the original, overwriting local changes to the file
+			} else if (ifcollision=="keep.local") {
+				# this is a weird edge case in which a file with the target name exists, but
+				# wasn't downloaded by us.  Since the user asked to keep the local copy we will do so.
+				unlink(downloadResult$downloadedFile)
+				return(filePath)
+			} else if (ifcollision=="keep.both") {
+				#download file from Synapse to distinct filePath
+				uniqueFileName <- generateUniqueFileName(downloadLocation, downloadResult$fileName)
+				filePath <- file.path(downloadLocation, uniqueFileName)
+			} else {
+				stop(sprintf("Unexpected value for ifcollision: %s.  Allowed settings are 'overwrite.local', 'keep.local', 'keep.both'", ifcollision))
+			}
+		}
+		copySuccess<-file.copy(downloadResult$downloadedFile, filePath, overwrite=TRUE)
+		if (!copySuccess) stop(sprintf("Failed to copy %s to %s.", downloadResult$downloadedFile, filePath))
+		unlink(downloadResult$downloadedFile)
+	}
 	addToCacheMap(fileHandleId, filePath)
-	unlink(downloadResult$downloadedFile)
 	filePath
 }
 

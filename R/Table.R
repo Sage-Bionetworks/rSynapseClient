@@ -423,7 +423,7 @@ downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, f
   }
   fileHandle<-S3FileHandle(id=responseBody@resultsFileHandleId, fileName=fileName)
   fileHandleAsList<-createListFromS4Object(fileHandle)
-  filePath<-downloadFromServiceWithCaching(downloadUri, "FILE", fileHandleAsList$id, downloadLocation, ifcollision="overwrite.local")
+  filePath<-downloadFromServiceWithCaching(downloadUri, "FILE", fileHandleAsList$id, downloadLocation, ifcollision="overwrite.local", fileNameHint=fileName)
   list(filePath=filePath, etag=responseBody@etag, headers=responseBody@headers)
 }
 
