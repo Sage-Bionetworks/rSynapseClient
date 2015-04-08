@@ -43,13 +43,3 @@ unitTest_csvRoundTrip<-function() {
   checkTrue(dataFramesAreSame(dataFrame,readBackIn))
 }
 
-unitTest_csvRoundTripWithDates<-function() {
-	dataFrame <- data.frame(col1=(1:5), col2=Sys.time()+(1:5))
-	filePath<-tempfile()
-	synapseClient:::writeDataFrameToCSV(dataFrame, filePath)
-	readBackIn<-synapseClient:::readDataFrameFromCSV(filePath)
-	headers<-synapseClient:::TableColumnList(TableColumn(name="col1", columnType="INTEGER"), 
-			TableColumn(name="col2", columnType="DATE"))
-	converted<-synapseClient:::convertDataFrameTypeToSchemaType(readBackIn, headers)
-	checkTrue(dataFramesAreSame(dataFrame,converted))
-}

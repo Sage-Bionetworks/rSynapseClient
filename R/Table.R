@@ -224,8 +224,8 @@ writeDataFrameToCSV<-function(dataFrame, filePath) {
     if (is.numeric(dataFrame[[i]])) {
       dataFrame[[i]][is.nan(dataFrame[[i]])]<-"NaN"
     } else if (is(dataFrame[[i]], "POSIXct")) {
-		# convert POSIXct to unix epoch (millis) before uploading to Synapse
-		dataFrame[[i]]<-1000*as.numeric(dataFrame[[i]])
+		# convert POSIXct before uploading to Synapse
+		dataFrame[[i]]<-format(as.POSIXlt(dataFrame[[i]], 'UTC', usetz=TRUE), "%Y-%m-%d %H:%M:%S.000")
 	}
   }
   write.csv(x=dataFrame, file=filePath, row.names=FALSE, na="")
