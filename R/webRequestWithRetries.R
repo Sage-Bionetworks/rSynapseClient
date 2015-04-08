@@ -22,13 +22,22 @@ webRequestWithRetries<-function(fcn,
   if (is.null(maxTries) || maxTries<1) stop(sprintf("Illegal value for maxTries %d.", maxTries))
   
   backoff<-INITIAL_BACKOFF_SECONDS
+  
+  # The error message that follow come from libcurl as enumerated here
+  # http://curl.askapache.com/c/libcurl-errors.html
+  # ideally we'd include an exhaustive list of transient outage conditions
+  # from the libcurl list.  Unfortunately RCurl neither exposes the numeric
+  # value of the error condition nor generates the string in a predictable way
+  # Thus the only way we can build up this list is by adding new error conditions
+  # as they occur.
   errorMessages <- c("connect() timed out",
     "Connection reset by peer",
     "Failure when receiving data from the peer",
     "Empty reply from server",
     "SSL read: error:00000000",
     "Unknown SSL protocol error",
-    "couldn't connect to host")
+    "couldn't connect to host",
+	"SSL connect error")
   
   retryStatusCodes<-append(c(502,503,504), extraRetryStatusCodes)
   
