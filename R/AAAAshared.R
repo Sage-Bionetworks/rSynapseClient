@@ -99,7 +99,9 @@ isPrimitiveType <- function(rType) {
 }
 
 isEnum<-function(propertySchema) {
-  is.null(propertySchema$properties) && !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]])
+  is.null(propertySchema$properties) && 
+		  !is.null(propertySchema$type) &&
+		  !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]])
 }
 
 

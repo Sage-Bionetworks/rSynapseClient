@@ -11,15 +11,53 @@
   evaluation<-Evaluation(name=sprintf("test_submit_%d", sample(10000,1)), status="OPEN", contentSource=projectId, submissionReceiptMessage=submissionReceiptMessage)
   evaluation<-synStore(evaluation)
   synapseClient:::.setCache("testEvaluation", evaluation)
+  
+  # create a participant team
+  participantTeam<-synapseClient:::Team(name=sprintf("participant_team_%d", sample(10000,1)))
+  response<-synRestPOST("/team", synapseClient:::createListFromS4Object(participantTeam))
+  participantTeam<-synapseClient:::createS4ObjectFromList(response, "Team")
+  synapseClient:::.setCache("participantTeam", participantTeam)
+  
+  # create a challenge using the participant team
+  challenge<-synapseClient:::Challenge(participantTeamId=participantTeam$id, projectId=projectId)
+  response<-synRestPOST("/challenge", synapseClient:::createListFromS4Object(challenge))
+  challenge<-synapseClient:::createS4ObjectFromList(response, "Challenge")
+  synapseClient:::.setCache("testChallenge", challenge)
+	
+  # create a challenge team
+  submitTeam<-synapseClient:::Team(name=sprintf("submit_team_%d", sample(10000,1)))
+  response<-synRestPOST("/team", synapseClient:::createListFromS4Object(submitTeam))
+  submitTeam<-synapseClient:::createS4ObjectFromList(response, "Team")
+  synapseClient:::.setCache("submitTeam", submitTeam)
+	
+  # register the team for the challenge
+  challengeTeam<-synapseClient:::ChallengeTeam(challengeId=challenge$id, teamId=submitTeam$id)
+  response<-synRestPOST(sprintf("/challenge/%s/challengeTeam", challenge$id),
+		  synapseClient:::createListFromS4Object(challengeTeam))
+  challengeTeam<-synapseClient:::createS4ObjectFromList(response, "ChallengeTeam")
+  synapseClient:::.setCache("challengeTeam", challengeTeam)
 }
 
 .tearDown <- function() {
+  # delete the Evaluation
   evaluation<-synapseClient:::.getCache("testEvaluation")
   synDelete(evaluation)
-  deleteEntity(synapseClient:::.getCache("testProject"))
+  
+  # delete the project.  This will delete the Challenge object as well.
+  project<-synapseClient:::.getCache("testProject")
+  deleteEntity(project)
+  synRestPUT(sprintf("/trashcan/purge/%s", propertyValue(project, "id")), list())
+  
+  # delete the submit team
+  submitTeam<-synapseClient:::.getCache("submitTeam")
+  synRestDELETE(sprintf("/team/%s", submitTeam$id))
+  
+  # delete the participant team 
+  participantTeam<-synapseClient:::.getCache("participantTeam")
+  synRestDELETE(sprintf("/team/%s", participantTeam$id))
 }
 
-integrationTest_submit <- function() {
+integrationTest_submitWithTeam <- function() {
   # create an entity
   project<-synapseClient:::.getCache("testProject")
   pid<-propertyValue(project, "id")
@@ -32,11 +70,17 @@ integrationTest_submit <- function() {
   eid<-propertyValue(evaluation, "id")
   PUBLIC_GROUP_PRINCIPAL_ID<-273949 # This is defined in org.sagebionetworks.repo.model.AuthorizationConstants
   synapseClient:::.allowParticipation(eid, PUBLIC_GROUP_PRINCIPAL_ID)
-  synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
+  
+  # try submitting with a non-existent team name and check that it doesn't work
+  dummyTeamName<-sprintf("this_is_not_a_team_name_%d", sample(10000,1))
+  result<-try(submit(evaluation=evaluation, entity=file, submissionName=submissionName, teamName=dummyTeamName, silent=T),
+		  silent=T)
+  checkEquals(class(result), "try-error")
   
   # submit the entity
+  submitTeam<-synapseClient:::.getCache("submitTeam")
   submissionName<-"test-sub-name"
-  teamName<-"test-team-name"
+  teamName<-submitTeam$name
   submissionResult<-submit(evaluation=evaluation, entity=file, submissionName=submissionName, teamName=teamName, silent=T)
   submission<-submissionResult$submission
   submissionReceiptMessage<-"Your submission has been received. Please check the leader board for your score." # duplicates def'n above

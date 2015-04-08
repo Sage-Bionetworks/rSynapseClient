@@ -67,6 +67,11 @@ ColumnType	org.sagebionetworks.repo.model.table.ColumnType	false
 SelectColumn	org.sagebionetworks.repo.model.table.SelectColumn	false
 FileHandleResults	org.sagebionetworks.repo.model.file.FileHandleResults	false
 TableFileHandleResults	org.sagebionetworks.repo.model.table.TableFileHandleResults	false
-
-
+SubmissionEligibilityInterface	org.sagebionetworks.evaluation.model.SubmissionEligibilityInterface	false
+SubmissionEligibility	org.sagebionetworks.evaluation.model.SubmissionEligibility	false
+MemberSubmissionEligibility	org.sagebionetworks.evaluation.model.MemberSubmissionEligibility	false
+TeamSubmissionEligibility	org.sagebionetworks.evaluation.model.TeamSubmissionEligibility	false
+Team	org.sagebionetworks.repo.model.Team	false
+Challenge	org.sagebionetworks.repo.model.Challenge	false
+ChallengeTeam	org.sagebionetworks.repo.model.ChallengeTeam	false
 	

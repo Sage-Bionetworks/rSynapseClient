@@ -95,7 +95,7 @@ integrationTestEvaluationRoundtrip <-
   submittableEntity<-Folder(name="submitted entity", parentId=projectId)
   submittableEntity<-synStore(submittableEntity)
   
-  submissionResult<-submit(evaluation, submittableEntity, teamName="some team name", silent=TRUE)
+  submissionResult<-submit(evaluation, submittableEntity, silent=TRUE)
   createdSubmission<-submissionResult$submission
   checkEquals(evaluation$submissionReceiptMessage, submissionResult$submissionReceiptMessage)
     
@@ -142,7 +142,7 @@ integrationTestEvaluationRoundtrip <-
   submittableEntity2<-Folder(name="submitted entity 2", parentId=projectId)
   submittableEntity2<-synStore(submittableEntity2)
   
-  submit(evaluation, submittableEntity2, teamName="some team name", silent=TRUE)
+  submit(evaluation, submittableEntity2, silent=TRUE)
   
   submissions<-synGetSubmissions(eid, "RECEIVED")
   
