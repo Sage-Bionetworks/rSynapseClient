@@ -223,6 +223,11 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   checkEquals(deletionResult@rowCount, rowsToUpload)
 }
 
+roundPOSIXct<-function(x) {
+	y<-round(as.numeric(x))
+	as.POSIXct(y, origin="1970-01-01")
+}
+
 integrationTestSynStoreAndRetrieveAllTypes<-function() {
   project<-synapseClient:::.getCache("testProject")
   
@@ -254,7 +259,7 @@ integrationTestSynStoreAndRetrieveAllTypes<-function() {
     intType=sample.int(rowsToUpload, replace = T),
     doubleType=as.numeric(sample.int(rowsToUpload, replace = T)),
     booleanType=sample(c(TRUE, FALSE), size = rowsToUpload, replace = T),
-    dateType=sample(Sys.time()+c(1,2,3), size = rowsToUpload, replace = T),
+    dateType=sample(roundPOSIXct(Sys.time()+c(1,2,3)), size = rowsToUpload, replace = T),
     fileHandleIdType1=sample(c("111", "222", "333"), size = rowsToUpload, replace = T),
     fileHandleIdType2=sample(c(444, 555, 666), size = rowsToUpload, replace = T),
     entityIdType=sample(c("syn123", "syn456", "syn789"), size = rowsToUpload, replace = T)
