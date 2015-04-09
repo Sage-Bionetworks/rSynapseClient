@@ -404,14 +404,20 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
   stop(sprintf("Unexcepted status %s for %s", asyncJobState, checkCompleteUri))
 }
 
+extractEntityIdFromQuery<-function(sql) {
+	# Extract tableId from query
+	sql<-tolower(sql)
+	pattern <- "from\\s+(syn\\d+)"
+	m <- regexec(pattern, sql)
+	matches <- regmatches(sql, m)
+	matches[[1]][2]
+}
+
 # execute a query and download the results
 # returns the download file path and etag
 downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, filePath=NULL) {
-  # Extract tableId from query
-  pattern <- "from\\s+(syn\\d+)"
-  m <- regexec(pattern, sql)
-  matches <- regmatches(sql, m)
-  tableId <- matches[[1]][2]
+  tableId<-extractEntityIdFromQuery(sql)
+  if (is.na(tableId)) stop(sprintf("Failed to extract table entity id from sql string: %s", tableId))
   request<-DownloadFromTableRequest(sql=sql, includeRowIdAndRowVersion=includeRowIdAndRowVersion, writeHeader=TRUE)
   asyncJobId<-createS4ObjectFromList(synRestPOST(sprintf("/entity/%s/table/download/csv/async/start", tableId), createListFromS4Object(request)) ,"AsyncJobId")
   responseBodyAsList<-trackProgress(sprintf("/entity/%s/table/download/csv/async/get/%s", tableId, asyncJobId@token), verbose)

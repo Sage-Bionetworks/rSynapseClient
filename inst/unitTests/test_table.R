@@ -38,3 +38,8 @@ unitTest_csvRoundTrip<-function() {
   readBackIn<-synapseClient:::readDataFrameFromCSV(filePath)
   checkTrue(dataFramesAreSame(dataFrame,readBackIn))
 }
+
+unitTest_extractEntityIdFromQuery<-function() {
+	checkEquals(extractEntityIdFromQuery("select foo from syn12345 where bar=1"), "syn12345")
+	checkEquals(extractEntityIdFromQuery("select foo from SYN12345 where bar=1"), "syn12345")
+}
