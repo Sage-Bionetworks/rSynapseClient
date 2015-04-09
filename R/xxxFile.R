@@ -482,8 +482,18 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
 		  fileHandleMatchesUploadDestination(file, propertyValue(file, "parentId"))
   if (load) {
     if (is.null(file@objects)) file@objects<-new.env(parent=emptyenv())
-    # Note: the following only works if 'path' is a file system path, not a URL
-    load(file=file@filePath, envir = as.environment(file@objects))
+    if (length(grep(".zip$", tolower(file@filePath)))>0) {
+		# this special case handles zipped R binaries transferred from the old "Locationable"
+		# attachments to the current File entities.  If the user asks to 'load' such a zip
+		# file, we unzip it and load its contents.  See SYNR-897.
+		unzipped<-unzip(file@filePath, exdir=dirname(file@filePath))
+		for (f in unzipped) {
+			load(file=f, envir = as.environment(file@objects))
+			unlink(f)
+		}
+	} else {
+		load(file=file@filePath, envir = as.environment(file@objects))
+	}
   }  
   file
 }
