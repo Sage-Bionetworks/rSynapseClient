@@ -71,7 +71,7 @@ setMethod(
       }
     }
     
-    if (class(entity)=="File") {
+    if (is(entity, "File")) {
       entity<-synStoreFile(file=entity, createOrUpdate=createOrUpdate, forceVersion=forceVersion, contentType=contentType)
     }
     # Now save the metadata
@@ -79,7 +79,14 @@ setMethod(
     if (!is.null(activity)) {
       generatingActivity<-activity
     } else if (!is.null(used) || !is.null(executed)) {
-      generatingActivity<-Activity(name=activityName, description=activityDescription, used=used, executed=executed)
+		# if no activity name is given, then try to fill the field by
+		# entity name, id, and file name (for Files), in that order
+		if (is.null(activityName)) activityName<-propertyValue(entity, "name")
+		if (is.null(activityName)) activityName<-propertyValue(entity, "id")
+		if (is.null(activityName) && is(entity, "File")) {
+			activityName<-basename(getFileLocation(entity))
+		}
+		generatingActivity<-Activity(name=activityName, description=activityDescription, used=used, executed=executed)
     } else if (entity@generatedByChanged) {
       # this takes care of the case in which generatedBy(entity)<- 
       # is called rather than specifying the activity in the synStore() parameters
