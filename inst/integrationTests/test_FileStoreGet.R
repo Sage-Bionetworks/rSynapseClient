@@ -930,26 +930,6 @@ integrationTestProvenanceNonList<-function() {
   checkTrue(foundExecuted)
 }
 
-# this tests synStore in which used and executed param's are passed
-# with no activityName.  The client fills in from entity metadata (see SYNR-834)
-integrationTestProvenanceNoActivityName<-function() {
-  project <- synapseClient:::.getCache("testProject")
-  pid<-propertyValue(project, "id")
-  executed<-Folder(name="executed", parentId=pid)
-  executed<-synStore(executed)
-  
-  folder<-Folder(name="test folder", parentId=pid)
-  # this tests (1) linking a URL, (2) passing a list, (3) passing a single entity, (4) passing an entity ID
-  storedFolder<-synStore(folder, used=project, executed=executed)
-  id<-propertyValue(storedFolder, "id")
-  checkTrue(!is.null(id))
-  
-  retrievedFolder<-synGet(id)
-  checkEquals(propertyValue(project, "id"), propertyValue(retrievedFolder, "parentId"))
-  activity<-generatedBy(retrievedFolder)
-  checkEquals("test folder", propertyValue(activity, "name"))
-}
-
 # this tests synStore where an Activity is constructed separately, then passed in
 integrationTestProvenance2<-function() {
   project <- synapseClient:::.getCache("testProject")
