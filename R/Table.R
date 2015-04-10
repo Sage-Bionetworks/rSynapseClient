@@ -407,11 +407,7 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
 # execute a query and download the results
 # returns the download file path and etag
 downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, filePath=NULL) {
-  # Extract tableId from query
-  pattern <- "from\\s+(syn\\d+)"
-  m <- regexec(pattern, sql)
-  matches <- regmatches(sql, m)
-  tableId <- matches[[1]][2]
+  tableId<-findSynIdInSql(sql)
   request<-DownloadFromTableRequest(sql=sql, includeRowIdAndRowVersion=includeRowIdAndRowVersion, writeHeader=TRUE)
   asyncJobId<-createS4ObjectFromList(synRestPOST(sprintf("/entity/%s/table/download/csv/async/start", tableId), createListFromS4Object(request)) ,"AsyncJobId")
   responseBodyAsList<-trackProgress(sprintf("/entity/%s/table/download/csv/async/get/%s", tableId, asyncJobId@token), verbose)
