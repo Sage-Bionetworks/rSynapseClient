@@ -13,7 +13,9 @@ setMethod(
     } else {
       wasExecuted<-otherParams$wasExecuted
     }
-    list(reference=getReference(listEntry), wasExecuted=wasExecuted, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
+	usedName <- propertyValue(entity, "name")
+	if (is.null(usedName)) usedName<-propertyValue(entity, "id")
+    list(reference=getReference(listEntry), name=usedName, wasExecuted=wasExecuted, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
   }
 )
 
@@ -28,10 +30,10 @@ setMethod(
       wasExecuted<-otherParams$wasExecuted
     }
     if (isSynapseId(listEntry)) {
-      list(reference=getReference(listEntry), wasExecuted=wasExecuted, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
+      list(reference=getReference(listEntry), name=listEntry, wasExecuted=wasExecuted, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
     } else {
       # must be a URL
-      list(url=listEntry, wasExecuted=wasExecuted, concreteType="org.sagebionetworks.repo.model.provenance.UsedURL")
+      list(url=listEntry, name=listEntry, wasExecuted=wasExecuted, concreteType="org.sagebionetworks.repo.model.provenance.UsedURL")
     }
   }
 )
@@ -51,12 +53,14 @@ setMethod(
         }
       }
       if (is.null(listEntry$concreteType)) listEntry$concreteType<-"org.sagebionetworks.repo.model.provenance.UsedEntity"
-      listEntry
+			if (is.null(listEntry$name)) listEntry$name<-listEntry$reference$targetId
+			listEntry
     } else if (!is.null(listEntry$url)) {
       # the list is itself a UsedURL
       if (is.null(listEntry$wasExecuted)) stop("'wasExecuted' required.")
       if (is.null(listEntry$concreteType)) listEntry$concreteType<-"org.sagebionetworks.repo.model.provenance.UsedURL"
-      listEntry
+			if (is.null(listEntry$name)) listEntry$name<-listEntry$url
+	  listEntry
     } else if (!is.null(listEntry$targetId)) {
       # then the arg is itself a reference
       otherParams<-list(...)
@@ -65,13 +69,14 @@ setMethod(
       } else {
         wasExecuted<-otherParams$wasExecuted
       }
-      list(reference=listEntry, wasExecuted=wasExecuted, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
+      list(reference=listEntry, name=listEntry$targetId, wasExecuted=wasExecuted, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
     } else if (!is.null(listEntry$entity)) {
       # get the reference and the 'executed' 
       usedEntity<-listEntry$entity
       executed<-listEntry$wasExecuted
       if (is.null(executed)) stop ("Executed required.")
-      list(reference=getReference(usedEntity), wasExecuted=executed, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
+			reference<-getReference(usedEntity)
+      list(reference=reference, name=reference$targetId, wasExecuted=executed, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
     } else {
       stop ("Entity, ID or URL required.")
     }
