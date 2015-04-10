@@ -11,7 +11,6 @@
 	
 	sl<-synapseClient:::ExternalS3StorageLocationSetting()
 	sl@bucket<-"r-client-integration-test.sagebase.org"
-	sl@baseKey<-"base/"
 	sl@concreteType<-"org.sagebionetworks.repo.model.project.ExternalS3StorageLocationSetting"
 	sl@uploadType<-"S3"
 	sl@banner<-"*** Using private storage: r-client-integration-test.sagebase.org ***"
