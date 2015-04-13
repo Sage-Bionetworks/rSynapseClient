@@ -14,5 +14,6 @@ unitTestUsedListEntry<-function() {
 	checkTrue(!usedEntry$wasExecuted)
 	checkEquals("org.sagebionetworks.repo.model.provenance.UsedURL", usedEntry$concreteType)
 	checkEquals("http://foo.bar", usedEntry$url)
+	checkEquals("http://foo.bar", usedEntry$name)
 	
 }

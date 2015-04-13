@@ -249,7 +249,7 @@ unitTestUsedAndExecuted<-function() {
   checkEquals(list(
       list(reference=list(targetId="syn202"), wasExecuted=TRUE, 
         concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"),
-      list(url="http://my.favorite.site.com", wasExecuted=TRUE, 
+      list(url="http://my.favorite.site.com", name="http://my.favorite.site.com", wasExecuted=TRUE, 
         concreteType="org.sagebionetworks.repo.model.provenance.UsedURL")), executed(a)) 
   
   # test setting and retrieving used and executed if they are passed as vectors rather than lists
@@ -266,7 +266,7 @@ unitTestUsedAndExecuted<-function() {
   checkEquals(list(
       list(reference=list(targetId="syn202"), wasExecuted=TRUE, 
         concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity"),
-      list(url="http://my.favorite.site.com", wasExecuted=TRUE, 
+      list(url="http://my.favorite.site.com", name="http://my.favorite.site.com", wasExecuted=TRUE, 
         concreteType="org.sagebionetworks.repo.model.provenance.UsedURL")), executed(a)) 
   
   # test used<-, executed<- using a single/multiple Entity(ies) as the argument(s)
