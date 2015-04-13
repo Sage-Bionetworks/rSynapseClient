@@ -769,7 +769,7 @@ integrationTestLoadZipped<-function() {
   save(list=ls(objects), file=filePath, envir=objects)
   zipped<-tempfile()
   zip(zipped, filePath)
-  zippedName<-sprintf(zipped, ".zip")
+  zippedName<-sprintf( "%s.zip", zipped)
   checkTrue(file.exists(zippedName))
   file<-File(zippedName, parentId=propertyValue(project, "id"))
   storedFile<-synStore(file)
