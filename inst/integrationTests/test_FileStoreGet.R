@@ -760,6 +760,29 @@ integrationTestSerialization<-function() {
   retrievedFile<-synStore(file)
 }
 
+integrationTestLoadZipped<-function() {
+  project <- synapseClient:::.getCache("testProject")
+  myData<-list(foo="bar", foo2="bas")
+  objects<-new.env(parent=emptyenv())
+  assign(x="myData", value=myData, envir=objects)
+  filePath<-tempfile()
+  save(list=ls(objects), file=filePath, envir=objects)
+  zipped<-tempfile()
+  zip(zipped, filePath)
+  zippedName<-sprintf( "%s.zip", zipped)
+  checkTrue(file.exists(zippedName))
+  file<-File(zippedName, parentId=propertyValue(project, "id"))
+  storedFile<-synStore(file)
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
+  checkTrue(!is.null(getFileLocation(storedFile)))
+  id<-propertyValue(storedFile, "id")
+  checkTrue(!is.null(id))
+  retrievedFile<-synGet(id, load=T)
+  checkTrue(synapseClient:::hasObjects(retrievedFile))
+  retrievedObject<-getObject(retrievedFile, "myData")
+  checkEquals(myData, retrievedObject)
+}
+
 integrationTestSerializeToEmptyFile<-function() {
   # Skip the existence check within the File constructor
   synapseClient:::.mock("mockable.file.exists", function(...) {TRUE})
