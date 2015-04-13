@@ -863,6 +863,7 @@ integrationTestProvenance<-function() {
     if (u$concreteType=="org.sagebionetworks.repo.model.provenance.UsedURL") {
       checkEquals(FALSE, u$wasExecuted)
       checkEquals("http://foo.bar.com", u$url)
+      checkEquals("http://foo.bar.com", u$name)
       foundURL<-T
     } else {
       checkEquals(u$concreteType, "org.sagebionetworks.repo.model.provenance.UsedEntity")
@@ -977,6 +978,7 @@ integrationTestProvenance2<-function() {
     if (u$concreteType=="org.sagebionetworks.repo.model.provenance.UsedURL") {
       checkEquals(FALSE, u$wasExecuted)
       checkEquals("http://foo.bar.com", u$url)
+      checkEquals("http://foo.bar.com", u$name)
       foundURL<-T
     } else {
       checkEquals(u$concreteType, "org.sagebionetworks.repo.model.provenance.UsedEntity")

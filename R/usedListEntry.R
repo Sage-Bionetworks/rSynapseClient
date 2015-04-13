@@ -31,7 +31,7 @@ setMethod(
 				list(reference=getReference(listEntry), wasExecuted=wasExecuted, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
 			} else {
 				# must be a URL
-				list(url=listEntry, wasExecuted=wasExecuted, concreteType="org.sagebionetworks.repo.model.provenance.UsedURL")
+				list(url=listEntry, name=listEntry, wasExecuted=wasExecuted, concreteType="org.sagebionetworks.repo.model.provenance.UsedURL")
 			}
 		}
 )
@@ -56,6 +56,7 @@ setMethod(
 				# the list is itself a UsedURL
 				if (is.null(listEntry$wasExecuted)) stop("'wasExecuted' required.")
 				if (is.null(listEntry$concreteType)) listEntry$concreteType<-"org.sagebionetworks.repo.model.provenance.UsedURL"
+				if (is.null(listEntry$name)) listEntry$name<-listEntry$url
 				listEntry
 			} else if (!is.null(listEntry$targetId)) {
 				# then the arg is itself a reference
