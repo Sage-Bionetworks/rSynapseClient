@@ -132,12 +132,6 @@ ensureTableSchemaIsRetrieved<-function(tableSchemaOrID) {
   }
 }
 
-synGetColumns<-function(id) {
-  listResult<-synRestGET(sprintf("/entity/%s/column", id))
-  objectResult<-createS4ObjectFromList(listResult, "PaginatedColumnModels")
-  objectResult@results
-}
-
 parseRowAndVersion<-function(x) {
   parsed<-strsplit(x, "_", fixed=T)
   parsedLengths<-sapply(X=parsed, FUN=length)
@@ -166,7 +160,7 @@ parseRowAndVersion<-function(x) {
 storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEtag=character(0)) {
   if (nrow(dataframe)<1 | ncol(dataframe)<1) stop("data frame is empty.")
   # validate column headers
-  schemaColumns<-synGetColumns(propertyValue(tableSchema,"id"))
+  schemaColumns<-synGetColumns(tableSchema)
   schemaColumnMap<-list()
   for (column in schemaColumns@content) schemaColumnMap[[column@name]]<-column
   for (dfColumnName in names(dataframe)) {
@@ -534,7 +528,7 @@ synDownloadTableFile<-function(table, rowIdAndVersion, columnName, downloadLocat
 		stop(sprintf("Unexpected type %s", class(table)))
 	}
 	# second get the columnId
-	columns<-synGetColumns(tableId)
+	columns<-synGetColumns(table)
 	selectColumn<-NULL
 	for (column in columns@content) {
 		if (column@name==columnName) {

@@ -9,7 +9,7 @@ setMethod(
 		definition = function(listEntry, ...) {
 			otherParams<-list(...)
 			if (is.null(otherParams$wasExecuted)) {
-				wasExecuted=F
+				wasExecuted<-FALSE
 			} else {
 				wasExecuted<-otherParams$wasExecuted
 			}
@@ -23,7 +23,7 @@ setMethod(
 		definition = function(listEntry, ...) {
 			otherParams<-list(...)
 			if (is.null(otherParams$wasExecuted)) {
-				wasExecuted=F
+				wasExecuted<-FALSE
 			} else {
 				wasExecuted<-otherParams$wasExecuted
 			}
@@ -45,7 +45,7 @@ setMethod(
 				if (is.null(listEntry$wasExecuted)) {
 					otherParams<-list(...)
 					if (is.null(otherParams$wasExecuted)) {
-						listEntry$wasExecuted=F
+						listEntry$wasExecuted<-FALSE
 					} else {
 						listEntry$wasExecuted<-otherParams$wasExecuted
 					}
@@ -54,7 +54,7 @@ setMethod(
 				listEntry
 			} else if (!is.null(listEntry$url)) {
 				# the list is itself a UsedURL
-				if (is.null(listEntry$wasExecuted)) stop("'wasExecuted' required.")
+				if (is.null(listEntry$wasExecuted)) listEntry$wasExecuted<-FALSE
 				if (is.null(listEntry$concreteType)) listEntry$concreteType<-"org.sagebionetworks.repo.model.provenance.UsedURL"
 				if (is.null(listEntry$name)) listEntry$name<-listEntry$url
 				listEntry
@@ -62,7 +62,7 @@ setMethod(
 				# then the arg is itself a reference
 				otherParams<-list(...)
 				if (is.null(otherParams$wasExecuted)) {
-					wasExecuted=F
+					wasExecuted<-FALSE
 				} else {
 					wasExecuted<-otherParams$wasExecuted
 				}
@@ -71,7 +71,7 @@ setMethod(
 				# get the reference and the 'executed' 
 				usedEntity<-listEntry$entity
 				executed<-listEntry$wasExecuted
-				if (is.null(executed)) stop ("Executed required.")
+				if (is.null(executed)) executed<-FALSE
 				list(reference=getReference(usedEntity), wasExecuted=executed, concreteType="org.sagebionetworks.repo.model.provenance.UsedEntity")
 			} else {
 				stop ("Entity, ID or URL required.")
