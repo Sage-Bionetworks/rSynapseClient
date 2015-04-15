@@ -81,11 +81,10 @@ table@values
 The following example shows how to add a new column to a Table.  First, define a new column:
 \begin{verbatim}
 newColumn<-TableColumn(name="new", columnType="STRING")
-newColumn<-synStore(newColumn)
 \end{verbatim}
 Now add the new column to the existing schema:
 \begin{verbatim}
-propertyValue(schema, "columnIds")<-c(propertyValue(schema, "columnIds"), newColumn$id)
+schema<-synAddColumn(schema, newColumn)
 schema<-synStore(schema)
 \end{verbatim}
 When the table is retrieved, the values in the new column are NA:
@@ -119,6 +118,11 @@ You can delete selected rows from the table:
 \begin{verbatim}
 rowsToDelete<-synTableQuery(sprintf("select * from %s where c='foo'", schemaId))
 synDeleteRows(rowsToDelete)
+\end{verbatim}
+You can delete a column from a table:
+\begin{verbatim}
+schema<-synRemoveColumns(schema, aColumn)
+schema<-synStore(schema)
 \end{verbatim}
 You can also delete the entire table:
 \begin{verbatim}

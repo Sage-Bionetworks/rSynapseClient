@@ -38,9 +38,56 @@ synGetColumns<-function(arg) {
 	}
 }
 
+synAddColumn<-function(arg, column) {
+	if (is.null(arg)) stop("table or schema is required")
+	if (is.null(column)) stop("column is required")
+	if (is(arg, "Table")) {
+		synAddColumn(arg@schema, column)
+	} else if (is(arg, "TableSchema")) {
+		if (is(column, "character")) {
+			propertyValue(arg, "columnIds")<-append(propertyValue(arg, "columnIds"), column)
+		} else if (is(column, "TableColumn")) {
+			arg@columns<-append(arg@columns, column)
+		} else {
+			stop(sprintf("Unexpected type for 'column': %s", class(column)[[1]]))
+		}
+		arg
+	} else {
+		stop(sprintf("Unexpected type: %s", class(arg)[[1]]))
+	}
+}
+
+synRemoveColumn<-function(arg, column) {
+	if (is.null(arg)) stop("table or schema is required")
+	if (is.null(column)) stop("column is required")
+	if (is(arg, "Table")) {
+		synRemoveColumn(arg@schema, column)
+	} else if (is(arg, "TableSchema")) {
+		# remove both from 'columns' and 'columnIds'
+		if (is(column, "character")) {
+			idToRemove<-column
+		} else if (is(column, "TableColumn")) {
+			idToRemove<-column@id
+		} else {
+			stop(sprintf("Unexpected type for 'column': %s", class(column)[[1]]))
+		}
+		currentColumnIds<-propertyValue(arg, "columnIds")
+		reducedIdList<-currentColumnIds[currentColumnIds!=idToRemove]
+		reducedColumns<-TableColumnList()
+		for (column in arg@columns@content) {
+			if (idToRemove!=column@id) reducedColumns<-append(reducedColumns, column)
+		}
+		propertyValue(arg, "columnIds")<-reducedIdList
+		arg@columns<-reducedColumns
+		arg
+	} else {
+		stop(sprintf("Unexpected type: %s", class(arg)[[1]]))
+	}
+}
+
 # this is called from synGet to do TableSchema-specific work
 populateTableSchema<-function(tableSchema) {
-	tableSchema@columns<-getTableSchemaColumns(propertyValue(tableSchema, "id"))
+	tableSchema@columns<-getTableSchemaColumnsFromId(propertyValue(tableSchema, "id"))
 	tableSchema
 }
 
@@ -49,6 +96,7 @@ initializeTableSchemaSlots<-function(tableSchema) {
   tableSchema@annotations <- new("SynapseAnnotations")
   tableSchema@synapseWebUrl <- ""
   tableSchema@generatedByChanged <- FALSE
+	tableSchema@columns<-TableColumnList()
   tableSchema@properties <- initializeProperties("org.sagebionetworks.repo.model.table.TableEntity", TRUE)
   tableSchema
 }
@@ -65,9 +113,6 @@ TableSchema<-function(name, parent, columns, ...) {
     stop("Illegal 'parent' parameter.")
   }
   propertyValue(result, "parentId")<-parentId
-  if (missing(columns) || length(columns)==0) {
-    stop("'columns' is required.")
-  }
   columnIds<-list()
   for (column in columns) {
     if (is(column, "TableColumn")) {
@@ -113,7 +158,7 @@ setMethod(
 			# now do the standard operations for storing an Entity
 			storedEntity<-synStoreMethod(entity, activity, used, executed, activityName, activityDescription, createOrUpdate, forceVersion, isRestricted, contentType)
 			# finally, get a fresh copy of the columns
-			storedEntity@columns<-getTableSchemaColumns(propertyValue(storedEntity, "id"))
+			storedEntity@columns<-getTableSchemaColumnsFromId(propertyValue(storedEntity, "id"))
 			
 			storedEntity
 		}

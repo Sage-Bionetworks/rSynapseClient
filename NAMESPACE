@@ -60,7 +60,9 @@ export(
   "synTableQuery",
   "synDeleteRows",
   "synDownloadTableFile",
-  "synGetColumns"
+  "synGetColumns",
+  "synAddColumn",
+  "synRemoveColumn"
 )
 
 ## Synapse object constructors 

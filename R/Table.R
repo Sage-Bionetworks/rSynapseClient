@@ -528,7 +528,7 @@ synDownloadTableFile<-function(table, rowIdAndVersion, columnName, downloadLocat
 		stop(sprintf("Unexpected type %s", class(table)))
 	}
 	# second get the columnId
-	columns<-synGetColumns(table@schema)
+	columns<-synGetColumns(table)
 	selectColumn<-NULL
 	for (column in columns@content) {
 		if (column@name==columnName) {

@@ -18,7 +18,6 @@
 integrationTestCreateTableSchema<-function() {
   project<-synapseClient:::.getCache("testProject")
   
-  
   tableColumns<-list()
   for (i in 1:3) {
     tableColumn<-TableColumn(
@@ -66,17 +65,47 @@ integrationTestCreateTableSchema<-function() {
 		checkTrue(any(retrievedSchema@columns[[i]]$id==propertyValue(retrievedSchema, "columnIds")))
 	}
 	
-	# now check that the retrieved table columns match the originals
-	# since we didn't save #3 ahead of time, we just copy over the id here
-	tableColumns[[3]]@id<-retrievedSchema@columns[[3]]@id
-	columnIdToColumnMap<-list()
-	for (i in 1:3) {
-		columnIdToColumnMap[[retrievedSchema@columns[[i]]@id]]<-retrievedSchema@columns[[i]]
-	}
-	
   synDelete(storedSchema)
   
   # check synDelete
   checkException(synGet(id))
  
 }
+
+integrationTestAddAndRemoveColumns<-function() {
+	project<-synapseClient:::.getCache("testProject")
+	name<-sprintf("R_Client_Integration_Test_Create_Schema_%s", sample(999999999, 1))
+	tableSchema<-TableSchema(name=name, parent=propertyValue(project, "id"), columns=list())
+	columnName<-"R_Client_Integration_Test_Column_Name_1"
+	tableColumn<-TableColumn(name=columnName,columnType="STRING")
+	tableSchema<-synAddColumn(tableSchema, tableColumn)
+	tableSchema<-synStore(tableSchema)
+	columns<-synGetColumns(tableSchema)
+	checkEquals(1, length(columns))
+	checkEquals(columnName, columns[[1]]@name)
+	
+	# now let's add another column, this time by its ID
+	columnName2<-"R_Client_Integration_Test_Column_Name_2"
+	tableColumn<-TableColumn(name=columnName2,columnType="STRING")
+	tableColumn<-synStore(tableColumn)
+	tableSchema<-synAddColumn(tableSchema, tableColumn@id)
+	tableSchema<-synStore(tableSchema)
+	columns<-synGetColumns(tableSchema)
+	checkEquals(2, length(columns))
+	checkEquals(columnName, columns[[1]]@name)
+	checkEquals(columnName2, columns[[2]]@name)
+	
+	# now let's remove the first column
+	tableSchema<-synRemoveColumn(tableSchema, columns[[1]])
+	tableSchema<-synStore(tableSchema)
+	columns<-synGetColumns(tableSchema)
+	
+	# schema should have just the second column
+	checkEquals(1, length(columns))
+	checkEquals(columnName2, columns[[1]]@name)
+	
+	synDelete(tableSchema)
+	
+}
+
+

@@ -8,12 +8,12 @@ synGetColumns
 \usage{synGetColumns(arg)}
 \arguments{
   \item{arg}{
-  the Table, TableSchema, or ID of the table of interest
+  the Table, TableSchema, or ID of the table of interest.
   }
 }
 \value{
-	a TableColumnList (a typed list of TableColumn objects) for the columns of the given Table.
+	A TableColumnList (a typed list of TableColumn objects) for the columns of the given Table.
 }
 \seealso{
-\code{\link{TableColumn},\link{Table},\link{TableSchema},}
+\code{\link{TableColumn},\link{synAddColumn},\link{synRemoveColumn},\link{Table},\link{TableSchema}}
 }
