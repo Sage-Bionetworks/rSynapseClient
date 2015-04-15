@@ -1,22 +1,22 @@
-\name{synRemoveColumn}
-\alias{synRemoveColumn}
+\name{synAddColumn}
+\alias{synAddColumn}
 \docType{methods}
 \title{
-synRemoveColumn
+synAddColumn
 }
-\description{Remove a column from a Table Schema}
-\usage{synRemoveColumn(arg, column)}
+\description{Add a column to a Table Schema}
+\usage{synAddColumn(arg, column)}
 \arguments{
   \item{arg}{
   the Table, TableSchema, or ID of the table of interest.
   }
   \item{column}{
-  the TableColumn or column ID to remove from the table.
+  the TableColumn or column ID to add to the table.
   }
 }
 \details{
 Note: No server interaction takes place. (That is done when \code{synStore} is called.)
 }
 \seealso{
-\code{\link{TableColumn},\link{synGetColumn},\link{synRemoveColumn},\link{Table},\link{TableSchema},\link{synStore}}
+\code{\link{TableColumn},\link{synGetColumn},\link{synAddColumn},\link{Table},\link{TableSchema},\link{synStore}}
 }
