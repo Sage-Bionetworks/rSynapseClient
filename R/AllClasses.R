@@ -160,64 +160,6 @@ setClass(
   )
 )
 
-setClass(
-  Class = "TableSchema",
-  contains = "Entity",
-  prototype = prototype(
-    synapseEntityKind = "TableSchema"
-  )
-)
-
-setClassUnion("TableSchemaOrCharacter", c("TableSchema", "character"))
-
-setClass(
-  Class = "Table",
-  # this can either be a TableSchema or the ID of the TableSchema
-  representation=representation(schema="TableSchemaOrCharacter")
-)
-
-setClass(
-  Class = "TableDataFrame",
-  contains = c("Table"),
-  representation=representation(values="data.frame", updateEtag="character")
-)
-
-setClass(
-  Class = "TableFilePath",
-  contains = c("Table"),
-  representation=representation(
-    filePath="character",
-    updateEtag="character",
-    linesToSkip="integer",
-    quoteCharacter="character",
-    isFirstLineHeader="logical",
-    escapeCharacter="character",
-    lineEnd="character",
-    separator="character"
-    )
-)
-
-setClass(
-  Class = "TableRowCount",
-  contains = c("Table"),
-  representation=representation(rowCount="integer", updateEtag="character")
-)
-
-setClass(
-  Class = "TableFileHandleId",
-  contains = c("Table"),
-  representation=representation(
-    fileHandleId="integer",
-    updateEtag="character",
-    linesToSkip="integer",
-    quoteCharacter="character",
-    isFirstLineHeader="logical",
-    escapeCharacter="character",
-    lineEnd="character",
-    separator="character"
-    )
-)
-
 # This is an abstract class for a typed list
 # Concrete extensions should fill the 'type' slot
 # with the class of the elements in the list
@@ -243,6 +185,67 @@ setClass(
 defineS4Classes()
 
 # ---- Classes dependent on auto-generated ones go after this line.
+
+setClass(
+		Class = "TableSchema",
+		contains = "Entity",
+		representation = representation(
+				columns = "TableColumnList"
+		),
+		prototype = prototype(
+				synapseEntityKind = "TableSchema"
+		)
+)
+
+setClassUnion("TableSchemaOrCharacter", c("TableSchema", "character"))
+
+setClass(
+		Class = "Table",
+		# this can either be a TableSchema or the ID of the TableSchema
+		representation=representation(schema="TableSchemaOrCharacter")
+)
+
+setClass(
+		Class = "TableDataFrame",
+		contains = c("Table"),
+		representation=representation(values="data.frame", updateEtag="character")
+)
+
+setClass(
+		Class = "TableFilePath",
+		contains = c("Table"),
+		representation=representation(
+				filePath="character",
+				updateEtag="character",
+				linesToSkip="integer",
+				quoteCharacter="character",
+				isFirstLineHeader="logical",
+				escapeCharacter="character",
+				lineEnd="character",
+				separator="character"
+		)
+)
+
+setClass(
+		Class = "TableRowCount",
+		contains = c("Table"),
+		representation=representation(rowCount="integer", updateEtag="character")
+)
+
+setClass(
+		Class = "TableFileHandleId",
+		contains = c("Table"),
+		representation=representation(
+				fileHandleId="integer",
+				updateEtag="character",
+				linesToSkip="integer",
+				quoteCharacter="character",
+				isFirstLineHeader="logical",
+				escapeCharacter="character",
+				lineEnd="character",
+				separator="character"
+		)
+)
 
 
 

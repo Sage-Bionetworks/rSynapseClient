@@ -73,8 +73,8 @@ kSynapseRAnnotationTypeMap <- list(
   }
   
   # we need a TypedList of UploadDestination, for which there is no schema
-  defineTypedList("UploadDestination")
-  
+	defineTypedList("UploadDestination")
+
   # This is done during class generation but seems to be lost at package load time.  So we do it again.
   populateSchemaToClassMap()
 }

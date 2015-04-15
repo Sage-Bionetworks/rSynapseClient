@@ -14,10 +14,20 @@ setMethod(
     tableSchema<-initializeTableSchemaSlots(tableSchema)
     for (prop in names(propertiesList))
       tableSchema<-synAnnotSetMethod(tableSchema, prop, propertiesList[[prop]])
-    
     tableSchema
   }
 )
+
+getTableSchemaColumns<-function(tableId) {
+	response<-synRestGET(sprintf("/entity/%s/column", tableId))
+	createS4ObjectFromList(response$results, "TableColumnList")
+}
+
+# this is called from synGet to do TableSchema-specific work
+populateTableSchema<-function(tableSchema) {
+	tableSchema@columns<-getTableSchemaColumns(propertyValue(tableSchema, "id"))
+	tableSchema
+}
 
 # Note this duplicates the 'prototype' for the superclass, Entity
 initializeTableSchemaSlots<-function(tableSchema) {
@@ -46,8 +56,8 @@ TableSchema<-function(name, parent, columns, ...) {
   columnIds<-list()
   for (column in columns) {
     if (is(column, "TableColumn")) {
-      if (length(column$id)==0) column<-synStore(column)
-      columnIds<-append(columnIds, column$id)
+      #if (length(column$id)==0) column<-synStore(column)
+      result@columns<-append(result@columns, column)
     } else {
       columnIds<-append(columnIds, column)
     }
@@ -61,5 +71,32 @@ TableSchema<-function(name, parent, columns, ...) {
   result
 }
 
+setMethod(
+		f = "synStore",
+		signature = "TableSchema",
+		definition = function(entity) {
+			# first, store any unsaved columns
+			idsFromColumns<-list()
+			columnsToStore<-TableColumnList()
+			for (column in entity@columns) {
+				if (length(column$id)==0) {
+					columnsToStore<-append(columnsToStore, column)
+				} else {
+					idsFromColumns<-append(idsFromColumns, column$id)
+				}
+			}
+			response<-synRestPOST("/column/batch", list(list=createListFromS4Object(columnsToStore)))
+			storedColumns<-createS4ObjectFromList(response$list, "TableColumnList")
+			for (column in storedColumns@content) {
+				idsFromColumns<-append(idsFromColumns, column@id)
+			}
+			# now make sure the entity's ID list includes those of the columns
+			propertyValue(entity, "columnIds")<-unique(append(propertyValue(entity, "columnIds"), idsFromColumns))
+			# now do the standard operations for storing an Entity
+			storedEntity<-synStoreMethod(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)
+			# finally, get a fresh copy of the columns
+			storedEntity@columns<-getTableSchemaColumns(propertyValue(tableSchema, "id"))
+		}
+)
 
   
