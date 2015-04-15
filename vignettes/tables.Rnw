@@ -121,7 +121,7 @@ synDeleteRows(rowsToDelete)
 \end{verbatim}
 You can delete a column from a table:
 \begin{verbatim}
-schema<-synRemoveColumns(schema, aColumn)
+schema<-synRemoveColumn(schema, aColumn)
 schema<-synStore(schema)
 \end{verbatim}
 You can also delete the entire table:

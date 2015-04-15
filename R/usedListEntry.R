@@ -62,7 +62,7 @@ setMethod(
 				# then the arg is itself a reference
 				otherParams<-list(...)
 				if (is.null(otherParams$wasExecuted)) {
-					wasExecuted=FALSE
+					wasExecuted<-FALSE
 				} else {
 					wasExecuted<-otherParams$wasExecuted
 				}
