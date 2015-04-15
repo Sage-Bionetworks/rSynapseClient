@@ -18,10 +18,24 @@ setMethod(
   }
 )
 
-getTableSchemaColumns<-function(tableId) {
+getTableSchemaColumnsFromId<-function(tableId) {
 	if (is.null(tableId)) stop("tableId is required")
 	response<-synRestGET(sprintf("/entity/%s/column", tableId))
 	createTypedListFromList(response$results, "TableColumnList")
+}
+
+synGetColumns<-function(arg) {
+	if (is.null(arg)) stop("table, schema or id is required")
+	if (is(arg, "character")) {
+		if (!isSynapseId(arg)) stop(sprintf("%s is not a Synapse ID.", arg))
+		getTableSchemaColumnsFromId(arg)
+	} else if (is(arg, "Table")) {
+		synGetColumns(arg@schema)
+	} else if (is(arg, "TableSchema")) {
+		arg@columns
+	} else {
+		stop(sprintf("Unexpected type: %s", class(arg)[[1]]))
+	}
 }
 
 # this is called from synGet to do TableSchema-specific work

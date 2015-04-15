@@ -13,7 +13,7 @@ A client for interacting with the Synapse web services.
 Package: \tab synapseClient\cr
 Type: \tab Package\cr
 Version: \tab 1.8-2\cr
-Date: \tab 2015-04-10\cr
+Date: \tab 2015-04-17\cr
 License: \tab GPL\cr
 LazyLoad: \tab yes\cr
 }

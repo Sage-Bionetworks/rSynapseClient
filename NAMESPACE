@@ -59,7 +59,8 @@ export(
   "sendMessage",
   "synTableQuery",
   "synDeleteRows",
-  "synDownloadTableFile"
+  "synDownloadTableFile",
+  "synGetColumns"
 )
 
 ## Synapse object constructors 
@@ -70,7 +71,6 @@ export(
 	"Activity",
 	"Evaluation",
 	"WikiPage",
-	"TableColumn",
 	"UserProfile",
 	"ResourceAccess",
 	"TableSchema",
