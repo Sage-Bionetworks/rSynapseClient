@@ -74,11 +74,11 @@ TableSchema<-function(name, parent, columns, ...) {
 setMethod(
 		f = "synStore",
 		signature = "TableSchema",
-		definition = function(entity) {
+		definition = function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL) {
 			# first, store any unsaved columns
 			idsFromColumns<-list()
 			columnsToStore<-TableColumnList()
-			for (column in entity@columns) {
+			for (column in entity@columns@content) {
 				if (length(column$id)==0) {
 					columnsToStore<-append(columnsToStore, column)
 				} else {
@@ -93,7 +93,7 @@ setMethod(
 			# now make sure the entity's ID list includes those of the columns
 			propertyValue(entity, "columnIds")<-unique(append(propertyValue(entity, "columnIds"), idsFromColumns))
 			# now do the standard operations for storing an Entity
-			storedEntity<-synStoreMethod(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)
+			storedEntity<-synStoreMethod(entity, activity, used, executed, activityName, activityDescription, createOrUpdate, forceVersion, isRestricted, contentType)
 			# finally, get a fresh copy of the columns
 			storedEntity@columns<-getTableSchemaColumns(propertyValue(tableSchema, "id"))
 		}

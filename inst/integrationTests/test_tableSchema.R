@@ -32,8 +32,8 @@ integrationTestCreateTableSchema<-function() {
  
   tableSchema<-TableSchema(name=name, parent=propertyValue(project, "id"), columns=tableColumns,  foo="bar", "pi"=3.14)
   for (i in 1:3) {
-    checkEquals(tableColumns[[i]]$id, propertyValue(tableSchema, "columnIds")[[i]])
-  }
+		checkEquals(tableColumns[[i]], tableSchema@columns[[i]])
+	}
   
   storedSchema<-synStore(tableSchema)
   id<-propertyValue(storedSchema, "id")
