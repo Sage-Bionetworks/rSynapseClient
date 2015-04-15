@@ -108,7 +108,8 @@ synStoreMethod<-function(entity, activity=NULL, used=NULL, executed=NULL, activi
 setMethod(
   f = "synStore",
   signature = "Entity",
-  definition = function(entity){synStoreMethod(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL)}
+  definition = function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL) {
+		synStoreMethod(entity, activity, used, executed, activityName, activityDescription, createOrUpdate, forceVersion, isRestricted, contentType)}
 )
 
 synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
