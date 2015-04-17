@@ -55,7 +55,11 @@ getURLWithRetries<-function(url,
   debugfunction,
   .opts
 ) {
-  h = basicTextGatherer()
+	if(!is.null(.getCache("debug")) && .getCache("debug")) {
+		message(".getURLIntern: url:", url)
+	}
+	
+	h = basicTextGatherer()
 	
   if (missing(postfields)) {
 	  body<-getURL(url=url, 
