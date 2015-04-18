@@ -65,7 +65,7 @@ unitTestConnectionEstablishedPROXY<-function() {
 	checkEquals(3, length(ans))
 	checkEquals(299, ans$statusCode) # using a made-up code, just to check the parser
 	checkEquals("OK", ans$statusString)
-	checkEquals(6, length(ans$headers))
+	checkEquals(8, length(ans$headers))
 	checkEquals("*", ans$headers$`Access-Control-Allow-Origin`)
 	checkEquals("application/json;charset=UTF-8", ans$headers$`Content-Type`)
 	checkEquals("Fri, 17 Apr 2015 17:39:21 GMT", ans$headers$Date)	
