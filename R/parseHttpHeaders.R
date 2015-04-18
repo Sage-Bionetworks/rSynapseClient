@@ -32,7 +32,7 @@ parseHttpHeaders<-function(r) {
 	# we must skip
 	lastResponseBreak<-findLastResponseBreak(parsedResult)
 	if (length(lastResponseBreak)>0) {
-		parsedResult<-parsedResult[lastResponseBreak+1:length(parsedResult)]
+		parsedResult<-parsedResult[(lastResponseBreak+1):length(parsedResult)]
 	}
 	
   firstRow<-strsplit(parsedResult[1], " ")[[1]]
@@ -47,7 +47,7 @@ parseHttpHeaders<-function(r) {
       headerRow<-parsedResult[j]
 	  	if (nchar(headerRow)>0) {
 		 	 i <- regexpr(":", headerRow, fixed=T)
-		 	 if (i<0) stop(sprintf("Unexpected format for header %s", headerRow))
+		 	 if (length(i)<1 | i<0) stop(sprintf("Unexpected format for header %s", headerRow))
 		  	headers[[substr(headerRow, 1, i-1)]]<-trimWhitespace(substr(headerRow, i+1, nchar(headerRow)))
 	  	}
     }
