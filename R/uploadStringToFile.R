@@ -43,3 +43,9 @@ uploadStringToSynapseS3File<-function(content, contentType="text/plain") {
   completeChunkFileUpload(chunkedFileUploadToken, chunkResults)   
 }
 
+#calculate the MD-5 checksum for a string
+stringMd5<-function(s) {
+	digest(s, algo="md5", serialize=FALSE)
+}
+
+
