@@ -1,4 +1,4 @@
-# unit tests for functions in uplaodFile
+# unit tests for functions in uploadFile and uploadStringToFile
 # 
 # Author: brucehoff
 ###############################################################################
@@ -27,3 +27,8 @@ unitTestCacheCredentials<-function() {
   checkEquals(testuser, creds$username)
   checkEquals(testpassword, creds$password)
 }
+
+unitTestStringMd5()<-function() {
+	checkEquals(stringMd5("foo"), "acbd18db4cc2f85cedef654fccc4a4d8")
+}
+
