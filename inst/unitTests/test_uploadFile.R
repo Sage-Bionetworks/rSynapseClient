@@ -29,6 +29,6 @@ unitTestCacheCredentials<-function() {
 }
 
 unitTestStringMd5()<-function() {
-	checkEquals(stringMd5("foo"), "acbd18db4cc2f85cedef654fccc4a4d8")
+	checkEquals(synapseClient:::stringMd5("foo"), "acbd18db4cc2f85cedef654fccc4a4d8")
 }
 
