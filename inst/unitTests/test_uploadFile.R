@@ -28,7 +28,7 @@ unitTestCacheCredentials<-function() {
   checkEquals(testpassword, creds$password)
 }
 
-unitTestStringMd5()<-function() {
+unitTestStringMd5<-function() {
 	checkEquals(synapseClient:::stringMd5("foo"), "acbd18db4cc2f85cedef654fccc4a4d8")
 }
 
