@@ -339,13 +339,14 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
 
 # containerDestinations has type UploadDestinationList, a TypeList of UploadDestination
 selectUploadDestination<-function(file, containerDestinations) {
-  	fileStorageLocationId<-file@fileHandle$storageLocationId
-	if (!is.null(fileStorageLocationId)) {
-		for (dest in containerDestinations@content) {
-			if (fileStorageLocationId==dest@storageLocationId) {
-				return (dest)
+  fileStorageLocationId<-file@fileHandle$storageLocationId
+	for (dest in containerDestinations@content) {
+			# NOTE: legacy file handles have null fileStorageLocationId
+			# which matches dest@storageLocationId==as.integer(1)
+			if ((is.null(fileStorageLocationId) && dest@storageLocationId==as.integer(1)) ||
+					(!is.null(fileStorageLocationId) && fileStorageLocationId==dest@storageLocationId)) {
+				return(dest)
 			}
-		}
 	}
 	
 	# remove the following once PLFM-3327 is done
