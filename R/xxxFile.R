@@ -341,9 +341,9 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
 selectUploadDestination<-function(file, containerDestinations) {
   fileStorageLocationId<-file@fileHandle$storageLocationId
 	for (dest in containerDestinations@content) {
-			# NOTE: legacy file handles have null fileStorageLocationId
+			# NOTE: legacy S3 file handles have null fileStorageLocationId
 			# which matches dest@storageLocationId==as.integer(1)
-			if ((is.null(fileStorageLocationId) && dest@storageLocationId==as.integer(1)) ||
+			if ((is.null(fileStorageLocationId) && !isExternalFileHandle(file@fileHandle) && dest@storageLocationId==as.integer(1)) ||
 					(!is.null(fileStorageLocationId) && fileStorageLocationId==dest@storageLocationId)) {
 				return(dest)
 			}
