@@ -1096,3 +1096,21 @@ integrationTestUpdateExternalLink<-function() {
   checkEquals(newUrl, getFileLocation(retrieved))
 }
 
+integrationTestNullStorageLocationId <- function() {
+  # create a Project
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  # create a file to be uploaded
+  filePath<- createFile(content="Some content")
+  file<-File(filePath, parentId=propertyValue(project, "id"))
+  # now store it
+  storedFile<-synStore(file)
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
+  # simulate an 'old' fileHandle, having a NULL storageLocationId
+  storedFile@fileHandle$storageLocationId<-NULL
+  touchFile(filePath)
+  synStore(storedFile) # in SYNR-938 this throws an error
+}
+
+
+
