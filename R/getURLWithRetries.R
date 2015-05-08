@@ -8,7 +8,9 @@ getURLWithRetries<-function(url,
   httpheader=NULL, # the headers
   curl=getCurlHandle(), # the curl handle
   debugfunction = NULL,
-  opts
+  opts,
+  logErrorsToSynapse=TRUE,
+  extraRetryStatusCodes=NULL
 ) {
   
   # result has the form list(result=list(headers,body), httpStatus=<status>)
@@ -35,7 +37,8 @@ getURLWithRetries<-function(url,
 		# returns list(headers,body)
       },
       curlHandle=curl,
-      extraRetryStatusCode=NULL
+	  extraRetryStatusCodes=extraRetryStatusCodes,
+	  logErrorsToSynapse
   )
   parsedHeaders<-parseHttpHeaders(result$result$headers)
   list(body=result$result$body, parsedHeaders=parsedHeaders)
@@ -52,7 +55,11 @@ getURLWithRetries<-function(url,
   debugfunction,
   .opts
 ) {
-  h = basicTextGatherer()
+	if(!is.null(.getCache("debug")) && .getCache("debug")) {
+		message(".getURLIntern: url:", url)
+	}
+	
+	h = basicTextGatherer()
 	
   if (missing(postfields)) {
 	  body<-getURL(url=url, 

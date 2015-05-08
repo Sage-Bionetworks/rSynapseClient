@@ -118,6 +118,9 @@ setMethod(
 )
 
 isExternalFileHandle<-function(fileHandle) {length(fileHandle)>0 && fileHandle$concreteType=="org.sagebionetworks.repo.model.file.ExternalFileHandle"}
+# TODO once all file handle's storageLocationIds are back-filled (PLFM-3327):
+# isExternalFileHandle<-function(fileHandle) {length(fileHandle)>0 && is.null(fileHandle$storageLocationId)}
+
 fileHasFileHandleId<-function(file) {!is.null(file@fileHandle$id)}
 fileHasFilePath<-function(file) {length(file@filePath)>0 && nchar(file@filePath)>0}
 
@@ -291,7 +294,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, uploadDestination=uploadDestination, contentType=contentType)
       } else { # ... we are storing a new file which we are linking, but not uploading
         # link external URL in Synapse, get back fileHandle	
-        fileHandle<-synapseLinkExternalFile(file@filePath, contentType)
+        fileHandle<-synapseLinkExternalFile(file@filePath, contentType, storageLocationId=NULL)
         # note, there's no cache map entry to create
       }
       #	save fileHandle in slot, put id in entity properties
@@ -299,16 +302,16 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
       propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
     }
   } else { # fileHandle is not null, i.e. we're updating a Synapse File that's already created
-    #	if fileHandle is inconsistent with filePath or synapseStore, raise an exception 
+    # if fileHandle is inconsistent with filePath or synapseStore, raise an exception 
     validateFile(file)
     if (file@synapseStore) {
       if (!fileHasFilePath(file) || localFileUnchanged(file@fileHandle$id, file@filePath)) {
         # since local file matches Synapse file (or was not actually retrieved) nothing to store
       } else {
         uploadDestinations<-getUploadDestinations(propertyValue(file, "parentId"))
-        uploadDestination<-selectUploadDestination(getUrlForFileHandle(file@fileHandle), uploadDestinations)
+        uploadDestination<-selectUploadDestination(file, uploadDestinations)
         if(is.null(uploadDestination)) {
-          stop("Container lacks upload destination matching file's current URL.")
+          stop("File's container lacks upload destination for the file's storage location.")
         }
         #	load file into Synapse, get back fileHandle (save in slot, put id in properties)       
         fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, uploadDestination=uploadDestination, contentType=contentType)
@@ -323,7 +326,7 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         # may need to update the external file handle
         if (filePath!=externalURL) {
           # update the file handle
-          file@fileHandle<-synapseLinkExternalFile(filePath, contentType)
+          file@fileHandle<-synapseLinkExternalFile(filePath, contentType, storageLocationId=NULL)
           propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
         }
       } else {
@@ -334,36 +337,48 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
   file
 }
 
-selectUploadDestination<-function(fileUrl, containerDestinations) {
-  if (length(fileUrl)==0) {
-    return(containerDestinations[[1]])
-  } else {
-    for (dest in containerDestinations@content) {
-      if (fileUrl=="S3") {
-        if (is(dest, "S3UploadDestination")) {
-          return(dest)
-        }
-      } else if (is(dest, "ExternalUploadDestination")) {
-        if (matchURLHosts(fileUrl, dest@url)) {
-          return (dest)
-        }
-      }
-    }
-  }
-  NULL
+# containerDestinations has type UploadDestinationList, a TypeList of UploadDestination
+selectUploadDestination<-function(file, containerDestinations) {
+  fileStorageLocationId<-file@fileHandle$storageLocationId
+	for (dest in containerDestinations@content) {
+			# NOTE: legacy S3 file handles have null fileStorageLocationId
+			# which matches dest@storageLocationId==as.integer(1)
+			if ((is.null(fileStorageLocationId) && !isExternalFileHandle(file@fileHandle) && dest@storageLocationId==as.integer(1)) ||
+					(!is.null(fileStorageLocationId) && fileStorageLocationId==dest@storageLocationId)) {
+				return(dest)
+			}
+	}
+	
+	# remove the following once PLFM-3327 is done
+	# if the above fails to match an upload destination, try matching on URL
+	if (isExternalFileHandle(file@fileHandle)) {
+		fileUrl<-file@fileHandle$externalURL
+		if (length(fileUrl)==0) {
+			stop(sprintf("No file handle url for file handle %s", file@fileHandle$id))
+		} 
+		
+		for (dest in containerDestinations@content) {
+			if (is(dest, "ExternalUploadDestination") && 
+					matchURLHosts(fileUrl, dest@url)) {
+				return (dest)
+			}
+		}
+	}
+
+  	NULL
 }
 
-# match protocol, host and port
 matchURLHosts<-function(url1, url2) {
-  parsedUrl1<-.ParsedUrl(url1)
-  parsedUrl2<-.ParsedUrl(url2)
-  parsedUrl1@protocol==parsedUrl2@protocol &&
-    parsedUrl1@host==parsedUrl2@host
+	 parsedUrl1<-.ParsedUrl(url1)
+	 parsedUrl2<-.ParsedUrl(url2)
+	 parsedUrl1@protocol==parsedUrl2@protocol &&
+			 parsedUrl1@host==parsedUrl2@host
 }
 
-fileHandleMatchesUploadDestination<-function(fileHandleUrl, containerEntityId) {
+
+fileHandleMatchesUploadDestination<-function(file, containerEntityId) {
   uploadDestinations<-getUploadDestinations(containerEntityId)
-  !is.null(selectUploadDestination(fileHandleUrl, uploadDestinations))
+  !is.null(selectUploadDestination(file, uploadDestinations))
 }
 
 getUploadDestinations<-function(containerEntityId) {
@@ -371,16 +386,6 @@ getUploadDestinations<-function(containerEntityId) {
   uploadDestinations<-createTypedListFromList(uploadDestinationResponse$list, "UploadDestinationList")
   if (length(uploadDestinations)==0) stop(sprintf("Entity %s has no upload destinations to choose from.", containerEntityId))
   uploadDestinations
-}
-
-getUrlForFileHandle<-function(fileHandle) {
-  if (fileHandle$concreteType=="org.sagebionetworks.repo.model.file.S3FileHandle") {
-    "S3"
-  } else if (fileHandle$concreteType=="org.sagebionetworks.repo.model.file.ExternalFileHandle") {
-    fileHandle$externalURL
-  } else {
-    stop(sprintf("Unexpected file handle type %s", fileHandle$concreteType))
-  }
 }
 
 # we define these functions to allow mocking during testing
@@ -472,13 +477,24 @@ synGetFile<-function(file, downloadFile=T, downloadLocation=NULL, ifcollision="k
     
   # now construct File from 'result', which has filePath, synapseStore 
   if (!is.null(filePath)) file@filePath<-filePath
-  # if the file location matches one of the upload destinations for the container then we can store it
-  # back to that location later
-  file@synapseStore<-fileHandleMatchesUploadDestination(getUrlForFileHandle(fileHandle), propertyValue(file, "parentId"))
+  # if the file handle is not an external one or if it is external but the storageLocation
+  # is 'recognized' by the file's parent project, then we can store it back later
+  file@synapseStore<-!isExternalFileHandle(fileHandle) ||
+		  fileHandleMatchesUploadDestination(file, propertyValue(file, "parentId"))
   if (load) {
     if (is.null(file@objects)) file@objects<-new.env(parent=emptyenv())
-    # Note: the following only works if 'path' is a file system path, not a URL
-    load(file=file@filePath, envir = as.environment(file@objects))
+    if (length(grep(".zip$", tolower(file@filePath)))>0) {
+		# this special case handles zipped R binaries transferred from the old "Locationable"
+		# attachments to the current File entities.  If the user asks to 'load' such a zip
+		# file, we unzip it and load its contents.  See SYNR-897.
+		unzipped<-unzip(file@filePath, exdir=dirname(file@filePath))
+		for (f in unzipped) {
+			load(file=f, envir = as.environment(file@objects))
+			unlink(f)
+		}
+	} else {
+		load(file=file@filePath, envir = as.environment(file@objects))
+	}
   }  
   file
 }
@@ -632,22 +648,6 @@ setMethod(
   signature = signature("File","numeric"),
   definition = function(entity, versionId){
     loadEntity(entity, as.character(versionId))
-  }
-)
-
-setMethod(
-  f = "moveFile",
-  signature = signature("File", "character", "character"),
-  definition = function(entity, src, dest){
-    stop("Unsupported operation for Files.")
-  }
-)
-
-setMethod(
-  f = "deleteFile",
-  signature = signature("File", "character"),
-  definition = function(entity, file){
-    stop("Unsupported operation for Files.")
   }
 )
 

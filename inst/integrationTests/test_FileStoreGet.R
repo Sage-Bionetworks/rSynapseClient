@@ -760,6 +760,29 @@ integrationTestSerialization<-function() {
   retrievedFile<-synStore(file)
 }
 
+integrationTestLoadZipped<-function() {
+  project <- synapseClient:::.getCache("testProject")
+  myData<-list(foo="bar", foo2="bas")
+  objects<-new.env(parent=emptyenv())
+  assign(x="myData", value=myData, envir=objects)
+  filePath<-tempfile()
+  save(list=ls(objects), file=filePath, envir=objects)
+  zipped<-tempfile()
+  zip(zipped, filePath)
+  zippedName<-sprintf( "%s.zip", zipped)
+  checkTrue(file.exists(zippedName))
+  file<-File(zippedName, parentId=propertyValue(project, "id"))
+  storedFile<-synStore(file)
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
+  checkTrue(!is.null(getFileLocation(storedFile)))
+  id<-propertyValue(storedFile, "id")
+  checkTrue(!is.null(id))
+  retrievedFile<-synGet(id, load=T)
+  checkTrue(synapseClient:::hasObjects(retrievedFile))
+  retrievedObject<-getObject(retrievedFile, "myData")
+  checkEquals(myData, retrievedObject)
+}
+
 integrationTestSerializeToEmptyFile<-function() {
   # Skip the existence check within the File constructor
   synapseClient:::.mock("mockable.file.exists", function(...) {TRUE})
@@ -863,6 +886,7 @@ integrationTestProvenance<-function() {
     if (u$concreteType=="org.sagebionetworks.repo.model.provenance.UsedURL") {
       checkEquals(FALSE, u$wasExecuted)
       checkEquals("http://foo.bar.com", u$url)
+      checkEquals("http://foo.bar.com", u$name)
       foundURL<-T
     } else {
       checkEquals(u$concreteType, "org.sagebionetworks.repo.model.provenance.UsedEntity")
@@ -977,6 +1001,7 @@ integrationTestProvenance2<-function() {
     if (u$concreteType=="org.sagebionetworks.repo.model.provenance.UsedURL") {
       checkEquals(FALSE, u$wasExecuted)
       checkEquals("http://foo.bar.com", u$url)
+      checkEquals("http://foo.bar.com", u$name)
       foundURL<-T
     } else {
       checkEquals(u$concreteType, "org.sagebionetworks.repo.model.provenance.UsedEntity")
@@ -1070,4 +1095,22 @@ integrationTestUpdateExternalLink<-function() {
   checkEquals(newUrl, retrieved@fileHandle$externalURL)
   checkEquals(newUrl, getFileLocation(retrieved))
 }
+
+integrationTestNullStorageLocationId <- function() {
+  # create a Project
+  project <- synapseClient:::.getCache("testProject")
+  checkTrue(!is.null(project))
+  # create a file to be uploaded
+  filePath<- createFile(content="Some content")
+  file<-File(filePath, parentId=propertyValue(project, "id"))
+  # now store it
+  storedFile<-synStore(file)
+  scheduleCacheFolderForDeletion(storedFile@fileHandle$id)
+  # simulate an 'old' fileHandle, having a NULL storageLocationId
+  storedFile@fileHandle$storageLocationId<-NULL
+  touchFile(filePath)
+  synStore(storedFile) # in SYNR-938 this throws an error
+}
+
+
 

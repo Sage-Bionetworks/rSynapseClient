@@ -4,6 +4,13 @@
 ###############################################################################
 
 setGeneric(
+	name = ".populateSlotsFromEntity",
+	def = function(object, entity, json){
+		standardGeneric(".populateSlotsFromEntity")
+	}
+)
+
+setGeneric(
   name="Activity",
   def = function(activity, ...) {
     standardGeneric("Activity")
@@ -18,118 +25,11 @@ setGeneric(
 )
 
 setGeneric(
-  name = "downloadAttachment",
-  def = function(object, which){
-    standardGeneric("downloadAttachment")
-  }
-)
-
-setGeneric(
-  name = "storeAttachment",
-  def = function(object, which){
-    standardGeneric("storeAttachment")
-  }
-)
-
-setGeneric(
-  name = "attachments",
-  def = function(object){
-    standardGeneric("attachments")
-  }
-)
-
-setGeneric(
-  name = "attachDir",
-  def = function(object){
-    standardGeneric("attachDir")
-  }
-)
-
-setGeneric(
-  name = "addAttachment",
-  def = function(object, file){
-    standardGeneric("addAttachment")
-  }
-)
-
-setGeneric(
-  name = "deleteAttachment",
-  def = function(object, file){
-    standardGeneric("deleteAttachment")
-  }
-)
-
-setGeneric(
-  name = "getFileCacheName",
-  def = function(object){
-    standardGeneric("getFileCacheName")
-  }
-)
-
-setGeneric(
-  name = "getFetchMethod",
-  def = function(object, factory){
-    standardGeneric("getFetchMethod")
-  }
-)
-
-setGeneric(
-  name = "setFetchMethod",
-  def = function(object, method, factory){
-    standardGeneric("setFetchMethod")
-  }
-)
-
-setGeneric(
-  name = "moveFileCache",
-  def = function(from, to, factory){
-    standardGeneric("moveFileCache")
-  }
-)
-
-setGeneric(
-  name = "ArchiveOwner",
-  def = function(path, ...){
-    standardGeneric("ArchiveOwner")
-  }
-)
-
-setGeneric(
-  name = "AttachmentOwner",
-  def = function(path, ...){
-    standardGeneric("AttachmentOwner")
-  }
-)
-
-
-setGeneric(
-  name = "removeFileCache",
-  def = function(object, method, factory){
-    standardGeneric("removeFileCache")
-  }
-)
-
-setGeneric(
   name = "initializeEntity",
   def = function(entity){
     standardGeneric("initializeEntity")
   }
 )
-
-setGeneric(
-  name = "storeEntityObjects",
-  def = function(entity){
-    standardGeneric("storeEntityObjects")
-  }
-)
-
-setGeneric(
-  name = "storeEntityFiles",
-  def = function(entity){
-    standardGeneric("storeEntityFiles")
-  }
-)
-
 
 setGeneric(
   name = "createEntity",
@@ -154,27 +54,6 @@ setGeneric(
 )
 
 setGeneric(
-  name = "getArchiveFilePath",
-  def = function(owner){
-    standardGeneric("getArchiveFilePath")
-  }
-)
-
-setGeneric(
-  name = "setCacheRoot",
-  def = function(object, path, clean, copy){
-    standardGeneric("setCacheRoot")
-  }
-)
-
-setGeneric(
-  name = "getChildEntities",
-  def = function(entity){
-    standardGeneric("getChildEntities")
-  }
-)
-
-setGeneric(
   name = "updateEntity",
   def = function(entity){
     standardGeneric("updateEntity")
@@ -195,14 +74,6 @@ setGeneric(
   }
 )
 
-
-setGeneric(
-  name = "Media",
-  def = function(entity){
-    standardGeneric("Media")
-  }
-)
-
 setGeneric(
   name = "onWeb",
   def = function(entity){
@@ -214,27 +85,6 @@ setGeneric(
   name = "downloadEntity",
   def = function(entity, versionId){
     standardGeneric("downloadEntity")
-  }
-)
-
-setGeneric(
-  name = "setFileCache",
-  def = function(owner, fileCache, factory){
-    standardGeneric("setFileCache")
-  }
-)
-
-setGeneric(
-  name = "createArchive",
-  def = function(owner){
-    standardGeneric("createArchive")
-  }
-)
-
-setGeneric(
-  name = "unpackArchive",
-  def = function(owner){
-    standardGeneric("unpackArchive")
   }
 )
 
@@ -253,52 +103,9 @@ setGeneric(
 )
 
 setGeneric(
-  name = "addGithubTag",
-  def = function(entity, url){
-    standardGeneric("addGithubTag")
-  }
-)
-
-
-setGeneric(
   name = "loadEntity",
   def=function(entity, versionId, ...){
     standardGeneric("loadEntity")
-  }
-)
-
-setGeneric(
-  name = "Locationable",
-  def = function(entity){
-    standardGeneric("Locationable")
-  }
-)
-
-setGeneric(
-  name = "Code",
-  def = function(entity, ...){
-    standardGeneric("Code")
-  }
-)
-
-setGeneric(
-  name = ".doGetObjects",
-  def = function(x){
-    standardGeneric(".doGetObjects")
-  }
-)
-
-setGeneric(
-  name = "summarizeCacheFiles",
-  def = function(entity){
-    standardGeneric("summarizeCacheFiles")
-  }
-)
-
-setGeneric(
-  name = "summarizeObjects",
-  def = function(entity){
-    standardGeneric("summarizeObjects")
   }
 )
 
@@ -308,112 +115,6 @@ setGeneric(
     standardGeneric("getAnnotations")
   }
 )
-
-setGeneric(
-  name = "loadObjectsFromFiles",
-  def = function(owner, clearEnvironment){
-    standardGeneric("loadObjectsFromFiles")
-  }
-)
-
-setGeneric(
-  name = "cacheDir",
-  def = function(object){
-    standardGeneric("cacheDir")
-  }
-)
-setGeneric(
-  name = "files",
-  def = function(object){
-    standardGeneric("files")
-  }
-)
-
-setGeneric(
-  name = ".generateTmpCacheFileRelativePath",
-  function(owner, objectName, suffix){
-    standardGeneric(".generateTmpCacheFileRelativePath")
-  }
-)
-
-setGeneric(
-  name = ".generateCacheFileRelativePath",
-  def = function(owner, objectName, suffix){
-    standardGeneric(".generateCacheFileRelativePath")
-  }
-)
-
-setGeneric(
-  name = ".generateCacheFileName",
-  def = function(owner, objectName, suffix){
-    standardGeneric(".generateCacheFileName")
-  }
-)
-
-setGeneric(
-  name = ".generateTmpCacheFileName",
-  def = function(owner, objectName){
-    standardGeneric(".generateTmpCacheFileName")
-  }
-)
-
-setGeneric(
-  name = ".cacheObject",
-  def = function(owner, objectName){
-    standardGeneric(".cacheObject")
-  }
-)
-
-setGeneric(
-  name = ".tmpCacheObject",
-  def = function(destFile){
-    standardGeneric(".tmpCacheObject")
-  }
-)
-
-setGeneric(
-  name = ".tmpCacheObject",
-  def = function(object, objectName){
-    standardGeneric(".tmpCacheObject")
-  }
-)
-
-setGeneric(
-  name = ".renameCacheObjectFromTmp",
-  def = function(object, srcName, destName){
-    standardGeneric(".renameCacheObjectFromTmp")
-  }
-)
-
-setGeneric(
-  name = ".deleteTmpCacheFile",
-  def = function(owner, objectName){
-    standardGeneric(".deleteTmpCacheFile")
-  }
-)
-
-setGeneric(
-  name = ".deleteCacheFile",
-  def = function(owner, objectName){
-    standardGeneric(".deleteCacheFile")
-  }
-)
-
-setGeneric(
-  name = ".loadCachedObjects",
-  def = function(owner, clearEnvironment){
-    standardGeneric(".loadCachedObjects")
-  }
-)
-
-
-setGeneric(
-  name = "getEnv",
-  def = function(object){
-    standardGeneric("getEnv")
-  }
-)
-
 
 setGeneric(
   name = "deleteProperty",
@@ -582,27 +283,6 @@ setGeneric(
   }
 )
 
-setGeneric(
-  name = "getFileCache",
-  def = function(archivePath, method, factory){
-    standardGeneric("getFileCache")
-  }
-)
-
-setGeneric(
-  name = "availFileCaches",
-  def = function(method, factory){
-    standardGeneric("availFileCaches")
-  }
-)
-
-setGeneric(
-  name = "resetFactory",
-  def = function(factory){
-    standardGeneric("resetFactory")
-  }
-)
-
 ## Generic method for addObject
 setGeneric(
   name = "addObject",
@@ -639,55 +319,6 @@ setGeneric(
   name = "addFile",
   def = function(entity, file, path){
     standardGeneric("addFile")
-  }
-)
-
-setGeneric(
-  name = "FileCache",
-  def = function(cacheRoot, object, archiveFile){
-    standardGeneric("FileCache")
-  }
-)
-
-setGeneric(
-  name = "addFileMetaData",
-  def = function(object, srcPath, destPath){
-    standardGeneric("addFileMetaData")
-  }
-)
-
-setGeneric(
-  name = "deleteFile",
-  def = function(entity, file){
-    standardGeneric("deleteFile")
-  }
-)
-
-setGeneric(
-  name = "moveFile",
-  def = function(entity, src, dest){
-    standardGeneric("moveFile")
-  }
-)
-
-setGeneric(
-  name = "addValue",
-  def = function(object, name, value){
-    standardGeneric("addValue")
-  }
-)
-
-setGeneric(
-  name = "deleteValue",
-  def = function(object, name, value){
-    standardGeneric("deleteValue")
-  }
-)
-
-setGeneric(
-  name = "getValue",
-  def = function(object, name, value){
-    standardGeneric("getValue")
   }
 )
 
@@ -765,27 +396,6 @@ setGeneric(
   name = "getGeneratedBy",
   def = function(entity){
     standardGeneric("getGeneratedBy")
-  }
-)
-
-setGeneric(
-  name = ".extractEntityFromSlots",
-  def = function(object){
-    standardGeneric(".extractEntityFromSlots")
-  }
-)
-
-setGeneric(
-  name = ".populateSlotsFromEntity",
-  def = function(object, entity, json){
-    standardGeneric(".populateSlotsFromEntity")
-  }
-)
-
-setGeneric(
-  name = ".populateSlotsFromActivity",
-  def = function(object, activity){
-    standardGeneric(".populateSlotsFromActivity")
   }
 )
 

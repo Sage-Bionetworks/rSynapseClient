@@ -53,6 +53,7 @@ RowSelection	org.sagebionetworks.repo.model.table.RowSelection	false
 LogEntry	org.sagebionetworks.repo.model.LogEntry	false
 UploadDestination	org.sagebionetworks.repo.model.file.UploadDestination	false
 S3UploadDestination	org.sagebionetworks.repo.model.file.S3UploadDestination	false
+ExternalS3UploadDestination	org.sagebionetworks.repo.model.file.ExternalS3UploadDestination	false
 ExternalUploadDestination	org.sagebionetworks.repo.model.file.ExternalUploadDestination	false
 ProjectSetting	org.sagebionetworks.repo.model.project.ProjectSetting	false
 UploadDestinationSetting       org.sagebionetworks.repo.model.project.UploadDestinationSetting false
@@ -66,6 +67,11 @@ ColumnType	org.sagebionetworks.repo.model.table.ColumnType	false
 SelectColumn	org.sagebionetworks.repo.model.table.SelectColumn	false
 FileHandleResults	org.sagebionetworks.repo.model.file.FileHandleResults	false
 TableFileHandleResults	org.sagebionetworks.repo.model.table.TableFileHandleResults	false
-
-
+SubmissionEligibilityInterface	org.sagebionetworks.evaluation.model.SubmissionEligibilityInterface	false
+SubmissionEligibility	org.sagebionetworks.evaluation.model.SubmissionEligibility	false
+MemberSubmissionEligibility	org.sagebionetworks.evaluation.model.MemberSubmissionEligibility	false
+TeamSubmissionEligibility	org.sagebionetworks.evaluation.model.TeamSubmissionEligibility	false
+Team	org.sagebionetworks.repo.model.Team	false
+Challenge	org.sagebionetworks.repo.model.Challenge	false
+ChallengeTeam	org.sagebionetworks.repo.model.ChallengeTeam	false
 	

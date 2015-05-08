@@ -132,12 +132,6 @@ ensureTableSchemaIsRetrieved<-function(tableSchemaOrID) {
   }
 }
 
-synGetColumns<-function(id) {
-  listResult<-synRestGET(sprintf("/entity/%s/column", id))
-  objectResult<-createS4ObjectFromList(listResult, "PaginatedColumnModels")
-  objectResult@results
-}
-
 parseRowAndVersion<-function(x) {
   parsed<-strsplit(x, "_", fixed=T)
   parsedLengths<-sapply(X=parsed, FUN=length)
@@ -166,7 +160,7 @@ parseRowAndVersion<-function(x) {
 storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEtag=character(0)) {
   if (nrow(dataframe)<1 | ncol(dataframe)<1) stop("data frame is empty.")
   # validate column headers
-  schemaColumns<-synGetColumns(propertyValue(tableSchema,"id"))
+  schemaColumns<-synGetColumns(tableSchema)
   schemaColumnMap<-list()
   for (column in schemaColumns@content) schemaColumnMap[[column@name]]<-column
   for (dfColumnName in names(dataframe)) {
@@ -176,7 +170,8 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
     expectedTableColumnTypes<-getTableColumnTypeForDataFrameColumnType(dfColumnType)
     tableColumnType<-schemaColumn@columnType
     if (!any(tableColumnType==expectedTableColumnTypes)) {
-      stop(sprintf("Column %s has type %s but %s is expected.", dfColumnName, tableColumnType, 
+      stop(sprintf("Column %s has type %s in Synapse but %s in the data frame. Allowed data frame columns types: %s.", 
+					  dfColumnName, tableColumnType, dfColumnType, 
           paste(expectedTableColumnTypes, collapse=" or ")))
     }
   }
@@ -208,7 +203,9 @@ getTableColumnTypeForDataFrameColumnType<-function(dfColumnType) {
     factor=c("STRING","FILEHANDLEID","ENTITYID","LINK"), 
     character=c("STRING","FILEHANDLEID","ENTITYID","LINK"), 
     numeric=c("DOUBLE","INTEGER","FILEHANDLEID"), 
-    logical=c("BOOLEAN","STRING"),
+	# note, if a column is all NA then the type is 'logical', so we must allow
+	# any table column type for this R type
+    logical=c("BOOLEAN","STRING","FILEHANDLEID","ENTITYID","LINK","INTEGER","DOUBLE", "DATE"),
     Date=c("DATE","STRING"),
     POSIXct=c("DATE","STRING"))
   result<-map[[dfColumnType]]
@@ -220,6 +217,9 @@ writeDataFrameToCSV<-function(dataFrame, filePath) {
   for (i in 1:dim(dataFrame)[2]) {
     if (is.numeric(dataFrame[[i]])) {
       dataFrame[[i]][is.nan(dataFrame[[i]])]<-"NaN"
+  	} else if (is(dataFrame[[i]], "POSIXct")) {
+	  # convert POSIXct before uploading to Synapse
+			   dataFrame[[i]]<-format(as.POSIXlt(dataFrame[[i]], 'UTC', usetz=TRUE), "%Y-%m-%d %H:%M:%S.000")
     }
   }
   write.csv(x=dataFrame, file=filePath, row.names=FALSE, na="")
@@ -266,7 +266,7 @@ convertDataFrameTypeToSchemaType<-function(dataframe, headers) {
         # Synapse returns values "true", "false", which have to be converted to TRUE, FALSE
         dataframe[[columnIndex]]<-(dataframe[[columnIndex]]=="true")
       } else if (header@columnType=="DATE") {
-        dataframe[[columnIndex]]<-as.Date(dataframe[[columnIndex]]/(24*3600*1000), "1970-01-01")
+		dataframe[[columnIndex]]<-as.POSIXct(dataframe[[columnIndex]]/1000, origin="1970-01-01")
       }
     }
   }
@@ -401,11 +401,7 @@ trackProgress<-function(checkCompleteUri, verbose=TRUE) {
 # execute a query and download the results
 # returns the download file path and etag
 downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, filePath=NULL) {
-  # Extract tableId from query
-  pattern <- "from\\s+(syn\\d+)"
-  m <- regexec(pattern, sql)
-  matches <- regmatches(sql, m)
-  tableId <- matches[[1]][2]
+  tableId<-findSynIdInSql(sql)
   request<-DownloadFromTableRequest(sql=sql, includeRowIdAndRowVersion=includeRowIdAndRowVersion, writeHeader=TRUE)
   asyncJobId<-createS4ObjectFromList(synRestPOST(sprintf("/entity/%s/table/download/csv/async/start", tableId), createListFromS4Object(request)) ,"AsyncJobId")
   responseBodyAsList<-trackProgress(sprintf("/entity/%s/table/download/csv/async/get/%s", tableId, asyncJobId@token), verbose)
@@ -532,7 +528,7 @@ synDownloadTableFile<-function(table, rowIdAndVersion, columnName, downloadLocat
 		stop(sprintf("Unexpected type %s", class(table)))
 	}
 	# second get the columnId
-	columns<-synGetColumns(tableId)
+	columns<-synGetColumns(table)
 	selectColumn<-NULL
 	for (column in columns@content) {
 		if (column@name==columnName) {

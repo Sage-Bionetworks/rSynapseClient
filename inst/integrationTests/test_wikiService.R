@@ -101,7 +101,16 @@ integrationTestWikiCRUD <-
     fileHandles=list(fileHandle$id)
   )
   
-  checkAndCleanUpWikiCRUD(project, wikiPage, 3)
+	retrievedWikiPage<-checkWikiCRUD(project, wikiPage, 3)
+	
+	filePath4<-createFile()
+	# the wiki page comes back with attachment IDs in the properties, but the 
+	# 'attachments' fields is empty
+	checkEquals(0, length(retrievedWikiPage@attachments))
+	retrievedWikiPage@attachments<-list(filePath4)
+	propertyValue(retrievedWikiPage, "markdown")<-"some new markdown"
+
+	checkAndCleanUpWikiCRUD(project, retrievedWikiPage, 4)
 }
 
 integrationTestWikiCRUD_NoAttachments <- function() {
@@ -139,7 +148,7 @@ integrationTestWikiCRUD_NoFileHandles <- function() {
   checkAndCleanUpWikiCRUD(project, wikiPage, 1)
 }
 
-checkAndCleanUpWikiCRUD <- function(project, wikiPage, expectedAttachmentLength) {
+checkWikiCRUD <- function(project, wikiPage, expectedAttachmentLength) {
   markdown<-wikiPage$markdown
   wikiPage<-synStore(wikiPage)
   if (F) { # See Jira issue SYNR-886
@@ -157,9 +166,11 @@ checkAndCleanUpWikiCRUD <- function(project, wikiPage, expectedAttachmentLength)
   fileHandleIds<-propertyValue(wikiPage2, "attachmentFileHandleIds")
   checkEquals(expectedAttachmentLength, length(fileHandleIds))
   
-  # Now delete the wiki page
-  #/{ownertObjectType}/{ownerObjectId}/wiki/{wikiId}
-  synDelete(wikiPage2)
-  checkException(synGetWiki(project, propertyValue(wikiPage2, "id")))
+	wikiPage2
+}
 
+checkAndCleanUpWikiCRUD <- function(project, wikiPage, expectedAttachmentLength) {
+	retrievedWikiPage<-checkWikiCRUD(project, wikiPage, expectedAttachmentLength)
+	synDelete(retrievedWikiPage)
+	checkException(synGetWiki(project, propertyValue(retrievedWikiPage, "id")))
 }

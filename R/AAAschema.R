@@ -101,12 +101,10 @@ defineEntityClass <-
   implementsSchema<-readEntityDef(implementsSchemaName, getSchemaPath())
   implements <- unique(c(implementsSchemaName, getAllEntityInterfaces(implementsSchema, getSchemaPath())))
   
-  if ("org.sagebionetworks.repo.model.Locationable" %in% implements) {
-    contains <- "Locationable"
-  } else if ("org.sagebionetworks.repo.model.Entity" %in% implements) {
+  if ("org.sagebionetworks.repo.model.Entity" %in% implements) {
     contains <- "Entity"
   } else {
-    stop(sprintf("%s must contain Entity or Locationable", name))
+    stop(sprintf("%s must contain Entity", name))
   }
   
   setClass(

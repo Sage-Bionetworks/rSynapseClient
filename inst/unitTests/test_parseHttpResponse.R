@@ -58,3 +58,21 @@ unitTestConnectionEstablished <-
   checkEquals("keep-alive", ans$headers$Connection)
 }
 
+unitTestConnectionEstablishedPROXY<-function() {
+	s<-"HTTP/1.0 200 Connection established\r\nVia: HTTP/1.1 proxy10415\r\n\r\n\r\nHTTP/1.1 299 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/json;charset=UTF-8\r\nDate: Fri, 17 Apr 2015 17:39:21 GMT\r\nETag: 6955836b-e2d4-48bc-b986-589979e94c41\r\nServer: Apache-Coyote/1.1\r\nVary: Accept-Encoding,User-Agent\r\nContent-Length: 481\r\nConnection: keep-alive"
+	ans <- synapseClient:::parseHttpHeaders(s)
+	# parsed response has (1) status code, (2) status string, (3) headers
+	checkEquals(3, length(ans))
+	checkEquals(299, ans$statusCode) # using a made-up code, just to check the parser
+	checkEquals("OK", ans$statusString)
+	checkEquals(8, length(ans$headers))
+	checkEquals("*", ans$headers$`Access-Control-Allow-Origin`)
+	checkEquals("application/json;charset=UTF-8", ans$headers$`Content-Type`)
+	checkEquals("Fri, 17 Apr 2015 17:39:21 GMT", ans$headers$Date)	
+	checkEquals("6955836b-e2d4-48bc-b986-589979e94c41", ans$headers$ETag)
+	checkEquals("Apache-Coyote/1.1", ans$headers$Server)
+	checkEquals("Accept-Encoding,User-Agent", ans$headers$Vary)	
+	checkEquals("481", ans$headers$`Content-Length`)
+	checkEquals("keep-alive", ans$headers$Connection)	
+}
+

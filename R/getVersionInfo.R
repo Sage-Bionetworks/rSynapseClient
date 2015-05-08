@@ -4,7 +4,7 @@
 #
 #
 
-getVersionInfo<-function() {
+getVersionInfo<-function(logErrorsToSynapse=TRUE) {
   cacheTimestampName<-"versionsInfoTimestamp"
   cacheVersionInfoName<-"versionsInfo"
   cacheRefreshSeconds<-300 # 5 minutes
@@ -12,7 +12,7 @@ getVersionInfo<-function() {
   cacheTimestamp<-.getCache(cacheTimestampName)
   versionInfo<-.getCache(cacheVersionInfoName)
   if (is.null(versionInfo) || is.null(cacheTimestamp) || Sys.time()-now>cacheRefreshSeconds) {
-    response<-getURLWithRetries(.getVersionsEndpoint(), opts=.getCache("curlOpts"))
+    response<-getURLWithRetries(.getVersionsEndpoint(), opts=.getCache("curlOpts"), logErrorsToSynapse=logErrorsToSynapse)
     versionInfo <- fromJSON(response$body)
     .setCache(cacheTimestampName, now)
     .setCache(cacheVersionInfoName, versionInfo)

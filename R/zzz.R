@@ -10,7 +10,6 @@ kSynapseRAnnotationTypeMap <- list(
   doubleAnnotations = "numeric",
   dateAnnotations = "POSIXt"
 )
-kSupportedDataLocationTypes <- c("external", "awss3")
 
 .onAttach <-
   function(libname, pkgname)
@@ -28,25 +27,6 @@ kSupportedDataLocationTypes <- c("external", "awss3")
 .onLoad <-
   function(libname, pkgname)
 {  
-  ##set the R_OBJECT cache directory. check for a functional zip first
-  ff <- tempfile()
-  file.create(ff)
-  zipfile <- tempfile()
-
-  suppressWarnings(
-      ans <- utils::zip(zipfile, ff)
-  )
-
-  unlink(ff)
-  unlink(zipfile, recursive = TRUE)
-  if(ans != 0){
-    packageStartupMessage("zip was not found on your system and so the Synapse functionality related to file and object storage will be limited. To fix this, make sure that 'zip' is executable from your system's command interpreter.")
-    .setCache("rObjCacheDir", .Platform$file.sep)
-    .setCache("hasZip", FALSE)
-  }else{
-    .setCache("rObjCacheDir", ".R_OBJECTS/")
-    .setCache("hasZip", TRUE)
-  }
 
   .setCache("curlOpts", list(low.speed.time=60, low.speed.limit=1, connecttimeout=300, followlocation=TRUE, ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))
   .setCache("curlHeader", c('Content-Type'="application/json; charset=utf-8", Accept = "application/json", "Accept-Charset"="utf-8", "User-Agent" = .userAgent()))
@@ -83,7 +63,6 @@ kSupportedDataLocationTypes <- c("external", "awss3")
       .setCache("debug", Config.hasSection(config, "debug"))
   }, silent = TRUE)
   
-  synapseDataLocationPreferences(kSupportedDataLocationTypes)
   synapseCacheDir(gsub("[\\/]+", "/", path.expand("~/.synapseCache")))
 
   entities <- entitiesToLoad()

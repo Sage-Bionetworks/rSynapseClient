@@ -26,7 +26,8 @@ synapseGetFollowingPermanentRedirects<-function(
   httpheader, # the headers
   curl, # the curl handle
   debugfunction = NULL,
-  .opts) {
+  .opts,
+  logErrorsToSynapse) {
   customrequest<-"GET"
   noRedirOpts<-.opts
   noRedirOpts$followlocation<-NULL # do NOT include 'followlocation'
@@ -47,7 +48,8 @@ synapseGetFollowingPermanentRedirects<-function(
       httpheader, # the headers
       curl, # the curl handle
       debugfunction,
-      opts=noRedirOpts)
+      opts=noRedirOpts,
+	  logErrorsToSynapse=logErrorsToSynapse)
     
     if (result$parsedHeaders$statusCode==301) {
       redirectLocation<-result$parsedHeaders$headers[["Location"]]
