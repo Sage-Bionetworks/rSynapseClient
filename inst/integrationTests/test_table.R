@@ -258,7 +258,7 @@ integrationTestSynStoreAndRetrieveAllTypes<-function() {
     stringType=sample(c("one", "two", "three"), size = rowsToUpload, replace = T), 
     intType=sample.int(rowsToUpload, replace = T),
     doubleType=as.numeric(sample.int(rowsToUpload, replace = T)),
-    booleanType=sample(c(TRUE, FALSE), size = rowsToUpload, replace = T),
+    booleanType=sample(c(TRUE, FALSE, NA), size = rowsToUpload, replace = T),
     dateType=sample(roundPOSIXct(Sys.time()+c(1,2,3)), size = rowsToUpload, replace = T),
     fileHandleIdType1=sample(c("111", "222", "333"), size = rowsToUpload, replace = T),
     fileHandleIdType2=sample(c(444, 555, 666), size = rowsToUpload, replace = T),
