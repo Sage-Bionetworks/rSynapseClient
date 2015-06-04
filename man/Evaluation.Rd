@@ -7,7 +7,7 @@ Evaluation Constructor
 \description{
 Constructor for Evaluation
 }
-\usage{Evaluation(name, description, contentSource, status, submissionInstructionsMessage, submissionReceiptMessage)}
+\usage{Evaluation(name, description, contentSource, status, quota, submissionInstructionsMessage, submissionReceiptMessage)}
 \arguments{
  \item{name}{
  name for this Evaluation.
@@ -19,7 +19,12 @@ Constructor for Evaluation
  Synapse ID of the entity which owns the Evaluation, usually a Project
  }
  \item{status}{
- One of "PLANNED", "OPEN", "CLOSED", or "COMPLETED".
+ One of "PLANNED", "OPEN", "CLOSED", or "COMPLETED".  This field is currently required, but is unused and will be removed in the future.
+ }
+ \item{quota}{
+ An object of type SubmissionQuota describing the maximum submissions by an individual or a team per round,
+ as well as the beginning, duration and number of rounds in the Challenge.  Both the maximum and the rounds
+ are optional.  See the documentation for SubmissionQuota for further details.
  }
  \item{submissionInstructionsMessage}{
  Instructions to be show to participants on how to craft Synapse File objects for submission to the Evaluation.
@@ -67,5 +72,6 @@ Constructor for Evaluation
 \code{\link{synGetEvaluation}}
 \code{\link{synStore}}
 \code{\link{submit}}
+\code{\link{SubmissionQuota}}
 }
 

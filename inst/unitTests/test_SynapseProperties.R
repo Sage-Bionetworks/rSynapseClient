@@ -96,7 +96,7 @@ unitTestAsList <-
 	obj <- new("SynapseProperties")
 	propertyValue(obj, "foo") <- "bar"
 	propertyValue(obj, "goo") <- "boo"
-	ans <- as.list.SynapseProperties(obj)
+	ans <- synapseClient:::as.list.SynapseProperties(obj)
 	checkEquals(class(ans), "list")
 	checkTrue(all(names(ans) %in% c('foo','goo')))
 	checkTrue(all(c('foo','goo') %in% names(ans)))
@@ -112,24 +112,24 @@ unitTestNames <-
 	propertyValue(obj, "foo") <- "bar"
 	propertyValue(obj, "goo") <- "boo"
 	
-	checkEquals(length(names(obj)), 2L)
-	checkTrue(all(names(obj) %in% c('foo','goo')))
-	checkTrue(all(c('foo','goo') %in% names(obj)))
+	checkEquals(length(synapseClient:::names.SynapseProperties(obj)), 2L)
+	checkTrue(all(synapseClient:::names.SynapseProperties(obj) %in% c('foo','goo')))
+	checkTrue(all(c('foo','goo') %in% synapseClient:::names.SynapseProperties(obj)))
 }
 
 unitTestConstructorNoArg <-
 	function()
 {
 	obj <- synapseClient:::SynapseProperties()
-	checkEquals(names(obj), character())
+	checkEquals(synapseClient:::names.SynapseProperties(obj), character())
 }
 
 unitTestConstructorList <-
 	function()
 {
 	obj <- synapseClient:::SynapseProperties(list(foo="character", boo="integer", goo="numeric"))
-	checkTrue(all(names(obj) %in% c('foo','boo','goo')))
-	checkTrue(all(c('foo','boo','goo') %in% names(obj)))
+	checkTrue(all(synapseClient:::names.SynapseProperties(obj) %in% c('foo','boo','goo')))
+	checkTrue(all(c('foo','boo','goo') %in% synapseClient:::names.SynapseProperties(obj)))
 
 	checkEquals(obj[['foo']], NULL)
 	checkEquals(obj[['boo']], NULL)

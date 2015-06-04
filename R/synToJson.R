@@ -13,13 +13,37 @@ synToJson<-function(toEncode) {
     stop("all elements must be named")
   }
   
-  if(length(toEncode) == 0)
+  if(length(toEncode) == 0) {
+    emptyNamedList<-structure(list(), names = character()) # copied from RJSONIO
     toEncode <- emptyNamedList
+  }
   
   ## change dates to characters
+  toEncode<-handleNAs(toEncode)
   toEncode<-convertDatesToCharacters(toEncode)
   toEncode<-convertIntegersToCharacters(toEncode)
   toJSON(toEncode)
+}
+
+## Note: the RJSONIO library converted NAs to nulls
+## Switching to rjson, for backwards compatibility we must do the same
+handleNAs<-function(toEncode) {
+  result<-list()
+  if (length(toEncode) > 0) {
+    for (ii in 1:length(toEncode)) {
+      elemIndex<-names(toEncode)[[ii]]
+      if (is.null(elemIndex) || nchar(elemIndex)==0) elemIndex<-ii
+      elem<-toEncode[[elemIndex]]
+      modifiedElem<-elem
+      if (length(elem)>1) {
+        modifiedElem<-handleNAs(elem)
+      } else if (length(elem)==1 && is.na(elem)) {
+          modifiedElem<-NULL
+      }
+      result[[elemIndex]]<-modifiedElem
+    }
+  }
+  result
 }
 
 # warning:  This is designed specifically for date annotations objects yet is embedded in a low level library
@@ -50,3 +74,5 @@ convertIntegersToCharacters<-function(toEncode) {
   }
   toEncode
 }
+
+

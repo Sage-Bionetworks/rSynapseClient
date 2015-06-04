@@ -15,7 +15,7 @@ setMethod(
   f = "TypedPropertyStore",
   signature = signature("character", "missing", "missing"),
   definition = function(file){
-    json <- fromJSON(file)
+    json <- fromJSON(file=file)
     TypedPropertyStore(json = json)
   }
 )
@@ -297,6 +297,7 @@ setMethod(
       for(i in 1:length(which)){
         t <- type[i]
         slot(object, t) <- slot(object, t)[setdiff(names(slot(object, t)), which[i])]
+        emptyNamedList<-structure(list(), names = character()) # copied from RJSONIO
         if(length(slot(object, t)) == 0L)
           slot(object, t) <- emptyNamedList
       }
@@ -314,6 +315,7 @@ setMethod(
 )
 
 as.list.TypedPropertyStore <- function(x, ...){
+  emptyNamedList<-structure(list(), names = character()) # copied from RJSONIO
   ret <- list(
     stringAnnotations = emptyNamedList,
     doubleAnnotations = emptyNamedList,

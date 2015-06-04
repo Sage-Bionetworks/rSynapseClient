@@ -1,6 +1,6 @@
 ## imports from other packages
 import(RCurl, methods)
-importFrom(RJSONIO, toJSON, fromJSON, emptyNamedList)
+importFrom(rjson, toJSON, fromJSON)
 importFrom(tools, md5sum)
 importFrom(digest, digest, hmac)
 importFrom(utils, edit, compareVersion, packageDescription, install.packages, installed.packages)
@@ -58,12 +58,11 @@ export(
   "touOnWeb",
   "sendMessage",
   "synTableQuery",
-  "synDeleteRows"
-)
-
-## S3 convenience methods
-export(
-  "synapseExecute"
+  "synDeleteRows",
+  "synDownloadTableFile",
+  "synGetColumns",
+  "synAddColumn",
+  "synRemoveColumn"
 )
 
 ## Synapse object constructors 
@@ -74,7 +73,6 @@ export(
 	"Activity",
 	"Evaluation",
 	"WikiPage",
-	"TableColumn",
 	"UserProfile",
 	"ResourceAccess",
 	"TableSchema",
@@ -92,7 +90,9 @@ export(
 	"as.UserPreferenceList",
 	"as.RowList",
 	"UserPreferenceBoolean",
-	"Settings"
+	"Settings",
+  	"length.QueryResult",
+  	"names.QueryResult"
 )
 
 ## entity S4 methods
@@ -149,57 +149,9 @@ export(
 )
 
 
-#####
-## TO BE DEPRECATED
-#####
-
-### DEPRECATED FUNCTIONS
-###  These functions have .Rd files, but are deprecated **and will ultimately be removed**
-###  Removing from export() requires also removing unit and integration tests which use them
-###  B. Bot -- these are functions that are used internally, but do not need to be exported / exposed to users
-export(
-  "as.environment.EnhancedEnvironment",
-  "as.environment.GlobalCache", 
-  "as.environment.ArchiveOwner", 
-  "as.list.SimplePropertyOwner", 
-  "as.list.SynapseAnnotations", 
-  "as.list.TypedPropertyStore", 
-  "as.list.SynapseProperties",
-  "length.EnhancedEnvironment", 
-  "length.QueryResult",
-  "names.CachingObjectOwner", 
-  "names.EnhancedEnvironment", 
-  "names.LocationableWithoutBinaries",
-  "names.Locationable",
-  "names.Entity",
-  "names.QueryResult",
-  "names.SynapseProperties",
-  "getPackageName.EnhancedEnvironment", 
-  "getPackageName.ArchiveOwner",
-  "getPackageName",
-  "setPackageName",
-  "attach",
-  "detach"
-)
-
-# Synapse object constructors to be deprecated (but left in code base for backward compatibility?)
-export(
-  "Data",
-	"Study",
-	"Code",
-	"Link",
-	"PhenotypeData",
-	"GenotypeData",
-	"ExpressionData",
-	"RObject",
-	"Summary",
-	"GenomicData"
-)
-# Methods used on deprecated Synapse objects above (but left in code base for backward compatibility?)
+# Methods used on deprecated Synapse objects (but left in code base for backward compatibility)
 exportMethods(
   "addFile",
-  "deleteFile",
-  "moveFile",
   "addObject",
   "deleteObject",
   "getObject",
@@ -210,6 +162,6 @@ exportMethods(
   "createEntity", 
   "updateEntity", 
   "downloadEntity", 
-  "loadEntity" 
+  "loadEntity"
 )
 

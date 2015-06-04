@@ -3,109 +3,56 @@
 ## Author: Matthew D. Furia <matt.furia@sagebase.org>
 ###############################################################################
 
-legalFilePath<-function(filePath) {
-	gsub("[()`'<>\"|?*]", "_", filePath)
-}
-
-synapseDownloadFile  <- 
-  function (url, checksum, curlHandle = getCurlHandle(), cacheDir = synapseCacheDir(), opts = .getCache("curlOpts"), versionId = NULL)
-{
-	if (is.null(cacheDir)) stop(paste("cacheDir is required. synapseCacheDir() returns ", synapseCacheDir()))
-	
-  ## Download the file to the cache
-  destfile <- .generateCacheDestFile(url, versionId)
-  
-  ## temporary hack for github url that does not contain file extension
-  parsedUrl <- .ParsedUrl(url)
-  if( parsedUrl@host=="github.com" ){
-    splits <- strsplit(parsedUrl@pathPrefix, "/")
-    if( splits[[1]][length(splits[[1]])] == "zipball" )
-      destfile <- paste(destfile, ".zip", sep="")
-    if( splits[[1]][length(splits[[1]])] == "tarball" )
-      destfile <- paste(destfile, ".tar", sep="")
-  }
-  
-  synapseDownloadFileToDestination(url=url, checksum=checksum, destfile=destfile, opts=opts)
-}
-
 # download file from source which may involve one of a variety of protocols
-synapseDownloadFileToDestination  <- 
-  function (url, destfile, checksum, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"))
+protocolSpecificFileDownload  <- 
+  function (url, destdir, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"), extraRetryStatusCodes)
 {
   parsedUrl<-.ParsedUrl(url)
   protocol<-tolower(parsedUrl@protocol)
   if (protocol=="http" || protocol=="https" || protocol=="file" || protocol=="ftp") {
-    synapseDownloadHttpFileToDestination(url, destfile, checksum, curlHandle, opts)
+    result<-downloadHttpFile(url, destdir, curlHandle, opts, extraRetryStatusCodes)
   } else if (protocol=="sftp") {
-    synapseDownloadSftpFileToDestination(url, destfile)
+    result<-downloadSftpFile(url, destdir)
   } else {
     stop(sprintf("Unsupported protocol %s", protocol))
   }
+  result
 }
 
 # download file from source which is HTTP/HTTPS
-synapseDownloadHttpFileToDestination  <- 
-    function (url, destfile, checksum, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"))
+downloadHttpFile  <- 
+    function (url, destdir, curlHandle = getCurlHandle(), opts = .getCache("curlOpts"), extraRetryStatusCodes)
   {
-    ## Download the file to a user-specified location
-  ## if checksum is missing, don't check local file before 
-  ## download
-  if(file.exists(destfile) & !missing(checksum)) {
-    localFileChecksum <- as.character(tools::md5sum(destfile))
-    if(checksum == localFileChecksum) {
-      # No need to download
-      return(destfile)
-    }
-  }
+  	if (!file.exists(destdir)){
+   	 dir.create(destdir, recursive=TRUE)
+  	}
   
-  splits <- strsplit(destfile, .Platform$file.sep)
-  downloadDir <- path.expand(paste(splits[[1]][-length(splits[[1]])], collapse=.Platform$file.sep))
-  downloadFileName <- splits[[1]][length(splits[[1]])]
-  if(!file.exists(downloadDir)){
-    dir.create(downloadDir, recursive=TRUE)
-  }
-  
-  ## download to temp file first so that the existing local file (if there is one) is left in place
-  ## if the download fails
-  tmpFile <- tempfile()
-  tryCatch(
-    .curlWriterDownload(url=url, destfile=tmpFile, opts = opts, curlHandle = curlHandle),
-    error = function(ex){
-      file.remove(tmpFile)
-      stop(ex)
-    }
-  )
-  
-  ## check the md5sum of the tmpFile to see if it matches the one passed to the function
-  if (file.exists(tmpFile) & !missing(checksum)){
-    if (as.character(tools::md5sum(tmpFile)) != as.character(checksum)){
-      stop(paste("The md5 ", as.character(tools::md5sum(tmpFile)), " of ", downloadFileName, " does not match the md5 ", as.character(checksum), " recorded in Synapse", sep=""))
-    }
-  }
-  
-  ## copy then delete. this avoids a cross-device error encountered
-  ## on systems with multiple hard drives when using file.rename
-  if(!file.copy(tmpFile, destfile, overwrite = TRUE)){
-    file.remove(tmpFile)
-    stop("COULD NOT COPY: ", tmpFile, " TO: ", destfile)
-  }
-  file.remove(tmpFile)
-  return(destfile)
+	wrwrResult<-webRequestWithRetries(
+		fcn=function(curlHandle) {
+			.curlWriterDownload(url=url, destdir=destdir, opts = opts, curlHandle = curlHandle)
+		},
+		curlHandle=curlHandle,
+		extraRetryStatusCodes=NULL
+	)
+	
+	wrwrResult$result
 }
 
-synapseDownloadSftpFileToDestination  <- 
-  function (url, destfile)
+downloadSftpFile  <- 
+  function (url, destdir)
 {
   if (!(RsftpPackageIsAvailable() && require("Rsftp"))) 
     stop("File is hosted on SFTP server but Rsftp package not installed/available.  Please install Rsftp and try again.")
   parsedUrl<-.ParsedUrl(url)
   credentials<-getCredentialsForHost(parsedUrl)
   urlDecodedPath<-URLdecode(parsedUrl@path)
-  success<-sftpDownload(parsedUrl@host, credentials$username, credentials$password, urlDecodedPath, destfile)
+  filePath<-tempfile(tmpdir=destdir)
+  success<-sftpDownload(parsedUrl@host, credentials$username, credentials$password, urlDecodedPath, filePath)
   if (!success) {
     message<-sprintf("Failed to download %s from %s", urlDecodedPath, parsedUrl@host)
     logErrorToSynapse(label=sprintf("sftp get %s", parsedUrl@host), message=)
     stop(message)
   }
+  list(downloadedFile=filePath, fileName=URLdecode(parsedUrl@file))
 }
 

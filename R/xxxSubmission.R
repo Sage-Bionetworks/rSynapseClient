@@ -5,9 +5,9 @@
 
 setClass(
   Class = "Submission",
-  contains = "SimplePropertyOwner",
   representation = representation(
     # fields:
+    submissionContent = "SubmissionContent",
     # filePath: full path to local file.
     filePath = "character",
     # fileHandle (generated from JSON schema, empty before entity is created)
@@ -17,7 +17,6 @@ setClass(
   ),
   # This is modeled after defineEntityClass in AAAschema
   prototype = prototype(
-    properties = initializeProperties("org.sagebionetworks.evaluation.model.Submission", FALSE),
     objects = NULL
   )
 )
@@ -30,15 +29,52 @@ setMethod(
   signature = signature("list"),
   definition = function(propertiesList) {
     submission <- new("Submission")
-    for (prop in names(propertiesList))
-      propertyValue(submission, prop)<-propertiesList[[prop]]
-    fileHandle<-as.list(getFileHandleFromEntityBundleJSON(submission$entityBundleJSON))
+    submission@submissionContent<-createS4ObjectFromList(propertiesList, "SubmissionContent")
+    fileHandle<-as.list(getFileHandleFromEntityBundleJSON(propertiesList$entityBundleJSON))
     submission@fileHandle<-fileHandle
     
     submission
   }
 )
 
+  setMethod(
+    f = "$",
+    signature = "Submission",
+    definition = function(x, name){
+      slot(x@submissionContent, name)
+    }
+  )
+  
+  setReplaceMethod(
+    f = "$",
+    signature = "Submission",
+    definition = function(x, name, value) {
+      slot(x@submissionContent, name)<-value
+      x
+    }
+  )
+
+  # for backwards compatibility
+  setMethod(
+    f = "propertyValue",
+    signature = signature("Submission", "character"),
+    definition = function(object, which){
+      slot(object@submissionContent, which)
+    }
+  )
+  
+  # for backwards compatibility
+  setReplaceMethod(
+    f = "propertyValue",
+    signature = signature("Submission", "character"),
+    definition = function(object, which, value) {
+      slot(object@submissionContent, which) <- value
+      object
+    }
+  )  
+
+
+  
 getFileHandleFromEntityBundleJSON<-function(entityBundleJSON) {
   if (missing(entityBundleJSON) || is.null(entityBundleJSON)) return(list())
   entityBundle<-fromJSON(entityBundleJSON)
@@ -61,9 +97,9 @@ synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollisio
   submission<-createSubmissionFromProperties(synRestGET(sprintf("/evaluation/submission/%s", id)))
   
   if (!is.null(submission@fileHandle$id)) { # otherwise it's not a File
-    downloadUri<-sprintf("/evaluation/submission/%s/file/%s", submission$id, submission@fileHandle$id)
+    downloadUri<-sprintf("/evaluation/submission/%s/file/%s?redirect=FALSE", submission$id, submission@fileHandle$id)
 
-    filePath<-synGetFileAttachment(
+    filePath<-retrieveAttachedFileHandle(
       downloadUri,
       "REPO",
       submission@fileHandle,
@@ -87,15 +123,6 @@ synGetSubmission<-function(id, downloadFile=T, downloadLocation=NULL, ifcollisio
 
 setMethod(
   f = "synStore",
-  signature = "Submission",
-  definition = function(entity) {
-    # note, user can't create a SubmissionStatus, only update one
-    updateS4Object(entity, sprintf("/evaluation/submission/%s",entity$id))   
-  }
-)
-
-setMethod(
-  f = "synStore",
   signature = "SubmissionStatus",
   definition = function(entity) {
     # note, user can't create a SubmissionStatus, only update one
@@ -111,8 +138,16 @@ setMethod(
   }
 )
 
-synCreateSubmission<-function(submission, entityEtag) {
-  createSubmissionFromProperties(synRestPOST(sprintf("/evaluation/submission?etag=%s", entityEtag), submission))
+synCreateSubmission<-function(submission, entityEtag, submissionEligibilityHash) {
+	if (missing(submissionEligibilityHash)) {
+		uri<-sprintf("/evaluation/submission?etag=%s", entityEtag)
+	} else {
+		uri<-sprintf("/evaluation/submission?etag=%s&submissionEligibilityHash=%s", 
+				entityEtag, submissionEligibilityHash)
+	}
+	requestBody<-createListFromS4Object(submission@submissionContent)
+	response<-synRestPOST(uri, requestBody)
+	createSubmissionFromProperties(response)
 }
 
 newSubmissionStatus<-function(content) {

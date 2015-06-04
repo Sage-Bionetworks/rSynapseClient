@@ -6,7 +6,7 @@
 ##
 ####################################################################
 
-resolvePermanentRedirects<-function(endpoint) {
+resolvePermanentRedirects<-function(endpoint, logErrorsToSynapse) {
   
   # we need to related permanent redirects to some service (e.g. REPO, AUTH, FILE)
   # if no service is specified then we use the 'host' portion of the endpoint as a proxy
@@ -25,11 +25,12 @@ resolvePermanentRedirects<-function(endpoint) {
       httpheader=.getCache("curlHeader"),
       curl=getCurlHandle(),
       debugfunction = NULL,
-      .opts=.getCache("curlOpts"))  
+      .opts=.getCache("curlOpts"),
+	  logErrorsToSynapse=logErrorsToSynapse)  
     # we expect a 404 error since we called a non-existent service
     # might also get a 401 error if authentication is required
-    status<-redirectResult$httpStatus
-    if (status<400 || status>=500) stop(sprintf("Expected HTTP Status 4xx but found %s", redirectResult$httpStatus))
+    status<-redirectResult$parsedHeaders$statusCode
+    if (status<400 || status>=500) stop(sprintf("Expected HTTP Status 4xx but found %s", status))
     .setCache(redirectResolvedKey, TRUE)
   }
   

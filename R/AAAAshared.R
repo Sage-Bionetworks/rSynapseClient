@@ -22,7 +22,7 @@ readSchema <- function(name, path) {
   if(!file.exists(fullPath))
     stop(sprintf("Could not find file: %s for entity: %s", fullPath, name))
   
-  schema <- fromJSON(fullPath, simplifyWithNames = FALSE)
+  schema <- fromJSON(file=fullPath)
   schema
 }
 
@@ -99,7 +99,9 @@ isPrimitiveType <- function(rType) {
 }
 
 isEnum<-function(propertySchema) {
-  is.null(propertySchema$properties) && !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]])
+  is.null(propertySchema$properties) && 
+		  !is.null(propertySchema$type) &&
+		  !is.null(TYPEMAP_FOR_ALL_PRIMITIVES[[propertySchema$type]])
 }
 
 
