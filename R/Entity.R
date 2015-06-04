@@ -8,7 +8,6 @@ setClass(
   Class = "Entity",
   contains = "SimplePropertyOwner",
   representation = representation(
-    attachOwn = "AttachmentOwner",
     annotations = "SynapseAnnotations",
     synapseEntityKind = "character",
     synapseWebUrl = "character",
@@ -48,70 +47,69 @@ setMethod("identical",
   }
 )
 
+synStoreMethod<-function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL) {
+	
+	if (is.null(propertyValue(entity, "id")) && createOrUpdate) {
+		entityAsList<-try(findExistingEntity(propertyValue(entity, "name"), propertyValue(entity, "parentId")), silent=TRUE)
+		if (class(entityAsList)!='try-error') {
+			# Found it!
+			# This copies retrieved properties not overwritten by the given entity
+			mergedProperties<-copyProperties(as.list.SimplePropertyOwner(entity), entityAsList)
+			
+			# This also includes ID, which turns a "create" into an "update"
+			propertyValues(entity)<-mergedProperties
+			if (class(entity)=="File") {
+				entity@fileHandle<-getFileHandle(entity)
+			}
+			
+			# But the create-or-update logic lies in the "create" operation
+			# So the ID must be nullified before proceeding
+			propertyValue(entity, "id") <- NULL
+		}
+	}
+	
+	if (class(entity)=="File") {
+		entity<-synStoreFile(file=entity, createOrUpdate=createOrUpdate, forceVersion=forceVersion, contentType=contentType)
+	}
+	# Now save the metadata
+	generatingActivity<-NULL
+	if (!is.null(activity)) {
+		generatingActivity<-activity
+	} else if (!is.null(used) || !is.null(executed)) {
+		generatingActivity<-Activity(name=activityName, description=activityDescription, used=used, executed=executed)
+	} else if (entity@generatedByChanged) {
+		# this takes care of the case in which generatedBy(entity)<- 
+		# is called rather than specifying the activity in the synStore() parameters
+		generatingActivity<-generatedBy(entity)
+	}
+	if (is.null(propertyValue(entity, "id"))) {
+		storedEntity<-createEntityMethod(entity, generatingActivity, createOrUpdate, forceVersion)
+	} else {
+		storedEntity<-updateEntityMethod(entity, generatingActivity, forceVersion)
+	}
+	if (class(entity)=="File") {
+		# now copy the class-specific fields into the newly created object
+		if (fileHasFilePath(entity)) storedEntity@filePath <- entity@filePath
+		storedEntity@synapseStore <- entity@synapseStore
+		storedEntity@fileHandle <- entity@fileHandle
+		storedEntity@objects <- entity@objects
+		if (class(storedEntity)=="File" && isRestricted) {
+			# check to see if access restriction(s) is/are in place already
+			id<-propertyValue(storedEntity, "id")
+			if (!.hasAccessRequirement(id)) {
+				# nothing in place, so we create the restriction
+				.createLockAccessRequirement(id)
+			}
+		}
+	}
+	storedEntity
+}
+
 setMethod(
   f = "synStore",
   signature = "Entity",
   definition = function(entity, activity=NULL, used=NULL, executed=NULL, activityName=NULL, activityDescription=NULL, createOrUpdate=T, forceVersion=T, isRestricted=F, contentType=NULL) {
-    if (is(entity, "Locationable")) {
-      stop("For 'Locationable' entities you must use createEntity, storeEntity, or updateEntity.")
-    }
-    
-    if (is.null(propertyValue(entity, "id")) && createOrUpdate) {
-      entityAsList<-try(findExistingEntity(propertyValue(entity, "name"), propertyValue(entity, "parentId")), silent=TRUE)
-      if (class(entityAsList)!='try-error') {
-        # Found it!
-        # This copies retrieved properties not overwritten by the given entity
-        mergedProperties<-copyProperties(as.list.SimplePropertyOwner(entity), entityAsList)
-        
-        # This also includes ID, which turns a "create" into an "update"
-        propertyValues(entity)<-mergedProperties
-        if (class(entity)=="File") {
-          entity@fileHandle<-getFileHandle(entity)
-        }
-        
-        # But the create-or-update logic lies in the "create" operation
-        # So the ID must be nullified before proceeding
-        propertyValue(entity, "id") <- NULL
-      }
-    }
-    
-    if (class(entity)=="File") {
-      entity<-synStoreFile(file=entity, createOrUpdate=createOrUpdate, forceVersion=forceVersion, contentType=contentType)
-    }
-    # Now save the metadata
-    generatingActivity<-NULL
-    if (!is.null(activity)) {
-      generatingActivity<-activity
-    } else if (!is.null(used) || !is.null(executed)) {
-      generatingActivity<-Activity(name=activityName, description=activityDescription, used=used, executed=executed)
-    } else if (entity@generatedByChanged) {
-      # this takes care of the case in which generatedBy(entity)<- 
-      # is called rather than specifying the activity in the synStore() parameters
-      generatingActivity<-generatedBy(entity)
-    }
-    if (is.null(propertyValue(entity, "id"))) {
-      storedEntity<-createEntityMethod(entity, generatingActivity, createOrUpdate, forceVersion)
-    } else {
-      storedEntity<-updateEntityMethod(entity, generatingActivity, forceVersion)
-    }
-    if (class(entity)=="File") {
-      # now copy the class-specific fields into the newly created object
-      if (fileHasFilePath(entity)) storedEntity@filePath <- entity@filePath
-      storedEntity@synapseStore <- entity@synapseStore
-      storedEntity@fileHandle <- entity@fileHandle
-      storedEntity@objects <- entity@objects
-      if (class(storedEntity)=="File" && isRestricted) {
-        # check to see if access restriction(s) is/are in place already
-        id<-propertyValue(storedEntity, "id")
-        if (!.hasAccessRequirement(id)) {
-          # nothing in place, so we create the restriction
-          .createLockAccessRequirement(id)
-        }
-      }
-    }
-    storedEntity
-    
-  }
+		synStoreMethod(entity, activity, used, executed, activityName, activityDescription, createOrUpdate, forceVersion, isRestricted, contentType)}
 )
 
 synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcollision="keep.both", load=F) {
@@ -123,19 +121,10 @@ synGet<-function(id, version=NULL, downloadFile=T, downloadLocation=NULL, ifcoll
     }   
     if ((class(entity)=="File")) {
       entity<-synGetFile(entity, downloadFile, downloadLocation, ifcollision, load)
-    } else {
-      if (is (entity, "Locationable") && downloadFile) {
-        if (!is.null(downloadLocation)) {
-          warning("Cannot specify download location for 'Locationable' entities")
-        }
-        if (load) {
-          loadEntity(entity)
-        } else {
-          downloadEntity(entity)
-        }
-      } else {
-        entity
-      }
+    } else if ((class(entity)=="TableSchema")) {
+			entity<-populateTableSchema(entity)
+		} else {
+      entity
     }
   } else {
     stop(sprintf("%s is not a Synapse ID.", id))
@@ -187,106 +176,6 @@ setMethod(
     .jsonListToDataFrame(synapseGet(sprintf("/entity/%s/version", object$properties$id))$results)
   }
 )
-
-setMethod(
-  f = "storeAttachment",
-  signature = signature("Entity", "missing"),
-  definition = function(object){
-    storeAttachment(object, object$attachments)
-  }
-)
-
-setMethod(
-  f = "storeAttachment",
-  signature = signature("Entity", "character"),
-  definition = function(object, which){
-    files = file.path(object$attachDir, which)
-    for(f in files){
-      synapseAttach(object, f)
-    }
-    object
-  }
-)
-
-setMethod(
-  f = "downloadAttachment",
-  signature = signature("Entity", "missing"),
-  definition = function(object){
-    stop("not implemented")
-  }
-)
-
-
-setMethod(
-  f = "attachDir",
-  signature = signature('Entity'),
-  definition = function(object){
-    cacheDir(object@attachOwn)
-  }
-)
-
-setMethod(
-  f = "attachments",
-  signature = "Entity",
-  definition = function(object){
-    files(object@attachOwn)
-  }
-)
-
-setMethod(
-  f = "addAttachment",
-  signature = signature("Entity", "character"),
-  definition = function(object, file){
-    if(length(file) != 1L)
-      stop("can only attach a single file")
-    if(!file.exists(file))
-      stop(sprintf("file %s does not exists."), file)
-    if(file.info(file)$isdir)
-      stop("file must be a regular file.")
-    
-    addFile(object@attachOwn, file)
-    invisible(object)
-  }
-)
-
-setMethod(
-  f = "deleteAttachment",
-  signature = signature("Entity", "missing"),
-  definition = function(object){
-    if(length(object$attachments) == 0L)
-      return(object)
-    deleteAttachment(object, object$attachements)
-  }
-)
-
-setMethod(
-  f = "deleteAttachment",
-  signature = signature("Entity", "character"),
-  definition = function(object, file){
-    if(any(!(file %in% object$attachments)))
-      stop("could not find one or more of the specified attachments")
-    
-    for(f in file)
-      deleteFile(object@attachOwn, f)
-    
-    invisible(object)
-  }
-)
-
-
-##
-## Initialize the attachment owner
-##
-setMethod(
-  f = "initialize",
-  signature = "Entity",
-  definition = function(.Object){
-    .Object@attachOwn <- new("AttachmentOwner")
-    .Object@attachOwn@fileCache <- getFileCache(.Object@attachOwn@fileCache$getCacheRoot())
-    .Object
-  }
-)
-
 
 #####
 ## Entity "show" method
@@ -782,17 +671,6 @@ setMethod(
 )
 
 #####
-## convert the S4 entity to a list entity
-#####
-setMethod(
-  f = ".extractEntityFromSlots",
-  signature = "Entity",
-  definition = function(object){
-    properties(object)
-  }
-)
-
-#####
 ## convert the list entity to an S4 entity
 #####
 setMethod(
@@ -830,19 +708,6 @@ setMethod(
     entity@synapseEntityKind <- value
     entity
   }
-)
-
-#####
-## Refresh the entities annotations
-#####
-setMethod(
-  f = "refreshAnnotations",
-  signature = "Entity",
-  definition = function(entity){
-    #  MF will refactor this code
-    annotations(entity) <- do.call(class(annotations(entity)), list(entity = getAnnotations(.extractEntityFromSlots(entity))))
-    entity
-  }   
 )
 
 setMethod(

@@ -205,8 +205,9 @@ setMethod(
           cat("version     : ", thisUsed$reference$targetVersionNumber, "\n", sep="")
           cat("wasExecuted : ", thisUsed$wasExecuted, "\n\n", sep="")
         } else if( thisUsed$concreteType == "org.sagebionetworks.repo.model.provenance.UsedURL" ){
-          cat("url         : ", thisUsed$url, "\n", sep="")
-          cat("wasExecuted : ", thisUsed$wasExecuted, "\n\n", sep="")
+					cat("url         : ", thisUsed$url, "\n", sep="")
+					cat("name        : ", thisUsed$name, "\n", sep="")
+					cat("wasExecuted : ", thisUsed$wasExecuted, "\n\n", sep="")
         }
       }
     }

@@ -72,24 +72,21 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
             chunkUploadUrl <- createChunkedFileUploadChunkURL(chunkRequest)
             if (debug) message(sprintf('url= %s\n', chunkUploadUrl))
             
-            optsWithHeader<-.getCache("curlOpts")
-            optsWithHeader$header<-TRUE
             httpResponse<-.getURLIntern(chunkUploadUrl, 
               postfields=chunk, # the request body
               customrequest="PUT", # the request method
               httpheader=headers, # the headers
               curl=curlHandle, 
               debugfunction=NULL,
-              .opts=optsWithHeader
+			  .opts=.getCache("curlOpts")
             )
             # return the http response
-            parseHttpResponse(httpResponse)
+			httpResponse$body
           }, 
           curlHandle,
-          extraRetryStatusCode=NULL
+          extraRetryStatusCodes=NULL
         )
-        httpResponse<-result$result
-        .checkCurlResponse(object=curlHandle, response=httpResponse, logErrorToSynapse=TRUE)
+        .checkCurlResponse(object=curlHandle, response=result$body, logErrorToSynapse=TRUE)
         
         totalUploadedBytes <- totalUploadedBytes + length(chunk)
         percentUploaded <- totalUploadedBytes*100/fileSizeBytes
@@ -105,7 +102,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
     finally=close(connection)
   )
   ## finalize the upload and return a fileHandle
-  completeChunkFileUpload(token, chunkResults)
+  completeChunkFileUploadWithRetry(token, chunkResults)
 }
 
 createChunkedFileUploadToken<-function(filepath, s3UploadDestination, contentType) {
@@ -113,15 +110,25 @@ createChunkedFileUploadToken<-function(filepath, s3UploadDestination, contentTyp
   if (is.na(md5)) stop(sprintf("Unable to compute md5 for %s", filepath))
   names(md5)<-NULL # Needed to make toJSON work right
 
-  chunkedFileTokenRequest<-list(
-    fileName=basename(filepath),
-    contentType=contentType,
-    contentMD5=md5
-  )
+  if (length(s3UploadDestination@storageLocationId)==0) {
+	  chunkedFileTokenRequest<-list(
+			  fileName=basename(filepath),
+			  contentType=contentType,
+			  contentMD5=md5
+	  )
+  } else {
+	  chunkedFileTokenRequest<-list(
+			  fileName=basename(filepath),
+			  contentType=contentType,
+			  contentMD5=md5,
+			  storageLocationId=s3UploadDestination@storageLocationId
+	  )
+  }
   
   synapsePost(uri='/createChunkedFileUploadToken', 
     entity=chunkedFileTokenRequest, 
-    endpoint=synapseServiceEndpoint("FILE"))
+    endpoint=synapseServiceEndpoint("FILE"),
+	extraRetryStatusCodes="500")
 }
 
 # returns the URL for uploading the specified chunk
@@ -130,6 +137,34 @@ createChunkedFileUploadChunkURL<-function(chunkRequest) {
     entity=chunkRequest, 
     endpoint=synapseServiceEndpoint("FILE"))
 }
+
+completeChunkFileUploadWithRetry<-function(token, chunkResults) {
+	INITIAL_BACKOFF_SECONDS <- 1
+	BACKOFF_MULTIPLIER <- 2 # i.e. the back off time is (initial)*[multiplier^(# retries)]
+	
+	maxTries<-.getCache("webRequestMaxTries")
+	if (is.null(maxTries) || maxTries<1) stop(sprintf("Illegal value for maxTries %d.", maxTries))
+	
+	backoff<-INITIAL_BACKOFF_SECONDS
+	
+	for (retry in 1:maxTries) {
+		result<-try(completeChunkFileUpload(token, chunkResults), silent=T)
+		if (class(result)=="try-error") {
+			Sys.sleep(backoff)
+			backoff <- backoff * BACKOFF_MULTIPLIER
+		} else {
+			break
+		}
+	}
+	
+	if (class(result)=="try-error") {
+		stop(result[[1]])
+	}
+	
+	result
+}
+
+
 
 # returns the file handle
 completeChunkFileUpload<-function(chunkedFileToken, chunkResults) {

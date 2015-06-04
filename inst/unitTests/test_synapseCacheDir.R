@@ -50,7 +50,7 @@ unitTestNewDirReadOnlyParent <-
 		parent = tempfile()
 		dd = tempfile(tmpdir=parent)
 		synapseClient:::.setCache("fileChmod", parent)
-		dir.create(parent)
+		dir.create(parent, showWarnings = FALSE)
 
 		## set parent permissions to read only
 		Sys.chmod(parent, "400")

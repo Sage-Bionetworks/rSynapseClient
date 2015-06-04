@@ -64,18 +64,32 @@ populateWikiPage<-function(createUri, listContent) {
   result
 }
 
+# convert 'attachments' list to file handles
+uploadWikiAttachments<-function(wikiPage) {
+	fileHandleIdList<-propertyValue(wikiPage, "attachmentFileHandleIds")
+	if (is.null(fileHandleIdList)) fileHandleIdList <- list()
+	for (attachment in wikiPage@attachments) {
+		fileHandle<-uploadAndAddToCacheMap(attachment, S3UploadDestination())
+		fileHandleIdList<-append(fileHandleIdList, fileHandle$id)
+	}
+	if (is(fileHandleIdList, "character") && length(fileHandleIdList)==1) {
+		fileHandleIdList<-list(fileHandleIdList)
+	}
+	propertyValue(wikiPage, "attachmentFileHandleIds")<-fileHandleIdList
+	wikiPage
+}
+
 synCreateWiki<-function(wikiPage) {
   createUri<-wikiPage@createUri
-  # convert 'attachments' list to file handles
-  fileHandleIdList<-propertyValue(wikiPage, "attachmentFileHandleIds")
-  if (is.null(fileHandleIdList)) fileHandleIdList <- list()
-  for (attachment in wikiPage@attachments) {
-    fileHandle<-uploadAndAddToCacheMap(attachment, S3UploadDestination())
-    fileHandleIdList[[length(fileHandleIdList)+1]]<-fileHandle$id
-  }
-  propertyValue(wikiPage, "attachmentFileHandleIds")<-fileHandleIdList
+	wikiPage<-uploadWikiAttachments(wikiPage)
   listResult<-synRestPOST(createUri, wikiPage)
   populateWikiPage(createUri, listResult)
+}
+
+synUpdateWiki<-function(wikiPage) {
+	wikiPage<-uploadWikiAttachments(wikiPage)
+	listResult<-synRestPUT(wikiPage@updateUri, wikiPage)
+	populateWikiPage(wikiPage@createUri, listResult)
 }
 
 # if id is null then we get the root page
@@ -108,11 +122,6 @@ setMethod(
     synRestDELETE(entity@updateUri)
   }
 )
-
-synUpdateWiki<-function(wikiPage) {
-  listResult<-synRestPUT(wikiPage@updateUri, wikiPage)
-  populateWikiPage(wikiPage@createUri, listResult)
-}
 
 wikiHeadersUri<-function(parent) {
   if (is(parent, "Entity")) {

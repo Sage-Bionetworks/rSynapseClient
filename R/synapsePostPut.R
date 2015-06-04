@@ -12,7 +12,9 @@
     curlHandle = getCurlHandle(), 
     anonymous = FALSE, 
     opts = .getCache("curlOpts"),
-    checkHttpStatus=T
+    checkHttpStatus=T,
+	logErrorsToSynapse=TRUE,
+	extraRetryStatusCodes=NULL
 )
 {
   ## constants
@@ -76,9 +78,9 @@
   }
   
   # check own version, stopping if blacklisted
-  checkBlackList()
+  checkBlackList(logErrorsToSynapse)
   
-  response<-synapseRequestFollowingAllRedirects(
+  response<-synapseRequest(
     uri,
     endpoint,
     postfields = httpBody,
@@ -86,31 +88,34 @@
     httpheader = header,
     curl = curlHandle,
     debugfunction=d$update,
-    .opts=opts
+    .opts=opts,
+	logErrorsToSynapse,
+	extraRetryStatusCodes=extraRetryStatusCodes
   )
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
-    message("RESPONSE_BODY:: ", response$body)
+	  message("RESPONSE_HEADERS:: ", response$headers)
+	  message("RESPONSE_BODY:: ", response$body)
   }
   
   if (checkHttpStatus) .checkCurlResponse(object=curlHandle, response=response$body)
   
   ## Parse response and prepare return value
-  parseResponseBody(response)
+  parseResponseBody(response$headers, response$body)
 }
 
 # parse response body based on content type
-# the argument is a list in the format returned by 'parseHttpResponse'
-parseResponseBody<-function(response) {
-  contentType<-response$headers[["Content-Type"]]
+# the argument is a list in the format returned by 'parseHttpHeaders'
+parseResponseBody<-function(headers, body) {
+  contentType<-headers[["Content-Type"]]
   if (is.null(contentType) || contentType=="" || regexpr("application/json", contentType, fixed=T)>0) {
-    if (is.null(response$body) || response$body=="") {
-      response$body
+    if (is.null(body) || body=="") {
+      body
     } else {
-      as.list(fromJSON(response$body))
+      as.list(fromJSON(body))
     }
   } else {
-    response$body
+    body
   }
   
 }

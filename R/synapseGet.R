@@ -9,7 +9,9 @@ synapseGet <-
     curlHandle=getCurlHandle(), 
     anonymous = .getCache("anonymous"), 
     opts = .getCache("curlOpts"),  
-    checkHttpStatus=T
+    checkHttpStatus=TRUE,
+	logErrorsToSynapse=TRUE,
+	extraRetryStatusCodes=NULL
 )
 {
   ## constants
@@ -22,7 +24,9 @@ synapseGet <-
     curlHandle = curlHandle, 
     anonymous = anonymous, 
     opts = opts,
-    checkHttpStatus=checkHttpStatus
+    checkHttpStatus=checkHttpStatus,
+	logErrorsToSynapse=logErrorsToSynapse,
+	extraRetryStatusCodes=extraRetryStatusCodes
   )
 }
 

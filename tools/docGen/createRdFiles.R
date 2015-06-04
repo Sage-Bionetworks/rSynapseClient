@@ -7,7 +7,10 @@
 # Author: brucehoff
 ###############################################################################
 
-library(RJSONIO)
+if (!require(rjson)) {
+  install.packages("rjson", repos="http://cran.us.r-project.org")
+  if (!require(rjson)) stop("Could not install 'rjson'")
+}
 
 # This generates one .Rd file for an auto-generated S4 class using its JSON schema
 createRdFromSchema<-function(className, schemaName, schemaPath, classToSchemaMap) {

@@ -18,7 +18,7 @@ unitTest_tableSchema<-function() {
   
   tableSchema<-TableSchema(name, "syn123", tableColumns,  foo="bar", "pi"=3.14)
   for (i in 1:3) {
-    checkEquals(tableColumns[[i]]$id, propertyValue(tableSchema, "columnIds")[[i]])
+    checkEquals(tableColumns[[i]], tableSchema@columns[[i]])
   }
   
   checkEquals(FALSE, tableSchema@generatedByChanged)
