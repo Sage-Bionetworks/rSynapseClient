@@ -29,7 +29,8 @@ integrationTest_asTableColumns<-function() {
   ## test doFullFileScan
   n <- 100000
   tDF <- data.frame(string=sample(c("one", "two", "three"), size=n, replace=T),
-                    double=rnorm(n))
+                    double=rnorm(n),
+                    stringsAsFactors=FALSE)
   tDF$string[n] <- "asdfasdfasdfasdfasdf"
   tcsTrue <- as.tableColumns(tDF)
   checkTrue(identical(tcsTrue$tableColumns[[1]], 
