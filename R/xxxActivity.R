@@ -177,7 +177,7 @@ setMethod(
   f = "Activity",
   signature = signature("character"),
   definition = function(activity){
-    Activity(fromJSON(activity))
+    Activity(fromJSON(activity, method="R"))
   }
 )
 
