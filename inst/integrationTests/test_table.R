@@ -272,7 +272,8 @@ integrationTestSynStoreAndRetrieveAllTypes<-function() {
   checkEquals(propertyValue(myTable@schema, "id"), propertyValue(tschema, "id"))
   checkTrue(length(myTable@updateEtag)>0)
   # now check that the data frames are the same
-  checkTrue(all(dataFrame==myTable@values))
+  checkTrue(all(dataFrame==myTable@values, na.rm=T))
+  checkTrue(all(is.na(dataFrame)==is.na(myTable@values)))
   checkTrue(all(names(dataFrame)==names(myTable@values)))
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(myTable@values))
