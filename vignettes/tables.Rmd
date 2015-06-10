@@ -1,13 +1,12 @@
 ---
 title: "How to Use Synapse Tables"
 date: "`r Sys.Date()`"
+author: Bruce Hoff (bruce.hoff@sagebase.org), Kenneth Daily (kenneth.daily@sagebase.org)
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Tables}
   %\VignetteEngine{knitr::rmarkdown}
 ---
-### **AUTHOR**: _Bruce Hoff (bruce.hoff@sagebase.org)_
-### **AUTHOR**: _Kenneth Daily (kenneth.daily@sagebase.org)_
 
 ```{r loadClient, include=FALSE, eval=TRUE}
 if( file.exists("~/.Rprofile") )
