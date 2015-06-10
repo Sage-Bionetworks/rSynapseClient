@@ -261,7 +261,7 @@ integrationTestMetadataRoundTrip_URL <- function() {
   
   # create a file to be uploaded
   synapseStore<-FALSE
-  filePath<-"http://www.google.com/favicon.ico"
+  filePath<-"http://versions.synapse.sagebase.org/synapseRClient"
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
   
   # now store it
@@ -1038,7 +1038,7 @@ integrationTestExternalLink<-function() {
   
   # create a file to be uploaded
   synapseStore<-FALSE
-  filePath<-"http://www.google.com/favicon.ico"
+  filePath<-"http://versions.synapse.sagebase.org/synapseRClient"
   file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
   
   # now store it

@@ -12,3 +12,11 @@ unitTestGetEffectivePropertySchemas<-function() {
   checkTrue(any(names(eps)=="previewId"))
   checkTrue(any(names(eps)=="id"))
 }
+
+unitTest_ProblemString <- function(){
+  require(rjson)
+  problemString <- "{\"foo\":\"b\\ar\"}"
+  expected <- "b\ar"
+  checkEquals(fromJSON(problemString, method = "R")$foo, expected)
+  checkException(fromJSON(problemString))
+}
