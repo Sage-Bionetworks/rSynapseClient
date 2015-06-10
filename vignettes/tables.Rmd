@@ -189,13 +189,13 @@ What follows is an example of changing a column type, keeping the same data.
 
 First, set the column name that you want to change, and the table it comes from.
 
-```{r}
+```{r, include=TRUE, eval=FALSE}
 columnToChange <- "i"
 ```
 
 Get the existing data.
 
-```{r}
+```{r, include=TRUE, eval=FALSE}
 oldTable <- synGet(schemaId)
 oldDataQuery <- synTableQuery(sprintf("SELECT * FROM %s", oldTable$properties$id))
 oldData <- oldDataQuery@values
@@ -203,7 +203,7 @@ oldData <- oldDataQuery@values
 
 Now that you have the data, delete the column. The `newTable` is now without that column.
 
-```{r}
+```{r, include=TRUE, eval=FALSE}
 collist <- setNames(oldTable$properties$columnIds, names(oldDataQuery@values))
 
 oldTable$properties$columnIds <- setdiff(oldTable$properties$columnIds, collist[columnToChange])
@@ -213,21 +213,21 @@ newTable <- synStore(oldTable)
 
 Make a new column with same name and save it to Synapse. Here, change `i` to a string.
 
-```{r}
+```{r, include=TRUE, eval=FALSE}
 newcol <- TableColumn(name=columnToChange, columnType="STRING", maximumSize=50, defaultValue="")
 newcol <- synStore(newcol)
 ```
 
 Add that column to the table and save:
 
-```{r}
+```{r, include=TRUE, eval=FALSE}
 newTable$properties$columnIds <- c(newTable$properties$columnIds, newcol@id)
 newTable <- synStore(newTable)
 ```
 
 Now, make changes and save to Synapse. In this case, just copy the old data to the new column.
 
-```{r}
+```{r, include=TRUE, eval=FALSE}
 newQuery <- synTableQuery(sprintf("SELECT * FROM %s", newTable$properties$id))
 newQuery@values[columnToChange] <- oldData[columnToChange]
 
