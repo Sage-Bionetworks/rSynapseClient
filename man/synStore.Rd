@@ -20,9 +20,13 @@ The object to store.  May be an entity (\code{\link{File}}, \code{\link{Folder}}
 }
  \item{used}{
 For entities, this is the list of other entities (URLs, objects and/or IDs) 'used' as inputs when generating the entity.  For non-entities, this parameter is ignored
+
+e.g. used=list(list(entity="syn1234"), list(url="http://myawesomesite.com"))
 }
  \item{executed}{
 For entities, this is the list of other entities (URLs, objects and/or IDs) 'executed' as software when generating the entity.  For non-entities, this parameter is ignored
+
+e.g. executed=list(list(entity="syn1234"), list(url="http://myawesomesite.com"))
 }
  \item{activityName}{
 For entities, this is the name of the activity generating the given entity.  For non-entities, this parameter is ignored

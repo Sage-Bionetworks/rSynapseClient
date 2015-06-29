@@ -15,7 +15,7 @@ TYPEMAP <- list(
 getResources <- 
     function()
 {
-  fromJSON(file=system.file("resources/Register.json", package="synapseClient"))
+  fromJSON(file=system.file("resources/Register.json", package="synapseClient"), method="R")
 }
 
 entitiesToLoad <- 

@@ -226,7 +226,7 @@ writeDataFrameToCSV<-function(dataFrame, filePath) {
 }
 
 readDataFrameFromCSV<-function(filePath) {
-  read.csv(filePath, encoding="UTF-8", stringsAsFactors=FALSE, check.names=FALSE)
+  read.csv(filePath, encoding="UTF-8", stringsAsFactors=FALSE, check.names=FALSE, na.strings=c(""))
 }
 
 setMethod(
@@ -266,7 +266,13 @@ convertDataFrameTypeToSchemaType<-function(dataframe, headers) {
         # Synapse returns values "true", "false", which have to be converted to TRUE, FALSE
         dataframe[[columnIndex]]<-(dataframe[[columnIndex]]=="true")
       } else if (header@columnType=="DATE") {
-		dataframe[[columnIndex]]<-as.POSIXct(dataframe[[columnIndex]]/1000, origin="1970-01-01")
+        dataframe[[columnIndex]]<-as.POSIXct(dataframe[[columnIndex]]/1000, origin="1970-01-01")
+      } else if (header@columnType=="INTEGER"){
+        dataframe[[columnIndex]] <- as.integer(dataframe[[columnIndex]])
+      } else if (header@columnType %in% c("STRING", "FILEHANDLEID", "ENTITYID", "LINK")){
+        dataframe[[columnIndex]] <- as.character(dataframe[[columnIndex]])
+      } else if (header@columnType=="DOUBLE"){
+        dataframe[[columnIndex]] <- as.numeric(dataframe[[columnIndex]])
       }
     }
   }
