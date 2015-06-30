@@ -8,11 +8,14 @@ as.tableColumns
 Create Table Columns based on a data frame
 }
 \usage{
-  as.tableColumns(source) where 'source' is a data frame or path to a csv file
+  as.tableColumns(source, doFullFileScan=TRUE, ... )
 }
 \arguments{
   \item{source}{
-	The data frame or file path of interest.
+	 A data frame or path to a csv file
+  }
+  \item{doFullFileScan}{
+  Should the services suggest column types based on the entire file (TRUE - default) or the first 1000 rows of the file (FALSE). For large homogeneous files, doFullFileScan=FALSE will be faster, but may miss-classify the column types.
   }
   \item{linesToSkip}{
 	When 'source' is a file path: The number of lines to skip from the start of the file. The default value of 0 will be used if this is not provided by the caller.  }

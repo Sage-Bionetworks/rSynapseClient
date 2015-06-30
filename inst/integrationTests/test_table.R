@@ -36,6 +36,19 @@ createTableSchema<-function(projectId, tableColumns) {
   tableSchema
 }
 
+testDataFramesEqual <- function(df1, df2){
+  
+  ## check names
+  checkTrue(all(names(df1)==names(df2)))
+  ## check values
+  ## two step process:
+  ## checkTrue with na.rm to ensure all values are identical
+  ## checkTrue with is.na to ensure that all nas are identical
+  checkTrue(all(df1==df2, na.rm=T))
+  checkTrue(all(is.na(df1)==is.na(df2)))
+  ## check column classes
+  all(sapply(df1, function(x){class(x)[1]})==sapply(df2, function(x){class(x)[1]}))}
+
 integrationTestSynStoreDataFrame <- function() {
   project<-synapseClient:::.getCache("testProject")
   
@@ -57,8 +70,7 @@ integrationTestSynStoreDataFrame <- function() {
   checkTrue(!is.null(propertyValue(retrievedTable@schema, "id")))
   checkTrue(length(retrievedTable@updateEtag)>0)
   # now check that the data frames are the same
-  checkTrue(all(dataFrame==retrievedTable@values))
-  checkTrue(all(names(dataFrame)==names(retrievedTable@values)))
+  testDataFramesEqual(dataFrame, retrievedTable@values)
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(retrievedTable@values))
   
@@ -72,8 +84,7 @@ integrationTestSynStoreDataFrame <- function() {
   checkEquals(propertyValue(updatedTable@schema, "id"), propertyValue(retrievedTable@schema, "id"))
   checkTrue(length(updatedTable@updateEtag)>0)
   # now check that the data frames are the same
-  checkTrue(all(retrievedTable@values==updatedTable@values))
-  checkTrue(all(names(retrievedTable@values)==names(updatedTable@values)))
+  testDataFramesEqual(updatedTable@values, retrievedTable@values)
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(updatedTable@values))   
 
@@ -183,8 +194,7 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   checkEquals(propertyValue(myTable@schema, "id"), propertyValue(tschema, "id"))
   checkTrue(length(myTable@updateEtag)>0)
   # now check that the data frames are the same
-  checkTrue(all(dataFrame==myTable@values))
-  checkTrue(all(names(dataFrame)==names(myTable@values)))
+  testDataFramesEqual(dataFrame, myTable@values)
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(myTable@values))
   
@@ -192,8 +202,8 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), verbose=FALSE)
   checkTrue(is(queryResult, "TableDataFrame"))
   checkEquals(queryResult@schema, propertyValue(tschema, "id"))
-  checkTrue(all(dataFrame==queryResult@values))
-  checkTrue(all(names(dataFrame)==names(queryResult@values)))
+  # now check that the data frames are the same
+  testDataFramesEqual(dataFrame, queryResult@values)
   checkTrue(length(queryResult@updateEtag)>0)
   
   # test no load
@@ -214,8 +224,8 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   # test a more complicated aggregation query
   queryResult<-synTableQuery(sprintf("select sweet, count(sweet) from %s where sweet='one'", propertyValue(tschema, "id")), verbose=FALSE)
   expected<-data.frame(sweet="one", "COUNT(sweet)"=as.integer(rowsPerCategory), check.names=FALSE)
-  checkTrue(all(expected==queryResult@values))
-  checkTrue(all(names(expected)==names(queryResult@values)))
+  # now check that the data frames are the same
+  testDataFramesEqual(expected, queryResult@values)
   
   # finally, check row deletion
   queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=TRUE, verbose=FALSE)
@@ -258,7 +268,7 @@ integrationTestSynStoreAndRetrieveAllTypes<-function() {
     stringType=sample(c("one", "two", "three"), size = rowsToUpload, replace = T), 
     intType=sample.int(rowsToUpload, replace = T),
     doubleType=as.numeric(sample.int(rowsToUpload, replace = T)),
-    booleanType=sample(c(TRUE, FALSE), size = rowsToUpload, replace = T),
+    booleanType=sample(c(TRUE, FALSE, NA), size = rowsToUpload, replace = T),
     dateType=sample(roundPOSIXct(Sys.time()+c(1,2,3)), size = rowsToUpload, replace = T),
     fileHandleIdType1=sample(c("111", "222", "333"), size = rowsToUpload, replace = T),
     fileHandleIdType2=sample(c(444, 555, 666), size = rowsToUpload, replace = T),
@@ -272,28 +282,9 @@ integrationTestSynStoreAndRetrieveAllTypes<-function() {
   checkEquals(propertyValue(myTable@schema, "id"), propertyValue(tschema, "id"))
   checkTrue(length(myTable@updateEtag)>0)
   # now check that the data frames are the same
-  checkTrue(all(dataFrame==myTable@values))
-  checkTrue(all(names(dataFrame)==names(myTable@values)))
+  testDataFramesEqual(dataFrame, myTable@values)
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(myTable@values))
-}
-
-# checks values and column labels, but not row labels
-dataFramesAreSame<-function(df1, df2) {
-	if (nrow(df1)!=nrow(df2) || ncol(df1)!=ncol(df2)) return(FALSE)
-	if (any(names(df1)!=names(df2))) return(FALSE)
-	if (nrow(df1)==0 || ncol(df1)==0) return(TRUE)
-	for (c in 1:ncol(df1)) {
-		if ((is.numeric(df1[[c]]) && is.numeric(df2[[c]])) ||
-				(is(df1[[c]], "POSIXct") && is(df2[[c]], "POSIXct"))) {
-			if (!all.equal(df1[[c]], df2[[c]])) return (FALSE)
-		} else {
-			for (r in 1:nrow(df1)) {
-				if (!identical(df1[r,c], df2[r,c])) return(FALSE)
-			}
-		}
-	}
-	TRUE
 }
 
 integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
@@ -312,7 +303,7 @@ integrationTestSynStoreRetrieveAndQueryNumericDataFrame<-function() {
   myTable <- Table(tschema, values=dataFrame)
   myTable <- synStore(myTable, retrieveData=T)
   # now check that the data frames are the same
-  checkTrue(dataFramesAreSame(dataFrame,myTable@values))
+  testDataFramesEqual(dataFrame, myTable@values)
   
   # also check what happens when query result is empty
   queryResult<-synTableQuery(sprintf("select * from %s where sweet=99", propertyValue(tschema, "id")), verbose=FALSE)
@@ -369,8 +360,8 @@ integrationTestSynStoreAndRetrieveCSVFile <- function() {
   # now check that the data frames are the same
   retrievedDataFrame<-synapseClient:::loadCSVasDataFrame(retrievedTable@filePath)
   dataFrame<-read.csv(csvFilePath, header=TRUE)
-  checkTrue(all(dataFrame==retrievedDataFrame))
-  checkTrue(all(tableColumnNames==names(retrievedDataFrame)))
+  # now check that the data frames are the same
+  testDataFramesEqual(dataFrame, retrievedDataFrame)
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(retrievedDataFrame))
 }
@@ -395,8 +386,8 @@ integrationTestCSVFileWithAsTableColumns <- function() {
   # now check that the data frames are the same
   retrievedDataFrame<-synapseClient:::loadCSVasDataFrame(retrievedTable@filePath)
   dataFrame<-read.csv(csvFilePath, header=TRUE)
-  checkTrue(all(dataFrame==retrievedDataFrame))
-  checkTrue(all(tableColumnNames==names(retrievedDataFrame)))
+  # now check that the data frames are the same
+  testDataFramesEqual(dataFrame, retrievedDataFrame)
   # make sure the row labels are valid
   synapseClient:::parseRowAndVersion(row.names(retrievedDataFrame))
 }
@@ -470,6 +461,3 @@ integrationTestSynStoreAndDownloadFiles<-function() {
 	
 }
 
-
-
-  

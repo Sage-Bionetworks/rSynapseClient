@@ -6,10 +6,10 @@
 setMethod(
   f = "as.tableColumns",
   signature = signature("data.frame"),
-  definition = function(source) {
+  definition = function(source, doFullFileScan=TRUE) {
     file<-tempfile()
     writeDataFrameToCSV(dataFrame=source, filePath=file)
-    as.tableColumns(file)
+    as.tableColumns(file, doFullFileScan=doFullFileScan)
   }
 )
 
@@ -17,12 +17,13 @@ setMethod(
   f = "as.tableColumns",
   signature = signature("character"),
   definition = function(source, linesToSkip=as.integer(0), quoteCharacter=character(0),
-    escapeCharacter=character(0), separator=character(0), lineEnd=character(0)) {
+    escapeCharacter=character(0), separator=character(0), lineEnd=character(0), doFullFileScan=TRUE) {
     filePath<-source
     s3FileHandle<-chunkedUploadFile(filePath)
     request<-UploadToTablePreviewRequest(
       uploadFileHandleId=as.character(s3FileHandle$id),
       linesToSkip=linesToSkip,
+      doFullFileScan=doFullFileScan,
       csvTableDescriptor=CsvTableDescriptor(
         quoteCharacter=quoteCharacter,
         isFirstLineHeader=TRUE,

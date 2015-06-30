@@ -184,7 +184,7 @@ integrationTest_externalURL <- function() {
   # create an entity
   project<-synapseClient:::.getCache("testProject")
   pid<-propertyValue(project, "id")
-  file<-File(path="http://www.google.com", parentId=pid, name="foo", synapseStore=FALSE)
+  file<-File(path="http://versions.synapse.sagebase.org/synapseRClient", parentId=pid, name="foo", synapseStore=FALSE)
   file<-synStore(file)
   
   # join the evaluation
