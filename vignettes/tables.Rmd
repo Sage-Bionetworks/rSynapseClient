@@ -12,6 +12,8 @@ vignette: >
 if( file.exists("~/.Rprofile") )
   source("~/.Rprofile")
 require(synapseClient)
+library(knitr)
+knitr::opts_knit(progress=TRUE, verbose=TRUE)
 ```
 
 ## Overview
