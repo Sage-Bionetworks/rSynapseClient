@@ -5,7 +5,7 @@ author: "Bruce Hoff (bruce.hoff@sagebase.org), Kenneth Daily (kenneth.daily@sage
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Tables}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{knitr::knitr}
 ---
 
 ```{r loadClient, include=FALSE, eval=TRUE}
