@@ -28,7 +28,8 @@ kSynapseRAnnotationTypeMap <- list(
   function(libname, pkgname)
 {  
 
-  .setCache("curlOpts", list(low.speed.time=60, low.speed.limit=1, connecttimeout=300, followlocation=TRUE, ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))
+	# low.speed.time increased to 600 to fix SYNR-949
+  .setCache("curlOpts", list(low.speed.time=600, low.speed.limit=1, connecttimeout=300, followlocation=TRUE, ssl.verifypeer=TRUE, verbose = FALSE, cainfo=file.path(libname, pkgname, kCertBundle)))
   .setCache("curlHeader", c('Content-Type'="application/json; charset=utf-8", Accept = "application/json", "Accept-Charset"="utf-8", "User-Agent" = .userAgent()))
   .setCache("sessionRefreshDurationMin", 1440)
   .setCache("curlWriter", getNativeSymbolInfo("_writer_write", PACKAGE="synapseClient")$address)
