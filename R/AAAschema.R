@@ -12,10 +12,13 @@ TYPEMAP <- list(
   array = "character"
 )
 
-getResources <- 
-    function()
+getResources <- function()
 {
-  fromJSON(file=system.file("resources/Register.json", package="synapseClient"), method="R")
+	list("org.sagebionetworks.repo.model.table.TableEntity",
+		"org.sagebionetworks.repo.model.Project",
+		"org.sagebionetworks.repo.model.Folder",
+		"org.sagebionetworks.repo.model.Link",
+		"org.sagebionetworks.repo.model.FileEntity")
 }
 
 entitiesToLoad <- 
@@ -27,11 +30,11 @@ entitiesToLoad <-
     "org.sagebionetworks.repo.model.FileEntity"
     )
   
-  for(i in 1:length(resources$entityTypes)){
-    thisOne <- resources$entityTypes[[i]]
+  for(i in 1:length(resources)){
+    thisOne <- resources[[i]]
     # We skip FileEntity, see .onLoad in zzz.R
-    if (!any(thisOne$entityType==classesToSkip)) {
-      paths <- unique(c(paths, thisOne$validParentTypes, thisOne$entityType))
+    if (!any(thisOne==classesToSkip)) {
+      paths <- unique(c(paths, thisOne))
     }
   }
   
