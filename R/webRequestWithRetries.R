@@ -28,36 +28,27 @@ webRequestWithRetries<-function(fcn,
   # ideally we'd include an exhaustive list of transient outage conditions
   # from the libcurl list.  Unfortunately RCurl neither exposes the numeric
   # value of the error condition nor generates the string in a predictable way
-  # Thus the only way we can build up this list is by adding new error conditions
-  # as they occur.
-  errorMessages <- c("connect() timed out",
-    "Connection reset by peer",
-    "Failure when receiving data from the peer",
-    "Empty reply from server",
-    "SSL read: error:00000000",
-    "Unknown SSL protocol error",
-    "couldn't connect to host",
-	"SSL connect error")
-  
-  retryStatusCodes<-append(c(502,503,504), extraRetryStatusCodes)
+  # So we retry on everything and provide a place to list messages for which
+	# we should not retry
+  errorMessagesNotToRetry <- character(0)
   
   for (retry in 1:maxTries) {
     rawResponse<-try(fcn(curlHandle), silent=T)
     
     if (class(rawResponse)=="try-error") {
-      # if any of the strings in 'errorMessages' appear anywhere in 'rawResponse[[1]]'...
-      if (any(sapply(errorMessages, function(pattern){regexpr(pattern, rawResponse[[1]], fixed=T)[1]>=0}))) {
-        # ...then it's a time out
-        Sys.sleep(backoff)
-        backoff <- backoff * BACKOFF_MULTIPLIER
-      } else {
-        # ... otherwise it's some other error
-        if (logErrorsToSynapse) .logErrorToSynapse("", rawResponse[[1]])
-        stop(rawResponse[[1]])
-      }
+      # if any of the strings in 'errorMessagesNotToRetry' appear anywhere in 'rawResponse[[1]]'...
+      if (any(sapply(errorMessagesNotToRetry, function(pattern){regexpr(pattern, rawResponse[[1]], fixed=T)[1]>=0}))) {
+				# ... it's an error for which we specifically don't retry
+				if (logErrorsToSynapse) .logErrorToSynapse("", rawResponse[[1]])
+				stop(rawResponse[[1]])
+			} else {
+				# ... retry
+				Sys.sleep(backoff)
+				backoff <- backoff * BACKOFF_MULTIPLIER
+			}
     } else {
       httpStatus<-.getCurlInfo(curlHandle)$response.code
-      if (any(httpStatus==retryStatusCodes)) {
+      if (httpStatus>=500 || any(httpStatus==extraRetryStatusCodes)) {
         # then we retry
         Sys.sleep(backoff)
         backoff <- backoff * BACKOFF_MULTIPLIER
