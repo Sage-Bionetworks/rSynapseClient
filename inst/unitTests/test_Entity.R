@@ -23,6 +23,12 @@ unitTestProperties <-
 
   checkEquals(propertyValue(entity,"name"), "string")
  }
+ 
+ unitTestProjectProperties <- function() {
+	 project<-Project()
+	 propertyValue(project, "alias")<-"alias"
+ }
+ 
 
 unitTestAnnotations <-
   function()
