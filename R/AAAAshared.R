@@ -10,9 +10,13 @@ readSchema <- function(name, path) {
   # remove the following when SYNR-841 is done
   if (name=="org.sagebionetworks.repo.model.file.UploadType") {
     return(list(type="string", enum=c("S3", "SFTP", "HTTPS")))
-  } else if (name=="org.sagebionetworks.repo.model.table.ColumnType") {
-    return(list(type="string", enum=c("STRING", "DOUBLE", "INTEGER", "BOOLEAN", "DATE", "FILEHANDLEID", "ENTITYID", "LINK")))
-  }
+	} else if (name=="org.sagebionetworks.repo.model.table.ColumnType") {
+		return(list(type="string", enum=c("STRING", "DOUBLE", "INTEGER", "BOOLEAN", "DATE", "FILEHANDLEID", "ENTITYID", "LINK")))
+	} else if (name=="org.sagebionetworks.repo.model.FileDownloadStatus") {
+		return(list(type="string", enum=c("SUCCESS", "FAILURE")))
+	} else if (name=="org.sagebionetworks.repo.model.FileDownloadCode") {
+		return(list(type="string", enum=c("NOT_FOUND", "UNAUTHORIZED", "DUPLICATE", "EXCEEDS_SIZE_LIMIT", "UNKNOWN_ERROR")))
+	}
   
   
   file <- sprintf("%s.json", gsub("[\\.]", "/", name))
