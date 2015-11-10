@@ -1,4 +1,3 @@
-
 #' knitfile2synapse
 #' 
 #' Allow users to leverage knitr when constructing Synapse Wiki content
