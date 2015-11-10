@@ -50,11 +50,11 @@ integrationTestSynStoreAndDownloadFiles<-function() {
 	
 	fileHandleIds<-NULL
 	md5s<-NULL
-	filePaths<-c()
+	fileNames<-c()
 	for (i in 1:2) {
 		# upload a file and receive the file handle
 		filePath <- tempfile()
-		filePaths <- c(filePaths, filePaht)
+		fileNames <- c(fileNames, basename(filePath))
 		connection<-file(filePath)
 		writeChar(sprintf("this is a test %s", sample(999999999, 1)), connection, eos=NULL)
 		close(connection)  
@@ -77,8 +77,10 @@ integrationTestSynStoreAndDownloadFiles<-function() {
 	# check that the names of the result are the file handle IDs
 	checkTrue(all(names(downloadResult)==fileHandleIds))
 	
-	# check that the values of the result are the file paths
-	checkTrue(all(downloadResult==filePaths))
+	# check that the file names in the results match the file paths
+	checkTrue(all(sapply(downloadResult, "basename")==fileNames))
 	
+	# check that the downloaded files exist
+	checkTrue(all(sapply(downloadResult, "file.exists")))
 }
 
