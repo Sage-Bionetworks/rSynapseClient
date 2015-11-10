@@ -151,7 +151,7 @@ downloadTableFileHandles <- function(fhasToDownload) {
 	
 	newPaths <- sapply(as.list(names(unzippedFilePaths)), defaultDownloadLocation)
 	createSuccess <- sapply(as.list(newPaths), function(x) {
-				res <- dir.exists(x)
+				res <- file.exists(x)
 				if(!res) {
 					res <- dir.create(x, recursive = TRUE)
 				}
