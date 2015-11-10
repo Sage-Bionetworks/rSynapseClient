@@ -17,6 +17,6 @@ unitTest_ProblemString <- function(){
   require(rjson)
   problemString <- "{\"foo\":\"b\\ar\"}"
   expected <- "b\ar"
-  checkEquals(fromJSON(problemString, method = "R")$foo, expected)
+  checkEquals(synFromJson(problemString)$foo, expected)
   checkException(fromJSON(problemString))
 }

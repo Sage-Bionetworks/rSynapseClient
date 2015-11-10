@@ -22,7 +22,7 @@ synToJson<-function(toEncode) {
   toEncode<-handleNAs(toEncode)
   toEncode<-convertDatesToCharacters(toEncode)
   toEncode<-convertIntegersToCharacters(toEncode)
-  toJSON(toEncode)
+  toJSON(toEncode, method="C") # if method="R", will generate spurious \\/ sequences
 }
 
 ## Note: the RJSONIO library converted NAs to nulls

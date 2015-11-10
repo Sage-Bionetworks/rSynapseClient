@@ -178,7 +178,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 		return(list())
 	}
 	
-	return(fromJSON(readFile(sessionFile), method="R"))
+	return(synFromJson(readFile(sessionFile)))
 }
 
 .writeSessionCache <- function(json) {
