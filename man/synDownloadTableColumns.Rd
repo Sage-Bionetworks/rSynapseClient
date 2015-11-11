@@ -5,7 +5,7 @@
 synDownloadTableColumns
 }
 \description{
-Create Table Columns based on a data frame
+Download files referenced in a Table
 }
 \usage{
   synDownloadTableColumns(synTable, tableColumns)
