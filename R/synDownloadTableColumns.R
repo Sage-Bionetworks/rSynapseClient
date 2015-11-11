@@ -78,18 +78,14 @@ synDownloadTableColumns <- function(synTable, tableColumns) {
 						length(fileHandleIdsInTable)-length(fhasToDownload), " files are in cache;  ", 
 						length(fhasToDownload), " files left to retrieve\n"))
 		
-		
+		# download as many as possible.  No guarantee that all requested files
+	  # will be downloaded.
 		downloadResult<-downloadTableFileHandles(fhasToDownload)
 		# note the successes
 		cachedPath<-downloadResult$successes
 		trackRequested[names(cachedPath)] <- cachedPath
-		# rack up the failures
+		# collect the permanent failures, both for reporting and to avoid retrying
 		permanentFailures<-append(permanentFailures, downloadResult$permanentFailures)
-		# are there any failures due to the download being too large?  If so we'll retry
-		sizeLimitFailures<-downloadResult$sizeLimitFailures
-		if (length(sizeLimitFailures)==0) {
-			break
-		}
 	}
 	
 	if (length(sizeLimitFailures)>0) {
@@ -103,16 +99,43 @@ synDownloadTableColumns <- function(synTable, tableColumns) {
 	trackRequested
 }
 
-# returns (1) successes, (2) failures due to size limit, (3) other, permanent failures
+createRequest<-function(fhaList) {
+	list<-createListFromS4Object(BulkFileDownloadRequest(requestedFiles=as.FileHandleAssociationList(fhasToDownload)))
+}
+
+# Take the json string for any asynchronous request body. 
+# Convert the string to 'UTF-8' bytes and count the resulting bytes.
+# For now the request must be less than 262144 bytes due to a limit
+# in Amazon SQS
+requestSize<-function(request) {
+	string<-synToJson(request)
+	# all the fields in BulkFileDownloadRequest are simple ascii (IDs and enum values,
+	# no user supplied text fields) so the legnth of the string is the same as the length
+	# of the underlying byte array
+	nchar(string)
+}
+
+getMaxmimumFileHandleSet<-function(fhaList, requestSizeLimit) {
+	maximumRequest<-createRequest(fhaList)
+	maximumRequestSize<-requestSize(maximumRequest)
+	if (maximumRequestSize<requestSizeLimit) return(maximumRequest)
+	emptyRequestSize<-requestSize(createRequest(list()))
+	numFhas<-as.integer((requestSizeLimit-emptyRequestSize)*length(fhaList)/(maximumRequestSize-emptyRequestSize))
+	if (numFhas<1) stop(sprintf("Number of file handles which can be accomodated in a bulk download request is %s", numFhas))
+	createRequest(fhaList[1:numFhas])
+}
+
+# returns (1) successes, (2) permanent failures (not to retry)
 downloadTableFileHandles <- function(fhasToDownload) {
+	fhasSubset<-getMaxmimumFileHandleSet(fhasToDownload, 262000)
 	result<-synRestPOST('/file/bulk/async/start', 
-			createListFromS4Object(BulkFileDownloadRequest(requestedFiles=as.FileHandleAssociationList(fhasToDownload))),
+			createListFromS4Object(BulkFileDownloadRequest(
+			requestedFiles=as.FileHandleAssociationList(fhasSubset))),
 			synapseFileServiceEndpoint())
 	asyncJobId <- createS4ObjectFromList(result, "AsyncJobId")
 	responseBodyAsList <- trackProgress(paste0('/file/bulk/async/get/', asyncJobId@token), endpoint="FILE")
 	responseBody <- createS4ObjectFromList(responseBodyAsList, "BulkFileDownloadResponse")
 	
-	sizeLimitFailures <- c()
 	permanentFailures <- list() # by permanent we mean those failure that can't be handled by retrying
 	## CHECK FOR FAILURES
 	filehandles <- sapply(responseBody@fileSummary@content, function(x) {
@@ -121,16 +144,12 @@ downloadTableFileHandles <- function(fhasToDownload) {
 					names(tmp) <- x@fileHandleId
 					tmp
 				} else {
-					if (x@failureCode=="EXCEEDS_SIZE_LIMIT") {
-						sizeLimitFailures<-c(sizeLimitFailures, x@fileHandleId)
-					} else {
+					if (x@failureCode!="EXCEEDS_SIZE_LIMIT") {
 						permanentFailures[[x@fileHandleId]]<-x@failureMessage
 					}
 					NULL
 				}
 			})
-	
-	# TODO What if there are NO successes?
 	
 	## DOWNLOAD THE ZIP FILE
 	downloadUri <- sprintf("/fileHandle/%s/url?redirect=FALSE", responseBody@resultZipFileHandleId)
@@ -176,6 +195,6 @@ downloadTableFileHandles <- function(fhasToDownload) {
 		addToCacheMap(names(cachedPath)[i], cachedPath[[i]])
 	}
 	
-	list(successes=cachedPath, sizeLimitFailures=sizeLimitFailures, permanentFailures=permanentFailures)
+	list(successes=cachedPath, permanentFailures=permanentFailures)
 }
 
