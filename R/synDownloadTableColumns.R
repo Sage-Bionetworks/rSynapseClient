@@ -100,7 +100,7 @@ synDownloadTableColumns <- function(synTable, tableColumns) {
 }
 
 createRequest<-function(fhaList) {
-	list<-createListFromS4Object(BulkFileDownloadRequest(requestedFiles=as.FileHandleAssociationList(fhasToDownload)))
+	list<-createListFromS4Object(BulkFileDownloadRequest(requestedFiles=as.FileHandleAssociationList(fhaList)))
 }
 
 # Take the json string for any asynchronous request body. 
