@@ -19,8 +19,10 @@ Download files referenced in a Table
   }
 }
 \value{
-A list whose names are the downloaded fileHandle IDs
-and whose values are the paths to the requested files.
+Returns a vector whose names are the fileHandle IDs found in the
+specified columns of the given Table and each value of which is 
+the path to the requested file or NULL if the file was not able
+to be downloaded.
 }
 \details{
 Downloads the files corresponding to the references in the selected rows of the 

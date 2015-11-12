@@ -3,7 +3,7 @@
 # Author: brucehoff
 ###############################################################################
 
-
+library(rjson)
 
 .setUp <- function() {
   # create project
@@ -36,7 +36,7 @@ createTableSchema<-function(projectId, tableColumns) {
   tableSchema
 }
 
-integrationTestSynStoreAndDownloadFiles<-function() {
+integrationTestDownloadTableColumns<-function() {
 	project<-synapseClient:::.getCache("testProject")
 	
 	tc1 <- TableColumn(name="stringType", columnType="STRING", enumValues=c("one", "two", "three"))
@@ -61,6 +61,9 @@ integrationTestSynStoreAndDownloadFiles<-function() {
 		fileHandle<-synapseClient:::chunkedUploadFile(filePath)
 		checkTrue(!is.null(fileHandle$id))
 		fileHandleIds<-c(fileHandleIds, fileHandle$id)
+		if (i==2) {
+			fileHandleToDelete<-fileHandle$id
+		}
 		md5s<-c(md5s, as.character(tools::md5sum(filePath)))
 	}
 	
@@ -72,15 +75,19 @@ integrationTestSynStoreAndDownloadFiles<-function() {
 	myTable <- Table(tschema, values=dataFrame)
 	myTable <- synStore(myTable, retrieveData=T)
 	
+	# let's make one of the file handles invalid
+	uri<- sprintf("/fileHandle/%s", fileHandleToDelete)
+	synRestDELETE(uri, endpoint=synapseFileServiceEndpoint())
+	
 	downloadResult<-synDownloadTableColumns(myTable, "fileHandleIdType")
 	
 	# check that the names of the result are the file handle IDs
 	checkTrue(all(names(downloadResult)==fileHandleIds))
 	
-	# check that the file names in the results match the file paths
-	checkTrue(all(sapply(downloadResult, "basename")==fileNames))
-	
-	# check that the downloaded files exist
-	checkTrue(all(sapply(downloadResult, "file.exists")))
+	# check that the file name in the result matches the uploaded one and that the file exists
+	checkEquals(basename(downloadResult[[1]]), fileNames[1])
+	checkTrue(file.exists(downloadResult[[1]]))
+	# check that the missing one was not downloaded
+	checkTrue(is.null(downloadResult[[2]]))
 }
 
