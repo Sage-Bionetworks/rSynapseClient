@@ -137,5 +137,42 @@ unitTest_synDownloadTableColumnsCachedFiles<-function() {
 	checkEquals(downloadResult, expectedDownloadResult)
 }
 
-
+unitTest_synDownloadTableColumnsTemporaryFailure<-function() {
+	fileHandleIds<-as.character(sample(1000000, 3))
+	# make sure there is no cached information
+	for (fileHandleId in fileHandleIds) {
+		unlink(synapseClient:::defaultDownloadLocation(fileHandleId))
+	}
+	df<-data.frame(string=c("a", "b", "c"), files=fileHandleIds, stringsAsFactors=FALSE)
+	table<-Table("syn123", df)
+	synapseClient:::.mock("downloadTableFileHandles",
+			function(fhasToDownload) {
+				count<-synapseClient:::.getCache("synDownloadTableColumnsTemporaryFailure_count")
+				synapseClient:::.setCache("synDownloadTableColumnsTemporaryFailure_count", count+1)
+				fhaToSkip<-fhasToDownload[[1]]@fileHandleId
+				for (fha in fhasToDownload) {
+					fhId<-fha@fileHandleId
+					if (count==0 && fhId==fhaToSkip) {
+						# this simulates a file not being downloaded because either the zip file or the request itself was too big
+					} else {
+						filePath<-createFile(synapseClient:::defaultDownloadLocation(fhId))
+						synapseClient:::addToCacheMap(fhId, filePath)
+					}
+				}
+				list() # return the permanent failures (NONE)
+			}
+	)
+	synapseClient:::.setCache("synDownloadTableColumnsTemporaryFailure_count", 0)
+	
+	# this will make two passes, the first time getting two files and the second time getting the remaining one
+	downloadResult<-synDownloadTableColumns(table, "files")
+	
+	# now check that we got all three files
+	expectedDownloadResult<-c()
+	for (fhid in fileHandleIds) {
+		expectedDownloadResult[fhid]<-synapseClient:::getCachedInLocation(fhid, 
+				synapseClient:::defaultDownloadLocation(fhid))$unchanged
+	}
+	checkEquals(downloadResult, expectedDownloadResult)
+}
 
