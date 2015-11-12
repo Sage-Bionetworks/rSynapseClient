@@ -160,7 +160,7 @@ getCacheMapFileContent<-function(fileHandleId) {
   if (!file.exists(cacheMapFile)) return(list())
   cacheRecordJson<-readFile(cacheMapFile)
   if (nchar(cacheRecordJson)==0) return (list())
-  as.list(fromJSON(cacheRecordJson, method="R"))
+  as.list(synFromJson(cacheRecordJson))
 }
 
 # return the last-modified time stamp for the given fileHandleId and filePath

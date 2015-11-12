@@ -77,7 +77,7 @@ setMethod(
   
 getFileHandleFromEntityBundleJSON<-function(entityBundleJSON) {
   if (missing(entityBundleJSON) || is.null(entityBundleJSON)) return(list())
-  entityBundle<-fromJSON(entityBundleJSON, method="R")
+  entityBundle<-synFromJson(entityBundleJSON)
   fileHandles<-entityBundle$fileHandles
   if (is.null(fileHandles)) return(list()) # this is the case if the submitted entity is not a File
   if (length(fileHandles)<1) return(list())

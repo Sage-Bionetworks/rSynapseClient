@@ -15,7 +15,7 @@ setMethod(
   f = "TypedPropertyStore",
   signature = signature("character", "missing", "missing"),
   definition = function(file){
-    json <- fromJSON(file=file, method="R")
+    json <- synFromJson(readFile(file))
     TypedPropertyStore(json = json)
   }
 )
@@ -43,7 +43,7 @@ setMethod(
   f = "TypedPropertyStore",
   signature = signature("missing", "missing", "character"),
   definition = function(json){
-    TypedPropertyStore(list = fromJSON(json, method="R"))
+    TypedPropertyStore(list = synFromJson(json))
   }
 )
 
@@ -361,7 +361,7 @@ setMethod(
   f = ".populateSlotsFromEntity",
   signature = signature("TypedPropertyStore", "missing", "character"),
   definition = function(object, json){
-    data <- fromJSON(json, method="R")
+    data <- synFromJson(json)
     .populateSlotsFromEntity(object, list=data)
   }
 )

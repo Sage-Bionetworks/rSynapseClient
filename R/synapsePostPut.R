@@ -112,7 +112,7 @@ parseResponseBody<-function(headers, body) {
     if (is.null(body) || body=="") {
       body
     } else {
-      as.list(fromJSON(body, method="R"))
+      as.list(synFromJson(body))
     }
   } else {
     body

@@ -13,7 +13,7 @@ getVersionInfo<-function(logErrorsToSynapse=TRUE) {
   versionInfo<-.getCache(cacheVersionInfoName)
   if (is.null(versionInfo) || is.null(cacheTimestamp) || Sys.time()-now>cacheRefreshSeconds) {
     response<-getURLWithRetries(.getVersionsEndpoint(), opts=.getCache("curlOpts"), logErrorsToSynapse=logErrorsToSynapse)
-    versionInfo <- fromJSON(response$body, method="R")
+    versionInfo <- synFromJson(response$body)
     .setCache(cacheTimestampName, now)
     .setCache(cacheVersionInfoName, versionInfo)
   }
