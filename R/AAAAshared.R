@@ -5,6 +5,20 @@
 # Author: brucehoff		
 #########################################################################
 
+synFromJson<-function(content) {
+	tryCatch(
+			fromJSON(content, method="R", unexpected.escape="skip"),
+			error=function(e) {
+				if (length(grep("unrecognized escape", e))>0) {
+					cleanedContent<-gsub("\\\\/", content, fixed=TRUE)
+					fromJSON(cleanedContent, method="R", unexpected.escape="skip")
+				} else {
+					stop(e)
+				}
+			}
+	)
+}
+
 readSchema <- function(name, path) {
   
   # remove the following when SYNR-841 is done

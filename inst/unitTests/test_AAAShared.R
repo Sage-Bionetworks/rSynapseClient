@@ -17,6 +17,6 @@ unitTest_ProblemString <- function(){
   require(rjson)
   problemString <- "{\"foo\":\"b\\ar\"}"
   expected <- "b\ar"
-  checkEquals(synFromJson(problemString)$foo, expected)
+  checkEquals(synapseClient:::synFromJson(problemString)$foo, expected)
   checkException(fromJSON(problemString))
 }
