@@ -15,7 +15,7 @@ setMethod(
   f = "TypedPropertyStore",
   signature = signature("character", "missing", "missing"),
   definition = function(file){
-    json <- synFromJson(file=file)
+    json <- synFromJson(readFile(file))
     TypedPropertyStore(json = json)
   }
 )

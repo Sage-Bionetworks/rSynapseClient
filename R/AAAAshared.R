@@ -40,7 +40,7 @@ readSchema <- function(name, path) {
   if(!file.exists(fullPath))
     stop(sprintf("Could not find file: %s for entity: %s", fullPath, name))
   
-  schema <- synFromJson(file=fullPath)
+  schema <- synFromJson(synapseClient:::readFile(fullPath))
   schema
 }
 
