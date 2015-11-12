@@ -5,16 +5,7 @@
 # Author: brucehoff		
 #########################################################################
 
-synFromJson<-function(content) {
-	result<-try(fromJSON(content, method="R", unexpected.escape="skip"), silent=TRUE)
-	if (class(result)=="try-error") {
-		cleanedContent<-gsub("\\/", "/", content, fixed=TRUE)
-		fromJSON(cleanedContent, method="R", unexpected.escape="skip")		
-	}
-}
-
 readSchema <- function(name, path) {
-  
   # remove the following when SYNR-841 is done
   if (name=="org.sagebionetworks.repo.model.file.UploadType") {
     return(list(type="string", enum=c("S3", "SFTP", "HTTPS")))
@@ -26,7 +17,6 @@ readSchema <- function(name, path) {
 		return(list(type="string", enum=c("NOT_FOUND", "UNAUTHORIZED", "DUPLICATE", "EXCEEDS_SIZE_LIMIT", "UNKNOWN_ERROR")))
 	}
   
-  
   file <- sprintf("%s.json", gsub("[\\.]", "/", name))
   
   fullPath <- file.path(path,file)
@@ -34,7 +24,7 @@ readSchema <- function(name, path) {
   if(!file.exists(fullPath))
     stop(sprintf("Could not find file: %s for entity: %s", fullPath, name))
   
-  schema <- synFromJson(synapseClient:::readFile(fullPath))
+	schema <- fromJSON(file=fullPath, method="R", unexpected.escape="skip")
   schema
 }
 

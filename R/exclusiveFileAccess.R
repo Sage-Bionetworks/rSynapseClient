@@ -49,7 +49,7 @@ unlockFile<-function(filePath) {
 # return content of file
 readFile<-function(filePath) {
   connection<-file(filePath)
-  result<-paste(readLines(connection), collapse="\n")
+  result<-paste(readLines(connection, warn=FALSE), collapse="\n")
   close(connection)
   result
 }
