@@ -20,3 +20,8 @@ unitTest_ProblemString <- function(){
   checkEquals(synapseClient:::synFromJson(problemString)$foo, expected)
   checkException(fromJSON(problemString))
 }
+
+unitTest_synFromJson<-function() {
+	checkEquals(list(foo="bar"), synapseClient:::synFromJson("{\"foo\":\"bar\"}"))
+	checkEquals(list(foo="/bar"), synapseClient:::synFromJson("{\"foo\":\"\\/bar\"}"))
+}

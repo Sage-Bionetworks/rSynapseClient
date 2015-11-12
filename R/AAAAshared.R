@@ -6,17 +6,11 @@
 #########################################################################
 
 synFromJson<-function(content) {
-	tryCatch(
-			fromJSON(content, method="R", unexpected.escape="skip"),
-			error=function(e) {
-				if (length(grep("unrecognized escape", e))>0) {
-					cleanedContent<-gsub("\\\\/", content, fixed=TRUE)
-					fromJSON(cleanedContent, method="R", unexpected.escape="skip")
-				} else {
-					stop(e)
-				}
-			}
-	)
+	result<-try(fromJSON(content, method="R", unexpected.escape="skip"), silent=TRUE)
+	if (class(result)=="try-error") {
+		cleanedContent<-gsub("\\/", "/", content, fixed=TRUE)
+		fromJSON(cleanedContent, method="R", unexpected.escape="skip")		
+	}
 }
 
 readSchema <- function(name, path) {
