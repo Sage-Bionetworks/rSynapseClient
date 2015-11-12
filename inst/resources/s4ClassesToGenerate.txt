@@ -75,4 +75,9 @@ TeamSubmissionEligibility	org.sagebionetworks.evaluation.model.TeamSubmissionEli
 Team	org.sagebionetworks.repo.model.Team	false
 Challenge	org.sagebionetworks.repo.model.Challenge	false
 ChallengeTeam	org.sagebionetworks.repo.model.ChallengeTeam	false
-	
+FileHandleAssociation org.sagebionetworks.repo.model.file.FileHandleAssociation false
+FileHandleAssociateType org.sagebionetworks.repo.model.file.FileHandleAssociateType false
+FileDownloadSummary org.sagebionetworks.repo.model.file.FileDownloadSummary false
+Snapshotable org.sagebionetworks.repo.model.Snapshotable false
+BulkFileDownloadResponse org.sagebionetworks.repo.model.file.BulkFileDownloadResponse false
+BulkFileDownloadRequest org.sagebionetworks.repo.model.file.BulkFileDownloadRequest false
