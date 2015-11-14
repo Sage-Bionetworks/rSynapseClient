@@ -121,13 +121,13 @@ getMaxmimumBulkDownloadRequest<-function(fhaList, requestSizeLimit) {
 	if (maximumRequestSize<requestSizeLimit) return(maximumRequest)
 	emptyRequestSize<-requestSize(createBulkDownloadRequest(list()))
 	numFhas<-as.integer((requestSizeLimit-emptyRequestSize)*length(fhaList)/(maximumRequestSize-emptyRequestSize))
-	if (numFhas<1) stop(sprintf("Number of file handles which can be accomodated in a bulk download request is %s", numFhas))
+	if (numFhas<1) stop(sprintf("Number of file handles which can be accommodated in a bulk download request is %s", numFhas))
 	createBulkDownloadRequest(fhaList[1:numFhas])
 }
 
 # returns permanent failures (not to retry)
 downloadTableFileHandles <- function(fhasToDownload) {
-	bulkDownloadRequestBody<-getMaxmimumBulkDownloadRequest(fhasToDownload, 262000)
+	bulkDownloadRequestBody<-getMaxmimumBulkDownloadRequest(fhasToDownload, 260000)
 	result<-synRestPOST('/file/bulk/async/start', bulkDownloadRequestBody, synapseFileServiceEndpoint())
 	asyncJobId <- createS4ObjectFromList(result, "AsyncJobId")
 	bulkAsyncGetUri<-paste0('/file/bulk/async/get/', asyncJobId@token)
