@@ -1,0 +1,18 @@
+---
+title: "Knitting RMarkdown to Synapse"
+date: "`r Sys.Date()`"
+author: "Kenneth Daily (kenneth.daily@sagebase.org)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Knitting RMarkdown to Synapse}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
