@@ -16,3 +16,51 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
+Sharing results is an important part of reproducibile research. RMarkdown documents provide a useful report-generating mechanism that can include analysis code along with descriptions, graphical visualizations, and even interactive components. Here, we describe how to use RMarkdown files with Synapse Wiki pages.
+
+## Knit to a Synapse Wiki page
+
+Using your own RMarkdown file, you can knit this directly to a Project-level Wiki page.
+
+```{r echo=TRUE, eval=FALSE}
+myRmd <- 'path/to/myfile.Rmd'
+whereToKnit <- "syn123456"
+knitfile2synapse(file=myRmd, owner=whereToKnit)
+```
+
+You can also knit to a sub-page of an existing Wiki (can find this using `getWikiHeaders` or looking for the `parentWikiId` in the URL (e.g., in a URL like `https://www.synapse.org/#!Synapse:syn2862345/wiki/72486`, the `parentWikiId` would be `72486`):
+
+```{r}
+knitfile2synapse(file=myRmd, owner=whereToKnit,
+                 parentWikiId='123456')
+```
+
+By default, `knitfile2synapse` will replace the existing Wiki page - previous versions are available in the Wiki page history (available in the Web client). If you want to completely replace the existing Wiki (and remove all history), set `overwrite=TRUE`.
+
+## Knitting to a Folder Wiki
+
+The `knitfile2synapse` function works with any entity type - Projects (described above), Files, or Folders. However, the entity needs to exist before a Wiki can be added:
+
+
+```{r echo=TRUE}
+myFolder <- Folder("New Folder", parentId="syn123456")
+myFolder <- synStore(myFolder)
+knitfile2synapse(file=myRmd, owner=myFolder)
+```
+
+We also provide a convenience function to create a Folder and then knit to it's Wiki:
+
+```{r}
+knitToFolderEntity(file=myRmd, parentId="syn123456", 
+                   folderName="New Folder")
+```
+
+## Knitting to a File Wiki
+
+Similarly, if you want to put the RMarkdown file into Synapse and then knit, it can be performed as above for the Folder - `synStore` the markdown file first, then use `knitfile2synapse`. We provide a convenience function for this as well. `parentId` determines where the markdown file will be uploaded to in Synapse, and `owner` determines where the contents of knitting the Wiki will go. If `owner=NULL`, then the the knitted Wiki is added to the file that was uploaded. This is useful if you would like the file to be uploaded to one place but the results of knitting to another.
+
+```{r}
+storeAndKnitToFileEntity(file=myRmd, 
+                         parentId="syn123456", fileName="My Rmd File",
+                         owner="syn234567")
+```
