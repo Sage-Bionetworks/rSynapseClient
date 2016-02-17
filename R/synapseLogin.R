@@ -26,7 +26,8 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
     if(is.null(apiKey))       apiKey <- ""
     
     credentials <- list(username = username, password = password, 
-                        sessionToken = sessionToken, apiKey = apiKey)
+                        sessionToken = sessionToken, apiKey = apiKey,
+                        configPath = configPath)
     synapseLogout(localOnly=TRUE, silent=TRUE)
     .doAuth(credentials)
   
