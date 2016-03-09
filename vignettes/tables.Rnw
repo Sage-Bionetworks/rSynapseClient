@@ -152,7 +152,7 @@ rm(df)
 \end{verbatim}
 Now we proceed using the created file only:
 \begin{verbatim}
-tcresult<-as.tableColumns(df)
+tcresult<-as.tableColumns(file)
 cols<-tcresult$tableColumns
 fileHandleId<-tcresult$fileHandleId
 schema<-TableSchema(name="aschema", parent=projectId, columns=cols)

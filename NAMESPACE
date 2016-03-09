@@ -60,6 +60,7 @@ export(
   "synTableQuery",
   "synDeleteRows",
   "synDownloadTableFile",
+  "synDownloadTableColumns",
   "synGetColumns",
   "synAddColumn",
   "synRemoveColumn"

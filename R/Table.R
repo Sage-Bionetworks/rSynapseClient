@@ -364,14 +364,14 @@ uploadFileHandleIdToTable<-function(fileHandleId, tableId,
   responseBody@rowsProcessed
 }
 
-trackProgress<-function(checkCompleteUri, verbose=TRUE) {
+trackProgress<-function(checkCompleteUri, verbose=TRUE, endpoint="REPO") {
   asyncJobState<-"PROCESSING"
   startTime<-Sys.time()
   maxWaitSeconds<-60
   lastProgressCurrent<-as.integer(-1)
   while (asyncJobState=="PROCESSING") {
     curlHandle=getCurlHandle()
-    checkResultAsList<-synapseGet(uri=checkCompleteUri, curlHandle=curlHandle, checkHttpStatus=FALSE)
+    checkResultAsList<-synapseGet(uri=checkCompleteUri, endpoint=synapseServiceEndpoint(endpoint), curlHandle=curlHandle, checkHttpStatus=FALSE)
     statusCode<-getStatusCode(curlHandle)
     if (statusCode==202) {
       if (is.null(checkResultAsList$progressCurrent)) {
