@@ -89,12 +89,10 @@ synDownloadTableColumns <- function(synTable, tableColumns, verbose=FALSE) {
 		# download as many as possible.  No guarantee that all requested files
 	  # will be downloaded.
 		dtfResult<-downloadTableFileHandles(fhasToDownload)
-		permanentFailuresBatch<-dtfResult$permanentFailuresBatch
 		timeProfile<-c(timeProfile, dtfResult$timeProfile)
 		# collect the permanent failures, both for reporting and to avoid retrying
-		permanentFailures<-append(permanentFailures, permanentFailuresBatch)
+		permanentFailures<-append(permanentFailures, dtfResult$permanentFailures)
 	}
-	
 	
 	for (x in names(permanentFailures)) {
 		cat(paste0("filehandle", x, " failed:  ", permanentFailures[[x]], "\n"))
