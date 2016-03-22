@@ -9,7 +9,9 @@
 ###############################################################################
 
 
-synDownloadTableColumns <- function(synTable, tableColumns) {
+synDownloadTableColumns <- function(synTable, tableColumns, verbose=FALSE) {
+	timeProfile<-timePoint("start")
+	
 	if(!class(synTable) == "TableDataFrame") {
 		stop("synTable must be a TableDataFrame object returned from synTableQuery")
 	}
@@ -86,7 +88,9 @@ synDownloadTableColumns <- function(synTable, tableColumns) {
 		
 		# download as many as possible.  No guarantee that all requested files
 	  # will be downloaded.
-		permanentFailuresBatch<-downloadTableFileHandles(fhasToDownload)
+		dtfResult<-downloadTableFileHandles(fhasToDownload)
+		permanentFailuresBatch<-dtfResult$permanentFailuresBatch
+		timeProfile<-c(timeProfile, dtfResult$timeProfile)
 		# collect the permanent failures, both for reporting and to avoid retrying
 		permanentFailures<-append(permanentFailures, permanentFailuresBatch)
 	}
@@ -96,7 +100,21 @@ synDownloadTableColumns <- function(synTable, tableColumns) {
 		cat(paste0("filehandle", x, " failed:  ", permanentFailures[[x]], "\n"))
 	}
 	
+
+	timeProfile<-c(timeProfile, timePoint("end"))
+	if (verbose) {
+		df<-NULL
+		df$names<-names(timeProfile)
+		df$times<-timeProfile
+		write.csv(df, row.names=F)
+	}
 	trackRequested
+}
+
+timePoint<-function(label) {
+	result<-Sys.time()
+	names(result)<-label
+	result
 }
 
 createBulkDownloadRequest<-function(fhaList) {
@@ -127,11 +145,15 @@ getMaxmimumBulkDownloadRequest<-function(fhaList, requestSizeLimit) {
 
 # returns permanent failures (not to retry)
 downloadTableFileHandles <- function(fhasToDownload) {
+	timeProfile<-timePoint("start dtfh")
+	
 	bulkDownloadRequestBody<-getMaxmimumBulkDownloadRequest(fhasToDownload, 260000)
 	result<-synRestPOST('/file/bulk/async/start', bulkDownloadRequestBody, synapseFileServiceEndpoint())
 	asyncJobId <- createS4ObjectFromList(result, "AsyncJobId")
 	bulkAsyncGetUri<-paste0('/file/bulk/async/get/', asyncJobId@token)
+	timeProfile<-c(timeProfile, timePoint("before 'track progress'"))
 	responseBodyAsList <- trackProgress(bulkAsyncGetUri, endpoint="FILE")
+	timeProfile<-c(timeProfile, timePoint("after 'track progress'"))
 	responseBody <- createS4ObjectFromList(responseBodyAsList, "BulkFileDownloadResponse")
 	
 	## CHECK FOR FAILURES
@@ -161,9 +183,11 @@ downloadTableFileHandles <- function(fhasToDownload) {
 		}
 	}
 	
+	timeProfile<-c(timeProfile, timePoint("before 'downloadFromService'"))
 	## DOWNLOAD THE ZIP FILE
 	downloadUri <- sprintf("/fileHandle/%s/url?redirect=FALSE", responseBody@resultZipFileHandleId)
 	zipFilePath <- downloadFromService(downloadUri, "FILE")
+	timeProfile<-c(timeProfile, timePoint("after 'downloadFromService'"))
 	
 	## CREATE A TEMPORARY FOLDER TO EXPAND ZIP INTO
 	zipPath <- tempfile(pattern="zipPath")
@@ -204,6 +228,7 @@ downloadTableFileHandles <- function(fhasToDownload) {
 		addToCacheMap(names(cachedPath)[i], cachedPath[[i]])
 	}
 	
-	permanentFailures
+	timeProfile<-c(timeProfile, timePoint("end dtfh"))
+	list(permanentFailures=permanentFailures, timeProfile=timeProfile)
 }
 
