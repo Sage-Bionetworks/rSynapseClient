@@ -87,7 +87,7 @@ unitTest_synDownloadTableColumnsIllegalFile<-function() {
 						synapseClient:::addToCacheMap(fhId, filePath)
 					}
 				}
-				permanentFailures
+				list(permanentFailures=permanentFailures)
 			}
 	)
 	downloadResult<-synDownloadTableColumns(table, "files")
