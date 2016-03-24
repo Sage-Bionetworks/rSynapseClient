@@ -37,12 +37,11 @@
   
   opts$noprogress <- 0L
   
+	# opts<-c(opts, "-C -")
   h = basicTextGatherer()
   curlPerform(URL=url, writefunction=writeFunction, headerfunction=h$update, 
 			writedata=ext, .opts = opts, curl = curlHandle)	
 	
-	
-  .checkCurlResponse(object=curlHandle, logErrorToSynapse=TRUE)
   fileName<-fileNameFromHeaders(h$value())
   if (is.null(fileName)) {
 	  parsedUrl<-.ParsedUrl(url)
