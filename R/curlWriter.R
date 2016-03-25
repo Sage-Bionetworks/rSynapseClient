@@ -12,8 +12,6 @@
   if (!file.exists(dir) || !file.info(dir)$isdir)
     stop("'dirname(filename)' does not exist or is not a directory")
   filename <- file.path(normalizePath(dir), basename(filename))
-  if (file.exists(filename))
-    stop("'filename' must not already exist")
   
   .Call("writer_open", filename)
 }
@@ -34,7 +32,11 @@
   
   opts$noprogress <- 0L
   
-	# opts<-c(opts, "-C -")
+	if (file.exists(destfile)) {
+		filesize<-file.info(destfile)$size
+		opts<-c(opts, range=sprintf("%s-", filesize))
+		
+	}
   h = basicTextGatherer()
   curlPerform(URL=url, writefunction=writeFunction, headerfunction=h$update, 
 			writedata=ext, .opts = opts, curl = curlHandle)	
