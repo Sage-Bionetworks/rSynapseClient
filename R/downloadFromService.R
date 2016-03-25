@@ -22,7 +22,7 @@
 downloadFromService<-function(
   downloadUri, 
   endpointName="REPO", 
-  destdir=tempdir(), 
+  destdir, 
   extraRetryStatusCodes=NULL) {
   # check own version, stopping if blacklisted
   checkBlackList()
