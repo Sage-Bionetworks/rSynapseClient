@@ -28,7 +28,7 @@
 # Return the path to the downloaded file as well as the file name (either
 # from the Content-Disposition header or the tail of the URL).
 .curlWriterDownload <-
-  function(url, destdir=tempdir(), curlHandle = getCurlHandle(), writeFunction=.getCache('curlWriter'), opts = .getCache("curlOpts"))
+  function(url, destdir=tempdir(), curlHandle, writeFunction=.getCache('curlWriter'), opts = .getCache("curlOpts"))
 {
   destfile<-tempfile(tmpdir=destdir)
   
