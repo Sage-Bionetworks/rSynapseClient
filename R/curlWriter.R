@@ -12,8 +12,6 @@
   if (!file.exists(dir) || !file.info(dir)$isdir)
     stop("'dirname(filename)' does not exist or is not a directory")
   filename <- file.path(normalizePath(dir), basename(filename))
-  if (file.exists(filename))
-    stop("'filename' must not already exist")
   
   .Call("writer_open", filename)
 }
@@ -24,31 +22,31 @@
   .Call("writer_close", ext)
 }
 
-# Download from the given URL to a temporary file in the given directory. 
-# Return the path to the downloaded file as well as the file name (either
-# from the Content-Disposition header or the tail of the URL).
+# Download from the given URL to the given temporary file. 
+# Return the file name (either from the Content-Disposition header or the tail of the URL).
 .curlWriterDownload <-
-  function(url, destdir=tempdir(), curlHandle = getCurlHandle(), writeFunction=.getCache('curlWriter'), opts = .getCache("curlOpts"))
+  function(url, destfile, curlHandle, writeFunction=.getCache('curlWriter'), opts = .getCache("curlOpts"))
 {
-  destfile<-tempfile(tmpdir=destdir)
-  
   ext <- .curlWriterOpen(destfile)
   on.exit(.curlWriterClose(ext))
   
   opts$noprogress <- 0L
   
+	if (file.exists(destfile)) {
+		filesize<-file.info(destfile)$size
+		opts<-c(opts, range=sprintf("%s-", filesize))
+		
+	}
   h = basicTextGatherer()
   curlPerform(URL=url, writefunction=writeFunction, headerfunction=h$update, 
 			writedata=ext, .opts = opts, curl = curlHandle)	
 	
-	
-  .checkCurlResponse(object=curlHandle, logErrorToSynapse=TRUE)
   fileName<-fileNameFromHeaders(h$value())
   if (is.null(fileName)) {
 	  parsedUrl<-.ParsedUrl(url)
 	  fileName<-parsedUrl@file
   }
-  list(downloadedFile=destfile, fileName=fileName)
+  fileName
 }
 
 # looks for a header of the form:

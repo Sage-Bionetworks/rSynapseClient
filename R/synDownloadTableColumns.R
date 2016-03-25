@@ -180,11 +180,11 @@ downloadTableFileHandles <- function(fhasToDownload) {
 			return(permanentFailures)
 		}
 	}
-	
+
 	timeProfile<-c(timeProfile, timePoint("before 'downloadFromService'"))
 	## DOWNLOAD THE ZIP FILE
 	downloadUri <- sprintf("/fileHandle/%s/url?redirect=FALSE", responseBody@resultZipFileHandleId)
-	zipFilePath <- downloadFromService(downloadUri, "FILE")
+	zipFilePath <- downloadFromService(downloadUri=downloadUri, endpointName="FILE", destdir=synapseCacheDir())
 	timeProfile<-c(timeProfile, timePoint("after 'downloadFromService'"))
 	
 	## CREATE A TEMPORARY FOLDER TO EXPAND ZIP INTO

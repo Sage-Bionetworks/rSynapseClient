@@ -78,10 +78,9 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
               httpheader=headers, # the headers
               curl=curlHandle, 
               debugfunction=NULL,
-			  .opts=.getCache("curlOpts")
-            )
+			  			.opts=.getCache("curlOpts"))
             # return the http response
-			httpResponse$body
+						httpResponse$body
           }, 
           curlHandle,
           extraRetryStatusCodes=400 #SYNR-967
