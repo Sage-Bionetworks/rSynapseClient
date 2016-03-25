@@ -30,6 +30,7 @@ downloadFromService<-function(
 	if (!file.exists(destdir)){
 		dir.create(destdir, recursive=TRUE)
 	}
+	destfile<-tempfile(tmpdir=destdir)
 	
 	curlHandle<-getCurlHandle()
 	
@@ -64,12 +65,13 @@ downloadFromService<-function(
 		fcnResult<-try({
 					# now download, in a 'protocol-specific' way
 					if (isCurlDownload(url)) {
-						result<-.curlWriterDownload(url=url, destdir=destdir, curlHandle = curlHandle, opts = opts)
+						result<-.curlWriterDownload(url=url, destfile=destfile, curlHandle = curlHandle, opts = opts)
 					} else if (isSftpDownload(url)) {
-						result<-downloadSftpFile(url, destdir)
+						result<-downloadSftpFile(url, destfile)
 					} else {
 						stop(sprintf("Unsupported protocol for url: %s", url))
 					}
+					result
 				}, silent=T)
 		
 		if (isCurlDownload(url)) {
@@ -79,7 +81,7 @@ downloadFromService<-function(
 			} else {
 				httpStatus<-.getCurlInfo(curlHandle)$response.code
 				# return true if status is >=500 or in the list of statuses to retry
-				httpStatus>=500 || any(httpStatus==extraRetryStatusCodes)
+				isRetryable<-httpStatus>=500 || any(httpStatus==extraRetryStatusCodes)
 			}
 		} else if (isSftpDownload(url)) {
 			isRetryable<-is(fcnResult, "try-error")
@@ -110,14 +112,14 @@ downloadFromService<-function(
 			stop(fcnResult[[1]])
 		} else {
 			.checkCurlResponse(object=curlHandle)
-			fcnResult
+			list(downloadedFile=destfile, fileName=fcnResult)
 		}
 	} else if (isSftpDownload(url)) {
 		if (is(fcnResult, "try-error")) {
 			.logErrorToSynapse("", fcnResult[[1]])
 			stop(fcnResult[[1]])
 		} else {
-			fcnResult
+			list(downloadedFile=destfile, fileName=fcnResult)
 		}
 	} else {
 		stop(sprintf("Unsupported protocol for url: %s", url))
@@ -125,21 +127,20 @@ downloadFromService<-function(
 }
 
 downloadSftpFile  <- 
-		function (url, destdir)
+		function (url, filePath)
 {
 	if (!(RsftpPackageIsAvailable() && require("Rsftp"))) 
 		stop("File is hosted on SFTP server but Rsftp package not installed/available.  Please install Rsftp and try again.")
 	parsedUrl<-.ParsedUrl(url)
 	credentials<-getCredentialsForHost(parsedUrl)
 	urlDecodedPath<-URLdecode(parsedUrl@path)
-	filePath<-tempfile(tmpdir=destdir)
 	success<-sftpDownload(parsedUrl@host, credentials$username, credentials$password, urlDecodedPath, filePath)
 	if (!success) {
 		message<-sprintf("Failed to download %s from %s", urlDecodedPath, parsedUrl@host)
 		logErrorToSynapse(label=sprintf("sftp get %s", parsedUrl@host), message=)
 		stop(message)
 	}
-	list(downloadedFile=filePath, fileName=URLdecode(parsedUrl@file))
+	URLdecode(parsedUrl@file)
 }
 
 isCurlDownload<-function(url) {
