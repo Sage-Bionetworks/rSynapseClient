@@ -39,7 +39,7 @@ createTableSchema<-function(projectId, tableColumns) {
 integrationTestDownloadTableColumns<-function() {
 	project<-synapseClient:::.getCache("testProject")
 	
-	tc1 <- TableColumn(name="stringType", columnType="STRING", enumValues=c("one", "two", "three"))
+	tc1 <- TableColumn(name="stringType", columnType="STRING", enumValues=c("one", "two", "three", "four"))
 	tc1 <- synStore(tc1)
 	tc2 <- TableColumn(name="fileHandleIdType", columnType="FILEHANDLEID")
 	tc2 <- synStore(tc2)
