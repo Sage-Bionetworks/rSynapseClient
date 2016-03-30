@@ -68,8 +68,8 @@ integrationTestDownloadTableColumns<-function() {
 	}
 	
 	dataFrame<-data.frame(
-			stringType=c("one", "two"), 
-			fileHandleIdType=fileHandleIds
+			stringType=c("one", "two", "three", "four"), 
+			fileHandleIdType=c(fileHandleIds, fileHandleIds) # test the case where fhids occur multiple times in a table
 	)
 	
 	myTable <- Table(tschema, values=dataFrame)

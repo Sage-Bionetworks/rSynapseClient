@@ -8,6 +8,9 @@
 # Author: Brian Bot
 ###############################################################################
 
+# this is the maximum number of files which will be requested to be zipped
+# in any single batch
+max_batch_size<-2700
 
 synDownloadTableColumns <- function(synTable, tableColumns, verbose=FALSE) {
 	timeProfile<-timePoint("start")
@@ -35,22 +38,24 @@ synDownloadTableColumns <- function(synTable, tableColumns, verbose=FALSE) {
 	
 	# list the file handle Ids in the specified columns, in the form
 	# of FileHandleAssociations
-	fhasInTable <- lapply(as.list(tableColumns), function(i) {
+	fileHandleIdsInTable <- lapply(as.list(tableColumns), function(i) {
 				lapply(as.list(synTable@values[[i]]), function(j) {
 							if(is.na(j)) {
 								NULL
 							} else{
-								FileHandleAssociation(associateObjectType="TableEntity", 
-										fileHandleId=j, 
-										associateObjectId=tableId)
+								j
 							}
 						})
 			})
-	fhasInTable <- unlist(fhasInTable, recursive=FALSE)
-	fhasInTable <- fhasInTable[ !sapply(fhasInTable, is.null) ]
+	fileHandleIdsInTable <- fileHandleIdsInTable[ !sapply(fileHandleIdsInTable, is.null) ]
+	fileHandleIdsInTable <- unique(unlist(fileHandleIdsInTable, recursive=FALSE))
 	
-	# this is a list of just the file handle Ids
-	fileHandleIdsInTable <- sapply(fhasInTable, "slot", "fileHandleId")
+	fhasInTable <- lapply(fileHandleIdsInTable, function(j) {
+								FileHandleAssociation(associateObjectType="TableEntity", 
+										fileHandleId=j, 
+										associateObjectId=tableId)
+						})
+	fhasInTable <- unlist(fhasInTable, recursive=FALSE)
 	
 	permanentFailures<-list() # this map has file handle Ids for names, and failure messages for values
 	MAX_DOWNLOAD_TRIES<-100
@@ -92,6 +97,14 @@ synDownloadTableColumns <- function(synTable, tableColumns, verbose=FALSE) {
 		timeProfile<-c(timeProfile, dtfResult$timeProfile)
 		# collect the permanent failures, both for reporting and to avoid retrying
 		permanentFailures<-append(permanentFailures, dtfResult$permanentFailures)
+		
+		if (verbose) {
+			df<-NULL
+			df$names<-names(timeProfile)
+			df$times<-timeProfile
+			write.csv(df, row.names=F)
+			cat("\n")
+		}
 	}
 	
 	for (x in names(permanentFailures)) {
@@ -218,7 +231,9 @@ downloadTableFileHandles <- function(fhasToDownload) {
 		stop("Failed to copy all files.")
 	} else{
 		unlink(zipPath)
+		unlink(zipFilePath$downloadedFile)
 	}
+	
 	cachedPath <- as.list(cachedPath)
 	names(cachedPath) <- cachedFilehandle
 	
