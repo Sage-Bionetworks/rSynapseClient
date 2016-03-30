@@ -10,6 +10,7 @@ synFromJson<-function(content) {
 	result<-try(fromJSON(content, method="R", unexpected.escape="skip"), silent=TRUE)
 	if (class(result)=="try-error") {
 		cleanedContent<-gsub("\\/", "/", content, fixed=TRUE)
+		cleanedContent<-gsub("\\_", "_", cleanedContent, fixed=TRUE)
 		fromJSON(cleanedContent, method="R", unexpected.escape="skip")		
 	} else {
 		result
