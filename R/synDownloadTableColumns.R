@@ -47,15 +47,16 @@ synDownloadTableColumns <- function(synTable, tableColumns, verbose=FALSE) {
 							}
 						})
 			})
+	
+	fileHandleIdsInTable<-unlist(fileHandleIdsInTable, recursive=FALSE)
 	fileHandleIdsInTable <- fileHandleIdsInTable[ !sapply(fileHandleIdsInTable, is.null) ]
-	fileHandleIdsInTable <- unique(unlist(fileHandleIdsInTable, recursive=FALSE))
+	fileHandleIdsInTable <- unique(fileHandleIdsInTable)
 	
 	fhasInTable <- lapply(fileHandleIdsInTable, function(j) {
-								FileHandleAssociation(associateObjectType="TableEntity", 
+								synapseClient:::FileHandleAssociation(associateObjectType="TableEntity", 
 										fileHandleId=j, 
 										associateObjectId=tableId)
 						})
-	fhasInTable <- unlist(fhasInTable, recursive=FALSE)
 	
 	permanentFailures<-list() # this map has file handle Ids for names, and failure messages for values
 	MAX_DOWNLOAD_TRIES<-100
