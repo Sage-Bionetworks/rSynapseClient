@@ -40,7 +40,7 @@ kSynapseRAnnotationTypeMap <- list(
   .setCache("downloadSuffix", "unpacked")
   .setCache("debug", FALSE)
   # this is the maximum number of times a web request will be tried when there is a temporary outage.  Must be >0
-  .setCache("webRequestMaxTries", 10)
+  .setCache("webRequestMaxTries", 12)
   .setCache("webRequestMaxRedirects", 3)
 
   # Fetch endpoints from the config file

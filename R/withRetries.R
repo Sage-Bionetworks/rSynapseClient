@@ -30,7 +30,7 @@ withRetries<-function(fcn,
 				}
 				message("withRetries: error encountered: ", reportableResult)
 			}
-			Sys.sleep(backoff)
+			if (retry<maxTries) Sys.sleep(backoff)
 			backoff <- backoff * BACKOFF_MULTIPLIER
 		} else {
 			break
