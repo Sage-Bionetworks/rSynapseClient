@@ -179,17 +179,6 @@ downloadTableFileHandles <- function(fhasToDownload) {
 	timeProfile<-c(timeProfile, timePoint("after 'track progress'"))
 	responseBody <- createS4ObjectFromList(responseBodyAsList, "BulkFileDownloadResponse")
 	
-	## CHECK FOR FAILURES
-	filehandles <- sapply(responseBody@fileSummary@content, function(x) {
-				if(x@status == "SUCCESS") {
-					tmp <-list(x@zipEntryName)
-					names(tmp) <- x@fileHandleId
-					tmp
-				} else {
-					NULL
-				}
-	})
-	
 	# by 'permanent' we mean those failure that can't be handled by retrying
   permanentFailures<-list()
   for (x in responseBody@fileSummary@content) {
@@ -219,10 +208,6 @@ downloadTableFileHandles <- function(fhasToDownload) {
 	}
 	unzippedFilePaths <- unzip(zipFilePath$downloadedFile, exdir=zipPath)
 	names(unzippedFilePaths) <- basename(dirname(unzippedFilePaths))
-	
-	if(!all(sapply(filehandles, function(x) {is.null(x) || any(grepl(x, unzippedFilePaths))}))) {
-		stop("Some file handles are missing from downloaded zip file.")
-	}
 	
 	newPaths <- sapply(as.list(names(unzippedFilePaths)), defaultDownloadLocation)
 	createSuccess <- sapply(as.list(newPaths), function(x) {
