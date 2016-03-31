@@ -1,7 +1,6 @@
 # Download the multiple file attachments in a Synapse Table,
 # avoiding downloading files already in the local file cache.
-# Returns a vector or list (caller can't depend on which it is)
-# whose names are the fileHandle IDs found in the
+# Returns a list whose names are the fileHandle IDs found in the
 # specified columns of the given Table and each value of which is
 # the path to the requested file or NULL if the file was not able
 # to be downloaded.
@@ -152,7 +151,7 @@ synDownloadTableColumns <- function(synTable, tableColumns, verbose=FALSE) {
 		df$times<-timeProfile
 		write.csv(df, row.names=F)
 	}
-	# at last, convert the list to a character vector
+
 	cumulativeDownloadResults
 }
 
