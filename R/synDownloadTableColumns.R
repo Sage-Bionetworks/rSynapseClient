@@ -117,18 +117,7 @@ synDownloadTableColumns <- function(synTable, tableColumns, verbose=FALSE) {
 		permanentFailures<-append(permanentFailures, dtfResult$permanentFailures)
 		
 		# now merge the successes back into the cumulative results
-		cumulativeDownloadResults<-lapply(cumulativeDownloadResults,
-				function(x) {
-					if (is.null(x)) {
-						if (any(names(x)==names(dtfResult$successes))) {
-							x<-dtfResult$successes[[names(x)]]
-						} else {
-							x
-						}
-					} else {
-						x
-					}
-		})
+		cumulativeDownloadResults[unlist(names(dtfResult$successes))]<-dtfResult$successes
 		
 		if (verbose) {
 			df<-NULL
