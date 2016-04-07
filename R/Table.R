@@ -137,7 +137,7 @@ parseRowAndVersion<-function(x) {
   parsedLengths<-sapply(X=parsed, FUN=length)
   lengthNotTwo<-parsedLengths!=2
   if (any(lengthNotTwo)) {
-    stop(sprintf("Invalid row labels as position(s) %s", paste(which(lengthNotTwo), collapse=",")))
+    stop(sprintf("Invalid row labels at position(s) %s", paste(which(lengthNotTwo), collapse=",")))
   }
   parsedAsInteger<-sapply(X=parsed, FUN=as.integer)
   rowHasNa<-apply(X=parsedAsInteger, MARGIN=2, FUN=function(x){any(is.na(x))})
@@ -192,9 +192,9 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   # use an anonymous 'file()' connection to collect output."
   filePath<-tempfile()
   writeDataFrameToCSV(dataFrameToWrite, filePath)
-  s3FileHandle<-chunkedUploadFile(filePath)
+  s3FileHandleId<-chunkedUploadFile(filePath)
   
-  rowsProcessed<-uploadFileHandleIdToTable(as.integer(s3FileHandle$id), tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
+  rowsProcessed<-uploadFileHandleIdToTable(as.integer(s3FileHandleId), tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
 }
 
 # returns the Synapse types which can hold the given R type, with the first one being the preferred
@@ -286,11 +286,11 @@ setMethod(
     retrieveData=FALSE, 
     verbose=TRUE,
     filePath=NULL) {
-    s3FileHandle<-chunkedUploadFile(entity@filePath)
+    s3FileHandleId<-chunkedUploadFile(entity@filePath)
     synStore(entity=
         Table(
           tableSchema=entity@schema, 
-          values=as.integer(s3FileHandle$id),
+          values=as.integer(s3FileHandleId),
           linesToSkip=entity@linesToSkip,
           quoteCharacter=entity@quoteCharacter,
           isFirstLineHeader=entity@isFirstLineHeader,

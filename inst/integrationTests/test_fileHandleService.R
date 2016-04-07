@@ -8,13 +8,11 @@ integrationTestFileHandle <-
     connection<-file(filePath)
     writeChar("this is a test", connection, eos=NULL)
     close(connection)  
-    fileHandle<-synapseClient:::chunkedUploadFile(filePath)
-    checkEquals(basename(filePath), fileHandle$fileName)
-    checkEquals(synapseClient:::getMimeTypeForFile(basename(filePath)), fileHandle$contentType)
+    fileHandleId<-synapseClient:::chunkedUploadFile(filePath)
     # now try to retrieve the file handle given the id
-    handleUri<-sprintf("/fileHandle/%s", fileHandle$id)
-    fileHandle2<-synapseClient:::synapseGet(handleUri, endpoint=synapseFileServiceEndpoint())
-    checkEquals(fileHandle, fileHandle2)
+    handleUri<-sprintf("/fileHandle/%s", fileHandleIdd)
+    fileHandleId2<-synapseClient:::synapseGet(handleUri, endpoint=synapseFileServiceEndpoint())
+    checkEquals(fileHandleId, fileHandleId2)
     # now delete the handle
     synapseClient:::synapseDelete(handleUri, endpoint=synapseFileServiceEndpoint())
     # now we should not be able to get the handle

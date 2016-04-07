@@ -19,9 +19,9 @@ setMethod(
   definition = function(source, linesToSkip=as.integer(0), quoteCharacter=character(0),
     escapeCharacter=character(0), separator=character(0), lineEnd=character(0), doFullFileScan=TRUE) {
     filePath<-source
-    s3FileHandle<-chunkedUploadFile(filePath)
+    s3FileHandleId<-chunkedUploadFile(filePath)
     request<-UploadToTablePreviewRequest(
-      uploadFileHandleId=as.character(s3FileHandle$id),
+      uploadFileHandleId=as.character(s3FileHandleId),
       linesToSkip=linesToSkip,
       doFullFileScan=doFullFileScan,
       csvTableDescriptor=CsvTableDescriptor(

@@ -58,11 +58,11 @@ integrationTestDownloadTableColumns<-function() {
 		connection<-file(filePath)
 		writeChar(sprintf("this is a test %s", sample(999999999, 1)), connection, eos=NULL)
 		close(connection)  
-		fileHandle<-synapseClient:::chunkedUploadFile(filePath)
-		checkTrue(!is.null(fileHandle$id))
-		fileHandleIds<-c(fileHandleIds, fileHandle$id)
+		fileHandleId<-synapseClient:::chunkedUploadFile(filePath)
+		checkTrue(!is.null(fileHandleId))
+		fileHandleIds<-c(fileHandleIds, fileHandleId)
 		if (i==2) {
-			fileHandleToDelete<-fileHandle$id
+			fileHandleToDelete<-fileHandleId
 		}
 		md5s<-c(md5s, as.character(tools::md5sum(filePath)))
 	}

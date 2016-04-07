@@ -30,14 +30,14 @@ integrationTestEntityFileAccess <-
     writeChar("this is a test", connection, eos=NULL)
     close(connection)  
     
-    fileHandle<-synapseClient:::chunkedUploadFile(filePath)
+    fileHandleId<-synapseClient:::chunkedUploadFile(filePath)
     
     # create an entity with the file
     entity <- list(
       concreteType="org.sagebionetworks.repo.model.FileEntity", # doesn't work for 'Data'
       name="foo", 
       parentId=propertyValue(project, "id"), 
-      dataFileHandleId=fileHandle$id)
+      dataFileHandleId=fileHandleId)
     entity <- synapseClient:::synapsePost("/entity", entity)
             
     # download the file
