@@ -34,6 +34,7 @@ unitTest_synDownloadTableColumnsHappyPath<-function() {
 				for (fha in fhasToDownload) {
 					fhId<-fha@fileHandleId
 					filePath<-createFile(synapseClient:::defaultDownloadLocation(fhId))
+					filePath<-normalizePath(filePath, winslash="/")
 					synapseClient:::addToCacheMap(fhId, filePath)
 					successes[[fhId]]<-filePath
 				}
@@ -69,6 +70,7 @@ unitTest_synDownloadTableColumnsIllegalFile<-function() {
 						permanentFailures[[fhId]]<-"NOT FOUND"
 					} else {
 						filePath<-createFile(synapseClient:::defaultDownloadLocation(fhId))
+						filePath<-normalizePath(filePath, winslash="/")
 						synapseClient:::addToCacheMap(fhId, filePath)
 						successes[[fhId]]<-filePath
 					}
@@ -100,7 +102,7 @@ unitTest_synDownloadTableColumnsCachedFiles<-function() {
 	
 	# let's say one file is already downloaded
 	filePath<-createFile(synapseClient:::defaultDownloadLocation(fileHandleIds[3]))
-	synapseClient:::addToCacheMap(fileHandleIds[3], filePath)
+	synapseClient:::addToCacheMap(fileHandleIds[3], normalizePath(filePath, winslash="/"))
 	
 	synapseClient:::.mock("downloadTableFileHandles",
 			function(fhasToDownload) {
@@ -108,6 +110,7 @@ unitTest_synDownloadTableColumnsCachedFiles<-function() {
 				for (fha in fhasToDownload) {
 					fhId<-fha@fileHandleId
 					filePath<-createFile(synapseClient:::defaultDownloadLocation(fhId))
+					filePath<-normalizePath(filePath, winslash="/")
 					synapseClient:::addToCacheMap(fhId, filePath)
 					successes[[fhId]]<-filePath
 				}
@@ -144,6 +147,7 @@ unitTest_synDownloadTableColumnsTemporaryFailure<-function() {
 						# this simulates a file not being downloaded because either the zip file or the request itself was too big
 					} else {
 						filePath<-createFile(synapseClient:::defaultDownloadLocation(fhId))
+						filePath<-normalizePath(filePath, winslash="/")
 						synapseClient:::addToCacheMap(fhId, filePath)
 						successes[[fhId]]<-filePath
 					}
