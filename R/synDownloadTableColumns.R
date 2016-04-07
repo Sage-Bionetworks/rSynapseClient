@@ -209,7 +209,7 @@ downloadTableFileHandles <- function(fhasToDownload) {
 		stop("Couldn't create cache directories.")
 	}
 	
-	cachedPath <- file.path(normalizePath(newPaths, winslash="/"), basename(unzippedFilePaths))
+	cachedPath <- file.path(newPaths, basename(unzippedFilePaths))
 	cachedFilehandle <- basename(dirname(cachedPath))
 	copySuccess <- file.copy(unzippedFilePaths, cachedPath, overwrite = TRUE)
 	if(!all(copySuccess)) {
