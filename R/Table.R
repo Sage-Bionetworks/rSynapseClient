@@ -192,9 +192,9 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   # use an anonymous 'file()' connection to collect output."
   filePath<-tempfile()
   writeDataFrameToCSV(dataFrameToWrite, filePath)
-  s3FileHandleId<-chunkedUploadFile(filePath)
+  s3FileHandle<-chunkedUploadFile(filePath)
   
-  rowsProcessed<-uploadFileHandleIdToTable(as.integer(s3FileHandleId), tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
+  rowsProcessed<-uploadFileHandleIdToTable(as.integer(s3FileHandle$id), tableId=propertyValue(tableSchema, "id"), verbose=verbose, updateEtag=updateEtag)
 }
 
 # returns the Synapse types which can hold the given R type, with the first one being the preferred
@@ -286,11 +286,11 @@ setMethod(
     retrieveData=FALSE, 
     verbose=TRUE,
     filePath=NULL) {
-    s3FileHandleId<-chunkedUploadFile(entity@filePath)
+    s3FileHandle<-chunkedUploadFile(entity@filePath)
     synStore(entity=
         Table(
           tableSchema=entity@schema, 
-          values=as.integer(s3FileHandleId),
+          values=as.integer(s3FileHandle$id),
           linesToSkip=entity@linesToSkip,
           quoteCharacter=entity@quoteCharacter,
           isFirstLineHeader=entity@isFirstLineHeader,

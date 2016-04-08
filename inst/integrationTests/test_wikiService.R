@@ -36,11 +36,10 @@ integrationTestWikiService <-
     # create a file attachment which will be used in the wiki page
     filePath<-createFile()
     fileName<-basename(filePath)
-    fileHandleId<-synapseClient:::chunkedUploadFile(filePath)
+    fileHandle<-synapseClient:::chunkedUploadFile(filePath)
     
     # create a wiki page
-    wikiContent<-list(title="wiki title", markdown="some — stuff, maybe from Zürich", 
-				attachmentFileHandleIds=list(fileHandleId))
+    wikiContent<-list(title="wiki title", markdown="some — stuff, maybe from Zürich", attachmentFileHandleIds=list(fileHandle$id))
     # /{ownertObjectType}/{ownerObjectId}/wiki
     ownerUri<-sprintf("/entity/%s/wiki", propertyValue(project, "id"))
     wiki<-synapseClient:::synapsePost(ownerUri, wikiContent)
@@ -92,14 +91,14 @@ integrationTestWikiCRUD <-
   filePath1<-createFile()
   filePath2<-createFile()
   filePath3<-createFile()
-  fileHandleId<-synapseClient:::chunkedUploadFile(filePath3)
+  fileHandle<-synapseClient:::chunkedUploadFile(filePath3)
   
   wikiPage<-WikiPage(
     owner=project, 
     title="wiki title", 
     markdown="some — stuff, maybe from Zürich", 
     attachments=list(filePath1, filePath2), 
-    fileHandles=list(fileHandleId)
+    fileHandles=list(fileHandle$id)
   )
   
 	retrievedWikiPage<-checkWikiCRUD(project, wikiPage, 3)
@@ -120,13 +119,13 @@ integrationTestWikiCRUD_NoAttachments <- function() {
   
   # Create a file attachment which will be used in the wiki page
   filePath1<-createFile()
-  fileHandleId<-synapseClient:::chunkedUploadFile(filePath1)
+  fileHandle<-synapseClient:::chunkedUploadFile(filePath1)
   
   wikiPage<-WikiPage(
     owner=project, 
     title="wiki title", 
     markdown="some — stuff, maybe from Zürich", 
-    fileHandles=list(fileHandleId)
+    fileHandles=list(fileHandle$id)
   )
   
   checkAndCleanUpWikiCRUD(project, wikiPage, 1)

@@ -52,16 +52,25 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 	
 	# within this loop we don't want to throw exceptions when we retry
   # we just want to let the overall process replay (at least for MAX_UPLOAD_RETRIES iterations)
-	while (uploadRetryCounter<MAX_UPLOAD_RETRIES && is.null(uploadStatus@resultFileHandleId)) {
+	while (uploadRetryCounter<MAX_UPLOAD_RETRIES && length(uploadStatus@resultFileHandleId)==0) {
 		uploadRetryCounter<-uploadRetryCounter+1
 
 		ps<-uploadStatus@partsState
 		partsToUpload<-as.integer(which(sapply(1:nchar(ps), function(i){substring(ps,i,i)=="0"})))
 		
+		if (length(partsToUpload)==0) { # nothing left to upload!
+			uploadStatus<-finalizeUpload(uploadId, curlHandle)
+			next
+		}
+		
+		cat("ps: ", ps, "\n")
+		cat("partsToUpload: ", toJSON(partsToUpload), "\n")
+		
 		batchPartUploadURLRequest<-BatchPresignedUploadUrlRequest(
 				uploadId=uploadId, 
 				contentType=contentType,
 				partNumbers=partsToUpload)
+		
 
 		responseAsList<-synapsePost(uri=sprintf("/file/multipart/%s/presigned/url/batch", uploadId), 
 				entity=createListFromS4Object(batchPartUploadURLRequest), 
@@ -81,12 +90,14 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 		if (uploadRetryCounter>1) cat("Upload needs to be repated for ", length(partNumberToUrlMap) , " file parts.\n")
 		
 		connection<-file(filepath, open="rb")
-		chunkCount<-1		
+		chunkCount<-0
 		tryCatch({
 					for (chunkNumber in names(partNumberToUrlMap)) {
 						chunkCount<-chunkCount+1
 						
 						addMultiPartResponse<-uploadOneChunk(uploadId, connection, chunkNumber, chunksizeBytes, partNumberToUrlMap, curlHandle, contentType)
+						if (debug) message(sprintf('\nChunk %d. size %d\n', chunkCount, length(chunk)))
+						
 						
 						if (!is.null(addMultiPartResponse)) {
 							percentUploaded <- chunkCount/length(partNumberToUrlMap)*100
@@ -99,20 +110,32 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 					
 		}, finally=close(connection))
 		
- 		responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/complete", uploadId), 
-				entity=list(),
-				endpoint=synapseServiceEndpoint("FILE"),
-				extraRetryStatusCodes=NULL,
-				checkHttpStatus=FALSE,
-				curlHandle=curlHandle)
+		uploadStatus<-finalizeUpload(uploadId, curlHandle)
 		if (isErrorResponseStatus(getStatusCode(curlHandle))) {
 			next
 		}
 		
-		uploadStatus<-createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
 	}
 	
-	uploadStatus@resultFileHandleId
+	if (length(uploadStatus@resultFileHandleId)==0) {
+		stop("File upload failed.")
+	}
+	
+	# now return the full file handle, retrieved using the new ID
+	synapseGet(
+			uri=sprintf("/fileHandle/%s", uploadStatus@resultFileHandleId),
+			endpoint=synapseServiceEndpoint("FILE"), 
+			curlHandle=getCurlHandle())
+}
+
+finalizeUpload<-function(uploadId, curlHandle) {
+	responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/complete", uploadId), 
+			entity=list(),
+			endpoint=synapseServiceEndpoint("FILE"),
+			extraRetryStatusCodes=NULL,
+			checkHttpStatus=FALSE,
+			curlHandle=curlHandle)
+	createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
 }
 
 uploadOneChunk<-function(uploadId, connection, chunkNumber, chunksizeBytes, partNumberToUrlMap, curlHandle, contentType) {
@@ -133,8 +156,6 @@ uploadOneChunk<-function(uploadId, connection, chunkNumber, chunksizeBytes, part
 	startPositionForChunk<-(as.integer(chunkNumber)-1)*chunksizeBytes
 	seek(connection, startPositionForChunk)
 	chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
-	
-	if (debug) message(sprintf('\nChunk %d. size %d\n', chunkCount, length(chunk)))
 	
 	## get the signed S3 URL
 	uploadUrl <- partNumberToUrlMap[[chunkNumber]]
@@ -169,8 +190,7 @@ uploadOneChunk<-function(uploadId, connection, chunkNumber, chunksizeBytes, part
 	if (isErrorResponseStatus(getStatusCode(curlHandle))) {
 		return(NULL)
 	}
-	addMultiPartResponse<-createS4ObjectFromList(responseAsList, "AddMultipartResponse")
-
+	addMultiPartResponse<-createS4ObjectFromList(responseAsList, "AddPartResponse")
 	addMultiPartResponse
 }
 
