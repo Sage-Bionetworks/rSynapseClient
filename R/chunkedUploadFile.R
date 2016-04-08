@@ -24,7 +24,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 	}
 	
 	md5 <- tools::md5sum(path.expand(filepath))
-	
+	names(md5)<-NULL
 	
 	fileSize<-file.info(filepath)$size
 	chunksizeBytes <- max(5242880, ceiling(fileSize/10000))
@@ -33,7 +33,6 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 
 	MAX_UPLOAD_RETRIES<-7
 	uploadRetryCounter<-0
-	fileHandleId<-NULL
 	
 	multipartUploadRequest<-MultipartUploadRequest(
 			contentMD5Hex=md5, 
@@ -44,8 +43,8 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 			fileSizeBytes=fileSize,
 			storageLocationId=uploadDestination@storageLocationId
 	)
-	responseAsList<-synapsePost(uri="/file/multipart/upload", 
-			entity=multipartUploadRequest, 
+	responseAsList<-synapsePost(uri="/file/multipart", 
+			entity=createListFromS4Object(multipartUploadRequest), 
 			endpoint=synapseServiceEndpoint("FILE"),
 			extraRetryStatusCodes=NULL)
 	uploadStatus<-createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
@@ -53,13 +52,19 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 	
 	# within this loop we don't want to throw exceptions when we retry
   # we just want to let the overall process replay (at least for MAX_UPLOAD_RETRIES iterations)
-	while (uploadRetryCounter<MAX_UPLOAD_RETRIES && is.null(fileHandleId)) {
+	while (uploadRetryCounter<MAX_UPLOAD_RETRIES && is.null(uploadStatus@resultFileHandleId)) {
 		uploadRetryCounter<-uploadRetryCounter+1
 
-		batchPartUploadURLRequest<-BatchPartUploadURLRequest()
+		ps<-uploadStatus@partsState
+		partsToUpload<-as.integer(which(sapply(1:nchar(ps), function(i){substring(ps,i,i)=="0"})))
+		
+		batchPartUploadURLRequest<-BatchPresignedUploadUrlRequest(
+				uploadId=uploadId, 
+				contentType=contentType,
+				partNumbers=partsToUpload)
 
-		responseAsList<-synapsePost(uri=sprintf("/file/multipart/%s/presignedurl/batch", uploadId), 
-				entity=batchPartUploadURLRequest, 
+		responseAsList<-synapsePost(uri=sprintf("/file/multipart/%s/presigned/url/batch", uploadId), 
+				entity=createListFromS4Object(batchPartUploadURLRequest), 
 				endpoint=synapseServiceEndpoint("FILE"),
 				extraRetryStatusCodes=NULL,
 				checkHttpStatus=FALSE,
@@ -68,7 +73,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 			next
 		}
 		
-		batchPartUploadUrlResponse<-createS4ObjectFromList(responseAsList, "BatchPartUploadURLResponse")
+		batchPartUploadUrlResponse<-createS4ObjectFromList(responseAsList, "BatchPresignedUploadUrlResponse")
 		partNumberToUrlMap<-list()
 		for (part in batchPartUploadUrlResponse@partPresignedUrls@content) {
 			partNumberToUrlMap[[as.character(part@partNumber)]]<-part@uploadPresignedUrl
@@ -81,7 +86,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 					for (chunkNumber in names(partNumberToUrlMap)) {
 						chunkCount<-chunkCount+1
 						
-						addMultiPartResponse<-uploadOneChunk(uploadId, connection, chunkNumber, chunksizeBytes, partNumberToUrlMap, curlHandle)
+						addMultiPartResponse<-uploadOneChunk(uploadId, connection, chunkNumber, chunksizeBytes, partNumberToUrlMap, curlHandle, contentType)
 						
 						if (!is.null(addMultiPartResponse)) {
 							percentUploaded <- chunkCount/length(partNumberToUrlMap)*100
@@ -95,6 +100,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 		}, finally=close(connection))
 		
  		responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/complete", uploadId), 
+				entity=list(),
 				endpoint=synapseServiceEndpoint("FILE"),
 				extraRetryStatusCodes=NULL,
 				checkHttpStatus=FALSE,
@@ -103,14 +109,13 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 			next
 		}
 		
-		multipartUploadStatus<-createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
-		fileHandleId<-multipartUploadStatus@resultFileHandleId
+		uploadStatus<-createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
 	}
 	
-	fileHandleId
+	uploadStatus@resultFileHandleId
 }
 
-uploadOneChunk<-function(uploadId, connection, chunkNumber, chunksizeBytes, partNumberToUrlMap, curlHandle) {
+uploadOneChunk<-function(uploadId, connection, chunkNumber, chunksizeBytes, partNumberToUrlMap, curlHandle, contentType) {
 	## S3 wants 'content-type' and 'content-length' headers. S3 doesn't like
 	## 'transfer-encoding': 'chunked', which requests will add for you, if it
 	## can't figure out content length. The errors given by S3 are not very
@@ -156,6 +161,7 @@ uploadOneChunk<-function(uploadId, connection, chunkNumber, chunksizeBytes, part
 	
 	responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/add/%s?partMD5Hex=%s", 
 					uploadId, chunkNumber, stringMd5(chunk)), 
+			entity=list(),
 			endpoint=synapseServiceEndpoint("FILE"),
 			extraRetryStatusCodes=NULL,
 			checkHttpStatus=FALSE,
