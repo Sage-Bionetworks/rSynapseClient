@@ -18,9 +18,6 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 	if (!file.exists(filepath))
 		stop(sprintf('File not found: %s',filepath))
 	
-	debug<-.getCache("debug")
-	if (is.null(debug)) debug<-FALSE
-	
 	# guess mime-type - important for confirmation of MD5 sum by receiver
 	if (is.null(contentType)) {
 		contentType<-getMimeTypeForFile(basename(filepath))
@@ -31,17 +28,6 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 	
 	fileSize<-file.info(filepath)$size
 	chunksizeBytes <- max(5242880, ceiling(fileSize/10000))
-	
-	## S3 wants 'content-type' and 'content-length' headers. S3 doesn't like
-	## 'transfer-encoding': 'chunked', which requests will add for you, if it
-	## can't figure out content length. The errors given by S3 are not very
-	## informative:
-	## If a request mistakenly contains both 'content-length' and
-	## 'transfer-encoding':'chunked', you get [Errno 32] Broken pipe.
-	## If you give S3 'transfer-encoding' and no 'content-length', you get:
-	## 501 Server Error: Not Implemented
-	## A header you provided implies functionality that is not implemented
-	headers <- list('Content-Type'=contentType)
 	
 	curlHandle<-getCurlHandle()
 
@@ -65,79 +51,121 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 	uploadStatus<-createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
 	uploadId<-uploadStatus@uploadId
 	
+	# within this loop we don't want to throw exceptions when we retry
+  # we just want to let the overall process replay (at least for MAX_UPLOAD_RETRIES iterations)
 	while (uploadRetryCounter<MAX_UPLOAD_RETRIES && is.null(fileHandleId)) {
 		uploadRetryCounter<-uploadRetryCounter+1
 
 		batchPartUploadURLRequest<-BatchPartUploadURLRequest()
-		# TODO retry but don't stop if failure
+
 		responseAsList<-synapsePost(uri=sprintf("/file/multipart/%s/presignedurl/batch", uploadId), 
 				entity=batchPartUploadURLRequest, 
 				endpoint=synapseServiceEndpoint("FILE"),
-				extraRetryStatusCodes=NULL)
+				extraRetryStatusCodes=NULL,
+				checkHttpStatus=FALSE,
+				curlHandle=curlHandle)
+		if (isErrorResponseStatus(getStatusCode(curlHandle))) {
+			next
+		}
+		
 		batchPartUploadUrlResponse<-createS4ObjectFromList(responseAsList, "BatchPartUploadURLResponse")
 		partNumberToUrlMap<-list()
 		for (part in batchPartUploadUrlResponse@partPresignedUrls@content) {
 			partNumberToUrlMap[[as.character(part@partNumber)]]<-part@uploadPresignedUrl
 		}
-		connection<-file(filepath, open="rb") # TODO wrap in try/finally and close the connection in the 'finally'
-		chunkCount<-1
-		for (chunkNumber in names(partNumberToUrlMap)) {
-			startPositionForChunk<-(as.integer(chunkNumber)-1)*chunksizeBytes
-			seek(connection, startPositionForChunk)
-			chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
-	
-			if (debug) message(sprintf('\nChunk %d. size %d\n', chunkCount, length(chunk)))
-			
-			## get the signed S3 URL
-			uploadUrl <- partNumberToUrlMap[[chunkNumber]]
-			
-			if (!is.null(uploadUrl)) {
-				result<-webRequestWithRetries(
-						fcn=function(curlHandle) {
-							if (debug) message(sprintf('url= %s\n', uploadUrl))
-							
-							httpResponse<-.getURLIntern(uploadUrl, 
-									postfields=chunk, # the request body
-									customrequest="PUT", # the request method
-									httpheader=headers, # the headers
-									curl=curlHandle, 
-									debugfunction=NULL,
-									.opts=.getCache("curlOpts"))
-							# return the http response
-							httpResponse$body
-						}, 
-						curlHandle,
-						extraRetryStatusCodes=400 #SYNR-967
-				)
-	
-				# TODO retry but don't stop if failure
-				responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/add/%s?partMD5Hex=%s", 
-								uploadId, chunkNumber, stringMd5(chunk)), 
-					endpoint=synapseServiceEndpoint("FILE"),
-					extraRetryStatusCodes=NULL)
-				addMultiPartResponse<-createS4ObjectFromList(responseAsList, "AddMultipartResponse")
-				
-				# TODO review this computation
-				totalUploadedBytes <- totalUploadedBytes + length(chunk)
-				percentUploaded <- totalUploadedBytes*100/(length(partNumberToUrlMap)*chunksizeBytes)
-				# print progress, but only if there's more than one chunk
-				if (chunkCount>1 | percentUploaded<100) {
-					cat(sprintf("Uploaded %.1f%%\n", percentUploaded))
-				}
-			}
-			chunkCount<-chunkCount+1
+		if (uploadRetryCounter>1) cat("Upload needs to be repated for ", length(partNumberToUrlMap) , " file parts.\n")
+		
+		connection<-file(filepath, open="rb")
+		chunkCount<-1		
+		tryCatch({
+					for (chunkNumber in names(partNumberToUrlMap)) {
+						chunkCount<-chunkCount+1
+						
+						addMultiPartResponse<-uploadOneChunk(uploadId, connection, chunkNumber, chunksizeBytes, partNumberToUrlMap, curlHandle)
+						
+						if (!is.null(addMultiPartResponse)) {
+							percentUploaded <- chunkCount/length(partNumberToUrlMap)*100
+							# print progress, but only if there's more than one chunk
+							if (chunkCount>1 | percentUploaded<100) {
+								cat(sprintf("Uploaded %.1f%%\n", percentUploaded))
+							}	
+						}
+					}
+					
+		}, finally=close(connection))
+		
+ 		responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/complete", uploadId), 
+				endpoint=synapseServiceEndpoint("FILE"),
+				extraRetryStatusCodes=NULL,
+				checkHttpStatus=FALSE,
+				curlHandle=curlHandle)
+		if (isErrorResponseStatus(getStatusCode(curlHandle))) {
+			next
 		}
 		
-		# TODO retry but don't stop if failure	
-    # TODO retry on state!="COMPLETED"
-		responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/complete", uploadId), 
-				endpoint=synapseServiceEndpoint("FILE"),
-				extraRetryStatusCodes=NULL)
 		multipartUploadStatus<-createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
 		fileHandleId<-multipartUploadStatus@resultFileHandleId
 	}
 	
 	fileHandleId
+}
+
+uploadOneChunk<-function(uploadId, connection, chunkNumber, chunksizeBytes, partNumberToUrlMap, curlHandle) {
+	## S3 wants 'content-type' and 'content-length' headers. S3 doesn't like
+	## 'transfer-encoding': 'chunked', which requests will add for you, if it
+	## can't figure out content length. The errors given by S3 are not very
+	## informative:
+	## If a request mistakenly contains both 'content-length' and
+	## 'transfer-encoding':'chunked', you get [Errno 32] Broken pipe.
+	## If you give S3 'transfer-encoding' and no 'content-length', you get:
+	## 501 Server Error: Not Implemented
+	## A header you provided implies functionality that is not implemented
+	headers <- list('Content-Type'=contentType)
+
+	debug<-.getCache("debug")
+	if (is.null(debug)) debug<-FALSE
+	
+	startPositionForChunk<-(as.integer(chunkNumber)-1)*chunksizeBytes
+	seek(connection, startPositionForChunk)
+	chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
+	
+	if (debug) message(sprintf('\nChunk %d. size %d\n', chunkCount, length(chunk)))
+	
+	## get the signed S3 URL
+	uploadUrl <- partNumberToUrlMap[[chunkNumber]]
+	
+	if (is.null(uploadUrl)) return(NULL)
+	
+	result<-webRequestWithRetries(
+			fcn=function(curlHandle) {
+				if (debug) message(sprintf('url= %s\n', uploadUrl))
+				
+				httpResponse<-.getURLIntern(uploadUrl, 
+						postfields=chunk, # the request body
+						customrequest="PUT", # the request method
+						httpheader=headers, # the headers
+						curl=curlHandle, 
+						debugfunction=NULL,
+						.opts=.getCache("curlOpts"))
+				# return the http response
+				httpResponse$body
+			}, 
+			curlHandle,
+			extraRetryStatusCodes=400 #SYNR-967
+	)
+	
+	responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/add/%s?partMD5Hex=%s", 
+					uploadId, chunkNumber, stringMd5(chunk)), 
+			endpoint=synapseServiceEndpoint("FILE"),
+			extraRetryStatusCodes=NULL,
+			checkHttpStatus=FALSE,
+			curlHandle=curlHandle)
+	if (isErrorResponseStatus(getStatusCode(curlHandle))) {
+		return(NULL)
+	}
+	addMultiPartResponse<-createS4ObjectFromList(responseAsList, "AddMultipartResponse")
+
+	addMultiPartResponse
 }
 
 
