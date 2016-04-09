@@ -34,6 +34,10 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 	MAX_UPLOAD_RETRIES<-7
 	uploadRetryCounter<-0
 	
+	debug<-.getCache("debug")
+	if (is.null(debug)) debug<-FALSE
+	
+	
 	multipartUploadRequest<-MultipartUploadRequest(
 			contentMD5Hex=md5, 
 			fileName=basename(filepath), 
