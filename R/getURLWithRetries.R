@@ -59,6 +59,8 @@ getURLWithRetries<-function(url,
 		message(".getURLIntern: url:", url)
 	}
 	
+	if (length(url)!=1) stop("Expected length(url) to be 1 found found ", (length(url)))
+	
 	h = basicTextGatherer()
 	
   if (missing(postfields)) {

@@ -67,9 +67,6 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 			next
 		}
 		
-		cat("ps: ", ps, "\n")
-		cat("partsToUpload: ", toJSON(partsToUpload), "\n")
-		
 		batchPartUploadURLRequest<-BatchPresignedUploadUrlRequest(
 				uploadId=uploadId, 
 				contentType=contentType,
