@@ -100,7 +100,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 						chunkCount<-chunkCount+1
 						
 						addMultiPartResponse<-uploadOneChunk(uploadId, connection, chunkNumber, chunksizeBytes, partNumberToUrlMap, curlHandle, contentType)
-						if (debug) message(sprintf('\nChunk %d. size %d\n', chunkCount, length(chunk)))
+						if (debug) message(sprintf('\nChunk %d.\n', chunkCount))
 						
 						
 						if (!is.null(addMultiPartResponse)) {
