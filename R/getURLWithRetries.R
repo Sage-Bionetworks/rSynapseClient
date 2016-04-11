@@ -49,6 +49,7 @@ getURLWithRetries<-function(url,
 # returned value is list(headers, body), neither headers nor body have been parsed
 .getURLIntern<-function(url, 
   postfields,
+	readfunction=NULL,
   customrequest, 
   httpheader, 
   curl, 

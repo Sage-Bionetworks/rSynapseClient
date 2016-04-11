@@ -13,7 +13,7 @@ Author@R: c(
 Author: Matthew Furia <matt.furia@sagebase.org>
 Maintainer: Bruce Hoff <bruce.hoff@sagebase.org>
 Depends: methods, R (>= 2.15)
-Imports: rjson, RCurl (> 1.95-3),tools,digest,utils
+Imports: rjson, RCurl (> 1.95-4),tools,digest,utils
 Suggests: RUnit, rGithubClient, Rsftp
 Additional_repositories: https://github.com/Sage-Bionetworks/rGithubClient
 SystemRequirements: zip

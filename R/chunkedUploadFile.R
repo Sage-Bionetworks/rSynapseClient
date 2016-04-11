@@ -47,10 +47,13 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 			fileSizeBytes=fileSize,
 			storageLocationId=uploadDestination@storageLocationId
 	)
+	multipartUploadRequestAsList<-createListFromS4Object(multipartUploadRequest)
+	
 	responseAsList<-synapsePost(uri="/file/multipart", 
-			entity=createListFromS4Object(multipartUploadRequest), 
+			entity=multipartUploadRequestAsList, 
 			endpoint=synapseServiceEndpoint("FILE"),
 			extraRetryStatusCodes=NULL)
+	
 	uploadStatus<-createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
 	uploadId<-uploadStatus@uploadId
 	
@@ -93,30 +96,35 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 		connection<-file(filepath, open="rb")
 		chunkCount<-0
 		tryCatch({
-					for (chunkNumber in names(partNumberToUrlMap)) {
-						chunkCount<-chunkCount+1
-						
-						addMultiPartResponse<-uploadOneChunk(uploadId, connection, chunkNumber, chunksizeBytes, partNumberToUrlMap, curlHandle, contentType)
-						if (debug) message(sprintf('\nChunk %d.\n', chunkCount))
-						
-						
-						if (!is.null(addMultiPartResponse)) {
-							percentUploaded <- chunkCount/length(partNumberToUrlMap)*100
-							# print progress, but only if there's more than one chunk
-							if (chunkCount>1 | percentUploaded<100) {
-								cat(sprintf("Uploaded %.1f%%\n", percentUploaded))
-							}	
-						}
-					}
+			for (chunkNumber in names(partNumberToUrlMap)) {
+				chunkCount<-chunkCount+1
+				
+				addMultiPartResponse<-uploadOneChunk(uploadId, connection, chunkNumber, chunksizeBytes, partNumberToUrlMap, curlHandle, contentType)
+				if (debug) message(sprintf('\nChunk %d.\n', chunkCount))
+				
+				
+				if (!is.null(addMultiPartResponse)) {
+					percentUploaded <- chunkCount/length(partNumberToUrlMap)*100
+					# print progress, but only if there's more than one chunk
+					if (chunkCount>1 | percentUploaded<100) {
+						cat(sprintf("Uploaded %.1f%%\n", percentUploaded))
+					}	
+				}
+			}
 					
 		}, finally=close(connection))
 		
 		uploadStatus<-finalizeUpload(uploadId, curlHandle)
 		if (isErrorResponseStatus(getStatusCode(curlHandle))) {
-			next
+			responseAsList<-synapsePost(uri="/file/multipart", 
+					entity=multipartUploadRequestAsList, 
+					endpoint=synapseServiceEndpoint("FILE"),
+					extraRetryStatusCodes=NULL)
+			
+			uploadStatus<-createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
 		}
 		
-	}
+	} # end while
 	
 	if (length(uploadStatus@resultFileHandleId)==0) {
 		stop("File upload failed.")
@@ -149,7 +157,7 @@ uploadOneChunk<-function(uploadId, connection, chunkNumber, chunksizeBytes, part
 	## If you give S3 'transfer-encoding' and no 'content-length', you get:
 	## 501 Server Error: Not Implemented
 	## A header you provided implies functionality that is not implemented
-	headers <- list('Content-Type'=contentType)
+	headers <- c('Content-Type'=contentType)
 
 	debug<-.getCache("debug")
 	if (is.null(debug)) debug<-FALSE
@@ -158,24 +166,65 @@ uploadOneChunk<-function(uploadId, connection, chunkNumber, chunksizeBytes, part
 	seek(connection, startPositionForChunk)
 	chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
 	
+	chunkFile<-tempfile()
+	outconn<-file(chunkFile, open="wb")
+	tryCatch({  
+				writeBin(chunk, outconn)
+		}, finally=close(outconn))
+	
+	cat("\tchunk size: ", length(chunk), "\n")
+	
 	## get the signed S3 URL
 	uploadUrl <- partNumberToUrlMap[[chunkNumber]]
 	
 	if (is.null(uploadUrl)) return(NULL)
 	
+	
+	
 	result<-webRequestWithRetries(
 			fcn=function(curlHandle) {
 				if (debug) message(sprintf('url= %s\n', uploadUrl))
+#				body<-getURL(url=uploadUrl, 
+#						postfields=chunk, 
+#						customrequest="PUT", 
+#						httpheader=headers, 
+#						curl=curlHandle, 
+#						debugfunction=NULL,
+#						headerfunction=basicTextGatherer()$update,
+#						.opts=.getCache("curlOpts"))
+#				body$body
 				
-				httpResponse<-.getURLIntern(uploadUrl, 
-						postfields=chunk, # the request body
-						customrequest="PUT", # the request method
-						httpheader=headers, # the headers
-						curl=curlHandle, 
-						debugfunction=NULL,
-						.opts=.getCache("curlOpts"))
-				# return the http response
-				httpResponse$body
+#				httpResponse<-.getURLIntern(uploadUrl, 
+#						readfunction = chunkReader,
+#						postfields=chunk, # the request body
+#						customrequest="PUT", # the request method
+#						httpheader=headers, # the headers
+#						curl=curlHandle, 
+#						debugfunction=NULL,
+#						.opts=.getCache("curlOpts"))
+			
+#			body<-getURL(url=uploadUrl, 
+#					readfunction = chunkReader,
+#					customrequest="PUT", 
+#					httpheader=headers, 
+#					curl=curlHandle, 
+#					headerfunction=basicTextGatherer()$update,
+#					.opts=.getCache("curlOpts")
+#			)
+			
+#			body<-curlPerform(URL=uploadUrl, 
+#					customrequest="PUT", 
+#					readfunction=chunkReader,
+#					httpheader=headers, 
+#					curl=curlHandle, 
+#					headerfunction=basicTextGatherer()$update, # not sure if this is needed/allowed
+#					.opts = .getCache("curlOpts"))
+				
+			body<-.curlReaderUpload(url=uploadUrl, srcfile=chunkFile, header=headers)
+			
+			# return the http response
+				body
+
 			}, 
 			curlHandle,
 			extraRetryStatusCodes=400 #SYNR-967
@@ -194,5 +243,6 @@ uploadOneChunk<-function(uploadId, connection, chunkNumber, chunksizeBytes, part
 	addMultiPartResponse<-createS4ObjectFromList(responseAsList, "AddPartResponse")
 	addMultiPartResponse
 }
+
 
 
