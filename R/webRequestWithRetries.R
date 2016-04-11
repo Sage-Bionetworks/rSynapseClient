@@ -25,12 +25,10 @@ webRequestWithRetries<-function(fcn,
 		errorMessagesNotToRetry <- "Forbidden"
 		
 		if (is(tryReturnValue, "try-error")) {
-			cat("webRequestWithRetries-isRetryable: is a try-error\n")
 			# return true if there is no error message specifically tagged not to retry
 			!any(sapply(errorMessagesNotToRetry, function(pattern){regexpr(pattern, tryReturnValue[[1]], fixed=T)[1]>=0}))
 		} else {
 			httpStatus<-.getCurlInfo(curlHandle)$response.code
-			cat("webRequestWithRetries-isRetryable: httpStatus: ", httpStatus, "\n")
 			# return true if status is >=500 or in the list of statuses to retry
 			httpStatus>=500 || any(httpStatus==extraRetryStatusCodes)
 		}

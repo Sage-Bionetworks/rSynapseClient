@@ -91,7 +91,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 		for (part in batchPartUploadUrlResponse@partPresignedUrls@content) {
 			partNumberToUrlMap[[as.character(part@partNumber)]]<-part@uploadPresignedUrl
 		}
-		if (uploadRetryCounter>1) cat("Upload needs to be repated for ", length(partNumberToUrlMap) , " file parts.\n")
+		if (uploadRetryCounter>1) cat("Upload needs to be repeated for ", length(partNumberToUrlMap) , " file parts.\n")
 		
 		connection<-file(filepath, open="rb")
 		chunkCount<-0
@@ -172,8 +172,6 @@ uploadOneChunk<-function(uploadId, connection, chunkNumber, chunksizeBytes, part
 				writeBin(chunk, outconn)
 		}, finally=close(outconn))
 	
-	cat("\tchunk size: ", length(chunk), "\n")
-	
 	## get the signed S3 URL
 	uploadUrl <- partNumberToUrlMap[[chunkNumber]]
 	
@@ -183,48 +181,10 @@ uploadOneChunk<-function(uploadId, connection, chunkNumber, chunksizeBytes, part
 	
 	result<-webRequestWithRetries(
 			fcn=function(curlHandle) {
-				if (debug) message(sprintf('url= %s\n', uploadUrl))
-#				body<-getURL(url=uploadUrl, 
-#						postfields=chunk, 
-#						customrequest="PUT", 
-#						httpheader=headers, 
-#						curl=curlHandle, 
-#						debugfunction=NULL,
-#						headerfunction=basicTextGatherer()$update,
-#						.opts=.getCache("curlOpts"))
-#				body$body
-				
-#				httpResponse<-.getURLIntern(uploadUrl, 
-#						readfunction = chunkReader,
-#						postfields=chunk, # the request body
-#						customrequest="PUT", # the request method
-#						httpheader=headers, # the headers
-#						curl=curlHandle, 
-#						debugfunction=NULL,
-#						.opts=.getCache("curlOpts"))
-			
-#			body<-getURL(url=uploadUrl, 
-#					readfunction = chunkReader,
-#					customrequest="PUT", 
-#					httpheader=headers, 
-#					curl=curlHandle, 
-#					headerfunction=basicTextGatherer()$update,
-#					.opts=.getCache("curlOpts")
-#			)
-			
-#			body<-curlPerform(URL=uploadUrl, 
-#					customrequest="PUT", 
-#					readfunction=chunkReader,
-#					httpheader=headers, 
-#					curl=curlHandle, 
-#					headerfunction=basicTextGatherer()$update, # not sure if this is needed/allowed
-#					.opts = .getCache("curlOpts"))
-				
-			body<-.curlReaderUpload(url=uploadUrl, srcfile=chunkFile, header=headers)
-			
-			# return the http response
+				if (debug) message(sprintf('url= %s\n', uploadUrl)
+				body<-.curlReaderUpload(url=uploadUrl, srcfile=chunkFile, header=headers)
+				# return the http response
 				body
-
 			}, 
 			curlHandle,
 			extraRetryStatusCodes=400 #SYNR-967

@@ -49,7 +49,6 @@ getURLWithRetries<-function(url,
 # returned value is list(headers, body), neither headers nor body have been parsed
 .getURLIntern<-function(url, 
   postfields,
-	readfunction=NULL,
   customrequest, 
   httpheader, 
   curl, 
@@ -59,8 +58,6 @@ getURLWithRetries<-function(url,
 	if(!is.null(.getCache("debug")) && .getCache("debug")) {
 		message(".getURLIntern: url:", url)
 	}
-	
-	if (length(url)!=1) stop("Expected length(url) to be 1 found found ", (length(url)))
 	
 	h = basicTextGatherer()
 	
