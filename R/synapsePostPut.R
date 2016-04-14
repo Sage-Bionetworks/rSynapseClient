@@ -68,14 +68,15 @@
   d = debugGatherer()
   
   ##curlSetOpt(opts,curl=curlHandle)
+	
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
-    message("----------------------------------")
+		message("----------------------------------")
     message("REQUEST: ", requestMethod, " ", uri)
-    headerAsString<-paste(lapply(names(header), function(n,x){sprintf("%s=%s",n, x[[n]])}, header), collapse=",")
     message("HEADERS: ", listToString(header))
-    message("REQUEST_BODY: ", httpBody)
-  }
+		message("REQUEST_BODY: ", httpBody)
+		message("CURL OPTIONS: ", listToString(opts))
+	}
   
   # check own version, stopping if blacklisted
   checkBlackList(logErrorsToSynapse)
@@ -94,6 +95,7 @@
   )
   
   if(!is.null(.getCache("debug")) && .getCache("debug")) {
+		message("RESPONSE_STATUS:: ", getStatusCode(curlHandle))
 	  message("RESPONSE_HEADERS:: ", response$headers)
 	  message("RESPONSE_BODY:: ", response$body)
   }

@@ -28,7 +28,7 @@ withRetries<-function(fcn,
 				} else {
 					reportableResult<-fcnResult
 				}
-				message("withRetries: error encountered: ", reportableResult)
+				message("withRetries: error encountered: <<<", reportableResult, ">>>\n")
 			}
 			if (retry<maxTries) Sys.sleep(backoff)
 			backoff <- backoff * BACKOFF_MULTIPLIER

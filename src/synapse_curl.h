@@ -11,4 +11,6 @@ SEXP writer_close(SEXP ext);
 SEXP reader_open(SEXP filename);
 SEXP reader_close(SEXP ext);
 
+SEXP create_string_data(SEXP data);
+
 #endif

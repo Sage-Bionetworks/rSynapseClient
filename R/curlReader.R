@@ -46,3 +46,38 @@
   .checkCurlResponse(object=curlHandle, response=responseWriteFunction$value(), logErrorToSynapse=TRUE)
   responseWriteFunction$value()
 }
+
+.curlStringUpload <-
+		function(url, ext, chunk, chunkSize, header, method="PUT", curlHandle = getCurlHandle(), readFunction=.getCache('curlStringReader'), opts = .getCache("curlOpts"))
+{
+	parsedUrl <- .ParsedUrl(url)
+	if(tolower(parsedUrl@protocol) == "file"){
+		if(file.exists(parsedUrl@path))
+			file.remove(parsedUrl@path)
+		file.create(parsedUrl@path)
+	}
+	opts$noprogress <- 0L
+	# I have not idea why, but to get 'curlPerform' to move a file to another file (see test_curlUploadDownload)
+	# it is not sufficient to set customrequestmethod to POST, you also have to set opts$put
+	if (method=="PUT") opts$put <- 1L
+	
+	opts$infilesize <- as.integer(chunkSize)
+	responseWriteFunction<-basicTextGatherer()
+	
+#	ext<-.Call("create_string_data", chunk)
+	
+	if(missing(header)){
+#		rc<-curlPerform(URL=url, customrequest=method, readfunction=readFunction,readdata=ext, curl=curlHandle, .opts = opts, writefunction=responseWriteFunction$update)
+		rc<-curlPerform(URL=url, customrequest=method, readfunction=chunk, curl=curlHandle, .opts = opts, writefunction=responseWriteFunction$update)
+	}else{
+#		rc<-curlPerform(URL=url, customrequest=method, readfunction=readFunction,readdata=ext, curl=curlHandle, httpHeader=header, .opts = opts, writefunction=responseWriteFunction$update)
+		rc<-curlPerform(URL=url, customrequest=method, readfunction=chunk, curl=curlHandle, httpHeader=header, .opts = opts, writefunction=responseWriteFunction$update)
+	}
+	
+#	Sys.sleep(5) #DEBUG
+#	rm(ext)
+#	gc()
+	
+	if (rc!=0) stop("curlPerform returned status code ", rc)
+	responseWriteFunction$value()
+}

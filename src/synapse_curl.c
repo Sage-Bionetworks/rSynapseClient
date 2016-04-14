@@ -5,6 +5,7 @@
 
 #include <Rdefines.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /* writer_open and writer_close manage the 'external pointer' that
  * references the C-level pointer to the opened file. _writer_finalize
@@ -153,3 +154,73 @@ _reader_read(void *buffer, size_t size, size_t nmemb, void *data)
     return len;
 }
 
+/*
+*------------------------------------------------------------
+*/
+
+struct chunk_data {
+	Rbyte *data;
+	size_t len;
+	size_t next_elem;
+};
+
+static void
+_string_reader_finalizer(SEXP ext)
+{
+    if (NULL == R_ExternalPtrAddr(ext))
+        return;
+    struct chunk_data *data = (struct chunk_data *) R_ExternalPtrAddr(ext);
+    printf("\nIn _string_reader_finalizer. About to free allocated 'chunk_data'.\n");
+    free(data->data);
+    free(data);
+    R_SetExternalPtrAddr(ext, NULL);
+}
+
+
+/*
+* read from a string buffer
+* data is a list with three fields (1) byte buffer, (2) buffer length, (3) current pos'n
+*/
+size_t
+_string_reader_read(void *buffer, size_t size, size_t nmemb, void *data)
+{
+	struct chunk_data *chunk  = (struct chunk_data *) data;
+	const size_t chunk_size = (*chunk).len;
+	size_t next_byte = (*chunk).next_elem;
+	const size_t len = chunk_size-next_byte < size*nmemb ? chunk_size-next_byte : size*nmemb;
+	
+	if (next_byte==0 || next_byte>=chunk_size) {
+		printf("\nIn _string_reader_read: size=%ld, nmemb=%ld, chunk_size=%ld, next_byte=%ld, len=%ld, data ptr: %ld\n",
+			size, nmemb, chunk_size, next_byte, len, data);
+	}
+		
+	memcpy(buffer, ((*chunk).data+next_byte), len);
+	
+	(*chunk).next_elem += len; 
+	
+    return len;
+}
+
+
+SEXP
+create_string_data(SEXP data)
+{
+	struct chunk_data *cd = (struct chunk_data*)malloc(sizeof(struct chunk_data));
+	SEXP ext;
+
+	cd->data = (Rbyte *)malloc(sizeof(Rbyte) * LENGTH(data));
+	cd->len = LENGTH(data);
+	cd->next_elem = 0;
+	
+	printf("\nIn create_string_data: created a buffer of length: %d\n", LENGTH(data));
+	
+	if (!IS_RAW(data)) Rf_error("'data' must be raw");
+	
+	memcpy(cd->data, RAW(data), LENGTH(data));
+	
+	ext = PROTECT(R_MakeExternalPtr(cd, R_NilValue, R_NilValue));
+	// add a finalizer which cleans up the object
+    R_RegisterCFinalizerEx(ext, _string_reader_finalizer, TRUE);
+    UNPROTECT(1);
+    return ext;
+}
