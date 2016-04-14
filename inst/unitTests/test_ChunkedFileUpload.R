@@ -1,43 +1,42 @@
-# Test expontential backoff/retry
-# 
-# Author: brucehoff
-###############################################################################
-
+## Test expontential backoff/retry
+## 
+## Author: brucehoff
+################################################################################
+#
+#set<-function(key, value) {synapseClient:::.setCache(key, value)}
+#get<-function(key) {synapseClient:::.getCache(key)}
+#
 #.setUp <- function() {
-#  synapseClient:::.mock("createChunkedFileUploadToken", function(filepath, s3UploadDestination, contentType) {list()})
-#  synapseClient:::.setCache("chunkUrlCount", 0)
-#  
-#  synapseClient:::.mock("createChunkedFileUploadChunkURL", function(chunkRequest) {
-#      count<-synapseClient:::.getCache("chunkUrlCount")
-#      result<-sprintf("http://foo/bar/%s", count)
-#      synapseClient:::.setCache("chunkUrlCount", count+1)
-#      result
-#  })
-#  synapseClient:::.mock("completeChunkFileUpload", function(chunkedFileToken, chunkResults) {list()})
-#  synapseClient:::.mock(".getURLIntern", function(url,postfields,customrequest,httpheader,curl,debugfunction,.opts) {
-#      if (url=="http://foo/bar/0") {
-#        stop("Connection reset by peer")
-#      } else {
-#        # nonsenscial response
-#        list(headers="HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n", body="{\"foo\":\"bar\"}")
-#      }
-#  })
-#  synapseClient:::.mock(".checkCurlResponse", function(object, response, call.=FALSE, logErrorToSynapse=FALSE) {TRUE})
+#	synapseClient:::.mock("functionname", function() {})
 #}
 #
 #.tearDown <- function() {
 #  synapseClient:::.unmockAll()
 #}
 #
-#
 #unitTestChunkedUpload <- function() {
 #  # create a file to upload
 #  content<-"this is a test"
-#  filePath<- tempfile()
+#  filePath<- tempfile(fileext = ".txt")
 #  connection<-file(filePath)
 #  writeChar(content, connection, eos=NULL)
 #  close(connection)  
+#	
+#	synapseClient:::.mock("file.info", function(filePath) {list(size=as.integer(5242880*2.5))})
+#	synapseClient:::.mock("synapsePost", function(...) {
+#				if (uri=="/file/multipart") {
+#					checkEquals(entity$fileName, basename(filePath))
+#					checkEquals(entity$fileSize, as.integer(5242880*2.5))
+#					list(uploadId="101", partsState="100") # first chunk has already been uploaded
+#				} else if (uri=="/file/multipart/%s/presigned/url/batch") {
+#					list(partPresignedUrls=c("/url11", "/url22", "/url33"))
+#				} else {
+#					stop("unexpected uri: ", uri)
+#				}
+#			})
+#
 #  
-#  synapseClient:::chunkedUploadFile(filePath)
-#  checkEquals(2, synapseClient:::.getCache("chunkUrlCount"))
+#  fileHandle <- synapseClient:::chunkedUploadFile(filePath)
+#  
+#	# TODO check correctness
 #}

@@ -74,7 +74,6 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 				uploadId=uploadId, 
 				contentType=contentType,
 				partNumbers=partsToUpload)
-		
 
 		batchRequestTime<-Sys.time()
 		responseAsList<-synapsePost(uri=sprintf("/file/multipart/%s/presigned/url/batch", uploadId), 
@@ -117,50 +116,10 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 				startPositionForChunk<-(as.integer(chunkNumber)-1)*chunksizeBytes
 				seek(connection, startPositionForChunk)
 				chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
-				md5<-stringMd5(chunk)	
 				
-				## S3 wants 'content-type' and 'content-length' headers. S3 doesn't like
-				## 'transfer-encoding': 'chunked', which requests will add for you, if it
-				## can't figure out content length. The errors given by S3 are not very
-				## informative:
-				## If a request mistakenly contains both 'content-length' and
-				## 'transfer-encoding':'chunked', you get [Errno 32] Broken pipe.
-				## If you give S3 'transfer-encoding' and no 'content-length', you get:
-				## 501 Server Error: Not Implemented
-				## A header you provided implies functionality that is not implemented
-				headers <- c('Content-Type'=contentType)
-				
-				if (debug) message(sprintf('url= %s\n', uploadUrl))
-				
-				stringUploadCurlHandle<-getCurlHandle()
-				body<-.curlStringUpload(url=uploadUrl, chunk=chunk, curlHandle=stringUploadCurlHandle, header=headers)
-				if (debug) message(sprintf('curlStringUpload response body:\n%s\n', body))
-				
-				if (isErrorResponseStatus(getStatusCode(stringUploadCurlHandle))) {
-					next
-				}
-				
-				responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/add/%s?partMD5Hex=%s", 
-								uploadId, chunkNumber, md5), 
-						entity=list(),
-						endpoint=synapseServiceEndpoint("FILE"),
-						extraRetryStatusCodes=NULL,
-						checkHttpStatus=FALSE,
-						curlHandle=curlHandle)
-				
-				# return true if successful, false otherwise
-				if(isErrorResponseStatus(getStatusCode(curlHandle))) {
-					next
-				}
-				addMultiPartResponse<-createS4ObjectFromList(responseAsList, "AddPartResponse")			
-				
-				uploadSuccess<-!isErrorResponseStatus(getStatusCode(curlHandle)) &&
-					addMultiPartResponse@addPartState=="ADD_SUCCESS"
-				
-				if (debug) {
-					if (uploadSuccess) {uploadResult<-"SUCCESSFUL"} else {uploadResult<-"NOT successful"}
-					message(sprintf('\nUpload of Chunk %d was %s.\n', chunkCount, uploadResult))
-				}
+				# if unsuccessful we simply go on to the next chunk
+				# outermost loop will retry any missing chunks
+				uploadSuccess <- uploadOneChunk(chunk, uploadUrl)
 				
 				if (uploadSuccess) {
 					percentUploaded <- chunkCount/length(partNumberToUrlMap)*100
@@ -196,17 +155,57 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 			curlHandle=getCurlHandle())
 }
 
-finalizeUpload<-function(uploadId, curlHandle) {
-	responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/complete", uploadId), 
+# return TRUE if successful, FALSE otherwise
+uploadOneChunk<-function(chunk, uploadUrl) {
+	md5<-stringMd5(chunk)	
+	
+	## S3 wants 'content-type' and 'content-length' headers. S3 doesn't like
+	## 'transfer-encoding': 'chunked', which requests will add for you, if it
+	## can't figure out content length. The errors given by S3 are not very
+	## informative:
+	## If a request mistakenly contains both 'content-length' and
+	## 'transfer-encoding':'chunked', you get [Errno 32] Broken pipe.
+	## If you give S3 'transfer-encoding' and no 'content-length', you get:
+	## 501 Server Error: Not Implemented
+	## A header you provided implies functionality that is not implemented
+	headers <- c('Content-Type'=contentType)
+	
+	if (debug) message(sprintf('url= %s\n', uploadUrl))
+	
+	stringUploadCurlHandle<-getCurlHandle()
+	body<-curlStringUpload(url=uploadUrl, chunk=chunk, curlHandle=stringUploadCurlHandle, header=headers)
+	
+	if (isErrorResponseStatus(getStatusCode(stringUploadCurlHandle))) {
+		return(FALSE)
+	}
+	
+	responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/add/%s?partMD5Hex=%s", 
+					uploadId, chunkNumber, md5), 
 			entity=list(),
 			endpoint=synapseServiceEndpoint("FILE"),
 			extraRetryStatusCodes=NULL,
 			checkHttpStatus=FALSE,
 			curlHandle=curlHandle)
-	createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
+	
+	# return true if successful, false otherwise
+	if(isErrorResponseStatus(getStatusCode(curlHandle))) {
+		return(FALSE)
+	}
+	
+	addMultiPartResponse<-createS4ObjectFromList(responseAsList, "AddPartResponse")			
+	
+	uploadSuccess<-!isErrorResponseStatus(getStatusCode(curlHandle)) &&
+			addMultiPartResponse@addPartState=="ADD_SUCCESS"
+	
+	if (debug) {
+		if (uploadSuccess) {uploadResult<-"SUCCESSFUL"} else {uploadResult<-"NOT successful"}
+		message(sprintf('\nUpload of Chunk %d was %s.\n', chunkCount, uploadResult))
+	}
+	
+	uploadSuccess
 }
 
-.curlStringUpload <-function(url, chunk, method="PUT", 
+curlStringUpload <-function(url, chunk, method="PUT", 
 				curlHandle = getCurlHandle(), header, opts = .getCache("curlOpts"))
 {
 	opts$noprogress <- 0L
@@ -218,14 +217,20 @@ finalizeUpload<-function(uploadId, curlHandle) {
 	opts$infilesize <- as.integer(chunkSize)
 	responseWriteFunction<-basicTextGatherer()
 	
-	if(missing(header)){
-		rc<-curlPerform(URL=url, customrequest=method, readfunction=chunk, curl=curlHandle, .opts = opts, writefunction=responseWriteFunction$update)
-	}else{
-		rc<-curlPerform(URL=url, customrequest=method, readfunction=chunk, curl=curlHandle, httpHeader=header, .opts = opts, writefunction=responseWriteFunction$update)
-	}
+	rc<-curlPerform(URL=url, customrequest=method, readfunction=chunk, curl=curlHandle, httpHeader=header, .opts = opts, writefunction=responseWriteFunction$update)
 	
 	if (rc!=0) stop("curlPerform returned status code ", rc)
 	
 	responseWriteFunction$value()
+}
+
+finalizeUpload<-function(uploadId, curlHandle) {
+	responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/complete", uploadId), 
+			entity=list(),
+			endpoint=synapseServiceEndpoint("FILE"),
+			extraRetryStatusCodes=NULL,
+			checkHttpStatus=FALSE,
+			curlHandle=curlHandle)
+	createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
 }
 
