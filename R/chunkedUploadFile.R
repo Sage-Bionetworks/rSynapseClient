@@ -117,13 +117,8 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 				startPositionForChunk<-(as.integer(chunkNumber)-1)*chunksizeBytes
 				seek(connection, startPositionForChunk)
 				chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
-#				ext<-.Call("create_string_data", chunk)
-				chuckActualSizeBytes<-length(chunk)
 				md5<-stringMd5(chunk)	
 				
-				#uploadSuccess<-uploadOneChunk(uploadId=uploadId, ext=ext, chunksizeBytes=chuckActualSizeBytes, 
-				#		chunkNumber=chunkNumber, md5=md5, uploadUrl=uploadUrl, curlHandle=curlHandle, contentType=contentType)
-
 				## S3 wants 'content-type' and 'content-length' headers. S3 doesn't like
 				## 'transfer-encoding': 'chunked', which requests will add for you, if it
 				## can't figure out content length. The errors given by S3 are not very
@@ -138,19 +133,8 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 				if (debug) message(sprintf('url= %s\n', uploadUrl))
 				
 				stringUploadCurlHandle<-getCurlHandle()
-				body<-.curlStringUpload(url=uploadUrl, chunk=chunk, chunkSize=chuckActualSizeBytes, curlHandle=stringUploadCurlHandle, header=headers)
+				body<-.curlStringUpload(url=uploadUrl, chunk=chunk, curlHandle=stringUploadCurlHandle, header=headers)
 				if (debug) message(sprintf('curlStringUpload response body:\n%s\n', body))
-				
-#				httpResponse<-.getURLIntern(uploadUrl, 
-#						postfields=chunk, # the request body
-#						customrequest="PUT", # the request method
-#						httpheader=headers, # the headers
-#						curl=curlHandle, 
-#						debugfunction=NULL,
-#						.opts=.getCache("curlOpts"))
-#				# return the http response
-#				#httpResponse$body
-				
 				
 				if (isErrorResponseStatus(getStatusCode(stringUploadCurlHandle))) {
 					next
@@ -166,12 +150,8 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 				
 				# return true if successful, false otherwise
 				if(isErrorResponseStatus(getStatusCode(curlHandle))) {
-					if (debug) message(sprintf('\nUpload of Chunk %d was NOT SUCCESSFUL".\n', chunkCount))
 					next
-				} else {
-					if (debug) message(sprintf('\nUpload of Chunk %d was SUCCESSFUL.\n', chunkCount))
 				}
-				
 				addMultiPartResponse<-createS4ObjectFromList(responseAsList, "AddPartResponse")			
 				
 				uploadSuccess<-!isErrorResponseStatus(getStatusCode(curlHandle)) &&
@@ -226,5 +206,26 @@ finalizeUpload<-function(uploadId, curlHandle) {
 	createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
 }
 
-
+.curlStringUpload <-function(url, chunk, method="PUT", 
+				curlHandle = getCurlHandle(), header, opts = .getCache("curlOpts"))
+{
+	opts$noprogress <- 0L
+	# I have not idea why, but to get 'curlPerform' to move a file to another file (see test_curlUploadDownload)
+	# it is not sufficient to set customrequestmethod to POST, you also have to set opts$put
+	if (method=="PUT") opts$put <- 1L
+	
+	chunkSize<-length(chunk)
+	opts$infilesize <- as.integer(chunkSize)
+	responseWriteFunction<-basicTextGatherer()
+	
+	if(missing(header)){
+		rc<-curlPerform(URL=url, customrequest=method, readfunction=chunk, curl=curlHandle, .opts = opts, writefunction=responseWriteFunction$update)
+	}else{
+		rc<-curlPerform(URL=url, customrequest=method, readfunction=chunk, curl=curlHandle, httpHeader=header, .opts = opts, writefunction=responseWriteFunction$update)
+	}
+	
+	if (rc!=0) stop("curlPerform returned status code ", rc)
+	
+	responseWriteFunction$value()
+}
 

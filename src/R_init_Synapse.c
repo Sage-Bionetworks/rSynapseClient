@@ -1,4 +1,4 @@
-/* Initialize c functions for curl reader/writer in R
+/* Initialize c functions for curl writer in R
  *
  * Author: Martin Morgan <mtmorgan@fhcrc.org>
  */
@@ -9,9 +9,6 @@
 static const R_CallMethodDef callMethods[] = {
     {".writer_open", (DL_FUNC) &writer_open, 1},
     {".writer_close", (DL_FUNC) &writer_close, 1},
-	{".reader_open", (DL_FUNC) &reader_open, 1},
-    {".reader_close", (DL_FUNC) &reader_close, 1},
-    {".create_string_data", (DL_FUNC) &create_string_data, 1},
     {NULL, NULL, 0}
 };
 
