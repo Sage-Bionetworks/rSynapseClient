@@ -119,7 +119,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 				
 				# if unsuccessful we simply go on to the next chunk
 				# outermost loop will retry any missing chunks
-				uploadSuccess <- uploadOneChunk(chunk, uploadUrl)
+				uploadSuccess <- uploadOneChunk(chunk, uploadUrl, contentType)
 				
 				if (uploadSuccess) {
 					percentUploaded <- chunkCount/length(partNumberToUrlMap)*100
@@ -133,6 +133,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 		}, finally=close(connection))
 		
 		uploadStatus<-finalizeUpload(uploadId, curlHandle)
+		
 		if (isErrorResponseStatus(getStatusCode(curlHandle))) {
 			responseAsList<-synapsePost(uri="/file/multipart", 
 					entity=multipartUploadRequestAsList, 
@@ -156,7 +157,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 }
 
 # return TRUE if successful, FALSE otherwise
-uploadOneChunk<-function(chunk, uploadUrl) {
+uploadOneChunk<-function(chunk, uploadUrl, contentType) {
 	md5<-stringMd5(chunk)	
 	
 	## S3 wants 'content-type' and 'content-length' headers. S3 doesn't like
