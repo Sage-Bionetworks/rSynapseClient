@@ -26,7 +26,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 	md5 <- tools::md5sum(path.expand(filepath))
 	names(md5)<-NULL
 	
-	fileSize<-file.info(filepath)$size
+	fileSize<-syn.file.info(filepath)$size
 	chunksizeBytes <- max(5242880, ceiling(fileSize/10000))
 	
 	curlHandle<-getCurlHandle()
@@ -113,12 +113,12 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 				}
 				
 				startPositionForChunk<-(as.integer(chunkNumber)-1)*chunksizeBytes
-				seek(connection, startPositionForChunk)
-				chunk <- readBin(con=connection, what="raw", n=chunksizeBytes)
+				syn.seek(connection, startPositionForChunk)
+				chunk <- syn.readBin(con=connection, what="raw", n=chunksizeBytes)
 				
 				# if unsuccessful we simply go on to the next chunk
 				# outermost loop will retry any missing chunks
-				uploadSuccess <- uploadOneChunk(chunk, uploadUrl, uploadId, contentType)
+				uploadSuccess <- uploadOneChunk(chunk, uploadUrl, uploadId, chunkNumber, contentType)
 				
 				if (uploadSuccess) {
 					percentUploaded <- chunkCount/length(partNumberToUrlMap)*100
@@ -134,7 +134,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 		uploadStatus<-finalizeUpload(uploadId, curlHandle)
 		
 		# if the last step didn't work then we need to refresh MultipartUploadStatus for another round
-		if (is.null(uploadStatus) || uploadStatus.state!="COMPLETED") {
+		if (is.null(uploadStatus) || uploadStatus@state!="COMPLETED") {
 			responseAsList<-synapsePost(uri="/file/multipart", 
 					entity=multipartUploadRequestAsList, 
 					endpoint=synapseServiceEndpoint("FILE"),
@@ -156,8 +156,15 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 			curlHandle=getCurlHandle())
 }
 
+
+# some mockable interfaces
+syn.file.info<-function(...) {file.info(...)}
+syn.readBin<-function(...) {readBin(...)}
+syn.seek<-function(...) {seek(...)}
+
+
 # return TRUE if successful, FALSE otherwise
-uploadOneChunk<-function(chunk, uploadUrl, uploadId, contentType) {
+uploadOneChunk<-function(chunk, uploadUrl, uploadId, chunkNumber, contentType) {
 	md5<-stringMd5(chunk)	
 	
 	## S3 wants 'content-type' and 'content-length' headers. S3 doesn't like
@@ -183,6 +190,7 @@ uploadOneChunk<-function(chunk, uploadUrl, uploadId, contentType) {
 		return(FALSE)
 	}
 	
+	curlHandle<-getCurlHandle()
 	responseAsList<-synapsePut(uri=sprintf("/file/multipart/%s/add/%s?partMD5Hex=%s", 
 					uploadId, chunkNumber, md5), 
 			entity=list(),

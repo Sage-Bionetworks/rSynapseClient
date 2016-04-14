@@ -3,13 +3,12 @@
 # Author: brucehoff
 ###############################################################################
 
-set<-function(key, value) {synapseClient:::.setCache(key, value)}
-get<-function(key) {synapseClient:::.getCache(key)}
+s<-function(key, value) {synapseClient:::.setCache(key, value)}
+g<-function(key) {synapseClient:::.getCache(key)}
 
 contains<-function(s, sub) {regexpr(sub, s)[1]>=0}
 
 .setUp <- function() {
-	synapseClient:::.mock("functionname", function() {})
 }
 
 .tearDown <- function() {
@@ -24,11 +23,11 @@ unitTestChunkedUpload <- function() {
   writeChar(content, connection, eos=NULL)
   close(connection)  
 	
-	synapseClient:::.mock("file.info", function(filePath) {list(size=as.integer(5242880*2.5))})
-	synapseClient:::.mock("readBin", function(conn,what,n) {"some file content"})
-	synapseClient:::.mock("seek", function(conn,n) {n})
+	synapseClient:::.mock("syn.file.info", function(...) {list(size=as.integer(5242880*2.5))})
+	synapseClient:::.mock("syn.readBin", function(conn,what,n) {"some file content"})
+	synapseClient:::.mock("syn.seek", function(conn,n) {n})
 	
-	synapseClient:::.mock("synapsePost", function(...) {
+	synapseClient:::.mock("synapsePost", function(uri, entity, ...) {
 				if (uri=="/file/multipart") {
 					checkEquals(entity$fileName, basename(filePath))
 					checkEquals(entity$fileSize, as.integer(5242880*2.5))
@@ -45,18 +44,18 @@ unitTestChunkedUpload <- function() {
 				}
 			})
   
-	synapseClient:::.mock("synapsePut", function(...) {
+	synapseClient:::.mock("synapsePut", function(uri, ...) {
 				if (contains(uri, "add")) {
 					list(addPartState="ADD_SUCCESS")
 				} else if (contains(uri, "complete")) {
-					list(state="COMPLETED")
+					list(state="COMPLETED", resultFileHandleId="202")
 				} else {
 					stop("unexpected uri: ", uri)
 				}
 			})
 	
-	synapseClient:::.mock("synapseGet", function(...) {
-				if (uri=="/fileHandle") {
+	synapseClient:::.mock("synapseGet", function(uri, ...) {
+				if (contains(uri, "/fileHandle")) {
 					list(addPartState="ADD_SUCCESS")
 				} else if (uri=="/file/multipart/%s/complete") {
 					list(state="COMPLETED")
