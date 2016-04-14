@@ -37,7 +37,6 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 	debug<-.getCache("debug")
 	if (is.null(debug)) debug<-FALSE
 	
-	
 	multipartUploadRequest<-MultipartUploadRequest(
 			contentMD5Hex=md5, 
 			fileName=basename(filepath), 
@@ -134,7 +133,8 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 		
 		uploadStatus<-finalizeUpload(uploadId, curlHandle)
 		
-		if (isErrorResponseStatus(getStatusCode(curlHandle))) {
+		# if the last step didn't work then we need to refresh MultipartUploadStatus for another round
+		if (is.null(uploadStatus) || uploadStatus.state!="COMPLETED") {
 			responseAsList<-synapsePost(uri="/file/multipart", 
 					entity=multipartUploadRequestAsList, 
 					endpoint=synapseServiceEndpoint("FILE"),
@@ -170,6 +170,9 @@ uploadOneChunk<-function(chunk, uploadUrl, contentType) {
 	## 501 Server Error: Not Implemented
 	## A header you provided implies functionality that is not implemented
 	headers <- c('Content-Type'=contentType)
+	
+	debug<-.getCache("debug")
+	if (is.null(debug)) debug<-FALSE
 	
 	if (debug) message(sprintf('url= %s\n', uploadUrl))
 	
@@ -232,6 +235,11 @@ finalizeUpload<-function(uploadId, curlHandle) {
 			extraRetryStatusCodes=NULL,
 			checkHttpStatus=FALSE,
 			curlHandle=curlHandle)
-	createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
+	if (isErrorResponseStatus(getStatusCode(curlHandle))) {
+		NULL
+	} else {
+		createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
+		
+	}
 }
 
