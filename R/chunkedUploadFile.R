@@ -118,7 +118,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 				
 				# if unsuccessful we simply go on to the next chunk
 				# outermost loop will retry any missing chunks
-				uploadSuccess <- uploadOneChunk(chunk, uploadUrl, contentType)
+				uploadSuccess <- uploadOneChunk(chunk, uploadUrl, uploadId, contentType)
 				
 				if (uploadSuccess) {
 					percentUploaded <- chunkCount/length(partNumberToUrlMap)*100
@@ -157,7 +157,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 }
 
 # return TRUE if successful, FALSE otherwise
-uploadOneChunk<-function(chunk, uploadUrl, contentType) {
+uploadOneChunk<-function(chunk, uploadUrl, uploadId, contentType) {
 	md5<-stringMd5(chunk)	
 	
 	## S3 wants 'content-type' and 'content-length' headers. S3 doesn't like
@@ -239,7 +239,6 @@ finalizeUpload<-function(uploadId, curlHandle) {
 		NULL
 	} else {
 		createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
-		
 	}
 }
 
