@@ -3,15 +3,28 @@
 # Author: brucehoff
 ###############################################################################
 
-s<-function(key, value) {synapseClient:::.setCache(key, value)}
 g<-function(key) {synapseClient:::.getCache(key)}
+s<-function(key, value) {
+	synapseClient:::.setCache(key, value)
+	allCtrs<-g("test_ChunkedFileUpload_counters")
+	allCtrs<-unique(c(callCtrs, key))
+	synapseClient:::.setCache("test_ChunkedFileUpload_counters", allCtrs)
+}
+clearAllCtrs<-function() {synapseClient:::.setCache("test_ChunkedFileUpload_counters", NULL)}
+inc<-function(key) {
+	value<-g(key)
+	if (is.null(value)) value<-as.integer(0)
+	s(key, value+1)
+}
 
 contains<-function(s, sub) {regexpr(sub, s)[1]>=0}
 
 .setUp <- function() {
+	clearAllCtrs()
 }
 
 .tearDown <- function() {
+	clearAllCtrs()
   synapseClient:::.unmockAll()
 }
 
@@ -32,7 +45,7 @@ unitTestChunkedUpload <- function() {
 					checkEquals(entity$fileName, basename(filePath))
 					checkEquals(entity$fileSize, as.integer(5242880*2.5))
 					list(uploadId="101", partsState="100") # first chunk has already been uploaded
-				} else if (contains(uri, "/presigned/url/batch")) { # TODO need a regex here
+				} else if (contains(uri, "/presigned/url/batch")) {
 					list(partPresignedUrls=list(
 									list(partNumber=as.integer(1), uploadPresignedUrl="/url11"),
 									list(partNumber=as.integer(2), uploadPresignedUrl="/url22"),
