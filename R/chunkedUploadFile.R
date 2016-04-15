@@ -211,7 +211,7 @@ uploadOneChunk<-function(chunk, uploadUrl, uploadId, chunkNumber, contentType) {
 	
 	if (debug) {
 		if (uploadSuccess) {uploadResult<-"SUCCESSFUL"} else {uploadResult<-"NOT successful"}
-		message(sprintf('\nUpload of Chunk %d was %s.\n', chunkNumber, uploadResult))
+		message(sprintf('\nUpload of Chunk %s was %s.\n', chunkNumber, uploadResult))
 	}
 	
 	uploadSuccess
