@@ -31,11 +31,26 @@ inc<-function(key) {
 	value+1
 }
 
+o<-function(key) {
+	message(key, ": ", g(key))
+}
+
 # return TRUE iff the string 's' contains the substring 'sub'
 contains<-function(s, sub) {regexpr(sub, s)[1]>=0}
 
 .setUp <- function() {
 	clearAllCtrs()
+	# mock a file which will have three 'chunks'
+	synapseClient:::.mock("syn.file.info", function(...) {list(size=as.integer(5242880*2.5))})
+	synapseClient:::.mock("syn.readBin", function(conn,what,n) {"some file content"})
+	
+	synapseClient:::.mock("syn.seek", function(conn,n) {
+				key<-"seek"
+				cntr<-gInt(key) # how many times has this mock been called?
+				inc(key)
+				s(sprintf("seek.%s", cntr), n)
+				n
+	})
 }
 
 .tearDown <- function() {
@@ -43,23 +58,21 @@ contains<-function(s, sub) {regexpr(sub, s)[1]>=0}
   synapseClient:::.unmockAll()
 }
 
-unitTestChunkedUpload <- function() {
-  # create a file to upload
-  content<-"this is a test"
-  filePath<- tempfile(fileext = ".txt")
-  connection<-file(filePath)
-  writeChar(content, connection, eos=NULL)
-  close(connection)  
-	
-	# mock a file which will have three 'chunks'
-	synapseClient:::.mock("syn.file.info", function(...) {list(size=as.integer(5242880*2.5))})
-	synapseClient:::.mock("syn.readBin", function(conn,what,n) {"some file content"})
-	synapseClient:::.mock("syn.seek", function(conn,n) {n})
-	
+createFileToUpload<-function() {
+	# create a file to upload
+	content<-"this is a test"
+	filePath<- tempfile(fileext = ".txt")
+	connection<-file(filePath)
+	writeChar(content, connection, eos=NULL)
+	close(connection)  
+	filePath
+}
+
+mockSynapsePost<-function() {
 	synapseClient:::.mock("synapsePost", function(uri, entity, ...) {
 				if (uri=="/file/multipart") {
-					checkEquals(entity$fileName, basename(filePath))
-					checkEquals(entity$fileSize, as.integer(5242880*2.5))
+					s("/file/multipart_filename", entity$fileName)
+					s("/file/multipart_filesize", entity$fileSize)
 					key<-"post_/file/multipart"
 					cntr<-gInt(key) # how many times has this mock been called?
 					inc(key)
@@ -76,8 +89,8 @@ unitTestChunkedUpload <- function() {
 					inc(key)
 					if (cntr==0) {
 						list(partPresignedUrls=list(
-									list(partNumber=as.integer(2), uploadPresignedUrl="/url22"),
-									list(partNumber=as.integer(3), uploadPresignedUrl="/url33")
+										list(partNumber=as.integer(2), uploadPresignedUrl="/url22"),
+										list(partNumber=as.integer(3), uploadPresignedUrl="/url33")
 								)
 						)
 					} else {
@@ -88,7 +101,9 @@ unitTestChunkedUpload <- function() {
 					stop("unexpected uri: ", uri)
 				}
 			})
-  
+}
+
+mockSynapsePut<-function() {
 	synapseClient:::.mock("synapsePut", function(uri, ...) {
 				if (contains(uri, "add")) {
 					key<-"put_add"
@@ -108,7 +123,9 @@ unitTestChunkedUpload <- function() {
 					stop("unexpected uri: ", uri)
 				}
 			})
-	
+}
+
+mockSynapseGet<-function() {
 	synapseClient:::.mock("synapseGet", function(uri, ...) {
 				if (contains(uri, "/fileHandle")) {
 					key<-"get_fileHandle"
@@ -116,12 +133,14 @@ unitTestChunkedUpload <- function() {
 					inc(key)
 					# should just be called once (so counter is zero)
 					if (cntr>=1) stop(sprintf("Unexpected value for %s %d.", key, cntr))
-					list(addPartState="ADD_SUCCESS")
+					list(id="222")
 				} else {
 					stop("unexpected uri: ", uri)
 				}
 			})
-	
+}
+
+mockCurlStringUpload<-function() {
 	synapseClient:::.mock("curlStringUpload", function(...) {
 				key<-"curlStringUpload"
 				cntr<-gInt(key) # how many times has this mock been called?
@@ -129,11 +148,33 @@ unitTestChunkedUpload <- function() {
 				# should just be called twice
 				if (cntr>=2) stop(sprintf("Unexpected value for %s %d.", key, cntr))
 				""
-		})
+			})
+}
+
+# In this 'happy case', there are three chunks, one already uploaded.
+# The remaining two are uploaded and the job completes.
+unitTestChunkedUpload <- function() {
 	
+	filePath<-createFileToUpload()
 	
+	mockSynapsePost()
+	
+	mockSynapsePut()
+	
+	mockSynapseGet()
+	
+	mockCurlStringUpload()
+	  
+	#
+	# This is the method under test
+	#
 	fileHandle <- synapseClient:::chunkedUploadFile(filePath)
+	
+	checkEquals(fileHandle$id, "222")
  
+	checkEquals(g("/file/multipart_filename"), basename(filePath))
+	checkEquals(g("/file/multipart_filesize"), as.integer(5242880*2.5))
+	
 	# should have called 'POST /file/multipart' twice
 	checkEquals(gInt("post_/file/multipart"), as.integer(1))
 	
@@ -152,4 +193,21 @@ unitTestChunkedUpload <- function() {
 	# check that two parts were added
 	checkEquals(gInt("curlStringUpload"), as.integer(2))
 	
+	# check that 'seek' was called the right number of times
+	# remember, only two of three chunks needed to be uploaded
+	checkEquals(g("seek"), as.integer(2))
+
+	# check that 'seek' was called with the right values
+	checkEquals(g("seek.0"), as.integer(5242880)) # chunk #2
+	checkEquals(g("seek.1"), as.integer(2*5242880)) # chunk #3
+
 }
+
+# TODO check the case in which a chunk fails to upload on the first try,
+# (curlStringUpload returns false) but works on the second try
+# count the 'PUT .../add...' calls to make sure we don't try to add a part
+# that wasn't uploaded
+
+# TODO The case in which the upload doesn't complete after 7 tries
+
+# TODO The case in which 15 minutes passes
