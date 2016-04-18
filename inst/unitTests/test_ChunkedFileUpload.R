@@ -76,13 +76,8 @@ mockSynapsePost<-function() {
 					key<-"post_/file/multipart"
 					cntr<-gInt(key) # how many times has this mock been called?
 					inc(key)
-					if (cntr==0) {
-						# first time, let's say two of three chunks need to be uploaded
-						list(uploadId="101", partsState="100")
-					} else {
-						# shouldn't call a second time
-						stop(sprintf("Unexpected value for %s %d.", key, cntr))
-					}
+					# let's say two of three chunks need to be uploaded
+					list(uploadId="101", partsState="100")
 				} else if (contains(uri, "/presigned/url/batch")) {
 					key<-"post_/presigned/url/batch"
 					cntr<-gInt(key) # how many times has this mock been called?
@@ -147,7 +142,7 @@ mockCurlStringUpload<-function() {
 				inc(key)
 				# should just be called twice
 				if (cntr>=2) stop(sprintf("Unexpected value for %s %d.", key, cntr))
-				""
+				TRUE # success
 			})
 }
 

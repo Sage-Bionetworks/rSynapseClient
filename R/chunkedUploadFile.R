@@ -184,9 +184,10 @@ uploadOneChunk<-function(chunk, uploadUrl, uploadId, chunkNumber, contentType) {
 	if (debug) message(sprintf('url= %s\n', uploadUrl))
 	
 	stringUploadCurlHandle<-getCurlHandle()
-	body<-curlStringUpload(url=uploadUrl, chunk=chunk, curlHandle=stringUploadCurlHandle, header=headers)
+	curlStringUploadSuccess<-
+			curlStringUpload(url=uploadUrl, chunk=chunk, curlHandle=stringUploadCurlHandle, header=headers)
 	
-	if (isErrorResponseStatus(getStatusCode(stringUploadCurlHandle))) {
+	if (!curlStringUploadSuccess) {
 		return(FALSE)
 	}
 	
@@ -231,9 +232,7 @@ curlStringUpload <-function(url, chunk, method="PUT",
 	
 	rc<-curlPerform(URL=url, customrequest=method, readfunction=chunk, curl=curlHandle, httpHeader=header, .opts = opts, writefunction=responseWriteFunction$update)
 	
-	if (rc!=0) stop("curlPerform returned status code ", rc)
-	
-	responseWriteFunction$value()
+	rc==0 && !isErrorResponseStatus(getStatusCode(curlHandle))
 }
 
 finalizeUpload<-function(uploadId, curlHandle) {
