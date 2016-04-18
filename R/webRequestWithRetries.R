@@ -22,7 +22,7 @@ webRequestWithRetries<-function(fcn,
 		# value of the error condition nor generates the string in a predictable way
 		# So we retry on everything and provide a place to list messages for which
 		# we should not retry
-		errorMessagesNotToRetry <- "Forbidden"
+		errorMessagesNotToRetry <- character(0)
 		
 		if (is(tryReturnValue, "try-error")) {
 			# return true if there is no error message specifically tagged not to retry
