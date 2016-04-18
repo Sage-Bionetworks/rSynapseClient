@@ -101,7 +101,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 				# 15 min time limit on upload URLs
 				# http://hud.rel.rest.doc.sagebase.org.s3-website-us-east-1.amazonaws.com/POST/file/multipart/uploadId/presigned/url/batch.html
 				#
-				if (Sys.time()-batchRequestTime>as.difftime(batchUrlTimeLimit())) {
+				if (Sys.time()-batchRequestTime>=as.difftime(batchUrlTimeLimit())) {
 					break
 				}
 				
