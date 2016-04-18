@@ -90,7 +90,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 		for (part in batchPartUploadUrlResponse@partPresignedUrls@content) {
 			partNumberToUrlMap[[as.character(part@partNumber)]]<-part@uploadPresignedUrl
 		}
-		if (uploadRetryCounter>1) cat("Upload needs to be repeated for ", length(partNumberToUrlMap) , " file parts.\n")
+		if (uploadRetryCounter>1) cat("Upload needs to be repeated for ", length(partNumberToUrlMap) , " file part(s).\n")
 		
 		connection<-file(filepath, open="rb")
 		chunkCount<-0
@@ -101,7 +101,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 				# 15 min time limit on upload URLs
 				# http://hud.rel.rest.doc.sagebase.org.s3-website-us-east-1.amazonaws.com/POST/file/multipart/uploadId/presigned/url/batch.html
 				#
-				if (Sys.time()-batchRequestTime>as.difftime("00:15:00")) {
+				if (Sys.time()-batchRequestTime>as.difftime(batchUrlTimeLimit())) {
 					break
 				}
 				
@@ -161,7 +161,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 syn.file.info<-function(...) {file.info(...)}
 syn.readBin<-function(...) {readBin(...)}
 syn.seek<-function(...) {seek(...)}
-
+batchUrlTimeLimit<-function() {"00:15:00"}
 
 # return TRUE if successful, FALSE otherwise
 uploadOneChunk<-function(chunk, uploadUrl, uploadId, chunkNumber, contentType) {

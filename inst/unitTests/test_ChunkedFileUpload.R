@@ -80,18 +80,12 @@ mockSynapsePost<-function() {
 					list(uploadId="101", partsState="100")
 				} else if (contains(uri, "/presigned/url/batch")) {
 					key<-"post_/presigned/url/batch"
-					cntr<-gInt(key) # how many times has this mock been called?
 					inc(key)
-					if (cntr==0) {
-						list(partPresignedUrls=list(
-										list(partNumber=as.integer(2), uploadPresignedUrl="/url22"),
-										list(partNumber=as.integer(3), uploadPresignedUrl="/url33")
-								)
-						)
-					} else {
-						# shouldn't call a second time
-						stop(sprintf("Unexpected value for %s %d.", key, cntr))
-					}
+					list(partPresignedUrls=list(
+									list(partNumber=as.integer(2), uploadPresignedUrl="/url22"),
+									list(partNumber=as.integer(3), uploadPresignedUrl="/url33")
+							)
+					)
 				} else {
 					stop("unexpected uri: ", uri)
 				}
@@ -138,10 +132,7 @@ mockSynapseGet<-function() {
 mockCurlStringUpload<-function() {
 	synapseClient:::.mock("curlStringUpload", function(...) {
 				key<-"curlStringUpload"
-				cntr<-gInt(key) # how many times has this mock been called?
 				inc(key)
-				# should just be called twice
-				if (cntr>=2) stop(sprintf("Unexpected value for %s %d.", key, cntr))
 				TRUE # success
 			})
 }
@@ -323,6 +314,130 @@ unitTestChunkedUploadTempFailure <- function() {
 	
 }
 
-# TODO The case in which the upload doesn't complete after 7 tries
+# The case in which the upload never completes
+unitTestChunkedUploadPermFailure <- function() {
+	
+	filePath<-createFileToUpload()
+	
+	# whenever it's asked it says the same two chunks need to be uploaded
+	mockSynapsePost()
+	
+	# the 'add chunk' step fails
+	synapseClient:::.mock("synapsePut", function(uri, ...) {
+				if (contains(uri, "add")) {
+					key<-"put_add"
+					inc(key)
+					list(addPartState="ADD_FAILURE")
+				} else if (contains(uri, "complete")) {
+					key<-"put_complete"
+					inc(key)
+					list(state="INCOMPLETE", partsState="100")
+				} else {
+					stop("unexpected uri: ", uri)
+				}
+			})
+	
+	mockSynapseGet()
+	
+	# the actual chunk upload works, it's the 'add chunk' step that fails in this scenario
+	mockCurlStringUpload()
+	
+	#
+	# This is the method under test
+	#
+	checkException(
+			synapseClient:::chunkedUploadFile(filePath)
+	)
+	
+	# should have called 'POST /file/multipart' 8 times
+	checkEquals(gInt("post_/file/multipart"), as.integer(8))
+	
+	# check that /presigned/url/batch was called 7 times
+	checkEquals(gInt("post_/presigned/url/batch"), as.integer(7))
+	
+	# check that we tried to add two parts seven times
+	checkEquals(gInt("put_add"), as.integer(14))
+	
+	# check that 'complete' was called 7 times
+	checkEquals(gInt("put_complete"), as.integer(7))
 
-# TODO The case in which 15 minutes passes
+	# check that GET /fileHandle was never called
+	checkEquals(gInt("get_fileHandle"), as.integer(0))
+	
+	# check that there were 14 calls to curlStringUpload
+	checkEquals(gInt("curlStringUpload"), as.integer(14))
+}
+
+# This  case in which the URL time limit is exceeded
+unitTestChunkedUploadURLTimeLimitExceeded <- function() {
+	
+	filePath<-createFileToUpload()
+	
+	mockSynapsePost()
+	
+	synapseClient:::.mock("synapsePut", function(uri, ...) {
+				if (contains(uri, "add")) {
+					key<-"put_add"
+					inc(key)
+					list(addPartState="ADD_SUCCESS")
+				} else if (contains(uri, "complete")) {
+					key<-"put_complete"
+					cntr<-gInt(key) # how many times has this mock been called?
+					inc(key)
+					if (cntr==0) {
+						list(state="INCOMPLETE", partsState="100")
+					} else {
+						list(state="COMPLETED", partsState="111", resultFileHandleId="202")
+					}
+				} else {
+					stop("unexpected uri: ", uri)
+				}
+			})
+	
+	mockSynapseGet()
+	
+	mockCurlStringUpload()
+	
+	# First time through we simulate the expiration
+	synapseClient:::.mock("batchUrlTimeLimit", 
+			function() {
+				key<-"timelimit"
+				cntr<-gInt(key) # how many times has this mock been called?
+				inc(key)
+				if (cntr==0) {
+					"00:00:00" # expired!
+				} else {
+					"00:15:00" # the usual value
+				}
+			}
+	)
+	
+	#
+	# This is the method under test
+	#
+	fileHandle <- synapseClient:::chunkedUploadFile(filePath)
+	
+	checkEquals(fileHandle$id, "222")
+	
+	checkEquals(g("/file/multipart_filename"), basename(filePath))
+	checkEquals(g("/file/multipart_filesize"), as.integer(5242880*2.5))
+	
+	# should have called 'POST /file/multipart' once
+	checkEquals(gInt("post_/file/multipart"), as.integer(2))
+	
+	# check that /presigned/url/batch was called once
+	checkEquals(gInt("post_/presigned/url/batch"), as.integer(2))
+	
+	# check that two parts were added
+	checkEquals(gInt("put_add"), as.integer(2))
+	
+	# check that 'complete' was called twice
+	checkEquals(gInt("put_complete"), as.integer(2))
+	
+	# check that GET /fileHandle was called once
+	checkEquals(gInt("get_fileHandle"), as.integer(1))
+	
+	# check that two parts were uploaded
+	checkEquals(gInt("curlStringUpload"), as.integer(2))
+	
+}
