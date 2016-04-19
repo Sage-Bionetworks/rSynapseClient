@@ -422,7 +422,7 @@ downloadTableToCSVFile<-function(sql, verbose, includeRowIdAndRowVersion=TRUE, f
   }
   fileHandle<-S3FileHandle(id=responseBody@resultsFileHandleId, fileName=fileName)
   fileHandleAsList<-createListFromS4Object(fileHandle)
-  filePath<-downloadFromServiceWithCaching(downloadUri, "FILE", fileHandleAsList$id, downloadLocation, ifcollision="overwrite.local")
+  filePath<-downloadFromServiceWithCaching(downloadUri, "FILE", fileHandleAsList$id, NULL, downloadLocation, ifcollision="overwrite.local")
   list(filePath=filePath, etag=responseBody@etag, headers=responseBody@headers)
 }
 
@@ -566,7 +566,7 @@ synDownloadTableFile<-function(table, rowIdAndVersion, columnName, downloadLocat
 		stop(sprintf("Unexpected type %s", class(table)))
 	}
 	uri<-sprintf("/entity/%s/table/column/%s/row/%s/version/%s/file?redirect=FALSE", tableId, columnId, rowId, versionNumber)
-	downloadFromServiceWithCaching(uri, "REPO", fileHandleId, downloadLocation, ifcollision)
+	downloadFromServiceWithCaching(uri, "REPO", fileHandleId, NULL, downloadLocation, ifcollision)
 }
 
 

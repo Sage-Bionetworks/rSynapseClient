@@ -510,7 +510,7 @@ retrieveAttachedFileHandle<-function(downloadUri, endpointName, fileHandle, down
   }
   
   if (downloadFile) {
-	  filePath<-downloadFromServiceWithCaching(downloadUri, endpointName, fileHandle$id, downloadLocation, ifcollision)
+	  filePath<-downloadFromServiceWithCaching(downloadUri, endpointName, fileHandle$id, fileHandle$contentMd5, downloadLocation, ifcollision)
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }
@@ -527,7 +527,7 @@ retrieveAttachedFileHandle<-function(downloadUri, endpointName, fileHandle, down
   filePath
 }
 
-downloadFromServiceWithCaching<-function(downloadUri, endpointName, fileHandleId, downloadLocation=NULL, ifcollision="keep.both") {
+downloadFromServiceWithCaching<-function(downloadUri, endpointName, fileHandleId, md5, downloadLocation=NULL, ifcollision="keep.both") {
 	if (is.null(downloadLocation)) {
 		downloadLocation<-defaultDownloadLocation(fileHandleId)
 	} else {
@@ -546,6 +546,11 @@ downloadFromServiceWithCaching<-function(downloadUri, endpointName, fileHandleId
 	downloadResult<-downloadFromService(downloadUri, endpointName, destdir=downloadLocation, extraRetryStatusCodes=404)
 	# result is list(downloadedFile, fileName) where 
 	# 'downloadedFile' is a temp file in the target location and fileName is the desired file name
+	
+	if (!is.null(md5)) {
+		recomputedMd5<-tools::md5sum(path.expand(downloadResult$downloadedFile))
+		if (md5!=recomputedMd5) stop("MD5 hash of downloaded file ", path.expand(filepath), " does not match that reported by Synapse.")
+	}
 	
 	if (is.null(downloadResult$fileName)) stop(sprintf("download of %s failed to return file name.", downloadUri))
 	filePath<-file.path(downloadLocation, downloadResult$fileName)
