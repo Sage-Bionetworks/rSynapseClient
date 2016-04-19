@@ -237,6 +237,30 @@ getCachedInLocation<-function(fileHandleId, downloadLocation) {
 	result
 }
 
+# Searches for a file for the given handle id which is already downloaded ANYWHERE. 
+# Looks both for an _unchanged_ file (i.e. not modified
+# since download) and a downloaded file, whether changed or not.  Returns the first
+# two matching files found in the slots 'unchanged' and 'any' of the returned list.
+# if no match is found, the corresponding slot is empty.
+findCachedFile<-function(fileHandleId) {
+	cacheMapFile<-cacheMapFilePath(fileHandleId)
+	lockFile(cacheMapFile)
+	mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
+	unlockFile(cacheMapFile)
+	result<-list()
+	for (key in names(mapForFileHandleId)) {
+		if (file.exists(key)) {
+			if (is.null(result$any)) result$any<-key
+			if (fileMatchesTimestamp(key, mapForFileHandleId[[key]])) {
+				if (is.null(result$unchanged)) result$unchanged<-key
+			}
+		}
+	}
+	result
+}
+
+
+
 uploadAndAddToCacheMap<-function(filePath, uploadDestination, contentType=NULL) {
   lastModified<-lastModifiedTimestamp(filePath)
   fileHandle<-uploadFileToEntity(filePath=filePath, uploadDestination=uploadDestination, curlHandle=getCurlHandle(), contentType=contentType)
@@ -529,20 +553,24 @@ retrieveAttachedFileHandle<-function(downloadUri, endpointName, fileHandle, down
 
 downloadFromServiceWithCaching<-function(downloadUri, endpointName, fileHandleId, md5, downloadLocation=NULL, ifcollision="keep.both") {
 	if (is.null(downloadLocation)) {
-		downloadLocation<-defaultDownloadLocation(fileHandleId)
+		# if there is already a downloaded version of the file ANYWHERE then return it
+		downloaded<-findCachedFile(fileHandleId)
 	} else {
 		if (file.exists(downloadLocation) && !file.info(downloadLocation)$isdir) stop(sprintf("%s is not a folder", downloadLocation))
+		# if there is already a downloaded version of the file in the desired directory, then return it
+		downloaded<-getCachedInLocation(fileHandleId, downloadLocation)
 	}
-	
-	# if there is already a downloaded, unmodified version of the file in the desired directory, then return it
-	downloaded<-getCachedInLocation(fileHandleId, downloadLocation)
 	if (!is.null(downloaded$unchanged)) return(downloaded$unchanged)
 	if (!is.null(downloaded$any) && ifcollision=="keep.local") {
 		# there's no need to download
 		return(downloaded$any)
 	}
-	
 	# OK, we need to download it
+	
+	if (is.null(downloadLocation)) {
+		downloadLocation<-defaultDownloadLocation(fileHandleId)
+	}
+	
 	downloadResult<-downloadFromService(downloadUri, endpointName, destdir=downloadLocation, extraRetryStatusCodes=404)
 	# result is list(downloadedFile, fileName) where 
 	# 'downloadedFile' is a temp file in the target location and fileName is the desired file name
