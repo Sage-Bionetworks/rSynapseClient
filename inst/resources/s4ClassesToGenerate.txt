@@ -81,3 +81,9 @@ FileDownloadSummary org.sagebionetworks.repo.model.file.FileDownloadSummary fals
 Snapshotable org.sagebionetworks.repo.model.Snapshotable false
 BulkFileDownloadResponse org.sagebionetworks.repo.model.file.BulkFileDownloadResponse false
 BulkFileDownloadRequest org.sagebionetworks.repo.model.file.BulkFileDownloadRequest false
+BatchPresignedUploadUrlRequest org.sagebionetworks.repo.model.file.BatchPresignedUploadUrlRequest false
+MultipartUploadRequest org.sagebionetworks.repo.model.file.MultipartUploadRequest	false
+PartPresignedUrl org.sagebionetworks.repo.model.file.PartPresignedUrl	false
+BatchPresignedUploadUrlResponse org.sagebionetworks.repo.model.file.BatchPresignedUploadUrlResponse	false
+AddPartResponse	 org.sagebionetworks.repo.model.file.AddPartResponse	false
+MultipartUploadStatus	org.sagebionetworks.repo.model.file.MultipartUploadStatus	false

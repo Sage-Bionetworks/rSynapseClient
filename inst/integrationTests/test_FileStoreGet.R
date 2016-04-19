@@ -591,31 +591,6 @@ roundTripIntern<-function(project) {
 }
 
 
-# test that the md5 calculation works on non-expanded paths
-integrationTestMD5_NonExpandedPath <- function() {
-    # Create a Project
-    project <- synapseClient:::.getCache("testProject")
-    checkTrue(!is.null(project))
-    filePath <- createFile(content="Some content", filePath="~/arglebargle")
-    file <- File(filePath, parentId=propertyValue(project, "id"))
-
-    # Intercept a call that uses the calculated MD5
-    synapseClient:::.mock("completeChunkFileUpload", 
-        function(chunkedFileToken, passedOn) {
-            # Make sure the MD5 is there
-            checkTrue(!is.null(chunkedFileToken[['contentMD5']]))
-            
-            # Now do what the function is supposed to do
-            synapseClient:::.getMockedFunction("completeChunkFileUpload")(chunkedFileToken, passedOn)
-        }
-    )
-
-    storedFile <- synStore(file)
-    deleteEntity(storedFile)
-    unlink(filePath)
-}
-
-
 # test that legacy *Entity based methods work on File objects
 integrationTestAddToNewFILEEntity <-
   function()
