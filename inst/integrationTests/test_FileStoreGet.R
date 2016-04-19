@@ -507,7 +507,7 @@ roundTripIntern<-function(project) {
   checkEquals(synapseStore, downloadedFile@synapseStore)
   checkTrue(length(getFileLocation(downloadedFile))>0)
   # The retrieved object is bound to the existing copy of the file.
-  checkEquals(downloadedFilePath, filePath)
+  checkEquals(downloadedFilePath, normalizePath(filePath, winslash="/"))
   
   # Now repeat, after removing the cachemap record
   # This will download the file into the default cache location
