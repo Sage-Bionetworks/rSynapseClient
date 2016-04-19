@@ -32,7 +32,7 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 	curlHandle<-getCurlHandle()
 
 	MAX_UPLOAD_RETRIES<-7
-	uploadRetryCounter<-0
+	uploadRetryCounter<-1
 	
 	debug<-.getCache("debug")
 	if (is.null(debug)) debug<-FALSE
@@ -48,25 +48,41 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 	)
 	multipartUploadRequestAsList<-createListFromS4Object(multipartUploadRequest)
 	
-	responseAsList<-synapsePost(uri="/file/multipart", 
-			entity=multipartUploadRequestAsList, 
-			endpoint=synapseServiceEndpoint("FILE"),
-			extraRetryStatusCodes=NULL)
-	
-	uploadStatus<-createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
-	uploadId<-uploadStatus@uploadId
+	# in the previous step of the loop, how many parts did we need to upload
+	lastPartsToUploadCount<-NULL
 	
 	# within this loop we don't want to throw exceptions when we retry
   # we just want to let the overall process replay (at least for MAX_UPLOAD_RETRIES iterations)
-	while (uploadRetryCounter<MAX_UPLOAD_RETRIES && length(uploadStatus@resultFileHandleId)==0) {
-		uploadRetryCounter<-uploadRetryCounter+1
-
+	while (uploadRetryCounter<MAX_UPLOAD_RETRIES) {
+		responseAsList<-synapsePost(uri="/file/multipart", 
+				entity=multipartUploadRequestAsList, 
+				endpoint=synapseServiceEndpoint("FILE"),
+				extraRetryStatusCodes=NULL)
+		uploadStatus<-createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
+		uploadId<-uploadStatus@uploadId
+		if (length(uploadStatus@resultFileHandleId)>0)	{
+			# upload is done!
+			break
+		}
+		
 		ps<-uploadStatus@partsState
 		partsToUpload<-as.integer(which(sapply(1:nchar(ps), function(i){substring(ps,i,i)=="0"})))
 		
+		# the retry counter doesn't increment unless no progress is being made
+		partsToUploadCount<-length(partsToUpload)
+		if (!is.null(lastPartsToUploadCount) && lastPartsToUploadCount==partsToUploadCount) {
+			uploadRetryCounter<-uploadRetryCounter+1
+		}
+		lastPartsToUploadCount<-partsToUploadCount
+		
 		if (length(partsToUpload)==0) { # nothing left to upload!
 			uploadStatus<-finalizeUpload(uploadId, curlHandle)
-			next
+			if (!is.null(uploadStatus) && length(uploadStatus@resultFileHandleId)>0)	{
+				# upload is done!
+				break
+			} else {
+				next
+			}
 		}
 		
 		batchPartUploadURLRequest<-BatchPresignedUploadUrlRequest(
@@ -132,17 +148,10 @@ chunkedUploadFile<-function(filepath, uploadDestination=S3UploadDestination(), c
 		}, finally=close(connection))
 		
 		uploadStatus<-finalizeUpload(uploadId, curlHandle)
-		
-		# if the last step didn't work then we need to refresh MultipartUploadStatus for another round
-		if (is.null(uploadStatus) || uploadStatus@state!="COMPLETED") {
-			responseAsList<-synapsePost(uri="/file/multipart", 
-					entity=multipartUploadRequestAsList, 
-					endpoint=synapseServiceEndpoint("FILE"),
-					extraRetryStatusCodes=NULL)
-			
-			uploadStatus<-createS4ObjectFromList(responseAsList, "MultipartUploadStatus")
+		if (!is.null(uploadStatus) && length(uploadStatus@resultFileHandleId)>0)	{
+			# upload is done!
+			break
 		}
-		
 	} # end while
 	
 	if (length(uploadStatus@resultFileHandleId)==0) {
@@ -184,10 +193,10 @@ uploadOneChunk<-function(chunk, uploadUrl, uploadId, chunkNumber, contentType) {
 	if (debug) message(sprintf('url= %s\n', uploadUrl))
 	
 	stringUploadCurlHandle<-getCurlHandle()
-	curlStringUploadSuccess<-
-			curlStringUpload(url=uploadUrl, chunk=chunk, curlHandle=stringUploadCurlHandle, header=headers)
+	curlRawUploadSuccess<-
+			curlRawUpload(url=uploadUrl, chunk=chunk, curlHandle=stringUploadCurlHandle, header=headers)
 	
-	if (!curlStringUploadSuccess) {
+	if (!curlRawUploadSuccess) {
 		return(FALSE)
 	}
 	
@@ -218,7 +227,7 @@ uploadOneChunk<-function(chunk, uploadUrl, uploadId, chunkNumber, contentType) {
 	uploadSuccess
 }
 
-curlStringUpload <-function(url, chunk, method="PUT", 
+curlRawUpload <-function(url, chunk, method="PUT", 
 				curlHandle = getCurlHandle(), header, opts = .getCache("curlOpts"))
 {
 	opts$noprogress <- 0L

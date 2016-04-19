@@ -129,9 +129,9 @@ mockSynapseGet<-function() {
 			})
 }
 
-mockCurlStringUpload<-function() {
-	synapseClient:::.mock("curlStringUpload", function(...) {
-				key<-"curlStringUpload"
+mockCurlRawUpload<-function() {
+	synapseClient:::.mock("curlRawUpload", function(...) {
+				key<-"curlRawUpload"
 				inc(key)
 				TRUE # success
 			})
@@ -149,7 +149,7 @@ unitTestChunkedUpload <- function() {
 	
 	mockSynapseGet()
 	
-	mockCurlStringUpload()
+	mockCurlRawUpload()
 	  
 	#
 	# This is the method under test
@@ -177,7 +177,7 @@ unitTestChunkedUpload <- function() {
 	checkEquals(gInt("get_fileHandle"), as.integer(1))
 	
 	# check that two parts were uploaded
-	checkEquals(gInt("curlStringUpload"), as.integer(2))
+	checkEquals(gInt("curlRawUpload"), as.integer(2))
 	
 	# check that 'seek' was called the right number of times
 	# remember, only two of three chunks needed to be uploaded
@@ -190,7 +190,7 @@ unitTestChunkedUpload <- function() {
 }
 
 # check the case in which a chunk fails to upload on the first try,
-# (curlStringUpload returns false) but works on the second try
+# (curlRawUpload returns false) but works on the second try
 # count the 'PUT .../add...' calls to make sure we don't try to add a part
 # that wasn't uploaded
 unitTestChunkedUploadTempFailure <- function() {
@@ -262,8 +262,8 @@ unitTestChunkedUploadTempFailure <- function() {
 	
 	mockSynapseGet()
 	
-	synapseClient:::.mock("curlStringUpload", function(...) {
-				key<-"curlStringUpload"
+	synapseClient:::.mock("curlRawUpload", function(...) {
+				key<-"curlRawUpload"
 				cntr<-gInt(key) # how many times has this mock been called?
 				inc(key)
 				# should  be called three times
@@ -300,8 +300,8 @@ unitTestChunkedUploadTempFailure <- function() {
 	# check that GET /fileHandle was called once
 	checkEquals(gInt("get_fileHandle"), as.integer(1))
 	
-	# check that there were three calls to curlStringUpload
-	checkEquals(gInt("curlStringUpload"), as.integer(3))
+	# check that there were three calls to curlRawUpload
+	checkEquals(gInt("curlRawUpload"), as.integer(3))
 	
 	# check that 'seek' was called the right number of times
 	# remember, only two of three chunks needed to be uploaded
@@ -340,7 +340,7 @@ unitTestChunkedUploadPermFailure <- function() {
 	mockSynapseGet()
 	
 	# the actual chunk upload works, it's the 'add chunk' step that fails in this scenario
-	mockCurlStringUpload()
+	mockCurlRawUpload()
 	
 	#
 	# This is the method under test
@@ -349,8 +349,8 @@ unitTestChunkedUploadPermFailure <- function() {
 			synapseClient:::chunkedUploadFile(filePath)
 	)
 	
-	# should have called 'POST /file/multipart' 8 times
-	checkEquals(gInt("post_/file/multipart"), as.integer(8))
+	# should have called 'POST /file/multipart' 7 times
+	checkEquals(gInt("post_/file/multipart"), as.integer(7))
 	
 	# check that /presigned/url/batch was called 7 times
 	checkEquals(gInt("post_/presigned/url/batch"), as.integer(7))
@@ -364,8 +364,8 @@ unitTestChunkedUploadPermFailure <- function() {
 	# check that GET /fileHandle was never called
 	checkEquals(gInt("get_fileHandle"), as.integer(0))
 	
-	# check that there were 14 calls to curlStringUpload
-	checkEquals(gInt("curlStringUpload"), as.integer(14))
+	# check that there were 14 calls to curlRawUpload
+	checkEquals(gInt("curlRawUpload"), as.integer(14))
 }
 
 # This  case in which the URL time limit is exceeded
@@ -396,7 +396,7 @@ unitTestChunkedUploadURLTimeLimitExceeded <- function() {
 	
 	mockSynapseGet()
 	
-	mockCurlStringUpload()
+	mockCurlRawUpload()
 	
 	# First time through we simulate the expiration
 	synapseClient:::.mock("batchUrlTimeLimit", 
@@ -422,10 +422,10 @@ unitTestChunkedUploadURLTimeLimitExceeded <- function() {
 	checkEquals(g("/file/multipart_filename"), basename(filePath))
 	checkEquals(g("/file/multipart_filesize"), as.integer(5242880*2.5))
 	
-	# should have called 'POST /file/multipart' once
+	# should have called 'POST /file/multipart' twice
 	checkEquals(gInt("post_/file/multipart"), as.integer(2))
 	
-	# check that /presigned/url/batch was called once
+	# check that /presigned/url/batch was called twice
 	checkEquals(gInt("post_/presigned/url/batch"), as.integer(2))
 	
 	# check that two parts were added
@@ -438,6 +438,6 @@ unitTestChunkedUploadURLTimeLimitExceeded <- function() {
 	checkEquals(gInt("get_fileHandle"), as.integer(1))
 	
 	# check that two parts were uploaded
-	checkEquals(gInt("curlStringUpload"), as.integer(2))
+	checkEquals(gInt("curlRawUpload"), as.integer(2))
 	
 }
