@@ -318,7 +318,13 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, uploadDestination=uploadDestination, contentType=contentType)
       } else { # ... we are storing a new file which we are linking, but not uploading
         # link external URL in Synapse, get back fileHandle	
-        fileHandle<-synapseLinkExternalFile(file@filePath, contentType, storageLocationId=NULL)
+				localFileInfo<-getLocalFileInfo(file@filePath)
+				fileHandle<-synapseLinkExternalFile(
+						externalURL=file@filePath, 
+						contentType=contentType, 
+						contentSize=localFileInfo$size,
+						contentMd5=localFileInfo$md5,
+						storageLocationId=NULL)
         # note, there's no cache map entry to create
       }
       #	save fileHandle in slot, put id in entity properties
@@ -350,7 +356,12 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         # may need to update the external file handle
         if (filePath!=externalURL) {
           # update the file handle
-          file@fileHandle<-synapseLinkExternalFile(filePath, contentType, storageLocationId=NULL)
+          file@fileHandle<-synapseLinkExternalFile(
+							externalURL=filePath, 
+							contentType=contentType, 
+							contentSize=NULL,
+							contentMd5=NULL,
+							storageLocationId=NULL)
           propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
         }
       } else {
@@ -359,6 +370,11 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
     }
   }
   file
+}
+
+getLocalFileInfo<-function(localfile) {
+	if (substr(tolower(localfile),1,7)=="file://") localfile<-substr(localfile, 8, nchar(localfile))
+	list(size=file.info(localfile)$size, md5=tools::md5sum(path.expand(localfile))[[1]])
 }
 
 # containerDestinations has type UploadDestinationList, a TypeList of UploadDestination

@@ -1,4 +1,4 @@
-# Test expontential backoff/retry
+# Test Chunked File Upload
 # 
 # Author: brucehoff
 ###############################################################################
