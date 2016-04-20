@@ -9,33 +9,40 @@
 withRetries<-function(fcn,
 		isRetryable,
 		finalizeResult) {
-	INITIAL_BACKOFF_SECONDS <- 1
-	BACKOFF_MULTIPLIER <- 2 # i.e. the back off time is (initial)*[multiplier^(# retries)]
+	backoff<-initialBackOffSeconds()
 	
-	maxTries<-.getCache("webRequestMaxTries")
-	if (is.null(maxTries) || maxTries<1) stop(sprintf("Illegal value for maxTries %d.", maxTries))
+	startTime<-Sys.time()
+	maxWaitTime<-.getCache("maxWaitDiffTime")
+	if (is.null(maxWaitTime)) stop("Missing value for maxWaitDiffTime.")
 	
-	backoff<-INITIAL_BACKOFF_SECONDS
-	
-	for (retry in 1:maxTries) {
+	while (Sys.time()-startTime<maxWaitTime) {
 		fcnResult<-try(fcn(), silent=T)
 		
-		if (retry<maxTries && isRetryable(fcnResult)) {
+		if (isRetryable(fcnResult)) {
 			# retry
-			if (!is.null(.getCache("debug")) && .getCache("debug")) {
-				if (is(fcnResult, "try-error")) {
-					reportableResult<-fcnResult[[1]]
-				} else {
-					reportableResult<-fcnResult
-				}
-				message("withRetries: error encountered: ", reportableResult)
+			if (is(fcnResult, "try-error")) {
+				reportableResult<-fcnResult[[1]]
+			} else {
+				reportableResult<-fcnResult
 			}
-			if (retry<maxTries) Sys.sleep(backoff)
-			backoff <- backoff * BACKOFF_MULTIPLIER
+			maxWaitTimeRemaining<-max(0,maxWaitTime-(Sys.time()-startTime))
+			sleeptime<-min(backoff, maxWaitTimeRemaining)
+			message(sprintf("Error encountered: %s. Will wait for %s seconds then retry. Press CTRL+C to quit.", 
+							reportableResult, sleeptime))
+			Sys.sleep(sleeptime)
+			backoff <- increaseBackoff(backoff)
 		} else {
 			break
 		}
 	} # end for loop
 	finalizeResult(fcnResult)
+}
+
+initialBackOffSeconds<-function() {0.5} # half second
+
+increaseBackoff<-function(currentBackOffSeconds) {
+	BACKOFF_MULTIPLIER <- 2
+	MAX_BACKOFF_SECONDS<-30
+	min(MAX_BACKOFF_SECONDS, BACKOFF_MULTIPLIER*currentBackOffSeconds)
 }
 
