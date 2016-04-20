@@ -9,33 +9,52 @@
 withRetries<-function(fcn,
 		isRetryable,
 		finalizeResult) {
-	INITIAL_BACKOFF_SECONDS <- 1
-	BACKOFF_MULTIPLIER <- 2 # i.e. the back off time is (initial)*[multiplier^(# retries)]
+	backoff<-initialBackOffSeconds()
+	startTime<-Sys.time()
 	
-	maxTries<-.getCache("webRequestMaxTries")
-	if (is.null(maxTries) || maxTries<1) stop(sprintf("Illegal value for maxTries %d.", maxTries))
-	
-	backoff<-INITIAL_BACKOFF_SECONDS
-	
-	for (retry in 1:maxTries) {
+	repeat {
 		fcnResult<-try(fcn(), silent=T)
 		
-		if (retry<maxTries && isRetryable(fcnResult)) {
+		if (isRetryable(fcnResult)) {
 			# retry
-			if (!is.null(.getCache("debug")) && .getCache("debug")) {
-				if (is(fcnResult, "try-error")) {
-					reportableResult<-fcnResult[[1]]
-				} else {
-					reportableResult<-fcnResult
-				}
-				message("withRetries: error encountered: ", reportableResult)
+			if (is(fcnResult, "try-error")) {
+				reportableResult<-fcnResult[[1]]
+			} else {
+				reportableResult<-fcnResult
 			}
-			if (retry<maxTries) Sys.sleep(backoff)
-			backoff <- backoff * BACKOFF_MULTIPLIER
+			sleepTime<-sleepTime(startTime, Sys.time(), backoff)
+			if (sleepTime>0) {
+				message(sprintf("Error encountered: %s. Will wait for %s seconds then retry. Press CTRL+C to quit.", 
+								reportableResult, sleepTime))
+				Sys.sleep(sleepTime)
+			}
+			backoff <- increaseBackoff(backoff)
 		} else {
 			break
 		}
-	} # end for loop
+		if (maxWaitTimeExceeded(startTime, Sys.time()))  break
+	} # end 'repeat' loop
 	finalizeResult(fcnResult)
+}
+
+initialBackOffSeconds<-function() {0.5} # half second
+
+maxWaitTimeExceeded<-function(startTime, currentTime) {
+	maxWaitTime<-.getCache("maxWaitDiffTime")
+	if (is.null(maxWaitTime)) stop("Missing value for maxWaitDiffTime.")
+	currentTime-startTime>=maxWaitTime
+}
+
+sleepTime<-function(startTime, currentTime, backoff) {
+	maxWaitTime<-.getCache("maxWaitDiffTime")
+	if (is.null(maxWaitTime)) stop("Missing value for maxWaitDiffTime.")
+	maxWaitTimeRemaining<-max(0,maxWaitTime-(currentTime-startTime))
+	min(backoff, maxWaitTimeRemaining)
+}
+
+increaseBackoff<-function(currentBackOffSeconds) {
+	BACKOFF_MULTIPLIER <- 2
+	MAX_BACKOFF_SECONDS<-30
+	min(MAX_BACKOFF_SECONDS, BACKOFF_MULTIPLIER*currentBackOffSeconds)
 }
 
