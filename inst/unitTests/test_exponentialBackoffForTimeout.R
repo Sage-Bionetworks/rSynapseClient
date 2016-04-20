@@ -64,7 +64,7 @@ unitTestExponentialBackoffShouldTimeout <-
   opts$timeout.ms<-100
   
   # this will time out
-  synapseClient:::.setCache("webRequestMaxTries", 1)
+	synapseClient:::.setCache("maxWaitDiffTime", 0)
   shouldBeError<-try(synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", 
       anonymous=T, opts=opts), silent=T)
   checkEquals("try-error", class(shouldBeError))
@@ -78,7 +78,7 @@ unitTestExponentialBackoffShouldComplete <-
   opts$timeout.ms<-100
   
   # this will complete
-  synapseClient:::.setCache("webRequestMaxTries", 3)
+	synapseClient:::.setCache("maxWaitDiffTime", as.difftime("00:30:00")) # 30 min
   synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", 
     anonymous=T, opts=opts)
   

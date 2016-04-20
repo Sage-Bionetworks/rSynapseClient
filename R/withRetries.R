@@ -10,12 +10,9 @@ withRetries<-function(fcn,
 		isRetryable,
 		finalizeResult) {
 	backoff<-initialBackOffSeconds()
-	
 	startTime<-Sys.time()
-	maxWaitTime<-.getCache("maxWaitDiffTime")
-	if (is.null(maxWaitTime)) stop("Missing value for maxWaitDiffTime.")
 	
-	while (Sys.time()-startTime<maxWaitTime) {
+	repeat {
 		fcnResult<-try(fcn(), silent=T)
 		
 		if (isRetryable(fcnResult)) {
@@ -25,20 +22,35 @@ withRetries<-function(fcn,
 			} else {
 				reportableResult<-fcnResult
 			}
-			maxWaitTimeRemaining<-max(0,maxWaitTime-(Sys.time()-startTime))
-			sleeptime<-min(backoff, maxWaitTimeRemaining)
-			message(sprintf("Error encountered: %s. Will wait for %s seconds then retry. Press CTRL+C to quit.", 
-							reportableResult, sleeptime))
-			Sys.sleep(sleeptime)
+			sleepTime<-sleepTime(startTime, Sys.time(), backoff)
+			if (sleepTime>0) {
+				message(sprintf("Error encountered: %s. Will wait for %s seconds then retry. Press CTRL+C to quit.", 
+								reportableResult, sleepTime))
+				Sys.sleep(sleepTime)
+			}
 			backoff <- increaseBackoff(backoff)
 		} else {
 			break
 		}
-	} # end for loop
+		if (maxWaitTimeExceeded(startTime, Sys.time()))  break
+	} # end 'repeat' loop
 	finalizeResult(fcnResult)
 }
 
 initialBackOffSeconds<-function() {0.5} # half second
+
+maxWaitTimeExceeded<-function(startTime, currentTime) {
+	maxWaitTime<-.getCache("maxWaitDiffTime")
+	if (is.null(maxWaitTime)) stop("Missing value for maxWaitDiffTime.")
+	currentTime-startTime>=maxWaitTime
+}
+
+sleepTime<-function(startTime, currentTime, backoff) {
+	maxWaitTime<-.getCache("maxWaitDiffTime")
+	if (is.null(maxWaitTime)) stop("Missing value for maxWaitDiffTime.")
+	maxWaitTimeRemaining<-max(0,maxWaitTime-(currentTime-startTime))
+	min(backoff, maxWaitTimeRemaining)
+}
 
 increaseBackoff<-function(currentBackOffSeconds) {
 	BACKOFF_MULTIPLIER <- 2

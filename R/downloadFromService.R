@@ -33,14 +33,9 @@ downloadFromService<-function(
 	destfile<-tempfile(tmpdir=destdir)
 	
 	curlHandle<-getCurlHandle()
-	
-	INITIAL_BACKOFF_SECONDS <- 1
-	BACKOFF_MULTIPLIER <- 2 # i.e. the back off time is (initial)*[multiplier^(# retries)]
-	
-	maxTries<-.getCache("webRequestMaxTries")
-	if (is.null(maxTries) || maxTries<1) stop(sprintf("Illegal value for maxTries %d.", maxTries))
-	
-	backoff<-INITIAL_BACKOFF_SECONDS
+		
+	backoff<-initialBackOffSeconds()
+	startTime<-Sys.time()
 	
 	# The error message that follow come from libcurl as enumerated here
 	# http://curl.askapache.com/c/libcurl-errors.html
@@ -51,7 +46,7 @@ downloadFromService<-function(
 	# we should not retry
 	errorMessagesNotToRetry <- character(0)
 	
-	for (retry in 1:maxTries) {
+	while (!maxWaitTimeExceeded(startTime, Sys.time())) {
 		# first, get the redirect URL.  
 		# we have to do this for each retry because the URL 
 		# is time limited and may have become invalid
@@ -89,18 +84,20 @@ downloadFromService<-function(
 			stop(sprintf("Unsupported protocol for url: %s", url))
 		}
 		
-		if (retry<maxTries && isRetryable) {
+		if (isRetryable) {
 			# retry
-			if (!is.null(.getCache("debug")) && .getCache("debug")) {
-				if (is(fcnResult, "try-error")) {
-					reportableResult<-fcnResult[[1]]
-				} else {
-					reportableResult<-fcnResult
-				}
-				message("withRetries: error encountered: ", reportableResult)
+			if (is(fcnResult, "try-error")) {
+				reportableResult<-fcnResult[[1]]
+			} else {
+				reportableResult<-fcnResult
 			}
-			Sys.sleep(backoff)
-			backoff <- backoff * BACKOFF_MULTIPLIER
+			sleepTime<-sleepTime(startTime, Sys.time(), backoff)
+			if (sleepTime>0) {
+				message(sprintf("Error encountered: %s. Will wait for %s seconds then retry. Press CTRL+C to quit.", 
+								reportableResult, sleepTime))
+				Sys.sleep(sleepTime)
+			}
+			backoff <- increaseBackoff(backoff)
 		} else {
 			break
 		}
