@@ -1,4 +1,4 @@
-# Teest expontential backoff/retry
+# Test expontential backoff/retry
 # 
 # Author: brucehoff
 ###############################################################################
