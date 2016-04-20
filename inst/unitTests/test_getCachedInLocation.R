@@ -32,9 +32,14 @@ unitTestGetCachedInLocation <-function() {
 	synapseClient:::addToCacheMap(fileHandleId, filePath2)
 	
 	result<-synapseClient:::getCachedInLocation(fileHandleId, dirname(filePath1))
-	
 	checkEquals(normalizePath(result$any), normalizePath(filePath1))
 	checkEquals(normalizePath(result$unchanged), normalizePath(filePath2))
+	
+	# findCachedFile is like getCachedInLocation but is not specific to any location
+	result<-synapseClient:::findCachedFile(fileHandleId)
+	checkEquals(normalizePath(result$any), normalizePath(filePath1))
+	checkEquals(normalizePath(result$unchanged), normalizePath(filePath2))
+	
 }
 
 

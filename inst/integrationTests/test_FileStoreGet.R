@@ -499,14 +499,24 @@ roundTripIntern<-function(project) {
   modifiedTimeStamp<-synapseClient:::getFromCacheMap(fileHandleId, filePath)
   checkTrue(!is.null(modifiedTimeStamp))
   
-  # now download it.  This will pull a new copy into the cache
+  # now download it.
   downloadedFile<-synGet(id)
-  downloadedFilePathInCache<-getFileLocation(downloadedFile)
+  downloadedFilePath<-getFileLocation(downloadedFile)
   checkEquals(id, propertyValue(downloadedFile, "id"))
   checkEquals(propertyValue(project, "id"), propertyValue(downloadedFile, "parentId"))
   checkEquals(synapseStore, downloadedFile@synapseStore)
   checkTrue(length(getFileLocation(downloadedFile))>0)
+  # The retrieved object is bound to the existing copy of the file.
+  checkEquals(downloadedFilePath, normalizePath(filePath, winslash="/"))
   
+  # Now repeat, after removing the cachemap record
+  # This will download the file into the default cache location
+  unlink(cachePath)
+  downloadedFile<-synGet(id)
+  downloadedFilePathInCache<-getFileLocation(downloadedFile)
+  # verify that the new copy is in the cache
+  checkEquals(substr(downloadedFilePathInCache,1,nchar(synapseCacheDir())), synapseCacheDir())
+    
   # compare MD-5 checksum of filePath and downloadedFile@filePath
   md5_version_1_retrieved <- as.character(tools::md5sum(getFileLocation(downloadedFile)))
   checkEquals(md5_version_1, md5_version_1_retrieved)
