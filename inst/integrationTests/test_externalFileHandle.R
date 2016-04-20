@@ -55,6 +55,6 @@ integrationTestExternalLinkLocalFile<-function() {
 	fh<-downloadedFile@fileHandle
 	checkEquals(filePath, fh$externalURL)
 	checkEquals(file.info(localfile)$size, fh$contentSize)
-	checkEquals(tools::md5sum(path.expand(localfile)), fh$contentMd5)
+	checkEquals(tools::md5sum(path.expand(localfile))[[1]], fh$contentMd5)
 }
 
