@@ -121,7 +121,7 @@ integrationTestSFTPRoundTrip <- function() {
 	fh<-file@fileHandle
   checkTrue(!is.null(fh$id))
 	checkEquals(file.info(testFile)$size, fh$contentSize)
-	checkEquals(tools::md5sum(path.expand(testFile)), fh$contentMd5)
+	checkEquals(originalMD5, fh$contentMd5)
 	
   scheduleExternalURLForDeletion(file@fileHandle$externalURL)
   

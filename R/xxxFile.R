@@ -372,9 +372,9 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
   file
 }
 
-getLocalFileInfo<-function(localFile) {
+getLocalFileInfo<-function(localfile) {
 	if (substr(tolower(localfile),1,7)=="file://") localfile<-substr(localfile, 8, nchar(localfile))
-	list(size=file.info(localfile)$size, md5=tools::md5sum(path.expand(localfile)))
+	list(size=file.info(localfile)$size, md5=tools::md5sum(path.expand(localfile))[[1]])
 }
 
 # containerDestinations has type UploadDestinationList, a TypeList of UploadDestination
