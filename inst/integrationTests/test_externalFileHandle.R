@@ -32,6 +32,8 @@ integrationTestExternalLinkLocalFile<-function() {
 	# create a file to be uploaded
 	synapseStore<-FALSE
 	localfile<-createFile()
+	localfile<-normalizePath(localfile, winslash="/")
+	if (substr(localfile,1,2)=="C:") localfile=substr(localfile,3,nchar(localfile))
 	filePath<-paste0("file://", localfile)
 	file<-File(filePath, synapseStore, parentId=propertyValue(project, "id"))
 	
