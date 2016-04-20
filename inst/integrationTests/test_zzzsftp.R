@@ -118,8 +118,11 @@ integrationTestSFTPRoundTrip <- function() {
   
   file<-synStore(file)
   
-  checkTrue(!is.null(file@fileHandle$id))
-  
+	fh<-file@fileHandle
+  checkTrue(!is.null(fh$id))
+	checkEquals(file.info(testFile)$size, fh$contentSize)
+	checkEquals(tools::md5sum(path.expand(testFile)), fh$contentMd5)
+	
   scheduleExternalURLForDeletion(file@fileHandle$externalURL)
   
   checkEquals("org.sagebionetworks.repo.model.file.ExternalFileHandle", file@fileHandle$concreteType)
