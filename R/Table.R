@@ -182,7 +182,6 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   # "they are relatively expensive to use, and it is often better to 
   # use an anonymous 'file()' connection to collect output."
   filePath<-tempfile()
-	message("storeDataFrame: file written to: ", filePath)
   writeDataFrameToCSV(dataFrameToWrite, filePath)
   s3FileHandle<-chunkedUploadFile(filePath)
   
