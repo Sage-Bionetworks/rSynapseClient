@@ -593,7 +593,7 @@ downloadFromServiceWithCaching<-function(downloadUri, endpointName, fileHandleId
 	
 	if (!is.null(md5)) {
 		recomputedMd5<-tools::md5sum(path.expand(downloadResult$downloadedFile))
-		if (md5!=recomputedMd5) stop("MD5 hash of downloaded file ", path.expand(filepath), " does not match that reported by Synapse.")
+		if (md5!=recomputedMd5) stop("MD5 hash of downloaded file ", path.expand(downloadResult$downloadedFile), " does not match that reported by Synapse.")
 	}
 	
 	if (is.null(downloadResult$fileName)) stop(sprintf("download of %s failed to return file name.", downloadUri))

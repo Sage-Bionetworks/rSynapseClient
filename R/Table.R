@@ -134,21 +134,12 @@ ensureTableSchemaIsRetrieved<-function(tableSchemaOrID) {
 
 parseRowAndVersion<-function(x) {
   parsed<-strsplit(x, "_", fixed=T)
-  parsedLengths<-sapply(X=parsed, FUN=length)
-  lengthNotTwo<-parsedLengths!=2
-  if (any(lengthNotTwo)) {
-    stop(sprintf("Invalid row labels at position(s) %s", paste(which(lengthNotTwo), collapse=",")))
-  }
-  parsedAsInteger<-sapply(X=parsed, FUN=as.integer)
-  rowHasNa<-apply(X=parsedAsInteger, MARGIN=2, FUN=function(x){any(is.na(x))})
-  if(any(rowHasNa)) {
-    stop(sprintf("Non-numeric row labels as position(s) %s.", paste(which(rowHasNa), collapse=",")))
-  }
-  rowHasNonInt<-sapply(X=parsed, FUN=function(x){any(as.integer(x)!=as.numeric(x))})
-  if (any(rowHasNonInt)) {
-    stop(sprintf("Non integer in row label as position(s) %s.", paste(which(rowHasNonInt), collapse=",")))
-  }
-  parsedAsInteger
+	as.integer.or.na<-function(x) {
+		result<-as.integer(x)
+		if (length(result)<2) result<-c(NA,NA)
+		result
+	}
+  sapply(X=parsed, FUN=function(x){as.integer.or.na(x)})
 }
 
 # uploads a data frame to a table
@@ -191,6 +182,7 @@ storeDataFrame<-function(tableSchema, dataframe, retrieveData, verbose, updateEt
   # "they are relatively expensive to use, and it is often better to 
   # use an anonymous 'file()' connection to collect output."
   filePath<-tempfile()
+	message("storeDataFrame: file written to: ", filePath)
   writeDataFrameToCSV(dataFrameToWrite, filePath)
   s3FileHandle<-chunkedUploadFile(filePath)
   
