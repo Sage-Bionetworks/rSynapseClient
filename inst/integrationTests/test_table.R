@@ -47,7 +47,8 @@ testDataFramesEqual <- function(df1, df2){
   checkTrue(all(df1==df2, na.rm=T))
   checkTrue(all(is.na(df1)==is.na(df2)))
   ## check column classes
-  all(sapply(df1, function(x){class(x)[1]})==sapply(df2, function(x){class(x)[1]}))}
+  all(sapply(df1, function(x){class(x)[1]})==sapply(df2, function(x){class(x)[1]}))
+}
 
 integrationTestSynStoreDataFrame <- function() {
   project<-synapseClient:::.getCache("testProject")
