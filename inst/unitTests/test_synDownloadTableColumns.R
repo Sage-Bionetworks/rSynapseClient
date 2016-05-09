@@ -11,24 +11,6 @@
 	synapseClient:::.unmockAll()
 }
 
-
-unitTest_MaximumBulkDownloadRequest<-function() {
-	fhaList<-list()
-	for (i in 1:100) {
-		fhaList<-append(fhaList, synapseClient:::FileHandleAssociation(fileHandleId="123456", 
-				associateObjectId="987654", associateObjectType="TableEntity"))
-	}
-	legalRequest<-synapseClient:::getMaxmimumBulkDownloadRequest(fhaList, 2000)
-	# we did indeed have to subselect:
-	checkTrue(length(legalRequest$requestedFiles)<100)
-	# we got _something_ back
-	checkTrue(length(legalRequest$requestedFiles)>1)
-	# it's not too big
-	checkTrue(nchar(synapseClient:::synToJson(legalRequest))<2000)
-	# it's a valid request
-	synapseClient:::createS4ObjectFromList(legalRequest, "BulkFileDownloadRequest")
-}
-
 createFile<-function(dir) {
 	if (!file.exists(dir)) dir.create(dir, recursive=T)
 	filePath<- tempfile(tmpdir=dir)
@@ -48,19 +30,22 @@ unitTest_synDownloadTableColumnsHappyPath<-function() {
 	table<-Table("syn123", df)
 	synapseClient:::.mock("downloadTableFileHandles",
 			function(fhasToDownload) {
+				successes<-list()
 				for (fha in fhasToDownload) {
 					fhId<-fha@fileHandleId
 					filePath<-createFile(synapseClient:::defaultDownloadLocation(fhId))
+					filePath<-normalizePath(filePath, winslash="/")
 					synapseClient:::addToCacheMap(fhId, filePath)
+					successes[[fhId]]<-filePath
 				}
-				list() # return the permanent failures (NONE)
+				list(successes=successes) # return the permanent failures (NONE)
 			}
 	)
 	downloadResult<-synDownloadTableColumns(table, "files")
 	
-	expectedDownloadResult<-c()
+	expectedDownloadResult<-list()
 	for (fhid in fileHandleIds) {
-		expectedDownloadResult[fhid]<-synapseClient:::getCachedInLocation(fhid, 
+		expectedDownloadResult[[fhid]]<-synapseClient:::getCachedInLocation(fhid, 
 				synapseClient:::defaultDownloadLocation(fhid))$unchanged
 	}
 	checkEquals(downloadResult, expectedDownloadResult)
@@ -78,16 +63,19 @@ unitTest_synDownloadTableColumnsIllegalFile<-function() {
 	synapseClient:::.mock("downloadTableFileHandles",
 			function(fhasToDownload) {
 				permanentFailures<-list() 
+				successes<-list()
 				for (fha in fhasToDownload) {
 					fhId<-fha@fileHandleId
 					if (fhId==illegalFHID) {
 						permanentFailures[[fhId]]<-"NOT FOUND"
 					} else {
 						filePath<-createFile(synapseClient:::defaultDownloadLocation(fhId))
+						filePath<-normalizePath(filePath, winslash="/")
 						synapseClient:::addToCacheMap(fhId, filePath)
+						successes[[fhId]]<-filePath
 					}
 				}
-				permanentFailures
+				list(successes=successes, permanentFailures=permanentFailures)
 			}
 	)
 	downloadResult<-synDownloadTableColumns(table, "files")
@@ -114,7 +102,7 @@ unitTest_synDownloadTableColumnsCachedFiles<-function() {
 	
 	# let's say one file is already downloaded
 	filePath<-createFile(synapseClient:::defaultDownloadLocation(fileHandleIds[3]))
-	synapseClient:::addToCacheMap(fileHandleIds[3], filePath)
+	synapseClient:::addToCacheMap(fileHandleIds[3], normalizePath(filePath, winslash="/"))
 	
 	synapseClient:::.mock("downloadTableFileHandles",
 			function(fhasToDownload) {
@@ -122,16 +110,18 @@ unitTest_synDownloadTableColumnsCachedFiles<-function() {
 				for (fha in fhasToDownload) {
 					fhId<-fha@fileHandleId
 					filePath<-createFile(synapseClient:::defaultDownloadLocation(fhId))
+					filePath<-normalizePath(filePath, winslash="/")
 					synapseClient:::addToCacheMap(fhId, filePath)
+					successes[[fhId]]<-filePath
 				}
-				list() # return the permanent failures (NONE)
+				list(successes=successes) # return the permanent failures (NONE)
 			}
 	)
 	downloadResult<-synDownloadTableColumns(table, "files")
 	
-	expectedDownloadResult<-c()
+	expectedDownloadResult<-list()
 	for (fhid in fileHandleIds) {
-		expectedDownloadResult[fhid]<-synapseClient:::getCachedInLocation(fhid, 
+		expectedDownloadResult[[fhid]]<-synapseClient:::getCachedInLocation(fhid, 
 				synapseClient:::defaultDownloadLocation(fhid))$unchanged
 	}
 	checkEquals(downloadResult, expectedDownloadResult)
@@ -149,6 +139,7 @@ unitTest_synDownloadTableColumnsTemporaryFailure<-function() {
 			function(fhasToDownload) {
 				count<-synapseClient:::.getCache("synDownloadTableColumnsTemporaryFailure_count")
 				synapseClient:::.setCache("synDownloadTableColumnsTemporaryFailure_count", count+1)
+				successes<-list()
 				fhaToSkip<-fhasToDownload[[1]]@fileHandleId
 				for (fha in fhasToDownload) {
 					fhId<-fha@fileHandleId
@@ -156,10 +147,12 @@ unitTest_synDownloadTableColumnsTemporaryFailure<-function() {
 						# this simulates a file not being downloaded because either the zip file or the request itself was too big
 					} else {
 						filePath<-createFile(synapseClient:::defaultDownloadLocation(fhId))
+						filePath<-normalizePath(filePath, winslash="/")
 						synapseClient:::addToCacheMap(fhId, filePath)
+						successes[[fhId]]<-filePath
 					}
 				}
-				list() # return the permanent failures (NONE)
+				list(successes=successes) # return the permanent failures (NONE)
 			}
 	)
 	synapseClient:::.setCache("synDownloadTableColumnsTemporaryFailure_count", 0)
@@ -168,9 +161,9 @@ unitTest_synDownloadTableColumnsTemporaryFailure<-function() {
 	downloadResult<-synDownloadTableColumns(table, "files")
 	
 	# now check that we got all three files
-	expectedDownloadResult<-c()
+	expectedDownloadResult<-list()
 	for (fhid in fileHandleIds) {
-		expectedDownloadResult[fhid]<-synapseClient:::getCachedInLocation(fhid, 
+		expectedDownloadResult[[fhid]]<-synapseClient:::getCachedInLocation(fhid, 
 				synapseClient:::defaultDownloadLocation(fhid))$unchanged
 	}
 	checkEquals(downloadResult, expectedDownloadResult)

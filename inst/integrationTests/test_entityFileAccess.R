@@ -44,7 +44,7 @@ integrationTestEntityFileAccess <-
     # /entity/{enityId}/file
     downloadUri<-sprintf("/entity/%s/file?redirect=FALSE", entity$id)
     # download into a temp file
-    downloadedFile<-synapseClient:::downloadFromService(downloadUri)$downloadedFile
+    downloadedFile<-synapseClient:::downloadFromService(downloadUri, destdir=synapseCacheDir())$downloadedFile
     origChecksum<- as.character(tools::md5sum(filePath))
     downloadedChecksum <- as.character(tools::md5sum(downloadedFile))
     checkEquals(origChecksum, downloadedChecksum)

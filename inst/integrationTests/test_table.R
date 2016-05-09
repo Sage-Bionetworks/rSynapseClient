@@ -47,7 +47,8 @@ testDataFramesEqual <- function(df1, df2){
   checkTrue(all(df1==df2, na.rm=T))
   checkTrue(all(is.na(df1)==is.na(df2)))
   ## check column classes
-  all(sapply(df1, function(x){class(x)[1]})==sapply(df2, function(x){class(x)[1]}))}
+  all(sapply(df1, function(x){class(x)[1]})==sapply(df2, function(x){class(x)[1]}))
+}
 
 integrationTestSynStoreDataFrame <- function() {
   project<-synapseClient:::.getCache("testProject")
@@ -262,7 +263,19 @@ integrationTestSynStoreAndRetrieveAllTypes<-function() {
   pid<-propertyValue(project, "id")
   tschema <- TableSchema(name = "testDataFrameTable", parent=pid, columns=c(tc1, tc2, tc3, tc4, tc5, tc6, tc7, tc8))
   tschema <- synStore(tschema, createOrUpdate=FALSE)
-  
+	
+	fileHandleIds<-NULL
+	for (i in 1:3) {
+		# upload a file and receive the file handle
+		filePath<- tempfile()
+		connection<-file(filePath)
+		writeChar(sprintf("this is a test %s", sample(999999999, 1)), connection, eos=NULL)
+		close(connection)  
+		fileHandle<-synapseClient:::chunkedUploadFile(filePath)
+		checkTrue(!is.null(fileHandle$id))
+		fileHandleIds<-c(fileHandleIds, fileHandle$id)
+	}
+	
   rowsToUpload<-30
   dataFrame<-data.frame(
     stringType=sample(c("one", "two", "three"), size = rowsToUpload, replace = T), 
@@ -270,8 +283,8 @@ integrationTestSynStoreAndRetrieveAllTypes<-function() {
     doubleType=as.numeric(sample.int(rowsToUpload, replace = T)),
     booleanType=sample(c(TRUE, FALSE, NA), size = rowsToUpload, replace = T),
     dateType=sample(roundPOSIXct(Sys.time()+c(1,2,3)), size = rowsToUpload, replace = T),
-    fileHandleIdType1=sample(c("111", "222", "333"), size = rowsToUpload, replace = T),
-    fileHandleIdType2=sample(c(444, 555, 666), size = rowsToUpload, replace = T),
+    fileHandleIdType1=sample(fileHandleIds, size = rowsToUpload, replace = T),
+    fileHandleIdType2=sample(as.integer(fileHandleIds), size = rowsToUpload, replace = T),
     entityIdType=sample(c("syn123", "syn456", "syn789"), size = rowsToUpload, replace = T)
     )
   

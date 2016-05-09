@@ -27,4 +27,4 @@ man/UploadDestination.Rd
 man/SubmissionQuota.Rd
 inst/resources/Register.json
 inst/resources/schema
-
+.DS_Store

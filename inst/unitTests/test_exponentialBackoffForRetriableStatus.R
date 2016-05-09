@@ -95,7 +95,7 @@ unitTestExponentialBackoffFor503ShouldFail <-
   opts$timeout.ms<-100
   
   # this will get a 503, and an empty response
-  synapseClient:::.setCache("webRequestMaxTries", 1)
+	synapseClient:::.setCache("maxWaitDiffTime", 0)
   shouldBeEmpty<-synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", 
       anonymous=T, opts=opts, checkHttpStatus=FALSE)
   checkEquals("", shouldBeEmpty)
@@ -110,8 +110,8 @@ unitTestExponentialBackoffFor503ShouldComplete <-
   opts$timeout.ms<-100
   
   # this will complete
-  synapseClient:::.setCache("webRequestMaxTries", 3)
-  result<-synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", anonymous=T, opts=opts)
+	synapseClient:::.setCache("maxWaitDiffTime", as.difftime("00:30:00")) # 30 min
+	result<-synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", anonymous=T, opts=opts)
   checkEquals(list(foo="bar"), result)
   checkEquals(200, synapseClient:::.getCurlInfo()$response.code)
 }
@@ -126,8 +126,8 @@ unitTestExponentialBackoffFor502ShouldFail <-
   opts$timeout.ms<-100
   
   # this will get a 502, and an empty response
-  synapseClient:::.setCache("webRequestMaxTries", 1)
-  shouldBeEmpty<-synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", 
+	synapseClient:::.setCache("maxWaitDiffTime", 0)
+	shouldBeEmpty<-synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", 
     anonymous=T, opts=opts, checkHttpStatus=FALSE)
   checkEquals("", shouldBeEmpty)
   checkEquals(502, synapseClient:::.getCurlInfo()$response.code)
@@ -141,8 +141,8 @@ unitTestExponentialBackoffFor502ShouldComplete <-
   opts$timeout.ms<-100
   
   # this will complete
-  synapseClient:::.setCache("webRequestMaxTries", 3)
-  result<-synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", anonymous=T, opts=opts)
+	synapseClient:::.setCache("maxWaitDiffTime", as.difftime("00:30:00")) # 30 min
+	result<-synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", anonymous=T, opts=opts)
   checkEquals(list(foo="bar"), result)
   checkEquals(200, synapseClient:::.getCurlInfo()$response.code)
 }

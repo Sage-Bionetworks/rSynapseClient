@@ -237,6 +237,30 @@ getCachedInLocation<-function(fileHandleId, downloadLocation) {
 	result
 }
 
+# Searches for a file for the given handle id which is already downloaded ANYWHERE. 
+# Looks both for an _unchanged_ file (i.e. not modified
+# since download) and a downloaded file, whether changed or not.  Returns the first
+# two matching files found in the slots 'unchanged' and 'any' of the returned list.
+# if no match is found, the corresponding slot is empty.
+findCachedFile<-function(fileHandleId) {
+	cacheMapFile<-cacheMapFilePath(fileHandleId)
+	lockFile(cacheMapFile)
+	mapForFileHandleId<-getCacheMapFileContent(fileHandleId)
+	unlockFile(cacheMapFile)
+	result<-list()
+	for (key in names(mapForFileHandleId)) {
+		if (file.exists(key)) {
+			if (is.null(result$any)) result$any<-key
+			if (fileMatchesTimestamp(key, mapForFileHandleId[[key]])) {
+				if (is.null(result$unchanged)) result$unchanged<-key
+			}
+		}
+	}
+	result
+}
+
+
+
 uploadAndAddToCacheMap<-function(filePath, uploadDestination, contentType=NULL) {
   lastModified<-lastModifiedTimestamp(filePath)
   fileHandle<-uploadFileToEntity(filePath=filePath, uploadDestination=uploadDestination, curlHandle=getCurlHandle(), contentType=contentType)
@@ -294,7 +318,13 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         fileHandle<-uploadAndAddToCacheMap(filePath=file@filePath, uploadDestination=uploadDestination, contentType=contentType)
       } else { # ... we are storing a new file which we are linking, but not uploading
         # link external URL in Synapse, get back fileHandle	
-        fileHandle<-synapseLinkExternalFile(file@filePath, contentType, storageLocationId=NULL)
+				localFileInfo<-getLocalFileInfo(file@filePath)
+				fileHandle<-synapseLinkExternalFile(
+						externalURL=file@filePath, 
+						contentType=contentType, 
+						contentSize=localFileInfo$size,
+						contentMd5=localFileInfo$md5,
+						storageLocationId=NULL)
         # note, there's no cache map entry to create
       }
       #	save fileHandle in slot, put id in entity properties
@@ -326,7 +356,12 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
         # may need to update the external file handle
         if (filePath!=externalURL) {
           # update the file handle
-          file@fileHandle<-synapseLinkExternalFile(filePath, contentType, storageLocationId=NULL)
+          file@fileHandle<-synapseLinkExternalFile(
+							externalURL=filePath, 
+							contentType=contentType, 
+							contentSize=NULL,
+							contentMd5=NULL,
+							storageLocationId=NULL)
           propertyValue(file, "dataFileHandleId")<-file@fileHandle$id
         }
       } else {
@@ -335,6 +370,11 @@ synStoreFile <- function(file, createOrUpdate=T, forceVersion=T, contentType=NUL
     }
   }
   file
+}
+
+getLocalFileInfo<-function(localfile) {
+	if (substr(tolower(localfile),1,7)=="file://") localfile<-substr(localfile, 8, nchar(localfile))
+	list(size=file.info(localfile)$size, md5=tools::md5sum(path.expand(localfile))[[1]])
 }
 
 # containerDestinations has type UploadDestinationList, a TypeList of UploadDestination
@@ -510,7 +550,7 @@ retrieveAttachedFileHandle<-function(downloadUri, endpointName, fileHandle, down
   }
   
   if (downloadFile) {
-	  filePath<-downloadFromServiceWithCaching(downloadUri, endpointName, fileHandle$id, downloadLocation, ifcollision)
+	  filePath<-downloadFromServiceWithCaching(downloadUri, endpointName, fileHandle$id, fileHandle$contentMd5, downloadLocation, ifcollision)
   } else { # !downloadFile
     filePath<-externalURL # url from fileHandle (could be web-hosted URL or file:// on network file share)
   }
@@ -527,25 +567,34 @@ retrieveAttachedFileHandle<-function(downloadUri, endpointName, fileHandle, down
   filePath
 }
 
-downloadFromServiceWithCaching<-function(downloadUri, endpointName, fileHandleId, downloadLocation=NULL, ifcollision="keep.both") {
+downloadFromServiceWithCaching<-function(downloadUri, endpointName, fileHandleId, md5, downloadLocation=NULL, ifcollision="keep.both") {
 	if (is.null(downloadLocation)) {
-		downloadLocation<-defaultDownloadLocation(fileHandleId)
+		# if there is already a downloaded version of the file ANYWHERE then return it
+		downloaded<-findCachedFile(fileHandleId)
 	} else {
 		if (file.exists(downloadLocation) && !file.info(downloadLocation)$isdir) stop(sprintf("%s is not a folder", downloadLocation))
+		# if there is already a downloaded version of the file in the desired directory, then return it
+		downloaded<-getCachedInLocation(fileHandleId, downloadLocation)
 	}
-	
-	# if there is already a downloaded, unmodified version of the file in the desired directory, then return it
-	downloaded<-getCachedInLocation(fileHandleId, downloadLocation)
 	if (!is.null(downloaded$unchanged)) return(downloaded$unchanged)
 	if (!is.null(downloaded$any) && ifcollision=="keep.local") {
 		# there's no need to download
 		return(downloaded$any)
 	}
-	
 	# OK, we need to download it
+	
+	if (is.null(downloadLocation)) {
+		downloadLocation<-defaultDownloadLocation(fileHandleId)
+	}
+	
 	downloadResult<-downloadFromService(downloadUri, endpointName, destdir=downloadLocation, extraRetryStatusCodes=404)
 	# result is list(downloadedFile, fileName) where 
 	# 'downloadedFile' is a temp file in the target location and fileName is the desired file name
+	
+	if (!is.null(md5)) {
+		recomputedMd5<-tools::md5sum(path.expand(downloadResult$downloadedFile))
+		if (md5!=recomputedMd5) stop("MD5 hash of downloaded file ", path.expand(downloadResult$downloadedFile), " does not match that reported by Synapse.")
+	}
 	
 	if (is.null(downloadResult$fileName)) stop(sprintf("download of %s failed to return file name.", downloadUri))
 	filePath<-file.path(downloadLocation, downloadResult$fileName)

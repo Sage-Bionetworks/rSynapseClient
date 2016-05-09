@@ -5,9 +5,7 @@
 
 unitTest_parseRowAndVersion<-function() {
   checkEquals(synapseClient:::parseRowAndVersion(c("1_2", "2_3", "3_2")), rbind(c(1,2,3), c(2,3,2)))
-  checkException(synapseClient:::parseRowAndVersion(c("1_2", "2_3", "3")))
-  checkException(synapseClient:::parseRowAndVersion(c("1_2", "2_3", "3_x")))
-  checkException(synapseClient:::parseRowAndVersion(c("1_2", "2_3", "3_3.5")))
+	checkEquals(synapseClient:::parseRowAndVersion(c("1_2", "2_3", "3")), rbind(c(1,2,NA), c(2,3,NA)))
 }
 
 unitTest_findSynIdInSql<-function() {

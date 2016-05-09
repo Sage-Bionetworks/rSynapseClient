@@ -1,4 +1,4 @@
-/* Initialize c functions for curl reader/writer in R
+/* Initialize c functions for curl writer in R
  *
  * Author: Martin Morgan <mtmorgan@fhcrc.org>
  */
@@ -7,8 +7,4 @@
 
 SEXP writer_open(SEXP filename);
 SEXP writer_close(SEXP ext);
-
-SEXP reader_open(SEXP filename);
-SEXP reader_close(SEXP ext);
-
 #endif

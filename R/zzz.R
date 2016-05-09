@@ -33,14 +33,13 @@ kSynapseRAnnotationTypeMap <- list(
   .setCache("curlHeader", c('Content-Type'="application/json; charset=utf-8", Accept = "application/json", "Accept-Charset"="utf-8", "User-Agent" = .userAgent()))
   .setCache("sessionRefreshDurationMin", 1440)
   .setCache("curlWriter", getNativeSymbolInfo("_writer_write", PACKAGE="synapseClient")$address)
-  .setCache("curlReader", getNativeSymbolInfo("_reader_read", PACKAGE="synapseClient")$address)
-  .setCache("synapseBannerPath", file.path(libname, pkgname, "images", "synapse_banner.gif"))
+	.setCache("synapseBannerPath", file.path(libname, pkgname, "images", "synapse_banner.gif"))
   .setCache("annotationTypeMap", kSynapseRAnnotationTypeMap)
   .setCache("anonymous", FALSE)
   .setCache("downloadSuffix", "unpacked")
   .setCache("debug", FALSE)
-  # this is the maximum number of times a web request will be tried when there is a temporary outage.  Must be >0
-  .setCache("webRequestMaxTries", 10)
+   # this is the maximum amount of time a web request will be retried
+  .setCache("maxWaitDiffTime", as.difftime("00:30:00")) # 30 min
   .setCache("webRequestMaxRedirects", 3)
 
   # Fetch endpoints from the config file

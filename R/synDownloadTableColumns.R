@@ -1,6 +1,6 @@
 # Download the multiple file attachments in a Synapse Table,
 # avoiding downloading files already in the local file cache.
-# Returns a vector whose names are the fileHandle IDs found in the
+# Returns a list whose names are the fileHandle IDs found in the
 # specified columns of the given Table and each value of which is
 # the path to the requested file or NULL if the file was not able
 # to be downloaded.
@@ -8,8 +8,9 @@
 # Author: Brian Bot
 ###############################################################################
 
-
-synDownloadTableColumns <- function(synTable, tableColumns) {
+synDownloadTableColumns <- function(synTable, tableColumns, verbose=FALSE) {
+	timeProfile<-timePoint("start")
+	
 	if(!class(synTable) == "TableDataFrame") {
 		stop("synTable must be a TableDataFrame object returned from synTableQuery")
 	}
@@ -33,117 +34,138 @@ synDownloadTableColumns <- function(synTable, tableColumns) {
 	
 	# list the file handle Ids in the specified columns, in the form
 	# of FileHandleAssociations
-	fhasInTable <- lapply(as.list(tableColumns), function(i) {
+	fileHandleIdsInTable <- lapply(as.list(tableColumns), function(i) {
 				lapply(as.list(synTable@values[[i]]), function(j) {
 							if(is.na(j)) {
 								NULL
 							} else{
-								FileHandleAssociation(associateObjectType="TableEntity", 
-										fileHandleId=j, 
-										associateObjectId=tableId)
+								j
 							}
 						})
 			})
-	fhasInTable <- unlist(fhasInTable, recursive=FALSE)
-	fhasInTable <- fhasInTable[ !sapply(fhasInTable, is.null) ]
 	
-	# this is a list of just the file handle Ids
-	fileHandleIdsInTable <- sapply(fhasInTable, "slot", "fileHandleId")
+	fileHandleIdsInTable<-unlist(fileHandleIdsInTable, recursive=FALSE)
+	fileHandleIdsInTable <- fileHandleIdsInTable[ !sapply(fileHandleIdsInTable, is.null) ]
+	fileHandleIdsInTable <- unique(fileHandleIdsInTable)
 	
 	permanentFailures<-list() # this map has file handle Ids for names, and failure messages for values
 	MAX_DOWNLOAD_TRIES<-100
 	
+	# This is the returned value, a list whose names are fh ids and whose
+	# values are file paths or NULL if not downloaded
+	# initialize to all NULL and then fill in as we download
+	cumulativeDownloadResults<-sapply(1:length(fileHandleIdsInTable), function(x){NULL})
+	names(cumulativeDownloadResults)<-fileHandleIdsInTable
+	
+	# keep track of the earliest place to start downloading
+	# there may be files with higher indices that have been downloaded,
+	# this just gives us a 'lower bound' position in cumulativeDownloadResults:
+	# we need never scan below this index
+	firstFHToDownload<-1 
+	
 	for (i in 1:(MAX_DOWNLOAD_TRIES+1)) {
-		trackRequested <- sapply(as.list(fileHandleIdsInTable), function(x) {
-					tmp <- getCachedInLocation(x, defaultDownloadLocation(x))
-					if (length(tmp) > 0) {
-						tmp$unchanged
-					} else{
-						NULL
-					}
-				})
-		names(trackRequested) <- fileHandleIdsInTable
-		# 'trackRequested' is a map whose names/keys are file handle IDs and
-		# whose values are file paths -- if present -- or NULL if absent from
-		# the local file system
 		
-		stillNeeded <- sapply(names(trackRequested), function(name, trackRequested) {
-					is.null(trackRequested[[name]]) && !any(name==names(permanentFailures))
-			}, trackRequested)
-		fhasToDownload <- fhasInTable[stillNeeded]
+		# this is the maximum number of files which will be requested to be zipped
+		# in any single batch
+		max_batch_size<-10000
+		
+		fhasToDownload<-list()
+		if (firstFHToDownload<=length(cumulativeDownloadResults)) {
+			for (j in firstFHToDownload:length(cumulativeDownloadResults)) {
+				if (length(fhasToDownload)>=max_batch_size) break
+				if (is.null(cumulativeDownloadResults[[j]])) {
+					fhId<-names(cumulativeDownloadResults)[j]
+					if (any(names(permanentFailures)==fhId)) {
+						if (j==firstFHToDownload) firstFHToDownload<-firstFHToDownload+1
+					} else {
+						tmp <- getCachedInLocation(fhId, defaultDownloadLocation(fhId))
+						if (length(tmp) > 0) {
+							# the file is already downloaded
+							cumulativeDownloadResults[[j]]<-tmp$unchanged
+							if (j==firstFHToDownload) firstFHToDownload<-firstFHToDownload+1
+						} else {
+							# we haven't downloaded this one yet and it's not a 'permanent failure' so let's download it
+							fhasToDownload<-append(fhasToDownload, 
+									synapseClient:::FileHandleAssociation(associateObjectType="TableEntity", 
+											fileHandleId=fhId, associateObjectId=tableId))
+						}
+					}
+				} else {
+					if (j==firstFHToDownload) firstFHToDownload<-firstFHToDownload+1
+				}
+			}
+		}
+	
 		
 		if (length(fhasToDownload) == 0) {
-			# we're done, so break out of the loop.  'trackRequested' is the returned result
+			# we're done, so break out of the loop.  'cumulativeDownloadResults' is the returned result
 			break
 		}
 		if (i==(MAX_DOWNLOAD_TRIES+1)) {
 			stop(sprintf("Unable to download all files after %s iterations.  The collection of files is much larger than expected.", MAX_DOWNLOAD_TRIES))
 		}
 		
-		cat(paste0(length(fileHandleIdsInTable), " total files requested:  ", 
-						length(fileHandleIdsInTable)-length(fhasToDownload), " files are in cache;  ", 
-						length(fhasToDownload), " files left to retrieve\n"))
+		cat(paste0(length(fileHandleIdsInTable), " total files requested:  At least ", 
+						firstFHToDownload-1, " are downloaded;  ", 
+						length(fhasToDownload), " will be retrieved in the next batch.\n"))
 		
 		# download as many as possible.  No guarantee that all requested files
 	  # will be downloaded.
-		permanentFailuresBatch<-downloadTableFileHandles(fhasToDownload)
+		dtfResult<-downloadTableFileHandles(fhasToDownload)
+		timeProfile<-c(timeProfile, dtfResult$timeProfile)
 		# collect the permanent failures, both for reporting and to avoid retrying
-		permanentFailures<-append(permanentFailures, permanentFailuresBatch)
+		permanentFailures<-append(permanentFailures, dtfResult$permanentFailures)
+		
+		# now merge the successes back into the cumulative results
+		cumulativeDownloadResults[unlist(names(dtfResult$successes))]<-dtfResult$successes
+		
+		if (verbose) {
+			df<-NULL
+			df$names<-names(timeProfile)
+			df$times<-timeProfile
+			write.csv(df, row.names=F)
+			cat("\n")
+		}
 	}
-	
 	
 	for (x in names(permanentFailures)) {
 		cat(paste0("filehandle", x, " failed:  ", permanentFailures[[x]], "\n"))
 	}
 	
-	trackRequested
+
+	timeProfile<-c(timeProfile, timePoint("end"))
+	if (verbose) {
+		df<-NULL
+		df$names<-names(timeProfile)
+		df$times<-timeProfile
+		write.csv(df, row.names=F)
+	}
+
+	cumulativeDownloadResults
+}
+
+timePoint<-function(label) {
+	result<-Sys.time()
+	names(result)<-label
+	result
 }
 
 createBulkDownloadRequest<-function(fhaList) {
 	createListFromS4Object(BulkFileDownloadRequest(requestedFiles=as.FileHandleAssociationList(fhaList)))
 }
 
-# Take the json string for any asynchronous request body. 
-# Convert the string to 'UTF-8' bytes and count the resulting bytes.
-# For now the request must be less than 262144 bytes due to a limit
-# in Amazon SQS
-requestSize<-function(request) {
-	string<-synToJson(request)
-	# all the fields in BulkFileDownloadRequest are simple ascii (IDs and enum values,
-	# no user supplied text fields) so the legnth of the string is the same as the length
-	# of the underlying byte array
-	nchar(string)
-}
-
-getMaxmimumBulkDownloadRequest<-function(fhaList, requestSizeLimit) {
-	maximumRequest<-createBulkDownloadRequest(fhaList)
-	maximumRequestSize<-requestSize(maximumRequest)
-	if (maximumRequestSize<requestSizeLimit) return(maximumRequest)
-	emptyRequestSize<-requestSize(createBulkDownloadRequest(list()))
-	numFhas<-as.integer((requestSizeLimit-emptyRequestSize)*length(fhaList)/(maximumRequestSize-emptyRequestSize))
-	if (numFhas<1) stop(sprintf("Number of file handles which can be accommodated in a bulk download request is %s", numFhas))
-	createBulkDownloadRequest(fhaList[1:numFhas])
-}
-
 # returns permanent failures (not to retry)
 downloadTableFileHandles <- function(fhasToDownload) {
-	bulkDownloadRequestBody<-getMaxmimumBulkDownloadRequest(fhasToDownload, 260000)
+	timeProfile<-timePoint("start dtfh")
+	
+	bulkDownloadRequestBody<-createBulkDownloadRequest(fhasToDownload)
 	result<-synRestPOST('/file/bulk/async/start', bulkDownloadRequestBody, synapseFileServiceEndpoint())
 	asyncJobId <- createS4ObjectFromList(result, "AsyncJobId")
 	bulkAsyncGetUri<-paste0('/file/bulk/async/get/', asyncJobId@token)
+	timeProfile<-c(timeProfile, timePoint("before 'track progress'"))
 	responseBodyAsList <- trackProgress(bulkAsyncGetUri, endpoint="FILE")
+	timeProfile<-c(timeProfile, timePoint("after 'track progress'"))
 	responseBody <- createS4ObjectFromList(responseBodyAsList, "BulkFileDownloadResponse")
-	
-	## CHECK FOR FAILURES
-	filehandles <- sapply(responseBody@fileSummary@content, function(x) {
-				if(x@status == "SUCCESS") {
-					tmp <-list(x@zipEntryName)
-					names(tmp) <- x@fileHandleId
-					tmp
-				} else {
-					NULL
-				}
-	})
 	
 	# by 'permanent' we mean those failure that can't be handled by retrying
   permanentFailures<-list()
@@ -160,10 +182,12 @@ downloadTableFileHandles <- function(fhasToDownload) {
 			return(permanentFailures)
 		}
 	}
-	
+
+	timeProfile<-c(timeProfile, timePoint("before 'downloadFromService'"))
 	## DOWNLOAD THE ZIP FILE
 	downloadUri <- sprintf("/fileHandle/%s/url?redirect=FALSE", responseBody@resultZipFileHandleId)
-	zipFilePath <- downloadFromService(downloadUri, "FILE")
+	zipFilePath <- downloadFromService(downloadUri=downloadUri, endpointName="FILE", destdir=synapseCacheDir())
+	timeProfile<-c(timeProfile, timePoint("after 'downloadFromService'"))
 	
 	## CREATE A TEMPORARY FOLDER TO EXPAND ZIP INTO
 	zipPath <- tempfile(pattern="zipPath")
@@ -172,10 +196,6 @@ downloadTableFileHandles <- function(fhasToDownload) {
 	}
 	unzippedFilePaths <- unzip(zipFilePath$downloadedFile, exdir=zipPath)
 	names(unzippedFilePaths) <- basename(dirname(unzippedFilePaths))
-	
-	if(!all(sapply(filehandles, function(x) {is.null(x) || any(grepl(x, unzippedFilePaths))}))) {
-		stop("Some file handles are missing from downloaded zip file.")
-	}
 	
 	newPaths <- sapply(as.list(names(unzippedFilePaths)), defaultDownloadLocation)
 	createSuccess <- sapply(as.list(newPaths), function(x) {
@@ -196,7 +216,9 @@ downloadTableFileHandles <- function(fhasToDownload) {
 		stop("Failed to copy all files.")
 	} else{
 		unlink(zipPath)
+		unlink(zipFilePath$downloadedFile)
 	}
+	
 	cachedPath <- as.list(cachedPath)
 	names(cachedPath) <- cachedFilehandle
 	
@@ -204,6 +226,7 @@ downloadTableFileHandles <- function(fhasToDownload) {
 		addToCacheMap(names(cachedPath)[i], cachedPath[[i]])
 	}
 	
-	permanentFailures
+	timeProfile<-c(timeProfile, timePoint("end dtfh"))
+	list(permanentFailures=permanentFailures, timeProfile=timeProfile, successes=cachedPath)
 }
 
