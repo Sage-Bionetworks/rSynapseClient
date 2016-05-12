@@ -2,7 +2,7 @@ This is an R client for the open-biology platform "Synapse". visit https://www.s
 
 ## Installation
 
-The R Synase Client can be installed by typing these commands into the R prompt:
+The R Synapse Client can be installed by typing these commands into the R prompt:
 
 ```R
 source('http://depot.sagebase.org/CRAN.R')
