@@ -13,12 +13,10 @@ if [ "$?" -ne "0" ]; then
   exit 1
 fi
 
-cd inst/resources
 # extract schema and Register.json into inst/resources
-jar -xf ../../temp.jar Register.json
-jar -xf ../../temp.jar schema
+unzip ../../temp.jar Register.json -d inst/resources
+unzip ../../temp.jar schema -d inst/resources
 # return to original directory and clean up downloaded jar file
-cd ../..
 rm temp.jar
 
 # build the .Rd files
