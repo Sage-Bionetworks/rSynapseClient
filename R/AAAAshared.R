@@ -90,7 +90,7 @@ getArraySubSchema<-function(propertySchema) {
 # type used in the S4 class.
 TYPEMAP_FOR_ALL_PRIMITIVES <- list(
   string = "character",
-  integer = "integer",
+  integer = "character",
   float = "numeric",
   number = "numeric",
   boolean = "logical"
