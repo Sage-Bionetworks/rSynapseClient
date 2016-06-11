@@ -104,7 +104,7 @@ integrationTestSynStoreDataFrameNORetrieveData <- function() {
   table<-Table(tableSchema=propertyValue(tableSchema, "id"), values=dataFrame)
   stored<-synStore(table, verbose=FALSE)
   show(stored) # make sure 'show' works
-  checkEquals(stored@rowCount, 2)
+  checkEquals(as.integer(stored@rowCount), 2)
 }
 
 integrationTestSynStoreDataFrameWRONGColumns <- function() {
@@ -165,7 +165,7 @@ integrationTestSynStoreMixedDataFrame<-function() {
   ))
   stored <- synStore(myTable)
   # returns the number of rows uploaded
-  checkEquals(stored@rowCount, rowsToUpload)
+  checkEquals(as.integer(stored@rowCount), rowsToUpload)
 }
 
 
@@ -231,7 +231,7 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   # finally, check row deletion
   queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=TRUE, verbose=FALSE)
   deletionResult<-synDeleteRows(queryResult)
-  checkEquals(deletionResult@rowCount, rowsToUpload)
+  checkEquals(as.integer(deletionResult@rowCount), rowsToUpload)
 }
 
 roundPOSIXct<-function(x) {
@@ -337,7 +337,7 @@ integrationTestSynStoreNAColumn <- function() {
 			"R_Integration_Test_Column_1"=c(NA, NA, NA))
 	table<-Table(tableSchema=propertyValue(tableSchema, "id"), values=dataFrame)
 	stored<-synStore(table, verbose=FALSE)
-	checkEquals(stored@rowCount, 3)
+	checkEquals(as.integer(stored@rowCount), 3)
 }
 
 integrationTestSynStoreCSVFileNoRetrieve <- function() {
@@ -351,7 +351,7 @@ integrationTestSynStoreCSVFileNoRetrieve <- function() {
   id<-propertyValue(tableSchema, "id")
   table<-Table(tableSchema=tableSchema, values=system.file("resources/test/test.csv", package = "synapseClient"))
   stored<-synStore(table)
-  checkEquals(2, stored@rowCount)
+  checkEquals(2, as.integer(stored@rowCount))
 }
 
 integrationTestSynStoreAndRetrieveCSVFile <- function() {
