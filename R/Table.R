@@ -244,7 +244,7 @@ setMethod(
 TableRowCount<-function(schema, rowCount, updateEtag) {
   result<-new("TableRowCount")
   result@schema<-schema
-  result@rowCount<-as.character(rowCount)
+  result@rowCount<-rowCount
   if (!missing(updateEtag)) result@updateEtag<-updateEtag
   result
 }
@@ -351,8 +351,8 @@ uploadFileHandleIdToTable<-function(fileHandleId, tableId,
   asyncJobId<-createS4ObjectFromList(synRestPOST(sprintf("/entity/%s/table/upload/csv/async/start", tableId), createListFromS4Object(request)) ,"AsyncJobId")
   responseBodyAsList<-trackProgress(sprintf("/entity/%s/table/upload/csv/async/get/%s", tableId, asyncJobId@token), verbose)
   responseBody<-createS4ObjectFromList(responseBodyAsList, "UploadToTableResult")
-  if (verbose) cat(sprintf("Complete.  Processed %s rows.\n", responseBody@rowsProcessed))
-  as.integer(responseBody@rowsProcessed)
+  if (verbose) cat(sprintf("Complete.  Processed %d rows.\n", responseBody@rowsProcessed))
+  responseBody@rowsProcessed
 }
 
 trackProgress<-function(checkCompleteUri, verbose=TRUE, endpoint="REPO") {

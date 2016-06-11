@@ -159,7 +159,7 @@ unitTestChunkedUpload <- function() {
 	checkEquals(fileHandle$id, "222")
  
 	checkEquals(g("/file/multipart_filename"), basename(filePath))
-	checkEquals(g("/file/multipart_filesize"), as.character(as.integer(5242880*2.5)))
+	checkEquals(g("/file/multipart_filesize"), as.integer(5242880*2.5))
 	
 	# should have called 'POST /file/multipart' once
 	checkEquals(gInt("post_/file/multipart"), as.integer(1))
@@ -420,7 +420,7 @@ unitTestChunkedUploadURLTimeLimitExceeded <- function() {
 	checkEquals(fileHandle$id, "222")
 	
 	checkEquals(g("/file/multipart_filename"), basename(filePath))
-	checkEquals(g("/file/multipart_filesize"), as.character(as.integer(5242880*2.5)))
+	checkEquals(g("/file/multipart_filesize"), as.integer(5242880*2.5))
 	
 	# should have called 'POST /file/multipart' twice
 	checkEquals(gInt("post_/file/multipart"), as.integer(2))
