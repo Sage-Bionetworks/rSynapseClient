@@ -13,7 +13,7 @@ integrationTestCreateColumn<-function() {
     name=name, 
     columnType="STRING", 
     defaultValue="foo", 
-    maximumSize=as.integer(30), 
+    maximumSize=30, 
     enumValues=enumValues)
   
   storedColumn<-synStore(tableColumn)

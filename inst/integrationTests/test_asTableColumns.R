@@ -8,7 +8,7 @@ integrationTest_asTableColumns<-function() {
   checkTrue(!is.null(tableColumns$fileHandleId))
   checkEquals(4, length(tableColumns$tableColumns))
   checkTrue(identical(tableColumns$tableColumns[[1]], 
-      TableColumn(name="string", columnType="STRING", maximumSize=as.integer(2))))
+      TableColumn(name="string", columnType="STRING", maximumSize=2)))
   checkTrue(identical(tableColumns$tableColumns[[2]], TableColumn(name="numeric", columnType="DOUBLE")))
   checkTrue(identical(tableColumns$tableColumns[[3]], TableColumn(name="integer", columnType="INTEGER")))
   checkTrue(identical(tableColumns$tableColumns[[4]], TableColumn(name="logical", columnType="BOOLEAN")))
@@ -21,7 +21,7 @@ integrationTest_asTableColumns<-function() {
 
   checkEquals(4, length(tableColumns$tableColumns))
   checkTrue(identical(tableColumns$tableColumns[[1]], 
-      TableColumn(name="string", columnType="STRING", maximumSize=as.integer(2))))
+      TableColumn(name="string", columnType="STRING", maximumSize=2)))
   checkTrue(identical(tableColumns$tableColumns[[2]], TableColumn(name="numeric", columnType="DOUBLE")))
   checkTrue(identical(tableColumns$tableColumns[[3]], TableColumn(name="integer", columnType="INTEGER")))
   checkTrue(identical(tableColumns$tableColumns[[4]], TableColumn(name="logical", columnType="BOOLEAN")))
@@ -34,9 +34,9 @@ integrationTest_asTableColumns<-function() {
   tDF$string[n] <- "asdfasdfasdfasdfasdf"
   tcsTrue <- as.tableColumns(tDF)
   checkTrue(identical(tcsTrue$tableColumns[[1]], 
-                      TableColumn(name="string", columnType="STRING", maximumSize=as.integer(max(nchar(tDF$string))))))
+                      TableColumn(name="string", columnType="STRING", maximumSize=max(nchar(tDF$string)))))
   tcsFalse <- as.tableColumns(tDF, doFullFileScan=FALSE)
   checkTrue(identical(tcsFalse$tableColumns[[1]], 
-                      TableColumn(name="string", columnType="STRING", maximumSize=as.integer(5))))
+                      TableColumn(name="string", columnType="STRING", maximumSize=5)))
   
 }
