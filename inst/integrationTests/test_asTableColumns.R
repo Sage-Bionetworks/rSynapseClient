@@ -34,7 +34,7 @@ integrationTest_asTableColumns<-function() {
   tDF$string[n] <- "asdfasdfasdfasdfasdf"
   tcsTrue <- as.tableColumns(tDF)
   checkTrue(identical(tcsTrue$tableColumns[[1]], 
-                      TableColumn(name="string", columnType="STRING", maximumSize=max(nchar(tDF$string)))))
+                      TableColumn(name="string", columnType="STRING", maximumSize=as.numeric(max(nchar(tDF$string))))))
   tcsFalse <- as.tableColumns(tDF, doFullFileScan=FALSE)
   checkTrue(identical(tcsFalse$tableColumns[[1]], 
                       TableColumn(name="string", columnType="STRING", maximumSize=5)))
