@@ -90,13 +90,14 @@ getArraySubSchema<-function(propertySchema) {
 # type used in the S4 class.
 TYPEMAP_FOR_ALL_PRIMITIVES <- list(
   string = "character",
-  integer = "integer",
+  integer = "numeric", # 'numeric' is necessary since 'integer' means a 64 bit number, unsupported by R
   float = "numeric",
   number = "numeric",
   boolean = "logical"
 )
 
 isPrimitiveType <- function(rType) {
+	if (rType=="integer") return (TRUE)
   !is.na(match(rType, TYPEMAP_FOR_ALL_PRIMITIVES))
 }
 

@@ -169,7 +169,10 @@ defineS4ConstructorAndAccessors<-function(name) {
             argument<-as.integer(argument)
           }
         }
-        # TODO:  if slot admits a TypedList and if the argument is a list, then wrap the list in a TypedList as a convenience
+				if (identical(class(slot(obj, slotName)),"numeric") && is(argument, "character")) {
+						argument<-as.numeric(argument)
+				}
+				# TODO:  if slot admits a TypedList and if the argument is a list, then wrap the list in a TypedList as a convenience
         slot(obj, slotName)<-argument
       }
       obj      

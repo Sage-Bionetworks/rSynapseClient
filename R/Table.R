@@ -244,7 +244,7 @@ setMethod(
 TableRowCount<-function(schema, rowCount, updateEtag) {
   result<-new("TableRowCount")
   result@schema<-schema
-  result@rowCount<-rowCount
+  result@rowCount<-as.numeric(rowCount)
   if (!missing(updateEtag)) result@updateEtag<-updateEtag
   result
 }
