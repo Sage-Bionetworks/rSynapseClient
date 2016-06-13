@@ -25,6 +25,5 @@ man/ExternalUploadDestination.Rd
 man/S3UploadDestination.Rd
 man/UploadDestination.Rd
 man/SubmissionQuota.Rd
-inst/resources/Register.json
-inst/resources/schema
+inst/resources
 .DS_Store

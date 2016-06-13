@@ -1,4 +1,4 @@
-This is an R client for the open-biology platform "Synapse". visit https://www.synapse.org or http://www.sagebase.org for more info. To view documentation or to file bug reports and feature requests visit http://sagebionetworks.jira.com/browse/SYNR.
+This is an R client for the open-biology platform "Synapse". Visit https://www.synapse.org or http://www.sagebase.org for more info. To view documentation visit http://r-docs.synapse.org/. To file bug reports and feature requests visit http://sagebionetworks.jira.com/browse/SYNR.
 
 ## Installation
 
