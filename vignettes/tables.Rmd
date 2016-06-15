@@ -1,0 +1,244 @@
+---
+title: "How to Use Synapse Tables"
+date: "`r Sys.Date()`"
+author: "Bruce Hoff (bruce.hoff@sagebase.org), Kenneth Daily (kenneth.daily@sagebase.org)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Tables}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r loadClient, include=FALSE, eval=TRUE}
+if( file.exists("~/.Rprofile") )
+  source("~/.Rprofile")
+require(synapseClient)
+library(knitr)
+knitr::opts_knit$set(progress=TRUE, verbose=TRUE)
+```
+
+## Overview
+
+Synapse allows you to create, modify and query tabular data.  You provide data
+in a data frame or csv file.
+
+## Creating a Table
+
+Begin with a data frame in your session:
+
+```{r makedf, include=TRUE, eval=TRUE}
+df <- data.frame("n"=c(1.1, 2.2, 3.3), 
+                 "c"=c("foo", "bar", "bar"), 
+                 "i"=as.integer(c(10,10,20)))
+```
+
+The convenience function `as.tableColumns` creates table columns from your data frame:
+
+```{r createcols, include=TRUE, eval=FALSE}
+tcresult <- as.tableColumns(df)
+cols <- tcresult$tableColumns
+```
+
+`as.TableColumns` uploads your table in order to do its job.
+It returns the ID of the uploaded file for later use.
+
+```{r getfilehandleid, include=TRUE, eval=FALSE}
+fileHandleId <- tcresult$fileHandleId
+```
+
+You may adjust the column models before defining the table schema.
+See "?TableColumn" for the available slots.
+
+```{r changecolsize, include=TRUE, eval=FALSE}
+cols[[2]]@maximumSize <- as.integer(20)
+```
+
+Now store the Table schema in Synapse (using your own Project ID in place of "syn12345", below):
+
+```{r store, include=TRUE, eval=FALSE}
+projectId <- "syn12345"
+schema <- TableSchema(name="aschema", parent=projectId, columns=cols)
+table <- Table(schema, fileHandleId)
+table <- synStore(table, retrieveData=TRUE)
+```
+
+## Retrieving a Table
+
+Query the table:
+
+```{r querythetbl, include=TRUE, eval=FALSE}
+schemaId <- propertyValue(table@schema, "id")
+queryResult <- synTableQuery(sprintf("select * from %s where c='bar'", schemaId))
+```
+
+## Updating Existing Values
+The query result is a Table having a data frame in the 'values' slot. 
+Now update the table and store it:
+
+```{r updatevals, include=TRUE, eval=FALSE}
+queryResult@values[2, "n"] <- pi
+table <- synStore(queryResult, retrieveData=TRUE)
+table@values
+```
+
+## Adding Rows to a Table
+
+To add more rows, put the additional rows in another data frame, embed in a Table, and call 'synStore', as shown:
+
+```{r addrows, include=TRUE, eval=FALSE}
+moreData <- data.frame("n"=c(7.7, 8.8, 9.9), 
+                       "c"=c("moar", "stuff", "here"), 
+                       "i"=as.integer(c(100,90,80)))
+tableToAppend <- Table(schema, moreData)
+table <- synStore(tableToAppend, retrieveData=TRUE)
+table@values
+```
+
+## Adding new Columns to a Table
+The following example shows how to add a new column to a Table.  First, define a new column:
+
+```{r mknewcol, include=TRUE, eval=FALSE}
+newColumn <- TableColumn(name="new", columnType="STRING")
+```
+
+Now add the new column to the existing schema:
+
+```{r addcol2schema, include=TRUE, eval=FALSE}
+schema <- synAddColumn(schema, newColumn)
+schema <- synStore(schema)
+```
+
+When the table is retrieved, the values in the new column are NA:
+```{r narows, include=TRUE, eval=FALSE}
+table <- synTableQuery(sprintf("select * from %s", propertyValue(schema, "id")), 
+                       loadResult=TRUE)
+```
+
+The NAs may be replaced with other values:
+```{r replacenas, include=TRUE, eval=FALSE}
+table@values["new"] <- c("one", "two", "three", "four", "five", "six")
+table <- synStore(table, retrieveData=TRUE)
+table@values
+```
+
+## Deleting From a Table
+You can delete selected rows from the table:
+
+```{r delrows, include=TRUE, eval=FALSE}
+rowsToDelete <- synTableQuery(sprintf("select * from %s where c='foo'", schemaId))
+synDeleteRows(rowsToDelete)
+```
+
+You can delete a column from a table:
+
+```{r removecol, include=TRUE, eval=FALSE}
+schema <- synRemoveColumn(schema, aColumn)
+schema <- synStore(schema)
+```
+
+You can also delete the entire table:
+
+```{r deltbl, include=TRUE, eval=FALSE}
+synDelete(schemaId)
+```
+
+## Downloading a File Attachment
+One of the column types provided by Synapse is `FILEHANDLEID`.  To download the file associated with a File Handle row:
+
+```{r getfilepath, include=TRUE, eval=FALSE}
+filePath <- synDownloadTableFile(table, "0_0", "File Column Name")
+```
+
+i.e., the parameters include the row number/version and column name as available in a retrieved data frame.  The function returns the path to the downloaded file.
+
+## Managing Tabular Data on the File System
+Table creation and retrieval can be done with files on disk.
+No need to load the data into memory first.
+First we create a csv file to use:
+
+```{r mkcsv, include=TRUE, eval=FALSE}
+df <- data.frame("n"=c(1.1, 2.2, 3.3), 
+                 "c"=c("foo", "bar", "bar"), 
+                 "i"=as.integer(c(10,10,20)))
+
+file <- tempfile()
+write.csv(df, file, row.names=FALSE)
+rm(df)
+```
+
+Now we proceed using the created file only:
+```{r inmem, include=TRUE, eval=FALSE}
+tcresult <- as.tableColumns(df)
+cols <- tcresult$tableColumns
+fileHandleId <- tcresult$fileHandleId
+
+schema <- TableSchema(name="aschema", parent=projectId, columns=cols)
+table <- Table(schema, fileHandleId)
+table <- synStore(table, retrieveData=FALSE)
+schemaId <- propertyValue(table@schema, "id")
+
+queryResult <- synTableQuery(sprintf("select * from %s where c='bar'", schemaId), 
+                             loadResult=FALSE)
+queryResult@filePath
+```
+
+The returned file path contains the query results.
+
+## Changing an existing column
+
+Sometimes you may want to change an existing column.
+What follows is an example of changing a column type, keeping the same data.
+
+First, set the column name that you want to change, and the table it comes from.
+
+```{r, include=TRUE, eval=FALSE}
+columnToChange <- "i"
+```
+
+Get the existing data.
+
+```{r, include=TRUE, eval=FALSE}
+oldTable <- synGet(schemaId)
+oldDataQuery <- synTableQuery(sprintf("SELECT * FROM %s", oldTable$properties$id))
+oldData <- oldDataQuery@values
+```
+
+Now that you have the data, delete the column. The `newTable` is now without that column.
+
+```{r, include=TRUE, eval=FALSE}
+collist <- setNames(oldTable$properties$columnIds, names(oldDataQuery@values))
+
+oldTable$properties$columnIds <- setdiff(oldTable$properties$columnIds, collist[columnToChange])
+
+newTable <- synStore(oldTable)
+```
+
+Make a new column with same name and save it to Synapse. Here, change `i` to a string.
+
+```{r, include=TRUE, eval=FALSE}
+newcol <- TableColumn(name=columnToChange, columnType="STRING", maximumSize=50, defaultValue="")
+newcol <- synStore(newcol)
+```
+
+Add that column to the table and save:
+
+```{r, include=TRUE, eval=FALSE}
+newTable$properties$columnIds <- c(newTable$properties$columnIds, newcol@id)
+newTable <- synStore(newTable)
+```
+
+Now, make changes and save to Synapse. In this case, just copy the old data to the new column.
+
+```{r, include=TRUE, eval=FALSE}
+newQuery <- synTableQuery(sprintf("SELECT * FROM %s", newTable$properties$id))
+newQuery@values[columnToChange] <- oldData[columnToChange]
+
+## Commit the changes
+synStore(newQuery)
+```
+
+
+## R sessionInfo()
+```{r sessionInfo}
+sessionInfo()
+```

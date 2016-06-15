@@ -14,10 +14,11 @@ Author: Matthew Furia <matt.furia@sagebase.org>
 Maintainer: Bruce Hoff <bruce.hoff@sagebase.org>
 Depends: methods, R (>= 2.15)
 Imports: rjson, RCurl (> 1.95-3),tools,digest,utils
-Suggests: RUnit, rGithubClient, Rsftp
+Suggests: RUnit, rGithubClient, Rsftp, knitr, rmarkdown
 Additional_repositories: https://github.com/Sage-Bionetworks/rGithubClient
 SystemRequirements: zip
 Description: Contains a set of functions for interacting with the Synapse REST services.
 URL: http://www.sagebase.org
 License: GPL
 LazyLoad: yes
+VignetteBuilder: knitr
