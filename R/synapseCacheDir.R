@@ -7,7 +7,6 @@ synapseCacheDir <- function(cacheDir){
   if(missing(cacheDir)){
     return(.getCache("synapseCacheDir"))
   }
-
   if(is.null(cacheDir))
   	cacheDir <- "~/.synapseCache"
 
