@@ -59,7 +59,7 @@ export(
   "sendMessage",
   "synTableQuery",
   "synDeleteRows",
-  "synDownloadTableFile",
+  "synDownloadTableFile", # NOTE: This function is deprecated
   "synDownloadTableColumns",
   "synGetColumns",
   "synAddColumn",
