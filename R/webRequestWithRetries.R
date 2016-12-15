@@ -29,8 +29,8 @@ webRequestWithRetries<-function(fcn,
 			!any(sapply(errorMessagesNotToRetry, function(pattern){regexpr(pattern, tryReturnValue[[1]], fixed=T)[1]>=0}))
 		} else {
 			httpStatus<-.getCurlInfo(curlHandle)$response.code
-			# return true if status is >=500 or in the list of statuses to retry
-			httpStatus>=500 || any(httpStatus==extraRetryStatusCodes)
+			# return true if status is >=500 or 429 or in the list of statuses to retry
+			httpStatus>=500 || httpStatus==429 || any(httpStatus==extraRetryStatusCodes)
 		}
 	}
 	
