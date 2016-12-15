@@ -35,6 +35,7 @@ S3FileHandleInterface	org.sagebionetworks.repo.model.file.S3FileHandleInterface	
 S3FileHandle	org.sagebionetworks.repo.model.file.S3FileHandle	false
 AsynchronousJobStatus	org.sagebionetworks.repo.model.asynch.AsynchronousJobStatus	false
 HasEntityId    org.sagebionetworks.repo.model.table.HasEntityId        false
+TableUpdateRequest	org.sagebionetworks.repo.model.table.TableUpdateRequest	false
 CacheableRequestBody   org.sagebionetworks.repo.model.asynch.CacheableRequestBody      false
 UploadToTableRequest	org.sagebionetworks.repo.model.table.UploadToTableRequest	false
 DownloadFromTableRequest	org.sagebionetworks.repo.model.table.DownloadFromTableRequest	false
@@ -42,6 +43,7 @@ QueryBundleRequest	org.sagebionetworks.repo.model.table.QueryBundleRequest	false
 QueryNextPageToken	org.sagebionetworks.repo.model.table.QueryNextPageToken	false
 DownloadFromTableResult	org.sagebionetworks.repo.model.table.DownloadFromTableResult	false
 QueryResultBundle	org.sagebionetworks.repo.model.table.QueryResultBundle	false
+TableUpdateResponse	org.sagebionetworks.repo.model.table.TableUpdateResponse	false
 UploadToTableResult	org.sagebionetworks.repo.model.table.UploadToTableResult	false
 TableQueryResult	org.sagebionetworks.repo.model.table.QueryResult	false
 QueryNextPageToken	org.sagebionetworks.repo.model.table.QueryNextPageToken	false
@@ -87,3 +89,7 @@ PartPresignedUrl org.sagebionetworks.repo.model.file.PartPresignedUrl	false
 BatchPresignedUploadUrlResponse org.sagebionetworks.repo.model.file.BatchPresignedUploadUrlResponse	false
 AddPartResponse	 org.sagebionetworks.repo.model.file.AddPartResponse	false
 MultipartUploadStatus	org.sagebionetworks.repo.model.file.MultipartUploadStatus	false
+FacetColumnRequest	org.sagebionetworks.repo.model.table.FacetColumnRequest false
+UploadToTableRequest	org.sagebionetworks.repo.model.table.UploadToTableRequest	false
+FacetColumnResult	org.sagebionetworks.repo.model.table.FacetColumnResult	false
+TableUpdateResponse	org.sagebionetworks.repo.model.table.TableUpdateResponse	false
