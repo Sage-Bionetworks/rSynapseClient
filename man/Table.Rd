@@ -33,6 +33,6 @@ Table Constructor
   }
 }
 \seealso{
-\code{\link{TableSchema},\link{RowList},\link{synStore},\link{synDownloadTableFile},
+\code{\link{TableSchema},\link{RowList},\link{synStore},\link{synDownloadTableColumns},
 \link{as.tableColumns},\link{synGetColumns}}
 }
