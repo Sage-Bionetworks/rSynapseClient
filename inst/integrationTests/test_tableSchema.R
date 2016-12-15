@@ -74,7 +74,7 @@ integrationTestCreateTableSchema<-function() {
 
 integrationTestAddAndRemoveColumns<-function() {
 	project<-synapseClient:::.getCache("testProject")
-	name<-sprintf("R_Client_Integration_Test_Create_Schema_%s", sample(999999999, 1))
+	name<-"R_Client_Integration_Test_Create_Schema"
 	tableSchema<-TableSchema(name=name, parent=propertyValue(project, "id"), columns=list())
 	columnName<-"R_Client_Integration_Test_Column_Name_1"
 	tableColumn<-TableColumn(name=columnName,columnType="STRING")
