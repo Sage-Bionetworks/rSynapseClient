@@ -18,6 +18,8 @@ install_github('Sage-Bionetworks/rSynapseClient', ref='develop')
 
 ## Getting Started
 
-The Getting started with the R synapseClient guide is hosted in Synapse itself. See [syn1834618](https://www.synapse.org/#!Synapse:syn1834618).
+The [Getting Started](docs.synapse.org/articles/getting_started.html) guide for Synapse includes examples for the R client.
+
+Full documentation for the R client is also available at https://docs.synapse.org/r/.
 
 
