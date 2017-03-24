@@ -116,6 +116,22 @@ unitTestExponentialBackoffFor503ShouldComplete <-
   checkEquals(200, synapseClient:::.getCurlInfo()$response.code)
 }
 
+unitTestExponentialBackoffFor429ShouldComplete <- 
+		function()
+{
+	mySetUp(429, list(headers="HTTP/1.1 429 Too Many Requests\r\nContent-Type: application/json\r\n", body=""))
+	opts<-synapseClient:::.getCache("curlOpts")
+	opts$timeout.ms<-100
+	
+	# this will complete
+	synapseClient:::.setCache("maxWaitDiffTime", as.difftime("00:30:00")) # 30 min
+	result<-synapseClient:::synapseGet("/query?query=select+id+from+entity+limit==500", anonymous=T, opts=opts)
+	checkEquals(list(foo="bar"), result)
+	checkEquals(200, synapseClient:::.getCurlInfo()$response.code)
+}
+
+
+
 
 unitTestExponentialBackoffFor502ShouldFail <- 
   function()

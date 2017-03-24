@@ -92,4 +92,6 @@ MultipartUploadStatus	org.sagebionetworks.repo.model.file.MultipartUploadStatus	
 FacetColumnRequest	org.sagebionetworks.repo.model.table.FacetColumnRequest false
 UploadToTableRequest	org.sagebionetworks.repo.model.table.UploadToTableRequest	false
 FacetColumnResult	org.sagebionetworks.repo.model.table.FacetColumnResult	false
+TableUpdateTransactionRequest	org.sagebionetworks.repo.model.table.TableUpdateTransactionRequest	false
+TableUpdateTransactionResponse	org.sagebionetworks.repo.model.table.TableUpdateTransactionResponse	false
 TableUpdateResponse	org.sagebionetworks.repo.model.table.TableUpdateResponse	false

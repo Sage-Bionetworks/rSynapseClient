@@ -239,9 +239,16 @@ curlRawUpload <-function(url, chunk, method="PUT",
 	opts$infilesize <- as.integer(chunkSize)
 	responseWriteFunction<-basicTextGatherer()
 	
-	rc<-curlPerform(URL=url, customrequest=method, readfunction=chunk, curl=curlHandle, httpHeader=header, .opts = opts, writefunction=responseWriteFunction$update)
+	rc<-try(curlPerform(
+			URL=url, 
+			customrequest=method, 
+			readfunction=chunk, 
+			curl=curlHandle, 
+			httpHeader=header, 
+			.opts = opts, 
+			writefunction=responseWriteFunction$update), silent=TRUE)
 	
-	rc==0 && !isErrorResponseStatus(getStatusCode(curlHandle))
+		!is(rc, "try-error") && rc==0 && !isErrorResponseStatus(getStatusCode(curlHandle))
 }
 
 finalizeUpload<-function(uploadId, curlHandle) {

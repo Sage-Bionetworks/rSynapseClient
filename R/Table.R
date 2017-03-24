@@ -503,7 +503,7 @@ getFileHandleIdFromTableCell<-function(tableId, selectColumn, rowId, versionNumb
 	fileHandleId
 }
 
-# 'table' can be a table ID, a TableDataFrame, or a TableFilePath
+# NOTE:  This function is deprecated
 synDownloadTableFile<-function(table, rowIdAndVersion, columnName, downloadLocation=NULL, ifcollision="keep.both") {
 	pair<-parseRowAndVersion(rowIdAndVersion)
 	rowId<-pair[1]

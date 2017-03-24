@@ -68,17 +68,6 @@ listToURLParams<-function(x) {
   paste(result, collapse="&")
 }
 
-synGetParticipants<-function(evaluationId,limit,offset) {
-  uri<-sprintf("/evaluation/%s/participant", evaluationId)
-  
-  params<-list()
-  if (!missing(limit)) params$limit<-limit  
-  if (!missing(offset)) params$offset<-offset  
-  if (length(params)>0) uri<-sprintf("%s?%s", uri, listToURLParams(params))
-  
-  newParticipantPaginatedResults(synRestGET(uri))
-}
-
 # Experimental method! liable to change in future without notice
 .allowParticipation <- function(evaluationId, userPrincipalId, 
         rights=c("READ", "PARTICIPATE", "SUBMIT", "UPDATE_SUBMISSION")) {
