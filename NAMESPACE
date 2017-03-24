@@ -25,7 +25,6 @@ export(
   "synGetEvaluation",
   "synGetEvaluationByContentSource", 
   "synGetSubmissions",
-  "synGetParticipants",
   "synGetWikiHeaders",
   "synDelete",
   "listObjects",
