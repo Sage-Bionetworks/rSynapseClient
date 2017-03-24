@@ -71,7 +71,7 @@ submit<-function(evaluation, entity, submissionName, teamName, silent=F) {
 }
 
 findTeamIdForName<-function(teamName) {
-	limit<-10
+	limit<-50
 	offset<-0
 	teamId<-NULL
 	repeat {
