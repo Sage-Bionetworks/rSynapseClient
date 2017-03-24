@@ -38,31 +38,6 @@ integrationTestEvaluationRoundtrip <-
   
   eid<-propertyValue(evaluation, "id")
   
-  homeWikiPage<-WikiPage(evaluation, title="some title", markdown="placeholder for markdown")
-  homeWikiPage<-synStore(homeWikiPage)
-  homeWikiId<-propertyValue(homeWikiPage, "id")
-  lbWiki<-WikiPage(evaluation, title="leaderboard", parentWikiId=homeWikiId)
-  lbWiki<-synStore(lbWiki)
-  lbWikiId<-propertyValue(lbWiki, "id")
-  
-  # retrieve both wiki pages and make sure they're correct
-  homeWikiPage2<-synGetWiki(evaluation)
-  checkEquals(homeWikiPage2, homeWikiPage)
-  # there are two ways to get the root page
-  homeWikiPage2<-synGetWiki(evaluation, homeWikiId)
-  checkEquals(homeWikiPage2, homeWikiPage)
-  lbWiki2<-synGetWiki(evaluation, lbWikiId)
-  checkEquals(lbWiki2, lbWiki)
-  
-  headers<-synGetWikiHeaders(evaluation)
-  checkEquals(2, length(headers))
-  ids<-list()
-  for (header in headers) {
-    ids[[length(ids)+1]]<-propertyValue(header, "id")
-  }
-  checkTrue(any(homeWikiId==ids))
-  checkTrue(any(lbWikiId==ids))
-  
   evaluation2<-synGetEvaluation(eid)
   checkEquals(evaluation2, evaluation)
   
@@ -77,21 +52,12 @@ integrationTestEvaluationRoundtrip <-
   evaluation2<-synGetEvaluation(eid)
   checkEquals(evaluation2, evaluation)
   
-  participants<-synGetParticipants(eid)
-  checkEquals(0, participants@totalNumberOfResults)
-  checkEquals(0, length(participants@results))
-  
   # Join the Evaluation
   myOwnId<-propertyValue(synGetUserProfile(), "ownerId")
   AUTHENTICATED_USERS_PRINCIPAL_ID<-273948 # This is defined in org.sagebionetworks.repo.model.AuthorizationConstants
   synapseClient:::.allowParticipation(eid, AUTHENTICATED_USERS_PRINCIPAL_ID)
-  synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
-  
-  participants<-synGetParticipants(eid)
-  checkEquals(1, participants@totalNumberOfResults)
-  checkEquals(1, length(participants@results))
-  
-  # make an entity to submit
+
+	# make an entity to submit
   submittableEntity<-Folder(name="submitted entity", parentId=projectId)
   submittableEntity<-synStore(submittableEntity)
   
@@ -157,13 +123,6 @@ integrationTestEvaluationRoundtrip <-
   
   ownSubmissions<-synGetSubmissions(eid, myOwn=TRUE)
   checkEquals(ownSubmissions, submissions)
-  
-  lbWikiPage<-synGetWiki(evaluation, lbWikiId)
-  propertyValue(lbWikiPage, "markdown")<-"my dog has fleas"
-  lbWikiPage<-synStore(lbWikiPage)
-  # now retrieve to make sure 'synStore' worked
-  lbWikiPage2<-synGetWiki(evaluation, lbWikiId)
-  checkEquals(lbWikiPage2, lbWikiPage)
   
   synDelete(evaluation)
   synapseClient:::.setCache("testEvaluation", NULL)
