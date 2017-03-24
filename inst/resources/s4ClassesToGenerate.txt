@@ -14,7 +14,6 @@ Annotations	org.sagebionetworks.repo.model.annotation.Annotations	false
 SubmissionContent	org.sagebionetworks.evaluation.model.Submission	false
 SubmissionContributor	org.sagebionetworks.evaluation.model.SubmissionContributor false
 SubmissionStatus	org.sagebionetworks.evaluation.model.SubmissionStatus	false
-Participant	org.sagebionetworks.evaluation.model.Participant	false
 WikiHeader	org.sagebionetworks.repo.model.wiki.WikiHeader	false
 ResourceAccess	org.sagebionetworks.repo.model.ResourceAccess	true
 AccessControlList	org.sagebionetworks.repo.model.AccessControlList	true

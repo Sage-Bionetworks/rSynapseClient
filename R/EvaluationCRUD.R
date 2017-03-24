@@ -50,16 +50,6 @@ setMethod(
   }
 )
 
-newParticipantPaginatedResults<-function(content) {
-  paginatedResults<-new("PaginatedResults")
-  paginatedResults@totalNumberOfResults<-as.integer(content$totalNumberOfResults)
-  for (s in content$results) {
-    n<-length(paginatedResults@results)
-    paginatedResults@results[[n+1]]<-createS4ObjectFromList(as.list(s), "Participant")
-  }
-  paginatedResults
-}
-
 
 # convert a list into a string of URL parameters
 listToURLParams<-function(x) {
