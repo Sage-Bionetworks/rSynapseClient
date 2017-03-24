@@ -405,33 +405,3 @@ integrationTestReplaceFileAnnotations <-
   checkTrue(all(c("annotation3", "annotation4", "annotation5") %in% annotationNames(createdFile)))
 }
 
-integrationTestFileNameOverride <- 
-  function()
-{
-  ## Create Project
-  project <- Project()
-  createdProject <- createEntity(project)
-  synapseClient:::.setCache("testProject", createdProject)
-  
-  ## Create File
-  file<-createFileInMemory(createdProject)  # file name will look like "file11f74c33ab59"
-  propertyValue(file, "name") <- "testFileName"
-  propertyValue(file, "fileNameOverride")<-"testName.txt"
-  propertyValue(file,"parentId") <- propertyValue(createdProject, "id")
-  createdFile <- createEntity(file)
-  id<-propertyValue(createdFile, "id")
-  checkEquals(propertyValue(createdFile,"name"), propertyValue(file, "name"))
-  checkEquals(propertyValue(createdFile,"parentId"), propertyValue(createdProject, "id"))
-  checkEquals(propertyValue(createdFile,"fileNameOverride"), "testName.txt")
-  updatedFile<-synStore(createdFile)
-  # the bug in SYNR-989 was that the file-name override disappears
-  checkEquals(propertyValue(updatedFile,"fileNameOverride"), "testName.txt")
-  # we can also check by downloading
-  unlink(getFileLocation(updatedFile))
-  retrievedFile<-synGet(id)
-  # finally, check that the over ride name is used to download the file
-  checkEquals(basename(getFileLocation(retrievedFile)), "testName.txt")
-}
-
-
-
