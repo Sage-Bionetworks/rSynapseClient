@@ -2,10 +2,10 @@ This is an R client for the open-biology platform "Synapse". Visit https://www.s
 
 ## Installation
 
-The R Synase Client can be installed by typing these commands into the R prompt:
+The R Synapse Client can be installed by typing these commands into the R prompt:
 
 ```R
-source('http://depot.sagebase.org/CRAN.R')
+source("http://depot.sagebase.org/CRAN.R")
 pkgInstall(c("synapseClient"))
 ```
 
@@ -18,6 +18,8 @@ install_github('Sage-Bionetworks/rSynapseClient', ref='develop')
 
 ## Getting Started
 
-The Getting started with the R synapseClient guide is hosted in Synapse itself. See [syn1834618](https://www.synapse.org/#!Synapse:syn1834618).
+The [Getting Started](docs.synapse.org/articles/getting_started.html) guide for Synapse includes examples for the R client.
+
+Full documentation for the R client is also available at https://docs.synapse.org/r/.
 
 
