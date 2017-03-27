@@ -13,6 +13,7 @@ synapseLogin(username, password, rememberMe=F)
 synapseLogin(username = ..., apiKey = ..., rememberMe=F)
 synapseLogin(sessionToken = ..., rememberMe=F)
 synapseLogin(username = ..., rememberMe=F)
+synapseLogin(configPath)
 synapseLogin()
 synapseLogout(localOnly=FALSE)
 invalidateAPIKey()
@@ -22,6 +23,7 @@ invalidateAPIKey()
   \item{username}{Synapse username, usually an email}
   \item{password}{Password associated with the username}
   \item{apiKey}{Can be found online by logging in and going to the Settings tab of your profile page at www.synapse.org}
+    \item{configPath}{Path to configuration file containing username and password or API key. Defaults to ~/.synapseConfig.}
   \item{sessionToken}{Usage not recommended}
   \item{rememberMe}{Boolean indicated whether login should store session information on the local machine.  Defaults to FALSE}
   \item{localOnly}{Boolean controlling whether logout is done locally only, or propagated to Synapse}
