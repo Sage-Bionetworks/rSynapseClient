@@ -11,7 +11,7 @@ setApiCredentials <-
   hmacSecretKey(secretKey)
 }
 
-synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey = "", rememberMe = FALSE) {
+synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey = "", rememberMe = FALSE, silent = FALSE) {
     ## parameters must be of length 1
     if(any(length(username) !=1 || length(password) != 1 || length(sessionToken) != 1 || length(apiKey) != 1))
         stop("Please provide a single username and password")
@@ -27,8 +27,8 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
     
     credentials <- list(username = username, password = password, 
                         sessionToken = sessionToken, apiKey = apiKey)
-    synapseLogout(localOnly=TRUE, silent=TRUE)
-    .doAuth(credentials)
+    synapseLogout(localOnly=TRUE, silent=silent)
+    .doAuth(credentials, silent=silent)
   
 	if (rememberMe) {
 		json <- .readSessionCache()
@@ -38,7 +38,7 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
 	}
 }
 
-.doAuth <- function(credentials) {
+.doAuth <- function(credentials, silent = FALSE) {
 	## Tries to authenticate in the following order:
     ## - Supplied username and password
     if (all(credentials$username != "" && credentials$password != "")) {
@@ -121,7 +121,9 @@ synapseLogin <- function(username = "", password = "", sessionToken = "", apiKey
     }
     
     ## Print out a greeting
-    .doWelcome()
+    if (!silent) {
+        .doWelcome()
+    }
 }
 
 .getSessionToken <- function(credentials) {
