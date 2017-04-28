@@ -130,13 +130,13 @@ synDelete(schemaId)
 \end{verbatim}
 
 \section{Downloading a File Attachment}
-One of the column types provided by Synapse is FILEHANDLEID.  To download the file associated with a File Handle row:
+One of the column types provided by Synapse is FILEHANDLEID.  To download the files associated with a File Handle row:
 
 \begin{verbatim}
-filePath<-synDownloadTableFile(table, "0_0", "File Column Name")
+synDownloadTableColumns(table, "File Column Name")
 \end{verbatim}
 
-i.e. the parameters include the row number/version and column name as available in a retrieved data frame.  The function returns the path to the downloaded file.
+The function returns the paths to the downloaded files.
 
 \section{Managing Tabular Data on the File System}
 Table creation and retrieval can be done with files on disk.  No need to load

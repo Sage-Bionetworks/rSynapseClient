@@ -24,7 +24,7 @@ withRetries<-function(fcn,
 			}
 			sleepTime<-sleepTime(startTime, Sys.time(), backoff)
 			if (sleepTime>0) {
-				message(sprintf("Error encountered: %s. Will wait for %s seconds then retry. Press CTRL+C to quit.", 
+				message(sprintf("Error encountered: %s. Will wait for %.1f seconds then retry. Press CTRL+C to quit.", 
 								reportableResult, sleepTime))
 				Sys.sleep(sleepTime)
 			}

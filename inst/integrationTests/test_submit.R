@@ -164,7 +164,6 @@ integrationTest_submit_noTeamName <- function() {
   eid<-propertyValue(evaluation, "id")
   PUBLIC_GROUP_PRINCIPAL_ID<-273949 # This is defined in org.sagebionetworks.repo.model.AuthorizationConstants
   synapseClient:::.allowParticipation(eid, PUBLIC_GROUP_PRINCIPAL_ID)
-  synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
   
   # submit the entity
   submissionName<-"test-sub-name"
@@ -192,7 +191,6 @@ integrationTest_externalURL <- function() {
   eid<-propertyValue(evaluation, "id")
   PUBLIC_GROUP_PRINCIPAL_ID<-273949 # This is defined in org.sagebionetworks.repo.model.AuthorizationConstants
   synapseClient:::.allowParticipation(eid, PUBLIC_GROUP_PRINCIPAL_ID)
-  synRestPOST(sprintf("/evaluation/%s/participant", eid), list())
   
   # submit the entity
   submissionName<-"test-sub-name"

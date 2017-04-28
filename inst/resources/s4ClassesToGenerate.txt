@@ -14,7 +14,6 @@ Annotations	org.sagebionetworks.repo.model.annotation.Annotations	false
 SubmissionContent	org.sagebionetworks.evaluation.model.Submission	false
 SubmissionContributor	org.sagebionetworks.evaluation.model.SubmissionContributor false
 SubmissionStatus	org.sagebionetworks.evaluation.model.SubmissionStatus	false
-Participant	org.sagebionetworks.evaluation.model.Participant	false
 WikiHeader	org.sagebionetworks.repo.model.wiki.WikiHeader	false
 ResourceAccess	org.sagebionetworks.repo.model.ResourceAccess	true
 AccessControlList	org.sagebionetworks.repo.model.AccessControlList	true
@@ -92,4 +91,6 @@ MultipartUploadStatus	org.sagebionetworks.repo.model.file.MultipartUploadStatus	
 FacetColumnRequest	org.sagebionetworks.repo.model.table.FacetColumnRequest false
 UploadToTableRequest	org.sagebionetworks.repo.model.table.UploadToTableRequest	false
 FacetColumnResult	org.sagebionetworks.repo.model.table.FacetColumnResult	false
+TableUpdateTransactionRequest	org.sagebionetworks.repo.model.table.TableUpdateTransactionRequest	false
+TableUpdateTransactionResponse	org.sagebionetworks.repo.model.table.TableUpdateTransactionResponse	false
 TableUpdateResponse	org.sagebionetworks.repo.model.table.TableUpdateResponse	false

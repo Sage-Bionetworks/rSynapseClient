@@ -75,9 +75,9 @@ downloadFromService<-function(
 				isRetryable<-!any(sapply(errorMessagesNotToRetry, function(pattern){regexpr(pattern, fcnResult[[1]], fixed=T)[1]>=0}))
 			} else {
 				httpStatus<-.getCurlInfo(curlHandle)$response.code
-				# return true if status is >=500 or in the list of statuses to retry
-				isRetryable<-httpStatus>=500 || any(httpStatus==extraRetryStatusCodes)
-			}
+				# return true if status is >=500 or 429 or in the list of statuses to retry
+				isRetryable<-httpStatus>=500 || httpStatus>=429 || any(httpStatus==extraRetryStatusCodes)
+		}
 		} else if (isSftpDownload(url)) {
 			isRetryable<-is(fcnResult, "try-error")
 		} else {
@@ -93,7 +93,7 @@ downloadFromService<-function(
 			}
 			sleepTime<-sleepTime(startTime, Sys.time(), backoff)
 			if (sleepTime>0) {
-				message(sprintf("Error encountered: %s. Will wait for %s seconds then retry. Press CTRL+C to quit.", 
+				message(sprintf("Error encountered: %s. Will wait for %.0f seconds then retry. Press CTRL+C to quit.", 
 								reportableResult, sleepTime))
 				Sys.sleep(sleepTime)
 			}
