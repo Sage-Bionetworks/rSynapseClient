@@ -27,7 +27,7 @@ integrationTestQueryResult_Fetch <- function() {
   ## add some children
   folder <- Folder(parentId=project)
   lapply(1:10, function(i) createEntity(folder))
-
+  Sys.sleep(30)
   qr <- synapseClient:::QueryResult$new(sprintf("select id, name, parentId from entity where parentId=='%s'", project), blockSize=5)
   df <- qr$fetch()
   checkEquals(nrow(df),5)
