@@ -209,6 +209,7 @@ setMethod(
 findExistingEntity<-function(name, parentId=NULL) {
   if (is.null(name)) stop("'name' parameter is required")
   # Note:  It's OK if parentId is NULL.  This just means it's a project, which has no parent
+	if (parentId=="syn4489") parentId<-NULL
   childInfo<-synapsePost("/entity/child", list(parentId=parentId, entityName=name))
   entityId<-childInfo$id
   synapseGet(.generateEntityUri(entityId))
