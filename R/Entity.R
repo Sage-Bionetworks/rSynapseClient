@@ -208,12 +208,10 @@ setMethod(
 # error is thrown if zero or if more than one entity are returned
 findExistingEntity<-function(name, parentId=NULL) {
   if (is.null(name)) stop("'name' parameter is required")
-  if (is.null(parentId))  parentId<-"syn4489"
-  queryString<-sprintf("select id from entity where name==\"%s\" and parentId==\"%s\"", name, parentId)
-  result<-synapseQuery(queryString)
-  if (is.null(result)) stop(sprintf("Cannot find entity with name %s and parent %s.", name, parentId))
-  if (nrow(result)>1) stop(sprintf("Expected one but found %d entities with name %s and parent %s.", nrow(result), name, parentId))
-  entityId<-result[1,1]
+  # Note:  It's OK if parentId is NULL.  This just means it's a project, which has no parent
+	if (!is.null(parentId) && length(parentId)==1 && parentId=="syn4489") parentId<-NULL
+  childInfo<-synapsePost("/entity/child", list(parentId=parentId, entityName=name))
+  entityId<-childInfo$id
   synapseGet(.generateEntityUri(entityId))
 }
 
