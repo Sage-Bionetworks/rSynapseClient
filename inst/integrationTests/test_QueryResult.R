@@ -21,7 +21,7 @@
   deleteEntity(synapseClient:::.getCache("testProject"))
 }
 
-timeToWait<-"00:10:00" # wait for up to ten minutes
+timeToWait<-"00:10:00" # wait for up to 10 min
 
 integrationTestQueryResult_Fetch <- function() {
   project <- synapseClient:::.getCache("testProject")$properties$id
@@ -31,33 +31,21 @@ integrationTestQueryResult_Fetch <- function() {
   lapply(1:10, function(i) createEntity(folder))
 
 	startTime<-Sys.time()
+	qr <- synapseClient:::QueryResult$new(sprintf("select id, name, parentId from entity where parentId=='%s'", project), blockSize=5)
+	nrows<-0
+	ncols<-0
 	while (Sys.time()-startTime<as.difftime(timeToWait)) {
-  	qr <- synapseClient:::QueryResult$new(sprintf("select id, name, parentId from entity where parentId=='%s'", project), blockSize=5)
   	df <- qr$fetch()
-		if (nrow(df)==5) break
-		message("Expected 5 rows but found ", nrow(df))
+		nrows <- nrows + nrow(df)
+		ncols <- max(ncols, ncol(df))
+		message("Fetch: Number of accumulated rows: ", nrows)
+		if (nrows==10) break # got all the results
 		Sys.sleep(5)
 	}
 	message("Waited ", difftime(Sys.time(), startTime, units="mins"), " minutes for query results.")
 	
-  checkEquals(nrow(df),5)
-  checkEquals(ncol(df),3)
-	
-	startTime<-Sys.time()
-	numberOfRows<-0
-	numberOfCols<-0
-	while (Sys.time()-startTime<as.difftime(timeToWait)) {
-		df <- qr$fetch()
-		numberOfRows <- numberOfRows + nrow(df)
-		numberOfCols<-max(numberOfCols, ncol(df))
-		if (numberOfRows==5) break
-		message("Expected 5 rows but found ", numberOfRows)
-		Sys.sleep(5)
-	}
-	message("Waited ", difftime(Sys.time(), startTime, units="mins"), " minutes for query results.")
-	
-  checkEquals(numberOfRows,5)
-  checkEquals(numberOfCols,3)
+  checkEquals(nrows,10)
+  checkEquals(ncols,3)
 
   # test length and names functions
   checkEquals(length(qr), nrow(df))
@@ -73,45 +61,20 @@ integrationTestQueryResult_Collect <- function() {
   lapply(1:10, function(i) createEntity(folder))
 
 	startTime<-Sys.time()
+	qr <- synapseClient:::QueryResult$new(sprintf("select id, name, parentId from entity where parentId=='%s'", project), blockSize=3)
 	while (Sys.time()-startTime<as.difftime(timeToWait)) {
-		qr <- synapseClient:::QueryResult$new(sprintf("select id, name, parentId from entity where parentId=='%s'", project), blockSize=3)
 		df <- qr$collect()
-		if (nrow(df)==3) break
-		message("Expected 3 rows but found ", nrow(df))
+		message("Collect: Number of accumulated rows: ", nrow(qr$results))
+		if (nrow(qr$results)==10) break # got all the results
 		Sys.sleep(5)
 	}
 	message("Waited ", difftime(Sys.time(), startTime, units="mins"), " minutes for query results.")
 	
-  checkEquals(nrow(df),3)
-  checkEquals(ncol(df),3)
+	checkEquals(nrow(qr$results),10)
+	checkEquals(ncol(qr$results),3)
 	
-	startTime<-Sys.time()
-	while (Sys.time()-startTime<as.difftime(timeToWait)) {
-		df <- qr$collect()
-		if (nrow(df)==3) break
-		message("Expected 3 rows but found ", nrow(df))
-		Sys.sleep(5)
-	}
-	message("Waited ", difftime(Sys.time(), startTime, units="mins"), " minutes for query results.")
-	
-  checkEquals(nrow(df),3)
-  checkEquals(ncol(df),3)
-	
-	
-	startTime<-Sys.time()
-	while (Sys.time()-startTime<as.difftime(timeToWait)) {
-		df <- qr$collect()
-		if (nrow(df)==3) break
-		message("Expected 3 rows but found ", nrow(df))
-		Sys.sleep(5)
-	}
-	message("Waited ", difftime(Sys.time(), startTime, units="mins"), " minutes for query results.")
-	
-  checkEquals(nrow(df),3)
-  checkEquals(ncol(df),3)
-
   df <- qr$as.data.frame()
-  checkEquals(nrow(df),9)
+  checkEquals(nrow(df),10)
   checkEquals(ncol(df),3)
 }
 
@@ -124,17 +87,18 @@ integrationTestQueryResult_CollectAll <- function() {
 	
 	
 	startTime<-Sys.time()
+	qr <- synapseClient:::QueryResult$new(sprintf("select id, name, parentId from entity where parentId=='%s' LIMIT 10", project), blockSize=7)
 	while (Sys.time()-startTime<as.difftime(timeToWait)) {
-		qr <- synapseClient:::QueryResult$new(sprintf("select id, name, parentId from entity where parentId=='%s' LIMIT 10", project), blockSize=7)
 		qr$collect()
 		df <- qr$collectAll()
-		if (nrow(df)==10) break
-		message("Expected 10 rows but found ", nrow(df))
+		message("Collect All: Number of accumulated rows: ", nrow(qr$results))
+		if (nrow(qr$results)==10) break # got all the results
 		Sys.sleep(5)
 	}
 	message("Waited ", difftime(Sys.time(), startTime, units="mins"), " minutes for query results.")
 	
-  checkEquals(nrow(df), 10)
+	checkEquals(nrow(qr$results),10)
+	checkEquals(ncol(qr$results),3)
 }
 
 integrationTestQueryResult_EmptyResult <- function() {
