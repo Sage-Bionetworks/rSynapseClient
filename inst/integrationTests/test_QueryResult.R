@@ -44,19 +44,23 @@ integrationTestQueryResult_Fetch <- function() {
   checkEquals(ncol(df),3)
 	
 	startTime<-Sys.time()
+	numberOfRows<-0
+	numberOfCols<-0
 	while (Sys.time()-startTime<as.difftime(timeToWait)) {
-		df <- qr$fetch(accumulate=TRUE)
-		if (nrow(df)==10) break
-		message("Expected 10 rows but found ", nrow(df))
+		df <- qr$fetch()
+		numberOfRows <- numberOfRows + nrow(df)
+		numberOfCols<-max(numberOfCols, ncol(df))
+		if (numberOfRows==5) break
+		message("Expected 5 rows but found ", numberOfRows)
 		Sys.sleep(5)
 	}
 	message("Waited ", difftime(Sys.time(), startTime, units="mins"), " minutes for query results.")
 	
-  checkEquals(nrow(df),10)
-  checkEquals(ncol(df),3)
+  checkEquals(numberOfRows,5)
+  checkEquals(numberOfCols,3)
 
   # test length and names functions
-  checkEquals(length(qr), 10)
+  checkEquals(length(qr), nrow(df))
   checkEquals(class(names(qr)), "character")
   checkEquals(length(names(qr)), 3)
 }
