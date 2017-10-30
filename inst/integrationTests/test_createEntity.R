@@ -16,7 +16,8 @@
   function()
 {
 
-  deleteEntity(synapseClient:::.getCache("testProject"))
+	{project<-synapseClient:::.getCache("testProject")
+		synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))}
   synapseClient:::.deleteCache("testProject")
 
   unlink(synapseCacheDir(), recursive=T)

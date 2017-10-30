@@ -12,6 +12,8 @@
 .tearDown <- function() {
 	## delete the test projects
 	deleteEntity(synapseClient:::.getCache("testProject"))
+	project<-synapseClient:::.getCache("testProject")
+	synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))
 
 	synapseClient:::.unmockAll()
 }

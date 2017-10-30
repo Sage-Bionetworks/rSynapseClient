@@ -11,7 +11,8 @@
 
 .tearDown <- function() {
   # delete the project, cascading to the table
-  deleteEntity(synapseClient:::.getCache("testProject"))
+	project<-synapseClient:::.getCache("testProject")
+	synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))
   
 }
 
