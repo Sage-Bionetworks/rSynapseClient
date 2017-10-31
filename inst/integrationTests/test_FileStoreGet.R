@@ -15,7 +15,7 @@
   deleteEntity(synapseClient:::.getCache("testProject"))
   project <- synapseClient:::.getCache("testProject2")
   if (!is.null(project)) {
-    deleteEntity(project)
+	synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))    
     synapseClient:::.setCache("testProject2", NULL)
   }
   

@@ -12,7 +12,8 @@
 
 .tearDown <- function() {
   ## delete the test project
-  deleteEntity(synapseClient:::.getCache("testProject"))
+	project<-synapseClient:::.getCache("testProject")
+	synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))
 }
 
 createFileInMemory<-function(project) {

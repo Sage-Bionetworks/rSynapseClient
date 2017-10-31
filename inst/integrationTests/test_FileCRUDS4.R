@@ -19,11 +19,13 @@
 		synapseClient:::.deleteCache("testActivity")
 	}
 	if(!is.null(synapseClient:::.getCache("testProject"))) {
-		try(deleteEntity(synapseClient:::.getCache("testProject")))
+		try({project<-synapseClient:::.getCache("testProject")
+		synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))})
 		synapseClient:::.deleteCache("testProject")
 	}
 	if(!is.null(synapseClient:::.getCache("testProject2"))) {
-		try(deleteEntity(synapseClient:::.getCache("testProject2")))
+		try({project<-synapseClient:::.getCache("testProject2")
+		synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))})
 		synapseClient:::.deleteCache("testProject2")
 	}
 }
@@ -230,7 +232,7 @@ integrationTestDeleteFileById <-
   checkTrue(file.exists(cacheDir))
   deleteEntity(createdFile)
   
-  deleteEntity(createdProject$properties$id)
+  synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", createdProject$properties$id))
   checkException(getEntity(createdFile), silent=TRUE)
   synapseClient:::.deleteCache("testProject")
 }

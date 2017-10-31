@@ -18,7 +18,8 @@
   function()
 {
   ## delete the test project
-  deleteEntity(synapseClient:::.getCache("testProject"))
+	project<-synapseClient:::.getCache("testProject")
+	synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))
 }
 
 timeToWait<-"00:10:00" # wait for up to 10 min

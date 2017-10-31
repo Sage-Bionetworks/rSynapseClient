@@ -34,7 +34,8 @@
 	projectSettings<-synapseClient:::.getCache("testProjectSettings")
 	synRestDELETE(sprintf("/projectSettings/%s", projectSettings@id))
 	## delete the test project
-	deleteEntity(synapseClient:::.getCache("testProject"))
+	project<-synapseClient:::.getCache("testProject")
+	synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))
 }
 
 

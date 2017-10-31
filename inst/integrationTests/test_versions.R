@@ -9,7 +9,8 @@
 .tearDown <-
 	function()
 {
-	synDelete(synapseClient:::.getCache("testProject"))
+	project<-synapseClient:::.getCache("testProject")
+	synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))
 	options(warn=synapseClient:::.getCache("oldWarn"))
 	synapseClient:::.deleteCache("oldWarn")
 }
