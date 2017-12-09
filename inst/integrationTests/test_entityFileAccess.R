@@ -10,7 +10,8 @@
   function()
 {
   ## delete the test project
-  deleteEntity(synapseClient:::.getCache("testProject"))
+	{project<-synapseClient:::.getCache("testProject")
+	synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))}
 }
 
 #
@@ -49,6 +50,5 @@ integrationTestEntityFileAccess <-
     downloadedChecksum <- as.character(tools::md5sum(downloadedFile))
     checkEquals(origChecksum, downloadedChecksum)
     
-    # delete the entity
-    deleteEntity(entity$id)
+		synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", entity$id))
 }

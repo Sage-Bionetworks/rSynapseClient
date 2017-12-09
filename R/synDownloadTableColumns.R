@@ -79,7 +79,7 @@ synDownloadTableColumns <- function(synTable, tableColumns, verbose=FALSE) {
 						if (j==firstFHToDownload) firstFHToDownload<-firstFHToDownload+1
 					} else {
 						tmp <- getCachedInLocation(fhId, defaultDownloadLocation(fhId))
-						if (length(tmp) > 0) {
+						if (length(tmp) > 0 && !is.null(tmp$unchanged)) {
 							# the file is already downloaded
 							cumulativeDownloadResults[[j]]<-tmp$unchanged
 							if (j==firstFHToDownload) firstFHToDownload<-firstFHToDownload+1

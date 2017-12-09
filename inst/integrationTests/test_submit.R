@@ -45,8 +45,7 @@
   
   # delete the project.  This will delete the Challenge object as well.
   project<-synapseClient:::.getCache("testProject")
-  deleteEntity(project)
-  synRestPUT(sprintf("/trashcan/purge/%s", propertyValue(project, "id")), list())
+	synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))
   
   # delete the submit team
   submitTeam<-synapseClient:::.getCache("submitTeam")

@@ -28,8 +28,10 @@
 		synapseClient:::.deleteCache("testFolder")
 	}
 	if(!is.null(synapseClient:::.getCache("testProject"))) {
-	  try(deleteEntity(synapseClient:::.getCache("testProject")))
+	  try({project<-synapseClient:::.getCache("testProject")
+			synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))})
 	  synapseClient:::.deleteCache("testProject")
+		
   }
 }
 
