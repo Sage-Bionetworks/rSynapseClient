@@ -14,10 +14,6 @@
 .tearDown <- 
   function()
 {
-	if(!is.null(synapseClient:::.getCache("testActivity"))) {
-		try(deleteEntity(synapseClient:::.getCache("testActivity")))
-		synapseClient:::.deleteCache("testActivity")
-	}
 	if(!is.null(synapseClient:::.getCache("testProject"))) {
 		try({project<-synapseClient:::.getCache("testProject")
 		synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))})
@@ -28,6 +24,11 @@
 		synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))})
 		synapseClient:::.deleteCache("testProject2")
 	}
+	if(!is.null(synapseClient:::.getCache("testActivity"))) {
+		try(deleteEntity(synapseClient:::.getCache("testActivity")))
+		synapseClient:::.deleteCache("testActivity")
+	}
+	
 }
 
 createFileInMemory<-function(project) {
