@@ -148,6 +148,12 @@ export(
 	"synGetEndpoints"
 )
 
+# Methods for knitting RMarkdown files to Synapse WikiPages
+export(
+  "knitfile2synapse",
+  "storeAndKnitToFileEntity",
+  "knitToFolderEntity"
+)
 
 # Methods used on deprecated Synapse objects (but left in code base for backward compatibility)
 exportMethods(
