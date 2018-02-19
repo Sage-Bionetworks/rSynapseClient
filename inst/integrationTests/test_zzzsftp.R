@@ -21,7 +21,7 @@ library(Rsftp)
   if (is.null(project)) {
     message("test_sftp: .tearDown: testProject not found in global cache")
   } else {
-    deleteEntity(project)
+		synRestDELETE(sprintf("/entity/%s?skipTrashCan=true", propertyValue(project, "id")))
   }
   
   sftpFilesToDelete<-synapseClient:::.getCache("sftpFilesToDelete")
