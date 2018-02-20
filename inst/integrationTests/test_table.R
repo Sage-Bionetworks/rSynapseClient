@@ -233,6 +233,10 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=TRUE, verbose=FALSE)
   deletionResult<-synDeleteRows(queryResult)
   checkEquals(deletionResult@rowCount, rowsToUpload)
+  
+  # now make sure there are no rows
+  queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=TRUE, verbose=FALSE)
+  checkEquals(nrow(queryResult@values), 0)
 }
 
 roundPOSIXct<-function(x) {
