@@ -231,8 +231,7 @@ integrationTestSynStoreRetrieveAndQueryMixedDataFrame<-function() {
   
   # finally, check row deletion
   queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=TRUE, verbose=FALSE)
-  deletionResult<-synDeleteRows(queryResult)
-  checkEquals(deletionResult@rowCount, rowsToUpload)
+  synDeleteRows(queryResult)
   
   # now make sure there are no rows
   queryResult<-synTableQuery(sprintf("select * from %s", propertyValue(tschema, "id")), loadResult=TRUE, verbose=FALSE)
