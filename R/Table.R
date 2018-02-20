@@ -472,8 +472,17 @@ synTableQuery<-function(sqlString, loadResult=TRUE, verbose=TRUE, filePath=NULL)
 
 # PLFM-4664: "A update of a row without any values is interpreted as a 'delete' of that row."
 synDeleteRows<-function(tableDataFrame) {
+  schema<-tableDataFrame@schema
+  if (is(schema, "TableSchema")) {
+    tableId<-propertyValue(schema, "id")
+  } else if (is (schema, "character")) {
+    tableId<-schema
+  }
   rowIds<-parseRowAndVersion(row.names(tableDataFrame@values))[1,]
-  storeDataFrame(tableDataFrame@schema, data.frame(ROW_ID=rowIds), FALSE, FALSE, tableDataFrame@updateEtag)
+  filePath<-tempfile()
+  writeDataFrameToCSV(data.frame(ROW_ID=rowIds), filePath)
+  s3FileHandle<-chunkedUploadFile(filePath)
+  uploadFileHandleIdToTable(as.integer(s3FileHandle$id), tableId=tableId, verbose=FALSE, updateEtag=tableDataFrame@updateEtag)
 }
 
 getFileHandleIdFromTableCell<-function(tableId, selectColumn, rowId, versionNumber) {
