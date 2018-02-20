@@ -483,7 +483,7 @@ synDeleteRows<-function(tableDataFrame) {
   writeDataFrameToCSV(data.frame(ROW_ID=rowIds), filePath)
   s3FileHandle<-chunkedUploadFile(filePath)
   rowsProcessed<-uploadFileHandleIdToTable(as.integer(s3FileHandle$id), tableId=tableId, verbose=FALSE, updateEtag=tableDataFrame@updateEtag)
-  TableRowCount(entity@schema, rowsProcessed)
+  TableRowCount(schema, rowsProcessed)
 }
 
 getFileHandleIdFromTableCell<-function(tableId, selectColumn, rowId, versionNumber) {
