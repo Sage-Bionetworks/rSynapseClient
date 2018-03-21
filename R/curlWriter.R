@@ -55,8 +55,8 @@
 fileNameFromHeaders<-function(headers) {
 	for (header in strsplit(headers, "\r\n", fixed=T)[[1]]) {
 		if (1==regexpr("^Content-Disposition:", header)[1]) {
-			pieces<-strsplit(header, "filename=")[[1]]
-			if (length(pieces)==2) return(pieces[2])
+			# per https://regex101.com/r/hJ7tS6/28
+			return(gsub("^Content-Disposition:.*filename[^;\n=]*=(['\"])*(.*)(?(1)\\1|)", "\\2", header, perl=TRUE))
 		}
 	}
 	NULL

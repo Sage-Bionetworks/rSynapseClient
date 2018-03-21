@@ -1,9 +1,9 @@
 Package: synapseClient
 Type: Package
 Title: Synapse R Client from Sage Bionetworks
-Version: 1.17-0
-ReleaseNotes: Here are this version's release notes: https://sagebionetworks.jira.com/issues/?jql=project%20%3D%20SYNR%20AND%20fixVersion%20%3D%20R-1.17-0%20ORDER%20BY%20key%20ASC%2C%20fixVersion%20ASC
-Date: 2018-03-01
+Version: 1.18-0
+ReleaseNotes: Here are this version's release notes: https://sagebionetworks.jira.com/issues/?jql=project%20%3D%20SYNR%20AND%20fixVersion%20%3D%20R-1.18-0%20ORDER%20BY%20key%20ASC%2C%20fixVersion%20ASC
+Date: 2018-03-27
 Author@R: c(
 	person("Bruce", "Hoff", email="bruce.hoff@sagebase.org", role="aut"),
 	person("Chris", "Bare", email="chris.bare@sagebase.org", role="aut"),
