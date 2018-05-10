@@ -1,7 +1,7 @@
 This is an R client for the open-biology platform "Synapse". Visit https://www.synapse.org or http://www.sagebase.org for more info. To view documentation visit http://r-docs.synapse.org/. To file bug reports and feature requests visit http://sagebionetworks.jira.com/browse/SYNR.
 
 ## News
-A new R client '[synapser](https://github.com/Sage-Bionetworks/synapser)' is currently in validation phase and will be released soon.
+A new R client '[synapser](https://github.com/Sage-Bionetworks/synapser)' is currently available at [Sage's RAN](https://sage-bionetworks.github.io/ran).
 
 ## Installation
 
